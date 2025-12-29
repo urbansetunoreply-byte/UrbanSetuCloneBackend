@@ -991,227 +991,119 @@ export default function AdminAppointments() {
     // No need to poll every 5 seconds, which was causing unnecessary message refreshes in chatbox
     // Real-time updates are handled by socket events (commentUpdate, appointmentUpdate, etc.)
 
+    // Helper function to update appointment with new profile data
+    const getProfileUpdatedAppointment = (appt, profileData) => {
+      let updated = { ...appt };
+      let hasChanges = false;
+
+      // Update buyer info
+      if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
+        updated.buyerId = {
+          ...updated.buyerId,
+          username: profileData.username,
+          email: profileData.email,
+          mobileNumber: profileData.mobileNumber,
+          avatar: profileData.avatar
+        };
+        hasChanges = true;
+      }
+
+      // Update seller info
+      if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
+        updated.sellerId = {
+          ...updated.sellerId,
+          username: profileData.username,
+          email: profileData.email,
+          mobileNumber: profileData.mobileNumber,
+          avatar: profileData.avatar
+        };
+        hasChanges = true;
+      }
+
+      return hasChanges ? updated : null;
+    };
+
     // Listen for profile updates to update user info in appointments
     const handleProfileUpdate = (profileData) => {
-      setAppointments(prevAppointments => prevAppointments.map(appt => {
-        const updated = { ...appt };
+      const updateList = (prevList) => prevList.map(appt => {
+        const updated = getProfileUpdatedAppointment(appt, profileData);
+        return updated || appt;
+      });
 
-        // Update buyer info if the updated user is the buyer
-        if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
-          updated.buyerId = {
-            ...updated.buyerId,
-            username: profileData.username,
-            email: profileData.email,
-            mobileNumber: profileData.mobileNumber,
-            avatar: profileData.avatar
-          };
-        }
-
-        // Update seller info if the updated user is the seller
-        if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
-          updated.sellerId = {
-            ...updated.sellerId,
-            username: profileData.username,
-            email: profileData.email,
-            mobileNumber: profileData.mobileNumber,
-            avatar: profileData.avatar
-          };
-        }
-
-        return updated;
-      }));
-
-      // Update master list as well
-      setAllAppointments(prevAppointments => prevAppointments.map(appt => {
-        const updated = { ...appt };
-
-        // Update buyer info if the updated user is the buyer
-        if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
-          updated.buyerId = {
-            ...updated.buyerId,
-            username: profileData.username,
-            email: profileData.email,
-            mobileNumber: profileData.mobileNumber,
-            avatar: profileData.avatar
-          };
-        }
-
-        // Update seller info if the updated user is the seller
-        if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
-          updated.sellerId = {
-            ...updated.sellerId,
-            username: profileData.username,
-            email: profileData.email,
-            mobileNumber: profileData.mobileNumber,
-            avatar: profileData.avatar
-          };
-        }
-
-        return updated;
-      }));
-
-      setArchivedAppointments(prevArchived => prevArchived.map(appt => {
-        const updated = { ...appt };
-
-        // Update buyer info if the updated user is the buyer
-        if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
-          updated.buyerId = {
-            ...updated.buyerId,
-            username: profileData.username,
-            email: profileData.email,
-            mobileNumber: profileData.mobileNumber,
-            avatar: profileData.avatar
-          };
-        }
-
-        // Update seller info if the updated user is the seller
-        if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
-          updated.sellerId = {
-            ...updated.sellerId,
-            username: profileData.username,
-            email: profileData.email,
-            mobileNumber: profileData.mobileNumber,
-            avatar: profileData.avatar
-          };
-        }
-
-        return updated;
-      }));
+      setAppointments(updateList);
+      setAllAppointments(updateList);
+      setArchivedAppointments(updateList);
     };
     socket.on('profileUpdated', handleProfileUpdate);
+
+    // Helper function to update appointment with new comment
+    const getCommentUpdatedAppointment = (appt, data) => {
+      if (appt._id !== data.appointmentId) return null;
+
+      const existingCommentIndex = appt.comments?.findIndex(c => c._id === data.comment._id);
+      if (existingCommentIndex !== -1) {
+        // Update existing comment - only if there are actual changes
+        // and preserve starred status and media URLs for deleted messages
+        const existingComment = appt.comments[existingCommentIndex];
+        const updatedComment = {
+          ...data.comment,
+          starredBy: existingComment.starredBy || [],
+          // Preserve media URLs if the message is being deleted and they're not in the update
+          videoUrl: data.comment.videoUrl || existingComment.videoUrl,
+          audioUrl: data.comment.audioUrl || existingComment.audioUrl,
+          audioName: data.comment.audioName || existingComment.audioName,
+          documentUrl: data.comment.documentUrl || existingComment.documentUrl,
+          documentName: data.comment.documentName || existingComment.documentName,
+          originalImageUrl: data.comment.originalImageUrl || existingComment.originalImageUrl || existingComment.imageUrl,
+          imageUrl: data.comment.imageUrl || existingComment.imageUrl
+        };
+
+        if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
+          const updatedComments = [...(appt.comments || [])];
+          updatedComments[existingCommentIndex] = updatedComment;
+          return { ...appt, comments: updatedComments };
+        }
+        return null; // No changes needed
+      } else {
+        // Add new comment
+        const updatedComments = [...(appt.comments || []), data.comment];
+        return { ...appt, comments: updatedComments };
+      }
+    };
 
     // Listen for real-time comment updates to refresh appointments
     const handleCommentUpdate = (data) => {
       // Skip handling if this is a message sent by current admin user to prevent duplicates
       // Admin messages are already added locally in handleCommentSend
-      if (data.comment.senderEmail === currentUser?.email) {
+      if (data.comment.senderEmail?.toLowerCase() === currentUser?.email?.toLowerCase()) {
         return;
       }
 
+      // Consolidated update logic to prevent duplication and ensure consistency
+      const updateListWithSound = (prevList) => prevList.map(appt => {
+        const updated = getCommentUpdatedAppointment(appt, data);
+        if (updated) {
+          try {
+            if (settings.soundEnabled) playMessageReceived();
+          } catch (_) { }
+          return updated;
+        }
+        return appt;
+      });
+
+      const updateListSilent = (prevList) => prevList.map(appt => {
+        const updated = getCommentUpdatedAppointment(appt, data);
+        return updated || appt;
+      });
+
       // Update the specific appointment's comments in real-time
-      setAppointments(prev =>
-        prev.map(appt => {
-          if (appt._id === data.appointmentId) {
-            // Find if comment already exists
-            const existingCommentIndex = appt.comments?.findIndex(c => c._id === data.comment._id);
-            if (existingCommentIndex !== -1) {
-              // Update existing comment - only if there are actual changes
-              // and preserve starred status and media URLs for deleted messages
-              const existingComment = appt.comments[existingCommentIndex];
-              const updatedComment = {
-                ...data.comment,
-                starredBy: existingComment.starredBy || [],
-                // Preserve media URLs if the message is being deleted and they're not in the update
-                videoUrl: data.comment.videoUrl || existingComment.videoUrl,
-                audioUrl: data.comment.audioUrl || existingComment.audioUrl,
-                audioName: data.comment.audioName || existingComment.audioName,
-                documentUrl: data.comment.documentUrl || existingComment.documentUrl,
-                documentName: data.comment.documentName || existingComment.documentName,
-                originalImageUrl: data.comment.originalImageUrl || existingComment.originalImageUrl || existingComment.imageUrl,
-                imageUrl: data.comment.imageUrl || existingComment.imageUrl
-              };
-              if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
-                const updatedComments = [...(appt.comments || [])];
-                updatedComments[existingCommentIndex] = updatedComment;
-                try {
-                  if (settings.soundEnabled) playMessageReceived();
-                } catch (_) { }
-                return { ...appt, comments: updatedComments };
-              }
-              return appt; // No changes needed
-            } else {
-              // Add new comment - this is a new user message
-              const updatedComments = [...(appt.comments || []), data.comment];
-              try {
-                if (settings.soundEnabled) playMessageReceived();
-              } catch (_) { }
-              return { ...appt, comments: updatedComments };
-            }
-          }
-          return appt;
-        })
-      );
+      setAppointments(updateListWithSound);
 
       // CRITICAL FIX: Also update allAppointments
-      setAllAppointments(prev =>
-        prev.map(appt => {
-          if (appt._id === data.appointmentId) {
-            // Find if comment already exists
-            const existingCommentIndex = appt.comments?.findIndex(c => c._id === data.comment._id);
-            if (existingCommentIndex !== -1) {
-              // Update existing comment - only if there are actual changes
-              // and preserve starred status and media URLs for deleted messages
-              const existingComment = appt.comments[existingCommentIndex];
-              const updatedComment = {
-                ...data.comment,
-                starredBy: existingComment.starredBy || [],
-                // Preserve media URLs if the message is being deleted and they're not in the update
-                videoUrl: data.comment.videoUrl || existingComment.videoUrl,
-                audioUrl: data.comment.audioUrl || existingComment.audioUrl,
-                audioName: data.comment.audioName || existingComment.audioName,
-                documentUrl: data.comment.documentUrl || existingComment.documentUrl,
-                documentName: data.comment.documentName || existingComment.documentName,
-                originalImageUrl: data.comment.originalImageUrl || existingComment.originalImageUrl || existingComment.imageUrl,
-                imageUrl: data.comment.imageUrl || existingComment.imageUrl
-              };
-              if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
-                const updatedComments = [...(appt.comments || [])];
-                updatedComments[existingCommentIndex] = updatedComment;
-                return { ...appt, comments: updatedComments };
-              }
-              return appt;
-            } else {
-              // Add new comment
-              const updatedComments = [...(appt.comments || []), data.comment];
-              return { ...appt, comments: updatedComments };
-            }
-          }
-          return appt;
-        })
-      );
+      setAllAppointments(updateListSilent);
 
       // Also update archived appointments if needed
-      setArchivedAppointments(prev =>
-        prev.map(appt => {
-          if (appt._id === data.appointmentId) {
-            const existingCommentIndex = appt.comments?.findIndex(c => c._id === data.comment._id);
-            if (existingCommentIndex !== -1) {
-              // Update existing comment - only if there are actual changes
-              // and preserve starred status and media URLs for deleted messages
-              const existingComment = appt.comments[existingCommentIndex];
-              const updatedComment = {
-                ...data.comment,
-                starredBy: existingComment.starredBy || [],
-                // Preserve media URLs if the message is being deleted and they're not in the update
-                videoUrl: data.comment.videoUrl || existingComment.videoUrl,
-                audioUrl: data.comment.audioUrl || existingComment.audioUrl,
-                audioName: data.comment.audioName || existingComment.audioName,
-                documentUrl: data.comment.documentUrl || existingComment.documentUrl,
-                documentName: data.comment.documentName || existingComment.documentName,
-                originalImageUrl: data.comment.originalImageUrl || existingComment.originalImageUrl || existingComment.imageUrl,
-                imageUrl: data.comment.imageUrl || existingComment.imageUrl
-              };
-              if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
-                const updatedComments = [...(appt.comments || [])];
-                updatedComments[existingCommentIndex] = updatedComment;
-                try {
-                  if (settings.soundEnabled) playMessageReceived();
-                } catch (_) { }
-                return { ...appt, comments: updatedComments };
-              }
-              return appt; // No changes needed
-            } else {
-              // Add new comment
-              const updatedComments = [...(appt.comments || []), data.comment];
-              try {
-                if (settings.soundEnabled) playMessageReceived();
-              } catch (_) { }
-              return { ...appt, comments: updatedComments };
-            }
-          }
-          return appt;
-        })
-      );
+      setArchivedAppointments(updateListWithSound);
 
       // REMOVED: updatedComments state update that was causing race conditions
       // The appointments array is already updated above, no need for separate state
@@ -1431,8 +1323,10 @@ export default function AdminAppointments() {
   // Dynamically update user info in appointments when currentUser changes
   useEffect(() => {
     if (!currentUser) return;
-    setAppointments(prevAppointments => prevAppointments.map(appt => {
+
+    const updateApptWithUser = (appt) => {
       const updated = { ...appt };
+      let hasChanges = false;
 
       // Update buyer info if current user is the buyer
       if (appt.buyerId && (appt.buyerId._id === currentUser._id || appt.buyerId === currentUser._id)) {
@@ -1443,6 +1337,7 @@ export default function AdminAppointments() {
           mobileNumber: currentUser.mobileNumber,
           avatar: currentUser.avatar
         };
+        hasChanges = true;
       }
 
       // Update seller info if current user is the seller
@@ -1454,38 +1349,15 @@ export default function AdminAppointments() {
           mobileNumber: currentUser.mobileNumber,
           avatar: currentUser.avatar
         };
+        hasChanges = true;
       }
 
-      return updated;
-    }));
+      return hasChanges ? updated : appt;
+    };
 
-    setArchivedAppointments(prevArchived => prevArchived.map(appt => {
-      const updated = { ...appt };
-
-      // Update buyer info if current user is the buyer
-      if (appt.buyerId && (appt.buyerId._id === currentUser._id || appt.buyerId === currentUser._id)) {
-        updated.buyerId = {
-          ...updated.buyerId,
-          username: currentUser.username,
-          email: currentUser.email,
-          mobileNumber: currentUser.mobileNumber,
-          avatar: currentUser.avatar
-        };
-      }
-
-      // Update seller info if current user is the seller
-      if (appt.sellerId && (appt.sellerId._id === currentUser._id || appt.sellerId === currentUser._id)) {
-        updated.sellerId = {
-          ...updated.sellerId,
-          username: currentUser.username,
-          email: currentUser.email,
-          mobileNumber: currentUser.mobileNumber,
-          avatar: currentUser.avatar
-        };
-      }
-
-      return updated;
-    }));
+    setAppointments(prev => prev.map(updateApptWithUser));
+    setAllAppointments(prev => prev.map(updateApptWithUser));
+    setArchivedAppointments(prev => prev.map(updateApptWithUser));
   }, [currentUser]);
 
   const handleAdminCancel = async (id) => {
@@ -3457,6 +3329,7 @@ function AdminAppointmentRow({
       socket.off('ice-candidate-monitor', handleMonitorICECandidate);
       socket.off('call-ended', handleCallEndedForMonitor);
       socket.off('call-monitor-error', handleMonitorError);
+      cleanupMonitorPeers();
     };
   }, [appt?._id, activeLiveCall, showLiveMonitorModal, MONITOR_STUN_SERVERS, cleanupMonitorPeers, setMonitorCallId, setShowLiveMonitorModal, monitorRoles, setScreenSharingStatus]);
 
@@ -4297,6 +4170,8 @@ function AdminAppointmentRow({
     const handleCallEnded = (data) => {
       // If this call belongs to this appointment, refetch call history immediately
       // This ensures call bubbles appear in real-time like regular messages
+      if (data.appointmentId && data.appointmentId !== appt._id) return;
+
       if (data.callId) {
         // Small delay to ensure backend has saved the call
         setTimeout(() => {
