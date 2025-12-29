@@ -905,6 +905,20 @@ export default function AdminAppointments() {
       return updated;
     });
 
+    // CRITICAL FIX: Also update main allAppointments state to ensure persistence across filtering/pagination
+    setAllAppointments(prev => {
+      const updated = prev.map(appt => {
+        if (appt._id === appointmentId) {
+          // Only update if there are actual changes
+          if (JSON.stringify(appt.comments) !== JSON.stringify(comments)) {
+            return { ...appt, comments };
+          }
+        }
+        return appt;
+      });
+      return updated;
+    });
+
     // Also update archived appointments if needed
     setArchivedAppointments(prev => {
       const updated = prev.map(appt => {
@@ -980,6 +994,35 @@ export default function AdminAppointments() {
     // Listen for profile updates to update user info in appointments
     const handleProfileUpdate = (profileData) => {
       setAppointments(prevAppointments => prevAppointments.map(appt => {
+        const updated = { ...appt };
+
+        // Update buyer info if the updated user is the buyer
+        if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
+          updated.buyerId = {
+            ...updated.buyerId,
+            username: profileData.username,
+            email: profileData.email,
+            mobileNumber: profileData.mobileNumber,
+            avatar: profileData.avatar
+          };
+        }
+
+        // Update seller info if the updated user is the seller
+        if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
+          updated.sellerId = {
+            ...updated.sellerId,
+            username: profileData.username,
+            email: profileData.email,
+            mobileNumber: profileData.mobileNumber,
+            avatar: profileData.avatar
+          };
+        }
+
+        return updated;
+      }));
+
+      // Update master list as well
+      setAllAppointments(prevAppointments => prevAppointments.map(appt => {
         const updated = { ...appt };
 
         // Update buyer info if the updated user is the buyer
@@ -1089,6 +1132,44 @@ export default function AdminAppointments() {
         })
       );
 
+      // CRITICAL FIX: Also update allAppointments
+      setAllAppointments(prev =>
+        prev.map(appt => {
+          if (appt._id === data.appointmentId) {
+            // Find if comment already exists
+            const existingCommentIndex = appt.comments?.findIndex(c => c._id === data.comment._id);
+            if (existingCommentIndex !== -1) {
+              // Update existing comment - only if there are actual changes
+              // and preserve starred status and media URLs for deleted messages
+              const existingComment = appt.comments[existingCommentIndex];
+              const updatedComment = {
+                ...data.comment,
+                starredBy: existingComment.starredBy || [],
+                // Preserve media URLs if the message is being deleted and they're not in the update
+                videoUrl: data.comment.videoUrl || existingComment.videoUrl,
+                audioUrl: data.comment.audioUrl || existingComment.audioUrl,
+                audioName: data.comment.audioName || existingComment.audioName,
+                documentUrl: data.comment.documentUrl || existingComment.documentUrl,
+                documentName: data.comment.documentName || existingComment.documentName,
+                originalImageUrl: data.comment.originalImageUrl || existingComment.originalImageUrl || existingComment.imageUrl,
+                imageUrl: data.comment.imageUrl || existingComment.imageUrl
+              };
+              if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
+                const updatedComments = [...(appt.comments || [])];
+                updatedComments[existingCommentIndex] = updatedComment;
+                return { ...appt, comments: updatedComments };
+              }
+              return appt;
+            } else {
+              // Add new comment
+              const updatedComments = [...(appt.comments || []), data.comment];
+              return { ...appt, comments: updatedComments };
+            }
+          }
+          return appt;
+        })
+      );
+
       // Also update archived appointments if needed
       setArchivedAppointments(prev =>
         prev.map(appt => {
@@ -1137,9 +1218,34 @@ export default function AdminAppointments() {
     };
     socket.on('commentUpdate', handleCommentUpdate);
 
+    // Listen for chat cleared events
+    const handleChatCleared = (data) => {
+      setAppointments(prev =>
+        prev.map(appt =>
+          appt._id === data.appointmentId ? { ...appt, comments: [] } : appt
+        )
+      );
+      setAllAppointments(prev =>
+        prev.map(appt =>
+          appt._id === data.appointmentId ? { ...appt, comments: [] } : appt
+        )
+      );
+      setArchivedAppointments(prev =>
+        prev.map(appt =>
+          appt._id === data.appointmentId ? { ...appt, comments: [] } : appt
+        )
+      );
+    };
+    socket.on('chatCleared', handleChatCleared);
+
     // Listen for appointment updates
     const handleAppointmentUpdate = (data) => {
       setAppointments(prev =>
+        prev.map(appt =>
+          appt._id === data.appointmentId ? { ...appt, ...data.updatedAppointment } : appt
+        )
+      );
+      setAllAppointments(prev =>
         prev.map(appt =>
           appt._id === data.appointmentId ? { ...appt, ...data.updatedAppointment } : appt
         )
@@ -1158,6 +1264,11 @@ export default function AdminAppointments() {
           appt._id === data.appointmentId ? { ...appt, paymentConfirmed: data.paymentConfirmed } : appt
         )
       );
+      setAllAppointments(prev =>
+        prev.map(appt =>
+          appt._id === data.appointmentId ? { ...appt, paymentConfirmed: data.paymentConfirmed } : appt
+        )
+      );
       setArchivedAppointments(prev =>
         prev.map(appt =>
           appt._id === data.appointmentId ? { ...appt, paymentConfirmed: data.paymentConfirmed } : appt
@@ -1172,6 +1283,7 @@ export default function AdminAppointments() {
     const handleAppointmentCreated = (data) => {
       const newAppt = data.appointment;
       setAppointments(prev => [newAppt, ...prev]);
+      setAllAppointments(prev => [newAppt, ...prev]);
     };
     socket.on('appointmentCreated', handleAppointmentCreated);
 
@@ -1197,13 +1309,14 @@ export default function AdminAppointments() {
       clearInterval(adminInterval);
       socket.off('profileUpdated', handleProfileUpdate);
       socket.off('commentUpdate', handleCommentUpdate);
+      socket.off('chatCleared', handleChatCleared);
       socket.off('appointmentUpdate', handleAppointmentUpdate);
       socket.off('paymentStatusUpdated', handlePaymentStatusUpdate);
       socket.off('appointmentCreated', handleAppointmentCreated);
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
     };
-  }, [fetchAppointments, fetchArchivedAppointments, currentUser]);
+  }, [fetchAppointments, fetchArchivedAppointments, currentUser, settings]);
 
   // Separate useEffect for pagination and filtering
   useEffect(() => {
@@ -1402,6 +1515,9 @@ export default function AdminAppointments() {
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === appointmentToHandle ? { ...appt, status: "cancelledByAdmin", cancelReason: cancelReason } : appt))
       );
+      setAllAppointments((prev) =>
+        prev.map((appt) => (appt._id === appointmentToHandle ? { ...appt, status: "cancelledByAdmin", cancelReason: cancelReason } : appt))
+      );
       toast.success("Appointment cancelled successfully. Both buyer and seller have been notified of the cancellation.");
 
       // Close modal and reset state
@@ -1466,6 +1582,9 @@ export default function AdminAppointments() {
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === appointmentToHandle ? { ...appt, status: "pending", cancelReason: "" } : appt))
       );
+      setAllAppointments((prev) =>
+        prev.map((appt) => (appt._id === appointmentToHandle ? { ...appt, status: "pending", cancelReason: "" } : appt))
+      );
       toast.success("Appointment reinitiated successfully. Both buyer and seller have been notified.");
 
       // Close modal and reset state
@@ -1500,6 +1619,7 @@ export default function AdminAppointments() {
       const archivedAppt = appointments.find(appt => appt._id === appointmentToHandle);
       if (archivedAppt) {
         setAppointments((prev) => prev.filter((appt) => appt._id !== appointmentToHandle));
+        setAllAppointments((prev) => prev.filter((appt) => appt._id !== appointmentToHandle));
         setArchivedAppointments((prev) => [{ ...archivedAppt, archivedByAdmin: true, archivedAt: new Date() }, ...prev]);
       }
       toast.success("Appointment archived successfully.");
@@ -1536,6 +1656,7 @@ export default function AdminAppointments() {
       if (unarchivedAppt) {
         setArchivedAppointments((prev) => prev.filter((appt) => appt._id !== appointmentToHandle));
         setAppointments((prev) => [{ ...unarchivedAppt, archivedByAdmin: false, archivedAt: undefined }, ...prev]);
+        setAllAppointments((prev) => [{ ...unarchivedAppt, archivedByAdmin: false, archivedAt: undefined }, ...prev]);
       }
       toast.success("Appointment unarchived successfully.");
 
@@ -2817,6 +2938,23 @@ function AdminAppointmentRow({
       setStarredMessages(starredMsgs);
     }
   }, [localComments, currentUser._id]);
+
+  // Sync local comments with parent state (for real-time updates)
+  React.useEffect(() => {
+    if (appt?.comments) {
+      setLocalComments(prev => {
+        // Keep any local temporary/sending messages
+        const tempMessages = prev.filter(c => c._id && typeof c._id === 'string' && c._id.startsWith('temp-'));
+
+        // Return parent comments + temp messages
+        // Check for duplicates just in case a temp message got confirmed but not cleared
+        const parentIds = new Set(appt.comments.map(c => c._id));
+        const uniqueTemps = tempMessages.filter(t => !parentIds.has(t._id));
+
+        return [...appt.comments, ...uniqueTemps];
+      });
+    }
+  }, [appt.comments]);
   const [newComment, setNewComment] = useLocalState("");
   const [detectedUrl, setDetectedUrl] = useState(null);
   const [previewDismissed, setPreviewDismissed] = useState(false);
@@ -4161,8 +4299,13 @@ function AdminAppointmentRow({
     };
 
     socket.on('call-ended', handleCallEnded);
+    socket.on('call-initiated', handleCallEnded); // Reuse handler to refresh history
+    socket.on('call-accepted', handleCallEnded);  // Reuse handler to refresh history
+
     return () => {
       socket.off('call-ended', handleCallEnded);
+      socket.off('call-initiated', handleCallEnded);
+      socket.off('call-accepted', handleCallEnded);
     };
   }, [appt?._id, socket]);
 
@@ -5975,6 +6118,30 @@ function AdminAppointmentRow({
 
     setShowDeleteModal(false);
     setMessageToDelete(null);
+  };
+
+  const handleDeleteChat = async () => {
+    if (!deleteChatPassword.trim()) return;
+
+    try {
+      setDeleteChatLoading(true);
+      const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comments`, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' },
+        data: { password: deleteChatPassword }
+      });
+
+      setLocalComments([]);
+      updateAppointmentComments(appt._id, []);
+      toast.success('Chat deleted successfully.');
+      setShowDeleteChatModal(false);
+      setDeleteChatPassword('');
+    } catch (e) {
+      console.error("Delete chat error:", e);
+      toast.error(e.response?.data?.message || 'Failed to delete chat');
+    } finally {
+      setDeleteChatLoading(false);
+    }
   };
 
   // Store locally hidden deleted message IDs per appointment
@@ -9881,24 +10048,7 @@ function AdminAppointmentRow({
                         if (e.key === 'Enter' && deleteChatPassword.trim() && !deleteChatLoading) {
                           e.preventDefault();
                           // Execute delete chat functionality
-                          (async () => {
-                            try {
-                              setDeleteChatLoading(true);
-                              const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comments`, {
-                                withCredentials: true,
-                                headers: { 'Content-Type': 'application/json' },
-                                data: { password: deleteChatPassword }
-                              });
-                              setLocalComments([]);
-                              toast.success('Chat deleted successfully.');
-                              setShowDeleteChatModal(false);
-                              setDeleteChatPassword('');
-                            } catch (e) {
-                              toast.error(e.response?.data?.message || 'Failed to delete chat');
-                            } finally {
-                              setDeleteChatLoading(false);
-                            }
-                          })();
+                          handleDeleteChat();
                         }
                       }}
                       autoFocus
@@ -9914,24 +10064,7 @@ function AdminAppointmentRow({
                       <button
                         type="button"
                         disabled={deleteChatLoading || !deleteChatPassword}
-                        onClick={async () => {
-                          try {
-                            setDeleteChatLoading(true);
-                            const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comments`, {
-                              withCredentials: true,
-                              headers: { 'Content-Type': 'application/json' },
-                              data: { password: deleteChatPassword }
-                            });
-                            setLocalComments([]);
-                            toast.success('Chat deleted successfully.');
-                            setShowDeleteChatModal(false);
-                            setDeleteChatPassword('');
-                          } catch (e) {
-                            toast.error(e.response?.data?.message || 'Failed to delete chat');
-                          } finally {
-                            setDeleteChatLoading(false);
-                          }
-                        }}
+                        onClick={handleDeleteChat}
                         className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-60"
                       >
                         {deleteChatLoading ? 'Deleting...' : (
