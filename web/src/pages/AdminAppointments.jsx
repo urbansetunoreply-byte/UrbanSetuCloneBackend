@@ -2676,7 +2676,7 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
       <div className="flex flex-col items-center gap-1">
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${appointment?.paymentConfirmed
           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
           }`}>
           {appointment?.paymentConfirmed ? 'Paid (Admin)' : 'Pending'}
         </span>
@@ -2691,17 +2691,17 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   // Priority: User payment first, then admin marking
   const isAdminMarked = Boolean(payment?.metadata?.adminMarked);
   const color = payment.status === 'completed'
-    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
     : isAdminMarked
-      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
       : payment.status === 'pending'
-        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
         : payment.status === 'failed'
-          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
           : payment.status === 'refunded'
-            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
             : payment.status === 'partially_refunded'
-              ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+              ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
               : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
 
   // Priority: User payment first, then admin marking
