@@ -2925,6 +2925,7 @@ function AdminAppointmentRow({
   const navigate = useNavigate();
   const params = useParams();
   const { playMessageSent, playTyping } = useSoundEffects();
+  const { signout } = useSignout();
 
 
   // Use parent comments directly for real-time sync, with local state for UI interactions
@@ -3547,6 +3548,7 @@ function AdminAppointmentRow({
   // Chat options menu state
   const [showChatOptionsMenu, setShowChatOptionsMenu] = useLocalState(false);
   const { settings, updateSetting } = useChatSettings('admin_appointments_chat_settings');
+  const isDarkMode = settings.theme === 'dark';
   const [showSettingsModal, setShowSettingsModal] = useLocalState(false);
 
   // Text styling panel state
