@@ -7613,7 +7613,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   <button
                                     className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${isChatSendBlocked
                                       ? 'text-gray-400 cursor-not-allowed'
-                                      : 'text-gray-700 hover:bg-gray-100'
+                                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                                       }`}
                                     onClick={() => {
                                       if (isChatSendBlocked) {

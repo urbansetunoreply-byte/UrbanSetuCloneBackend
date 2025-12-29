@@ -1903,22 +1903,22 @@ export default function AdminAppointments() {
         {showArchived ? (
           // Archived Appointments Section
           archivedAppointmentsWithComments.length === 0 ? (
-            <div className="text-center text-gray-500 text-lg">No archived appointments found.</div>
+            <div className="text-center text-gray-500 dark:text-gray-400 text-lg transition-colors">No archived appointments found.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse rounded-lg overflow-hidden">
                 <thead>
-                  <tr className="bg-gradient-to-r from-gray-100 to-gray-200">
-                    <th className="border p-2">Date & Time</th>
-                    <th className="border p-2">Property</th>
-                    <th className="border p-2">Payment</th>
-                    <th className="border p-2">Buyer</th>
-                    <th className="border p-2">Seller</th>
-                    <th className="border p-2">Purpose</th>
-                    <th className="border p-2">Message</th>
-                    <th className="border p-2">Status</th>
-                    <th className="border p-2">Actions</th>
-                    <th className="border p-2">Connect</th>
+                  <tr className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 transition-colors">
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Date & Time</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Property</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Payment</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Buyer</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Seller</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Purpose</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Message</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Status</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Actions</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Connect</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1991,22 +1991,22 @@ export default function AdminAppointments() {
         ) : (
           // Active Appointments Section
           appointmentsWithComments.length === 0 ? (
-            <div className="text-center text-gray-500 text-lg">No appointments found.</div>
+            <div className="text-center text-gray-500 dark:text-gray-400 text-lg transition-colors">No appointments found.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse rounded-lg overflow-hidden">
                 <thead>
-                  <tr className="bg-gradient-to-r from-blue-100 to-purple-100">
-                    <th className="border p-2">Date & Time</th>
-                    <th className="border p-2">Property</th>
-                    <th className="border p-2">Payment</th>
-                    <th className="border p-2">Buyer</th>
-                    <th className="border p-2">Seller</th>
-                    <th className="border p-2">Purpose</th>
-                    <th className="border p-2">Message</th>
-                    <th className="border p-2">Status</th>
-                    <th className="border p-2">Actions</th>
-                    <th className="border p-2">Connect</th>
+                  <tr className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-950 dark:to-purple-950 transition-colors">
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Date & Time</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Property</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Payment</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Buyer</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Seller</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Purpose</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Message</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Status</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Actions</th>
+                    <th className="border dark:border-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors">Connect</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2639,25 +2639,25 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
       <button
         onClick={() => setShowStatusOptions(!showStatusOptions)}
         disabled={toggling}
-        className="text-[10px] px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="text-[10px] px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600"
         title="Change payment status"
       >
         {toggling ? 'Updating...' : 'Change Status'}
       </button>
 
       {showStatusOptions && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-lg z-50 min-w-[120px]">
           {!appointment?.paymentConfirmed ? (
             <button
               onClick={() => handleStatusChange(true)}
-              className="w-full text-left px-3 py-2 text-[10px] text-green-700 hover:bg-green-50 border-b border-gray-100"
+              className="w-full text-left px-3 py-2 text-[10px] text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 border-b border-gray-100 dark:border-gray-700"
             >
               Mark Paid
             </button>
           ) : (
             <button
               onClick={() => handleStatusChange(false)}
-              className="w-full text-left px-3 py-2 text-[10px] text-red-700 hover:bg-red-50 border-b border-gray-100"
+              className="w-full text-left px-3 py-2 text-[10px] text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 border-b border-gray-100 dark:border-gray-700"
             >
               Mark Unpaid
             </button>
@@ -2668,20 +2668,20 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   );
 
   if (loading) {
-    return <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mx-auto"></div>;
+    return <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mx-auto"></div>;
   }
 
   if (!payment) {
     return (
       <div className="flex flex-col items-center gap-1">
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${appointment?.paymentConfirmed
-          ? 'bg-green-100 text-green-800'
-          : 'bg-yellow-100 text-yellow-800'
+          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
           }`}>
           {appointment?.paymentConfirmed ? 'Paid (Admin)' : 'Pending'}
         </span>
         {appointment?.paymentConfirmed && (
-          <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
+          <div className="text-[10px] text-green-700 dark:text-green-400 font-semibold">✓ Admin Confirmed</div>
         )}
         {statusButton}
       </div>
@@ -2691,18 +2691,18 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   // Priority: User payment first, then admin marking
   const isAdminMarked = Boolean(payment?.metadata?.adminMarked);
   const color = payment.status === 'completed'
-    ? 'bg-green-100 text-green-800'
+    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
     : isAdminMarked
-      ? 'bg-green-100 text-green-800'
+      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
       : payment.status === 'pending'
-        ? 'bg-yellow-100 text-yellow-800'
+        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
         : payment.status === 'failed'
-          ? 'bg-red-100 text-red-800'
+          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
           : payment.status === 'refunded'
-            ? 'bg-blue-100 text-blue-800'
+            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
             : payment.status === 'partially_refunded'
-              ? 'bg-orange-100 text-orange-800'
-              : 'bg-gray-100 text-gray-800';
+              ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
 
   // Priority: User payment first, then admin marking
   const label = payment.status === 'completed'
@@ -2723,7 +2723,7 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
     <div className="flex flex-col items-center gap-1">
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>{label}</span>
       {typeof payment.amount === 'number' && (
-        <div className="text-[10px] text-gray-500 inline-flex items-center gap-1">
+        <div className="text-[10px] text-gray-500 dark:text-gray-400 inline-flex items-center gap-1">
           {((payment.currency || 'USD') === 'INR') ? (
             <span>₹ {Number(payment.amount).toFixed(2)}</span>
           ) : (
@@ -2732,7 +2732,7 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
         </div>
       )}
       {payment.refundAmount > 0 && (
-        <div className="text-[10px] text-red-500">
+        <div className="text-[10px] text-red-500 dark:text-red-400">
           <div>Refunded: {((payment.currency || 'USD') === 'INR') ? '₹' : '$'}{Number(payment.refundAmount).toFixed(2)}</div>
           {payment.refundedAt && (
             <div className="text-red-400">
@@ -2742,7 +2742,7 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
         </div>
       )}
       {appointment?.paymentConfirmed && (
-        <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
+        <div className="text-[10px] text-green-700 dark:text-green-400 font-semibold">✓ Admin Confirmed</div>
       )}
       {statusButton}
     </div>
@@ -8822,10 +8822,10 @@ function AdminAppointmentRow({
               {/* Reply indicator */}
               {replyTo && (
                 <div className="px-4 mb-2">
-                  <div className="flex items-center bg-blue-50 border-l-4 border-blue-400 px-2 py-1 rounded">
-                    <span className="text-xs text-gray-700 font-semibold mr-2">Replying to:</span>
-                    <span className="text-xs text-gray-600 truncate max-w-[200px]">{replyTo.message?.substring(0, 40)}{replyTo.message?.length > 40 ? '...' : ''}</span>
-                    <button className="ml-auto text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors" onClick={() => setReplyTo(null)} title="Cancel reply">
+                  <div className="flex items-center bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-400 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-700 dark:text-gray-300 font-semibold mr-2">Replying to:</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[200px]">{replyTo.message?.substring(0, 40)}{replyTo.message?.length > 40 ? '...' : ''}</span>
+                    <button className="ml-auto text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-1 transition-colors" onClick={() => setReplyTo(null)} title="Cancel reply">
                       <FaTimes className="w-3 h-3" />
                     </button>
                   </div>
@@ -8837,11 +8837,11 @@ function AdminAppointmentRow({
               {/* Edit indicator */}
               {editingComment && (
                 <div className="px-4 mb-2">
-                  <div className="flex items-center bg-yellow-50 border-l-4 border-yellow-400 px-2 py-1 rounded">
-                    <span className="text-xs text-yellow-700 font-semibold mr-2">✏️ Editing message:</span>
-                    <span className="text-xs text-yellow-600 truncate">{editText}</span>
+                  <div className="flex items-center bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 px-2 py-1 rounded">
+                    <span className="text-xs text-yellow-700 dark:text-yellow-400 font-semibold mr-2">✏️ Editing message:</span>
+                    <span className="text-xs text-yellow-600 dark:text-yellow-500 truncate">{editText}</span>
                     <button
-                      className="ml-auto text-yellow-400 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-full p-1 transition-colors"
+                      className="ml-auto text-yellow-400 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-200 bg-yellow-100 dark:bg-yellow-800 hover:bg-yellow-200 dark:hover:bg-yellow-700 rounded-full p-1 transition-colors"
                       onClick={() => {
                         setEditingComment(null);
                         setEditText("");
@@ -8884,7 +8884,7 @@ function AdminAppointmentRow({
 
               <div ref={chatEndRef} />
 
-              <div className="flex gap-2 mt-1 px-3 pb-2 flex-shrink-0 bg-gradient-to-b from-transparent to-white pt-2 items-end">
+              <div className="flex gap-2 mt-1 px-3 pb-2 flex-shrink-0 bg-gradient-to-b from-transparent to-white dark:to-gray-900 pt-2 items-end">
                 {/* Message Input Container with Attachment and Emoji Icons Inside */}
                 <div className="flex-1 relative">
                   {/* Link Preview Container with Height and Width Constraints */}
@@ -8904,10 +8904,10 @@ function AdminAppointmentRow({
                   )}
                   {/* Formatting toolbar - Collapsible */}
                   {showTextStylingPanel && (
-                    <div className="relative mb-2 animate-slideDown bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded-lg border border-purple-200 shadow-sm">
+                    <div className="relative mb-2 animate-slideDown bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800 shadow-sm">
                       {/* Close button */}
                       <button
-                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 hover:bg-white hover:bg-opacity-50 rounded-full p-1 transition-colors z-10"
+                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-white hover:bg-opacity-50 dark:hover:bg-gray-800 rounded-full p-1 transition-colors z-10"
                         onClick={() => setShowTextStylingPanel(false)}
                         title="Close text styling panel"
                         aria-label="Close text styling panel"
@@ -8990,8 +8990,8 @@ function AdminAppointmentRow({
                   )}
                   {/* Property mention suggestions */}
                   {newComment && /@[^\s]*$/.test(newComment) && (
-                    <div className="absolute bottom-16 left-2 right-2 bg-white border-2 border-blue-300 rounded-lg shadow-2xl max-h-60 overflow-auto z-30 animate-fadeIn">
-                      <div className="p-3 text-sm font-medium text-blue-600 border-b border-gray-200 bg-blue-50">
+                    <div className="absolute bottom-16 left-2 right-2 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-700 rounded-lg shadow-2xl max-h-60 overflow-auto z-30 animate-fadeIn">
+                      <div className="p-3 text-sm font-medium text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/30">
                         <div className="flex items-center gap-2">
                           {!propertiesLoaded ? (
                             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -9095,7 +9095,7 @@ function AdminAppointmentRow({
                   )}
                   <textarea
                     rows={1}
-                    className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                    className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white dark:bg-gray-800 dark:text-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800"
                     style={{
                       minHeight: '48px',
                       maxHeight: '144px', // 6 lines * 24px line height
@@ -9270,22 +9270,22 @@ function AdminAppointmentRow({
                       onClick={() => setShowAttachmentPanel(prev => !prev)}
                       disabled={uploadingFile}
                       className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${uploadingFile
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
+                        ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 hover:shadow-md active:scale-95'
                         }`}
                       title="Attach"
                     >
                       {uploadingFile ? (
-                        <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
+                        <div className="animate-spin w-4 h-4 border-2 border-gray-600 dark:border-gray-400 border-t-transparent rounded-full"></div>
                       ) : (
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                         </svg>
                       )}
                     </button>
                     {showAttachmentPanel && !uploadingFile && (
-                      <div ref={attachmentPanelRef} className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-48 py-2 z-20">
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                      <div ref={attachmentPanelRef} className="absolute bottom-10 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg w-48 py-2 z-20">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
@@ -9306,7 +9306,7 @@ function AdminAppointmentRow({
                           />
                         </label>
                         {/* Camera - Simple file input approach */}
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h2l1-2h6l1 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
                           </svg>
@@ -9325,7 +9325,7 @@ function AdminAppointmentRow({
                             }}
                           />
                         </label>
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                           </svg>
@@ -9350,7 +9350,7 @@ function AdminAppointmentRow({
                             }}
                           />
                         </label>
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
@@ -9375,7 +9375,7 @@ function AdminAppointmentRow({
                           />
                         </label>
                         {/* Audio */}
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
@@ -9403,7 +9403,7 @@ function AdminAppointmentRow({
                         {/* Record Audio */}
                         <button
                           type="button"
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer w-full text-left"
+                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer w-full text-left"
                           onClick={() => {
                             setShowAttachmentPanel(false);
                             setShowRecordAudioModal(true);
@@ -9453,7 +9453,7 @@ function AdminAppointmentRow({
               {/* File Upload Error */}
               {fileUploadError && (
                 <div className="px-3 pb-2">
-                  <div className="text-red-500 text-sm bg-red-50 p-2 rounded-lg border border-red-200">
+                  <div className="text-red-500 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-2 rounded-lg border border-red-200 dark:border-red-900/50">
                     {fileUploadError}
                   </div>
                 </div>
@@ -9461,10 +9461,10 @@ function AdminAppointmentRow({
 
               {/* Multi-Image Preview Modal - Positioned as overlay */}
               {showImagePreviewModal && selectedFiles.length > 0 && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-medium text-gray-700">
+                      <span className="text-lg font-medium text-gray-700 dark:text-white">
                         Image Preview ({selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''})
                       </span>
                       <button
@@ -9474,7 +9474,7 @@ function AdminAppointmentRow({
                           setPreviewIndex(0);
                           setShowImagePreviewModal(false);
                         }}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                       >
                         <FaTimes className="w-5 h-5" />
                       </button>
@@ -9505,28 +9505,28 @@ function AdminAppointmentRow({
                       )}
 
                       {/* Current Image */}
-                      <div className="mb-3">
+                      <div className="mb-3 text-center">
                         <img
                           src={URL.createObjectURL(selectedFiles[previewIndex])}
                           alt={`Preview ${previewIndex + 1}`}
-                          className="w-full h-64 object-contain rounded-lg border"
+                          className="w-full h-64 object-contain rounded-lg border dark:border-gray-700"
                         />
                       </div>
 
                       {/* Image Counter */}
-                      <div className="text-center text-sm text-gray-600 mb-3">
+                      <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
                         {previewIndex + 1} of {selectedFiles.length}
                       </div>
 
                       {/* Image Thumbnails */}
-                      <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2 min-w-0 max-w-full" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6' }}>
+                      <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 pb-2 min-w-0 max-w-full" style={{ scrollbarWidth: 'thin', scrollbarColor: isDarkMode ? '#4b5563 #1f2937' : '#d1d5db #f3f4f6' }}>
                         {selectedFiles.map((file, index) => (
                           <div key={index} className="relative">
                             <button
                               onClick={() => setPreviewIndex(index)}
                               className={`flex-shrink-0 w-12 h-12 rounded-lg border-2 transition-all duration-200 ${index === previewIndex
                                 ? 'border-blue-500 shadow-lg'
-                                : 'border-gray-300 hover:border-gray-400'
+                                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                                 }`}
                             >
                               <img
@@ -9576,7 +9576,7 @@ function AdminAppointmentRow({
                         {/* Add More Images Button - Only show when less than 10 images */}
                         {selectedFiles.length < 10 && (
                           <div className="relative">
-                            <label className="flex-shrink-0 w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer flex items-center justify-center group">
+                            <label className="flex-shrink-0 w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 cursor-pointer flex items-center justify-center group">
                               <input
                                 type="file"
                                 accept="image/*"
@@ -9604,7 +9604,7 @@ function AdminAppointmentRow({
                                   }
                                 }}
                               />
-                              <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                               </svg>
                             </label>
@@ -9622,7 +9622,7 @@ function AdminAppointmentRow({
                           ...prev,
                           [selectedFiles[previewIndex]?.name]: e.target.value
                         }))}
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         rows={3}
                         maxLength={500}
                       />
@@ -9639,13 +9639,13 @@ function AdminAppointmentRow({
                           className="w-6 h-6"
                         />
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 text-right">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                         {(imageCaptions[selectedFiles[previewIndex]?.name] || '').length}/500
                       </div>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-300">
                         {uploadingFile && currentFileIndex >= 0 ? (
                           <span>
                             Uploading {currentFileIndex + 1} / {selectedFiles.length}
@@ -9655,7 +9655,7 @@ function AdminAppointmentRow({
                           <>
                             {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''} ready to send
                             {failedFiles.length > 0 && (
-                              <span className="ml-2 text-red-600">• {failedFiles.length} failed</span>
+                              <span className="ml-2 text-red-600 dark:text-red-400">• {failedFiles.length} failed</span>
                             )}
                           </>
                         )}
@@ -9669,10 +9669,10 @@ function AdminAppointmentRow({
                             >
                               Cancel Upload
                             </button>
-                            <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                               <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
                             </div>
-                            <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 w-10 text-right">{uploadProgress}%</span>
                           </>
                         ) : (
                           <>
@@ -11665,21 +11665,21 @@ function AdminAppointmentRow({
                     <>
                       <button
                         onClick={handleCancelInFlightUpload}
-                        className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                        className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30"
                       >
                         Cancel
                       </button>
                       <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                           <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
                         </div>
-                        <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 w-10 text-right">{uploadProgress}%</span>
                       </div>
                     </>
                   ) : (
                     <>
-                      <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Cancel</button>
-                      <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                      <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancel</button>
+                      <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all">Send</button>
                     </>
                   )}
                 </div>
@@ -11750,21 +11750,21 @@ function AdminAppointmentRow({
                   <>
                     <button
                       onClick={handleCancelInFlightUpload}
-                      className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                      className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30"
                     >
                       Cancel
                     </button>
                     <div className="flex items-center gap-2">
-                      <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                         <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
                       </div>
-                      <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300 w-10 text-right">{uploadProgress}%</span>
                     </div>
                   </>
                 ) : (
                   <>
-                    <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Cancel</button>
-                    <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                    <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancel</button>
+                    <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all">Send</button>
                   </>
                 )}
               </div>
