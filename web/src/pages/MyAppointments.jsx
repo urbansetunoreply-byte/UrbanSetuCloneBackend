@@ -13108,7 +13108,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 </h3>
                 <button
                   onClick={() => setShowRefundRequestModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <FaTimes className="text-xl" />
                 </button>
@@ -13258,7 +13258,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 </h3>
                 <button
                   onClick={() => setShowAppealModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <FaTimes className="text-xl" />
                 </button>
@@ -13302,13 +13302,13 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   required
                 >
-                  <option value="">Select a reason for your appeal</option>
-                  <option value="Additional evidence">Additional evidence provided</option>
-                  <option value="Misunderstanding">Misunderstanding of the situation</option>
-                  <option value="New information">New information has come to light</option>
-                  <option value="Service quality">Service quality issues</option>
-                  <option value="Technical problems">Technical problems encountered</option>
-                  <option value="Other">Other (please explain in detail)</option>
+                  <option value="" className="dark:bg-gray-700">Select a reason for your appeal</option>
+                  <option value="Additional evidence" className="dark:bg-gray-700">Additional evidence provided</option>
+                  <option value="Misunderstanding" className="dark:bg-gray-700">Misunderstanding of the situation</option>
+                  <option value="New information" className="dark:bg-gray-700">New information has come to light</option>
+                  <option value="Service quality" className="dark:bg-gray-700">Service quality issues</option>
+                  <option value="Technical problems" className="dark:bg-gray-700">Technical problems encountered</option>
+                  <option value="Other" className="dark:bg-gray-700">Other (please explain in detail)</option>
                 </select>
               </div>
 
