@@ -530,9 +530,9 @@ const ActiveCallModal = ({
                     </div>
                   </div>
                 </div>
-                {/* Zoom indicator */}
+                {/* Zoom indicator - moved down to avoid overlap with mute indicator */}
                 {videoZoom > 1 && (
-                  <div className="absolute top-16 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
+                  <div className="absolute top-28 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
                     <p className="text-white text-sm font-medium">{Math.round(videoZoom * 100)}%</p>
                   </div>
                 )}
@@ -611,9 +611,9 @@ const ActiveCallModal = ({
                 </div>
               </>
             )}
-            {/* Remote mute indicator */}
+            {/* Remote mute indicator - moved down to top-16 to avoid overlapping with top-left controls */}
             {remoteIsMuted && (
-              <div className="absolute top-4 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 flex items-center gap-2 z-20">
+              <div className="absolute top-16 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 flex items-center gap-2 z-20">
                 <FaMicrophoneSlash className="text-white text-lg" />
                 <span className="text-white text-sm">{otherPartyName || 'Caller'} is muted</span>
               </div>
