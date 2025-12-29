@@ -7159,7 +7159,7 @@ function AdminAppointmentRow({
                           <div className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 min-w-[180px] chat-options-menu">
                             {/* Reports option (appointment-scoped) */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2"
                               onClick={() => {
                                 setShowReportsModal(true);
                                 setShowChatOptionsMenu(false);
@@ -7170,7 +7170,7 @@ function AdminAppointmentRow({
                             </button>
                             {/* Refresh option */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                               onClick={() => {
                                 fetchLatestComments();
                                 setShowChatOptionsMenu(false);
@@ -7181,7 +7181,7 @@ function AdminAppointmentRow({
                             </button>
                             {/* Settings option */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                               onClick={() => {
                                 setShowSettingsModal(true);
                                 setShowChatOptionsMenu(false);
@@ -7192,7 +7192,7 @@ function AdminAppointmentRow({
                             </button>
                             {/* Starred Messages option */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-yellow-600 hover:bg-yellow-50 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 flex items-center gap-2"
                               onClick={() => {
                                 setShowStarredModal(true);
                                 setShowChatOptionsMenu(false);
@@ -7209,7 +7209,7 @@ function AdminAppointmentRow({
 
                             {/* Select Messages option */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 flex items-center gap-2"
                               onClick={() => {
                                 setIsSelectionMode(true);
                                 setSelectedMessages([]);
@@ -7224,7 +7224,7 @@ function AdminAppointmentRow({
                             </button>
                             {/* Text Styling option */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 flex items-center gap-2"
                               onClick={() => {
                                 setShowTextStylingPanel(!showTextStylingPanel);
                                 setShowChatOptionsMenu(false);
@@ -7240,7 +7240,7 @@ function AdminAppointmentRow({
                             </button>
                             {/* Keyboard shortcuts and file upload guidelines */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                               onClick={() => {
                                 setShowShortcutTip(!showShortcutTip);
                                 setShowChatOptionsMenu(false);
@@ -7255,7 +7255,7 @@ function AdminAppointmentRow({
                             {/* Export Chat option */}
                             {localComments.length > 0 && (
                               <button
-                                className="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-green-50 flex items-center gap-2"
+                                className="w-full px-4 py-2 text-left text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 flex items-center gap-2"
                                 onClick={() => {
                                   setShowChatOptionsMenu(false);
                                   onExportChat(appt, localComments, callHistory);
@@ -7268,7 +7268,7 @@ function AdminAppointmentRow({
                             {/* Call History option */}
                             {setShowCallHistoryModal && setCallHistoryAppointmentId && (
                               <button
-                                className="w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50 flex items-center gap-2"
+                                className="w-full px-4 py-2 text-left text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 flex items-center gap-2"
                                 onClick={() => {
                                   setCallHistoryAppointmentId(appt._id);
                                   setShowCallHistoryModal(true);
@@ -7281,7 +7281,7 @@ function AdminAppointmentRow({
                             )}
                             {/* User details option for buyer */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                               onClick={() => {
                                 onUserClick(appt.buyerId?._id);
                                 setShowChatOptionsMenu(false);
@@ -7292,7 +7292,7 @@ function AdminAppointmentRow({
                             </button>
                             {/* User details option for seller */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                               onClick={() => {
                                 onUserClick(appt.sellerId?._id);
                                 setShowChatOptionsMenu(false);
@@ -7302,11 +7302,11 @@ function AdminAppointmentRow({
                               View Seller Details
                             </button>
                             {/* Divider line */}
-                            <div className="border-t border-gray-200 my-1"></div>
+                            <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                             {/* Delete chat option */}
                             {localComments.length > 0 && (
                               <button
-                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2"
                                 onClick={() => {
                                   setShowDeleteChatModal(true);
                                   setShowChatOptionsMenu(false);

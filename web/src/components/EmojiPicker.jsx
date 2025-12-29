@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import EmojiPicker from 'emoji-picker-react';
 import { BsEmojiSmile } from 'react-icons/bs';
 import { FaKeyboard, FaTimes } from 'react-icons/fa';
+import { isMobileDevice } from '../utils/mobileUtils';
 
 const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRef }) => {
   const pickerRef = useRef(null);
@@ -177,9 +178,9 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
     onEmojiClick(emojiObject.emoji);
     // Keep the picker open after selection for better user experience
     // setIsOpen(false); // Removed to keep picker open
-    // Do not force focus on mobile; only maintain focus if already focused
+    // Do not force focus on mobile; only maintain focus if already focused and on desktop
     const wasFocused = inputRef && inputRef.current && document.activeElement === inputRef.current;
-    if (wasFocused) {
+    if (wasFocused && !isMobileDevice()) {
       try { inputRef.current.focus(); } catch (_) { }
     }
   };
@@ -286,7 +287,7 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
           onEmojiMouseDown={(e) => { e.preventDefault?.(); }}
           searchDisabled={false}
           searchPlaceholder="Search emojis..."
-          autoFocusSearch={true}
+          autoFocusSearch={!isMobileDevice()}
           previewConfig={{ showPreview: false }}
           skinTonesDisabled={false}
           suggestedEmojisMode="recent"

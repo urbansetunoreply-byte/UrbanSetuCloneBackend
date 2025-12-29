@@ -148,7 +148,8 @@ export default function AdminCreateListing() {
   useEffect(() => {
     if (formData.assignToEmail.trim()) {
       const filtered = allUsers.filter(user =>
-        user.email.toLowerCase().includes(formData.assignToEmail.toLowerCase())
+        user.email.toLowerCase().includes(formData.assignToEmail.toLowerCase()) &&
+        user.role === 'user' // Only show regular users, exclude admins and rootadmins
       );
       setEmailSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
