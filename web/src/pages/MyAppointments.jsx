@@ -1588,7 +1588,7 @@ export default function MyAppointments() {
 
           return (
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-2 sm:p-4" style={{ overflow: 'hidden' }}>
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto relative animate-fadeIn">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto relative animate-fadeIn">
                 {/* Close button */}
                 <button
                   className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full p-2 transition-colors z-10 shadow"
@@ -1649,25 +1649,25 @@ export default function MyAppointments() {
                       {/* Status text below role */}
                       {!canSeeContactInfo ? (
                         <div className="mt-2">
-                          <span className="text-gray-600 font-medium text-xs bg-gray-100 px-3 py-1 rounded-full">
+                          <span className="text-gray-600 dark:text-gray-300 font-medium text-xs bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                             Not available
                           </span>
                         </div>
                       ) : selectedOtherParty.isTyping ? (
                         <div className="mt-2">
-                          <span className="text-yellow-600 font-medium text-xs bg-yellow-100 px-3 py-1 rounded-full">
+                          <span className="text-yellow-600 dark:text-yellow-300 font-medium text-xs bg-yellow-100 dark:bg-yellow-900/30 px-3 py-1 rounded-full">
                             Typing...
                           </span>
                         </div>
                       ) : selectedOtherParty.isOnline ? (
                         <div className="mt-2">
-                          <span className="text-green-600 font-medium text-xs bg-green-100 px-3 py-1 rounded-full">
+                          <span className="text-green-600 dark:text-green-300 font-medium text-xs bg-green-100 dark:bg-green-900/30 px-3 py-1 rounded-full">
                             Online
                           </span>
                         </div>
                       ) : (
                         <div className="mt-2">
-                          <span className="text-gray-600 font-medium text-xs bg-gray-100 px-3 py-1 rounded-full">
+                          <span className="text-gray-600 dark:text-gray-300 font-medium text-xs bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                             {(() => {
                               if (!selectedOtherParty.lastSeen) return 'Offline';
 
@@ -1789,18 +1789,18 @@ export default function MyAppointments() {
 
           return (
             <div className="modal-backdrop">
-              <div className="modal-content" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+              <div className="modal-content bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg shadow-xl" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-blue-700">Reinitiate Appointment</h3>
-                    <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
+                    <h3 className="text-xl font-bold text-blue-700 dark:text-blue-400">Reinitiate Appointment</h3>
+                    <span className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full font-medium">
                       {reinitiationCount}/{maxReinitiations} used
                     </span>
                   </div>
 
                   {/* Reinitiation count info */}
                   {reinitiationsLeft > 0 && (
-                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded">
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300 rounded">
                       <p className="text-sm">
                         <span className="font-semibold">Reinitiations remaining:</span> {reinitiationsLeft} out of {maxReinitiations}
                       </p>
@@ -1808,7 +1808,7 @@ export default function MyAppointments() {
                   )}
 
                   {reinitiationCount >= maxReinitiations && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 rounded">
                       <p className="font-semibold">Maximum reinitiations reached</p>
                       <p className="text-sm">You have used all {maxReinitiations} reinitiation attempts for this appointment.</p>
                     </div>
@@ -1816,21 +1816,21 @@ export default function MyAppointments() {
 
                   {/* Show warning messages */}
                   {isCancelled && isRefunded && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 rounded">
                       <p className="font-semibold">Reinitiation not possible now</p>
                       <p className="text-sm">Payment has been refunded for this cancelled appointment. Reinitiation is not allowed after refund.</p>
                     </div>
                   )}
 
                   {isCancelled && !isRefunded && hoursSinceCancellation > 72 && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 rounded">
                       <p className="font-semibold">Reinitiation not possible now</p>
                       <p className="text-sm">The 72-hour (3-day) reinitiation window has expired. You can only reinitiate within 72 hours of cancellation.</p>
                     </div>
                   )}
 
                   {isCancelled && !isRefunded && hoursSinceCancellation <= 72 && (
-                    <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded">
+                    <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300 rounded">
                       <p className="font-semibold">Reinitiation Window (72 hours)</p>
                       <p className="text-sm">
                         You can reinitiate this appointment within 72 hours of cancellation.
@@ -1850,13 +1850,13 @@ export default function MyAppointments() {
 
                   <form onSubmit={handleReinitiateSubmit} className="space-y-4">
                     <div>
-                      <label className="block font-semibold mb-1">Date</label>
-                      <input type="date" className="border rounded px-2 py-1 w-full" value={reinitiateData.date} onChange={e => setReinitiateData(d => ({ ...d, date: e.target.value }))} required disabled={!canReinitiate} />
+                      <label className="block font-semibold mb-1 dark:text-gray-300">Date</label>
+                      <input type="date" className="border rounded px-2 py-1 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={reinitiateData.date} onChange={e => setReinitiateData(d => ({ ...d, date: e.target.value }))} required disabled={!canReinitiate} />
                     </div>
                     <div>
-                      <label className="block font-semibold mb-1">Time (9 AM - 7 PM)</label>
+                      <label className="block font-semibold mb-1 dark:text-gray-300">Time (9 AM - 7 PM)</label>
                       <select
-                        className="border rounded px-2 py-1 w-full"
+                        className="border rounded px-2 py-1 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         value={reinitiateData.time}
                         onChange={e => setReinitiateData(d => ({ ...d, time: e.target.value }))}
                         required
@@ -1876,11 +1876,11 @@ export default function MyAppointments() {
                       </select>
                     </div>
                     <div>
-                      <label className="block font-semibold mb-1">Message (optional)</label>
-                      <textarea className="border rounded px-2 py-1 w-full" value={reinitiateData.message} onChange={e => setReinitiateData(d => ({ ...d, message: e.target.value }))} disabled={!canReinitiate} />
+                      <label className="block font-semibold mb-1 dark:text-gray-300">Message (optional)</label>
+                      <textarea className="border rounded px-2 py-1 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={reinitiateData.message} onChange={e => setReinitiateData(d => ({ ...d, message: e.target.value }))} disabled={!canReinitiate} />
                     </div>
                     <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full disabled:bg-gray-400 disabled:cursor-not-allowed" disabled={!canReinitiate}>Submit</button>
-                    <button type="button" className="mt-2 w-full bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400" onClick={() => {
+                    <button type="button" className="mt-2 w-full bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-600 px-4 py-2 rounded" onClick={() => {
                       setShowReinitiateModal(false);
                       setReinitiateData(null);
                       setReinitiatePaymentStatus(null);
@@ -1895,13 +1895,13 @@ export default function MyAppointments() {
         {/* Archive Appointment Confirmation Modal */}
         {showArchiveModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaArchive className="text-blue-500" />
                 Archive Appointment
               </h3>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Are you sure you want to archive this appointment? It will be moved to the archived section.
               </p>
 
@@ -1912,7 +1912,7 @@ export default function MyAppointments() {
                     setShowArchiveModal(false);
                     setAppointmentToHandle(null);
                   }}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancel
                 </button>
@@ -1932,13 +1932,13 @@ export default function MyAppointments() {
         {/* Unarchive Appointment Confirmation Modal */}
         {showUnarchiveModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaUndo className="text-green-500" />
                 Unarchive Appointment
               </h3>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Are you sure you want to unarchive this appointment? It will be moved back to the active appointments.
               </p>
 
@@ -1949,7 +1949,7 @@ export default function MyAppointments() {
                     setShowUnarchiveModal(false);
                     setAppointmentToHandle(null);
                   }}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancel
                 </button>
@@ -1969,11 +1969,11 @@ export default function MyAppointments() {
         {/* Missing Chatbox Error Modal */}
         {missingChatbookError && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200] p-4 animate-fade-in">
-            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full animate-fade-in-up">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full animate-fade-in-up">
               <div className="text-center">
                 <div className="text-red-500 text-5xl mb-4">❌</div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Appointment Not Found</h2>
-                <p className="text-gray-600 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Appointment Not Found</h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
                   The appointment you're looking for doesn't exist or you don't have access to it. It may have been deleted or archived.
                 </p>
                 <div className="flex justify-center">
@@ -11445,13 +11445,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {
         showPermanentDeleteModal && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaTrash className="text-red-500" />
                 Remove Appointment
               </h3>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Are you sure you want to permanently remove this appointment from your table? This action cannot be undone.
               </p>
 
@@ -11459,7 +11459,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 <button
                   type="button"
                   onClick={() => setShowPermanentDeleteModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 font-semibold hover:bg-gray-300 transition-colors"
                 >
                   Cancel
                 </button>

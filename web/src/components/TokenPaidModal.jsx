@@ -6,19 +6,19 @@ const TokenPaidModal = ({ isOpen, onClose, onConfirm }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
                 <div className="flex flex-col items-center mb-4 text-center">
-                    <div className="bg-blue-100 p-4 rounded-full mb-3">
-                        <FaMoneyBillWave className="text-3xl text-blue-600" />
+                    <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mb-3">
+                        <FaMoneyBillWave className="text-3xl text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-800">Confirm Token Receipt</h3>
-                    <p className="text-gray-600 mt-2">
+                    <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Confirm Token Receipt</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mt-2">
                         Are you sure you want to mark the token payment as received?
                     </p>
                 </div>
 
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                    <p className="text-sm text-yellow-700">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 mb-6">
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
                         <span className="font-bold">Note:</span> This action will:
                         <ul className="list-disc ml-4 mt-1">
                             <li>Mark the property as "Under Contract" (Sale-Lock)</li>
@@ -31,7 +31,7 @@ const TokenPaidModal = ({ isOpen, onClose, onConfirm }) => {
                 <div className="flex gap-4">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
                     >
                         Cancel
                     </button>
