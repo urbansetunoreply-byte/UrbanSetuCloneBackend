@@ -14758,10 +14758,36 @@ export const sendAdminCallTerminationEmail = async (email, username, details) =>
     appointmentDate,
     appointmentTime,
     otherPartyName,
-    isForBuyer
+    isForBuyer,
+    // NEW: Actual call details
+    callType,
+    callStartTime,
+    callDuration
   } = details;
 
+  // Format call duration
+  const formatDuration = (seconds) => {
+    if (!seconds || seconds === 0) return 'Just started';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins === 0) return `${secs} second${secs !== 1 ? 's' : ''}`;
+    if (secs === 0) return `${mins} minute${mins !== 1 ? 's' : ''}`;
+    return `${mins} minute${mins !== 1 ? 's' : ''}, ${secs} second${secs !== 1 ? 's' : ''}`;
+  };
+
+  // Format call start time
+  const formatCallTime = (timestamp) => {
+    if (!timestamp) return 'Unknown';
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-IN', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+  };
+
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const callTypeDisplay = callType === 'video' ? '📹 Video Call' : '📞 Audio Call';
+
   const mailOptions = {
     from: `${process.env.EMAIL_FROM_NAME || 'UrbanSetu'} <${process.env.EMAIL_USER}>`,
     to: email,
@@ -14788,7 +14814,7 @@ export const sendAdminCallTerminationEmail = async (email, username, details) =>
             </p>
             
             <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
-              We're writing to inform you that your active call for the property <strong>"${propertyName}"</strong> was terminated by our administrator.
+              We're writing to inform you that your ${callType === 'video' ? 'video' : 'audio'} call for the property <strong>"${propertyName}"</strong> was terminated by our administrator.
             </p>
             
             <!-- Call Details Box -->
@@ -14804,12 +14830,16 @@ export const sendAdminCallTerminationEmail = async (email, username, details) =>
                   <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${otherPartyName}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Appointment Date:</td>
-                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${new Date(appointmentDate).toLocaleDateString('en-IN')}</td>
+                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Call Type:</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${callTypeDisplay}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Scheduled Time:</td>
-                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${appointmentTime}</td>
+                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Call Started:</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${formatCallTime(callStartTime)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Duration Before Termination:</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${formatDuration(callDuration)}</td>
                 </tr>
               </table>
             </div>

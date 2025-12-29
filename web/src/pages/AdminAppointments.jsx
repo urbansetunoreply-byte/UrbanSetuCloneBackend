@@ -3124,6 +3124,7 @@ function AdminAppointmentRow({
             reason: forceTerminateReason.trim() || 'Administrative action',
             appointmentDate: appt.date,
             appointmentTime: appt.time
+            // Call details (callType, startTime, duration) are now fetched from DB by backend
           })
         });
 

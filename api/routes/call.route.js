@@ -325,13 +325,33 @@ router.post("/admin/terminate-notification", verifyToken, async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!buyerEmail || !sellerEmail || !propertyName) {
+    if (!buyerEmail || !sellerEmail || !propertyName || !callId) {
       return res.status(400).json({
-        message: "Missing required fields: buyerEmail, sellerEmail, and propertyName are required"
+        message: "Missing required fields: buyerEmail, sellerEmail, propertyName, and callId are required"
       });
     }
 
     console.log('Sending termination emails to buyer and seller...');
+
+    // FETCH CALL FROM DATABASE (consistent with call-ended email)
+    let callType = 'audio';
+    let callStartTime = null;
+    let callDuration = 0;
+
+    try {
+      const call = await CallHistory.findOne({ callId });
+      if (call) {
+        callType = call.callType || 'audio';
+        callStartTime = call.startTime;
+        callDuration = call.startTime ? Math.floor((Date.now() - new Date(call.startTime).getTime()) / 1000) : 0;
+        console.log(`✅ Retrieved call from DB: ${callType} call, duration: ${callDuration}s`);
+      } else {
+        console.warn(`⚠️ Call not found in database: ${callId}, using defaults`);
+      }
+    } catch (dbError) {
+      console.error('Error fetching call from database:', dbError);
+      // Continue with defaults if DB fetch fails
+    }
 
     // Send email to buyer
     const buyerEmailResult = await sendAdminCallTerminationEmail(
@@ -343,7 +363,11 @@ router.post("/admin/terminate-notification", verifyToken, async (req, res) => {
         appointmentDate: appointmentDate || new Date(),
         appointmentTime: appointmentTime || 'N/A',
         otherPartyName: sellerName || 'Seller',
-        isForBuyer: true
+        isForBuyer: true,
+        // Pass DB-sourced call details
+        callType,
+        callStartTime,
+        callDuration
       }
     );
 
@@ -357,7 +381,11 @@ router.post("/admin/terminate-notification", verifyToken, async (req, res) => {
         appointmentDate: appointmentDate || new Date(),
         appointmentTime: appointmentTime || 'N/A',
         otherPartyName: buyerName || 'Buyer',
-        isForBuyer: false
+        isForBuyer: false,
+        // Pass DB-sourced call details
+        callType,
+        callStartTime,
+        callDuration
       }
     );
 
