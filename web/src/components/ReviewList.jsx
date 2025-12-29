@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { FaStar, FaTrash, FaEdit, FaCheck, FaTimes, FaThumbsUp, FaCheckCircle, FaSort, FaSortUp, FaSortDown, FaReply, FaPen, FaExclamationTriangle, FaBan, FaUser } from 'react-icons/fa';
+import { EmojiButton } from './EmojiPicker';
 import ReviewForm from './ReviewForm.jsx';
 import ReplyForm from './ReplyForm.jsx';
 import { socket } from '../utils/socket';
@@ -1000,7 +1001,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
           {/* Replies section */}
           <div className="mt-4 ml-8">
             <div className="flex items-center justify-between mb-2">
-              <h5 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 <FaReply className="text-blue-500" />
                 Replies ({replies[review._id]?.length || 0})
               </h5>
@@ -1068,13 +1069,21 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                     </div>
 
                     {editingReply && editingReply._id === reply._id ? (
-                      <div className="space-y-2">
+                      <div className="space-y-2 relative">
                         <textarea
-                          className="w-full border border-blue-300 rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          className="w-full border border-blue-300 rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10"
                           value={editingReply.comment}
                           onChange={e => setEditingReply({ ...editingReply, comment: e.target.value })}
                           rows={2}
                         />
+                        <div className="absolute right-2 top-2">
+                          <EmojiButton
+                            onEmojiClick={(emoji) => {
+                              const newComment = editingReply.comment + emoji;
+                              setEditingReply({ ...editingReply, comment: newComment });
+                            }}
+                          />
+                        </div>
                         <div className="flex gap-2">
                           <button
                             className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700 transition-colors"

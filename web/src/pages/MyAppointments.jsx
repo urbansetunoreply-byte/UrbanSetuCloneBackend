@@ -11143,8 +11143,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {
         showDeleteModal && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaTrash className="text-red-500" />
                 {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-'))
                   ? 'Delete Call'
@@ -11153,18 +11153,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
               {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) ? (
                 // Call deletion - show simplified message
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
                   Are you sure you want to delete this call from the chat? The call will be removed from your view, but the call record will remain in the database.
                 </p>
               ) : (!Array.isArray(messageToDelete) && messageToDelete?.deleted) ? (
                 // Deleted message - show simplified message for local removal
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
                   Delete this message for me?
                 </p>
               ) : ((Array.isArray(messageToDelete) && messageToDelete.every(m => m.senderEmail === currentUser.email)) || (!Array.isArray(messageToDelete) && messageToDelete?.senderEmail === currentUser.email)) ? (
                 // Own message - show existing functionality
                 <>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
                     {Array.isArray(messageToDelete) ? `Are you sure you want to delete ${messageToDelete.length} messages?` : 'Are you sure you want to delete this message?'}
                   </p>
 
@@ -11181,18 +11181,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           setDeleteForBoth(e.target.checked);
                         }}
                         disabled={isChatSendBlocked}
-                        className={`form-checkbox h-4 w-4 text-red-600 rounded border-gray-300 focus:ring-red-500 ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed' : ''
+                        className={`form-checkbox h-4 w-4 text-red-600 rounded border-gray-300 dark:border-gray-600 focus:ring-red-500 ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed' : ''
                           }`}
                       />
-                      <span className={`text-sm ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-700'}`}>
+                      <span className={`text-sm ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
                         Also delete for{' '}
-                        <span className={`font-medium ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-900'}`}>
+                        <span className={`font-medium ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-900 dark:text-white'}`}>
                           {otherParty?.username || 'other user'}
                         </span>
                         {isChatSendBlocked && ' (Disabled for this appointment status)'}
                       </span>
                     </label>
-                    <p className={`text-xs mt-1 ml-7 ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <p className={`text-xs mt-1 ml-7 ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}>
                       {isChatSendBlocked
                         ? (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
                         : deleteForBoth
@@ -11204,11 +11204,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 </>
               ) : (
                 // Received message - show simplified message
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
                   {Array.isArray(messageToDelete) ? (
-                    <>Delete selected messages from <span className="font-medium text-gray-900">{otherParty?.username || 'other user'}</span>?</>
+                    <>Delete selected messages from <span className="font-medium text-gray-900 dark:text-white">{otherParty?.username || 'other user'}</span>?</>
                   ) : (
-                    <>Delete message from <span className="font-medium text-gray-900">{otherParty?.username || 'other user'}</span>?</>
+                    <>Delete message from <span className="font-medium text-gray-900 dark:text-white">{otherParty?.username || 'other user'}</span>?</>
                   )}
                 </p>
               )}
@@ -11221,7 +11221,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     setMessageToDelete(null);
                     setDeleteForBoth(true);
                   }}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
                 >
                   Cancel
                 </button>
@@ -11252,13 +11252,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {
         showClearChatModal && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaTrash className="text-red-500" />
                 Clear Chat
               </h3>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Are you sure you want to clear chat? This action cannot be undone.
               </p>
 
@@ -11266,7 +11266,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 <button
                   type="button"
                   onClick={() => setShowClearChatModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
                 >
                   Cancel
                 </button>
@@ -11480,17 +11480,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {
         showReportModal && reportingMessage && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaFlag className="text-red-500" /> Report message
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
                   <select
                     value={reportReason}
                     onChange={(e) => setReportReason(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white dark:bg-gray-700"
                   >
                     <option value="">-- Select a reason --</option>
                     <option value="Spam or scam">Spam or scam</option>
@@ -11503,7 +11503,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 </div>
                 {reportReason && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {reportReason === 'Other' ? 'Additional details *' : 'Additional details (optional)'}
                     </label>
                     <textarea
@@ -11511,12 +11511,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                       onChange={(e) => setReportDetails(e.target.value)}
                       rows={4}
                       placeholder={reportReason === 'Other' ? 'Please provide details about the issue...' : 'Add any context to help admins review...'}
-                      className="w-full p-2 border border-gray-300 rounded resize-y focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded resize-y focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white dark:bg-gray-700"
                     />
                   </div>
                 )}
-                <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
-                  <div className="font-semibold mb-1">Message excerpt:</div>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded p-3 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="font-semibold mb-1 dark:text-white">Message excerpt:</div>
                   <div className="line-clamp-4 whitespace-pre-wrap">{(reportingMessage.message || '').slice(0, 300)}</div>
                 </div>
               </div>
