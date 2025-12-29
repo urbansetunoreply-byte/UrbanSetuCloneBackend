@@ -104,13 +104,13 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
 
   if (loading) {
     return (
-      <div className={`bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2 max-w-full ${className}`}>
+      <div className={`bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-2 max-w-full ${className}`}>
         <div className="flex items-center space-x-3">
-          <div className="w-16 h-16 bg-gray-200 rounded animate-pulse flex-shrink-0"></div>
+          <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse flex-shrink-0"></div>
           <div className="flex-1 min-w-0 max-w-full space-y-2">
-            <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
-            <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/2"></div>
           </div>
         </div>
       </div>
@@ -119,21 +119,21 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
 
   if (error || !preview) {
     return (
-      <div className={`bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2 max-w-full ${className}`}>
+      <div className={`bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-2 max-w-full ${className}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-              <FaExternalLinkAlt className="text-gray-400 text-xl" />
+            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center flex-shrink-0">
+              <FaExternalLinkAlt className="text-gray-400 dark:text-gray-500 text-xl" />
             </div>
             <div className="flex-1 min-w-0 max-w-full">
-              <div className="text-sm text-gray-600 font-medium break-words">Link Preview Unavailable</div>
-              <div className="text-xs text-gray-500 break-all">{url}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300 font-medium break-words">Link Preview Unavailable</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 break-all">{url}</div>
             </div>
           </div>
           {onRemove && showRemoveButton && (
             <button
               onClick={onRemove}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
             >
               <FaTimes className="text-sm" />
             </button>

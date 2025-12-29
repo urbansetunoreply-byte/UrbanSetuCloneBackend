@@ -1758,10 +1758,10 @@ export default function AdminAppointments() {
 
   if (!Array.isArray(appointments)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-100">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Session expired or unauthorized</h2>
-          <p className="text-gray-700 mb-4">Please sign in again to access admin appointments.</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center transition-colors duration-300">
+          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Session expired or unauthorized</h2>
+          <p className="text-gray-700 dark:text-gray-300 mb-4">Please sign in again to access admin appointments.</p>
           <Link to="/sign-in" className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">Go to Sign In</Link>
         </div>
       </div>
@@ -1769,7 +1769,7 @@ export default function AdminAppointments() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 py-10 px-2 md:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 py-10 px-2 md:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto mb-4 flex justify-end">
         <a href="/admin/payments" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 7a2 2 0 012-2h16a2 2 0 012 2v3H2V7z" /><path d="M2 12h20v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5zm4 3a1 1 0 100 2h6a1 1 0 100-2H6z" /></svg>
@@ -1785,10 +1785,10 @@ export default function AdminAppointments() {
           style: { fontSize: '0.9rem', borderRadius: '8px', boxShadow: '0 2px 8px #0001' }
         }}
       />
-      <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
+      <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-colors duration-300">
         {/* Responsive button group: compact on mobile, original on desktop */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 drop-shadow">
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-400 drop-shadow transition-colors">
             {showArchived
               ? `Archived Appointments (${archivedAppointmentsWithComments.length})`
               : `All Appointments (${appointmentsWithComments.length})`}
@@ -1799,11 +1799,11 @@ export default function AdminAppointments() {
               onClick={() => {
                 setShowAdminReportsModal(true);
               }}
-              className="bg-white text-red-600 px-3 py-2 rounded-md hover:bg-red-50 transition-all font-semibold shadow-md flex items-center justify-center gap-2 text-xs sm:text-base sm:px-4 sm:py-2 sm:rounded-lg w-1/2 sm:w-auto"
+              className="bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 px-3 py-2 rounded-md hover:bg-red-50 dark:hover:bg-gray-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 text-xs sm:text-base sm:px-4 sm:py-2 sm:rounded-lg w-1/2 sm:w-auto"
               title="View all reports"
               aria-label="View all reports"
             >
-              <FaFlag className="text-red-600" />
+              <FaFlag className="text-red-600 dark:text-red-400" />
               <span className="hidden sm:inline">Reports</span>
             </button>
             <button
@@ -1837,7 +1837,7 @@ export default function AdminAppointments() {
           </div>
         </div>
 
-        <p className="text-center text-gray-600 mb-6">
+        <p className="text-center text-gray-600 dark:text-gray-300 mb-6 font-medium">
           {showArchived
             ? "View and manage archived appointments. You can unarchive them to move them back to active appointments."
             : "💡 High data traffic may cause this page to slow down or stop working. Please refresh to continue using it normally.⚠️ Chats are encrypted and secure. View only for valid purposes like disputes or fraud checks. Unauthorized access or sharing is prohibited and will be logged."
@@ -1847,9 +1847,9 @@ export default function AdminAppointments() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex items-center gap-2">
-              <label className="font-semibold text-sm">Status:</label>
+              <label className="font-semibold text-sm dark:text-gray-300">Status:</label>
               <select
-                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm"
+                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 transition-colors"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -1870,28 +1870,28 @@ export default function AdminAppointments() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex items-center gap-2">
-              <label className="font-semibold text-sm">From:</label>
+              <label className="font-semibold text-sm dark:text-gray-300">From:</label>
               <input
                 type="date"
-                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm"
+                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:[color-scheme:dark] transition-colors"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
                 max={endDate || undefined}
               />
-              <label className="font-semibold text-sm">To:</label>
+              <label className="font-semibold text-sm dark:text-gray-300">To:</label>
               <input
                 type="date"
-                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm"
+                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:[color-scheme:dark] transition-colors"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
                 min={startDate || undefined}
               />
             </div>
             <div className="flex items-center gap-2">
-              <FaSearch className="text-gray-500 hover:text-blue-500 transition-colors duration-200" />
+              <FaSearch className="text-gray-500 hover:text-blue-500 transition-colors duration-200 dark:text-gray-400" />
               <input
                 type="text"
-                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm flex-1"
+                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm flex-1 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 transition-colors"
                 placeholder="Search by email, property, or username..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -2081,7 +2081,7 @@ export default function AdminAppointments() {
         {/* Pagination for regular appointments */}
         {!showArchived && totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -2091,7 +2091,7 @@ export default function AdminAppointments() {
                   toast.info(`Navigated to page ${Math.max(1, currentPage - 1)}`);
                 }}
                 disabled={currentPage === 1}
-                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
               >
                 Previous
               </button>
@@ -2101,7 +2101,7 @@ export default function AdminAppointments() {
                   toast.info(`Navigated to page ${Math.min(totalPages, currentPage + 1)}`);
                 }}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
               >
                 Next
               </button>
@@ -2121,13 +2121,13 @@ export default function AdminAppointments() {
                 <div className="flex items-center gap-1 sm:gap-2">
                   <div className="flex items-center bg-white dark:bg-gray-700 border border-red-200 dark:border-red-800 rounded-lg overflow-hidden mr-1 sm:mr-2">
                     <button
-                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium ${adminReportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium ${adminReportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/50'}`}
                       onClick={() => setAdminReportsFilter('message')}
                     >
                       Message Reports
                     </button>
                     <button
-                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium border-l border-red-200 ${adminReportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium border-l border-red-200 dark:border-red-800 ${adminReportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/50'}`}
                       onClick={() => setAdminReportsFilter('chat')}
                     >
                       Chat Reports
@@ -2270,9 +2270,9 @@ export default function AdminAppointments() {
                   <div className="text-sm text-red-600">{adminReportsError}</div>
                 ) : (adminReports || []).length === 0 ? (
                   <div className="text-center py-12">
-                    <FaFlag className="mx-auto text-6xl text-gray-300 mb-4" />
-                    <h4 className="text-xl font-semibold text-gray-600 mb-2">No Reports</h4>
-                    <p className="text-gray-500">There are no reports matching your filters.</p>
+                    <FaFlag className="mx-auto text-6xl text-gray-300 dark:text-gray-600 mb-4" />
+                    <h4 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Reports</h4>
+                    <p className="text-gray-500 dark:text-gray-500">There are no reports matching your filters.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -2314,7 +2314,7 @@ export default function AdminAppointments() {
         {/* Pagination for archived appointments */}
         {showArchived && archivedTotalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
               Archived Page {archivedCurrentPage} of {archivedTotalPages}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -2324,7 +2324,7 @@ export default function AdminAppointments() {
                   toast.info(`Navigated to archived page ${Math.max(1, archivedCurrentPage - 1)}`);
                 }}
                 disabled={archivedCurrentPage === 1}
-                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
               >
                 Previous
               </button>
@@ -2334,7 +2334,7 @@ export default function AdminAppointments() {
                   toast.info(`Navigated to archived page ${Math.min(archivedTotalPages, archivedCurrentPage + 1)}`);
                 }}
                 disabled={archivedCurrentPage === archivedTotalPages}
-                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
               >
                 Next
               </button>
@@ -2396,10 +2396,10 @@ export default function AdminAppointments() {
                         </p>
                         {selectedUser.adminApprovalStatus && (
                           <p className={`text-xs font-medium px-2 py-1 rounded-full ${selectedUser.adminApprovalStatus === 'approved'
-                            ? 'bg-green-100 text-green-700'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
                             : selectedUser.adminApprovalStatus === 'pending'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-red-100 text-red-700'
+                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
                             }`}>
                             {selectedUser.adminApprovalStatus}
                           </p>
@@ -2415,7 +2415,7 @@ export default function AdminAppointments() {
                     <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-blue-500">
                       <FaEnvelope className="text-blue-500 w-5 h-5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Email</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-300 uppercase tracking-wide font-semibold">Email</p>
                         <a
                           href={`mailto:${selectedUser.email}`}
                           className="text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline font-medium transition-colors duration-200"
@@ -2429,7 +2429,7 @@ export default function AdminAppointments() {
                     <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-green-500">
                       <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Phone</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-300 uppercase tracking-wide font-semibold">Phone</p>
                         {selectedUser.mobileNumber && selectedUser.mobileNumber !== '' ? (
                           <button
                             onClick={() => handlePhoneClick(selectedUser.mobileNumber)}
@@ -2447,8 +2447,8 @@ export default function AdminAppointments() {
                     <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-purple-500">
                       <FaCalendar className="text-purple-500 w-5 h-5 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Member Since</p>
-                        <p className="text-gray-800 dark:text-gray-200 font-medium">
+                        <p className="text-xs text-gray-500 dark:text-gray-300 uppercase tracking-wide font-semibold">Member Since</p>
+                        <p className="text-gray-800 dark:text-white font-medium">
                           {new Date(selectedUser.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -9858,9 +9858,9 @@ function AdminAppointmentRow({
               {/* Delete Chat Confirmation Modal (overlay above chat) */}
               {showDeleteChatModal && (
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-50">
-                  <div className="bg-white rounded-xl p-6 w-full max-w-sm relative shadow-2xl">
+                  <div className="bg-white dark:bg-gray-800 dark:border dark:border-gray-700 rounded-xl p-6 w-full max-w-sm relative shadow-2xl">
                     <button
-                      className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+                      className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full p-2 transition-colors"
                       onClick={() => { setShowDeleteChatModal(false); setDeleteChatPassword(''); }}
                       title="Close"
                       aria-label="Close"
@@ -9870,10 +9870,10 @@ function AdminAppointmentRow({
                     <h3 className="text-lg font-bold mb-4 text-red-600 flex items-center gap-2">
                       <FaTrash /> Delete Entire Chat
                     </h3>
-                    <p className="text-sm text-gray-600 mb-3">This will permanently delete all messages for this appointment. Enter admin password to confirm.</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">This will permanently delete all messages for this appointment. Enter admin password to confirm.</p>
                     <input
                       type="password"
-                      className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-red-200 mb-4"
+                      className="border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 w-full focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900 mb-4"
                       placeholder="Admin password"
                       value={deleteChatPassword}
                       onChange={e => setDeleteChatPassword(e.target.value)}
@@ -9907,7 +9907,7 @@ function AdminAppointmentRow({
                       <button
                         type="button"
                         onClick={() => { setShowDeleteChatModal(false); setDeleteChatPassword(''); }}
-                        className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                        className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
                       >
                         Cancel
                       </button>
@@ -9950,13 +9950,13 @@ function AdminAppointmentRow({
 
         {/* Audio Preview Modal */}
         {showAudioPreviewModal && selectedAudio && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-lg font-medium text-gray-700">Audio Preview</span>
+                <span className="text-lg font-medium text-gray-700 dark:text-white">Audio Preview</span>
                 <button
                   onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
-                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                 >
                   <FaTimes className="w-5 h-5" />
                 </button>
@@ -9971,7 +9971,7 @@ function AdminAppointmentRow({
                     placeholder={`Add a caption for ${selectedAudio.name}...`}
                     value={audioCaption}
                     onChange={(e) => setAudioCaption(e.target.value)}
-                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     rows={2}
                     maxLength={500}
                   />
@@ -9994,33 +9994,33 @@ function AdminAppointmentRow({
                     />
                   </div>
                 </div>
-                <div className="text-xs text-gray-500 mt-1 text-right">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                   {audioCaption.length}/500
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedAudio.name}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 truncate flex-1 mr-4">{selectedAudio.name}</div>
                 <div className="flex items-center gap-2">
                   {uploadingFile ? (
                     <>
                       <button
                         onClick={handleCancelInFlightUpload}
-                        className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                        className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30"
                       >
                         Cancel
                       </button>
                       <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                           <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
                         </div>
-                        <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 w-10 text-right">{uploadProgress}%</span>
                       </div>
                     </>
                   ) : (
                     <>
                       <button
                         onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
-                        className="py-2 px-4 rounded-lg text-sm font-medium border hover:bg-gray-50"
+                        className="py-2 px-4 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                       >Cancel</button>
                       <button
                         onClick={handleSendSelectedAudio}
@@ -10038,18 +10038,18 @@ function AdminAppointmentRow({
 
         {/* Delete Message Confirmation Modal */}
         {showDeleteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
+          <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
               <div className="p-6">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaTrash className="text-red-600 text-xl" />
+                  <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaTrash className="text-red-600 dark:text-red-400 text-xl" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
                       {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) ? 'Delete Call' : 'Delete Message'}
                     </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed text-justify">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed text-justify">
                       {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-'))
                         ? 'Are you sure you want to delete this call from the chat? The call will be removed from your view, but the call record will remain in the database.'
                         : 'Are you sure you want to delete this message for everyone?'}
@@ -10064,7 +10064,7 @@ function AdminAppointmentRow({
                       setShowDeleteModal(false);
                       setMessageToDelete(null);
                     }}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Cancel
                   </button>
@@ -10084,16 +10084,16 @@ function AdminAppointmentRow({
 
         {/* Cancel Appointment Modal */}
         {showCancelModal && appointmentToHandle === appt._id && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
+          <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
               <div className="p-6">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaBan className="text-red-600 text-xl" />
+                  <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaBan className="text-red-600 dark:text-red-400 text-xl" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Cancel Appointment</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed text-justify mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Cancel Appointment</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed text-justify mb-4">
                       Are you sure you want to cancel this appointment?
                     </p>
                     <div className="mb-4">
@@ -10216,15 +10216,15 @@ function AdminAppointmentRow({
         {/* Archive Appointment Modal */}
         {showArchiveModal && appointmentToHandle === appt._id && (
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
               <div className="p-6">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaArchive className="text-blue-600 text-xl" />
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaArchive className="text-blue-600 dark:text-blue-400 text-xl" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Archive Appointment</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed text-justify">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Archive Appointment</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed text-justify">
                       Are you sure you want to archive this appointment? It will be moved to the archived section.
                     </p>
                   </div>
@@ -10237,7 +10237,7 @@ function AdminAppointmentRow({
                       setShowArchiveModal(false);
                       setAppointmentToHandle(null);
                     }}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Cancel
                   </button>
@@ -10258,15 +10258,15 @@ function AdminAppointmentRow({
         {/* Unarchive Appointment Modal */}
         {showUnarchiveModal && appointmentToHandle === appt._id && (
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
               <div className="p-6">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaUndo className="text-green-600 text-xl" />
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaUndo className="text-green-600 dark:text-green-400 text-xl" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Unarchive Appointment</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed text-justify">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Unarchive Appointment</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed text-justify">
                       Are you sure you want to unarchive this appointment? It will be moved back to the active appointments.
                     </p>
                   </div>
@@ -10279,7 +10279,7 @@ function AdminAppointmentRow({
                       setShowUnarchiveModal(false);
                       setAppointmentToHandle(null);
                     }}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Cancel
                   </button>
@@ -10994,21 +10994,21 @@ function AdminAppointmentRow({
 
         {/* Message Info Modal */}
         {showMessageInfoModal && selectedMessageForInfo && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaInfoCircle className="text-blue-500" /> Message Info
               </h3>
               <div className="space-y-4">
-                <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded p-3 text-sm text-gray-700 dark:text-gray-200">
                   <div className="font-semibold mb-2">Message:</div>
                   <div className="whitespace-pre-wrap break-words">{(selectedMessageForInfo.message || '').slice(0, 200)}{(selectedMessageForInfo.message || '').length > 200 ? '...' : ''}</div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Sent:</span>
-                    <span className="text-sm text-gray-800">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Sent:</span>
+                    <span className="text-sm text-gray-800 dark:text-gray-200">
                       {new Date(selectedMessageForInfo.timestamp).toLocaleString('en-US', {
                         year: 'numeric',
                         month: 'short',
@@ -11022,8 +11022,8 @@ function AdminAppointmentRow({
 
                   {selectedMessageForInfo.deliveredAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Delivered:</span>
-                      <span className="text-sm text-gray-800">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Delivered:</span>
+                      <span className="text-sm text-gray-800 dark:text-gray-200">
                         {new Date(selectedMessageForInfo.deliveredAt).toLocaleString('en-US', {
                           year: 'numeric',
                           month: 'short',
@@ -11038,8 +11038,8 @@ function AdminAppointmentRow({
 
                   {selectedMessageForInfo.readAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Read:</span>
-                      <span className="text-sm text-gray-800">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Read:</span>
+                      <span className="text-sm text-gray-800 dark:text-gray-200">
                         {new Date(selectedMessageForInfo.readAt).toLocaleString('en-US', {
                           year: 'numeric',
                           month: 'short',
@@ -11054,22 +11054,22 @@ function AdminAppointmentRow({
 
                   {!selectedMessageForInfo.deliveredAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Status:</span>
-                      <span className="text-sm text-gray-500">Not delivered yet</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Not delivered yet</span>
                     </div>
                   )}
 
                   {selectedMessageForInfo.deliveredAt && !selectedMessageForInfo.readAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Status:</span>
-                      <span className="text-sm text-blue-600">Delivered</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
+                      <span className="text-sm text-blue-600 dark:text-blue-400">Delivered</span>
                     </div>
                   )}
 
                   {selectedMessageForInfo.readAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Status:</span>
-                      <span className="text-sm text-green-600">Read</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
+                      <span className="text-sm text-green-600 dark:text-green-400">Read</span>
                     </div>
                   )}
                 </div>
@@ -11091,23 +11091,23 @@ function AdminAppointmentRow({
 
         {/* Call Info Modal */}
         {showCallInfoModal && selectedCallForInfo && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[100]">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaInfoCircle className="text-blue-500" /> Call Info
               </h3>
               <div className="space-y-4">
-                <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded p-3 text-sm text-gray-700 dark:text-gray-200">
                   <div className="font-semibold mb-2">Call Type:</div>
                   <div>{selectedCallForInfo.callType === 'video' ? 'Video Call' : 'Audio Call'}</div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Status:</span>
-                    <span className={`text-sm font-medium ${selectedCallForInfo.status === 'accepted' ? 'text-green-600' :
-                      selectedCallForInfo.status === 'missed' || selectedCallForInfo.status === 'rejected' || selectedCallForInfo.status === 'cancelled' ? 'text-red-600' :
-                        'text-yellow-600'
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
+                    <span className={`text-sm font-medium ${selectedCallForInfo.status === 'accepted' ? 'text-green-600 dark:text-green-400' :
+                      selectedCallForInfo.status === 'missed' || selectedCallForInfo.status === 'rejected' || selectedCallForInfo.status === 'cancelled' ? 'text-red-600 dark:text-red-400' :
+                        'text-yellow-600 dark:text-yellow-400'
                       }`}>
                       {selectedCallForInfo.status.charAt(0).toUpperCase() + selectedCallForInfo.status.slice(1)}
                     </span>
@@ -11115,8 +11115,8 @@ function AdminAppointmentRow({
 
                   {selectedCallForInfo.duration && selectedCallForInfo.duration > 0 && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Duration:</span>
-                      <span className="text-sm text-gray-800">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Duration:</span>
+                      <span className="text-sm text-gray-800 dark:text-gray-200">
                         {(() => {
                           const hours = Math.floor(selectedCallForInfo.duration / 3600);
                           const minutes = Math.floor((selectedCallForInfo.duration % 3600) / 60);
@@ -11131,8 +11131,8 @@ function AdminAppointmentRow({
                   )}
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Started:</span>
-                    <span className="text-sm text-gray-800">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Started:</span>
+                    <span className="text-sm text-gray-800 dark:text-gray-200">
                       {new Date(selectedCallForInfo.startTime || selectedCallForInfo.createdAt).toLocaleString('en-US', {
                         year: 'numeric',
                         month: 'short',
@@ -11145,8 +11145,8 @@ function AdminAppointmentRow({
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Participants:</span>
-                    <span className="text-sm text-gray-800">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Participants:</span>
+                    <span className="text-sm text-gray-800 dark:text-gray-200">
                       {selectedCallForInfo.callerId?.username || 'Unknown'} → {selectedCallForInfo.receiverId?.username || 'Unknown'}
                     </span>
                   </div>
@@ -11491,12 +11491,12 @@ function AdminAppointmentRow({
         )}
 
         {showForceTerminateModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[95] p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4">
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[95] p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">Force Terminate Live Call</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Force Terminate Live Call</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Use this action only when fraud, abuse, or policy violations are detected.
                   </p>
                 </div>
@@ -11507,25 +11507,25 @@ function AdminAppointmentRow({
                       setForceTerminateReason('');
                     }
                   }}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 >
                   <FaTimes />
                 </button>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700">Reason (optional)</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Reason (optional)</label>
                 <textarea
                   value={forceTerminateReason}
                   onChange={(e) => setForceTerminateReason(e.target.value)}
                   rows={4}
                   placeholder="Example: Buyer attempted to solicit payments outside the platform."
-                  className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-red-200"
+                  className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-3 focus:outline-none focus:ring-2 focus:ring-red-200"
                   disabled={forceTerminateLoading}
                 />
               </div>
 
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-700 dark:text-red-300">
                 Both parties will be disconnected immediately and notified that the session was terminated by an administrator.
               </div>
 
@@ -11537,7 +11537,7 @@ function AdminAppointmentRow({
                       setForceTerminateReason('');
                     }
                   }}
-                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200"
+                  className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600"
                   disabled={forceTerminateLoading}
                 >
                   Cancel
@@ -11577,19 +11577,19 @@ function AdminAppointmentRow({
 
         {/* Video Preview Modal */}
         {showVideoPreviewModal && selectedVideo && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-lg font-medium text-gray-700">Video Preview</span>
+                <span className="text-lg font-medium text-gray-700 dark:text-white">Video Preview</span>
                 <button
                   onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }}
-                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                 >
                   <FaTimes className="w-5 h-5" />
                 </button>
               </div>
               <div className="flex-1 mb-4 min-h-0">
-                <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
+                <video controls className="w-full h-full max-h-[60vh] rounded-lg border dark:border-gray-600" src={videoObjectURL} />
               </div>
 
               {/* Caption for Video */}
@@ -11600,7 +11600,7 @@ function AdminAppointmentRow({
                     placeholder={`Add a caption for ${selectedVideo.name}...`}
                     value={videoCaption}
                     onChange={(e) => setVideoCaption(e.target.value)}
-                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     rows={2}
                     maxLength={500}
                   />
@@ -11623,13 +11623,13 @@ function AdminAppointmentRow({
                     />
                   </div>
                 </div>
-                <div className="text-xs text-gray-500 mt-1 text-right">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                   {videoCaption.length}/500
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedVideo.name}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 truncate flex-1 mr-4">{selectedVideo.name}</div>
                 <div className="flex gap-2 flex-shrink-0">
                   {uploadingFile ? (
                     <>
@@ -11648,11 +11648,10 @@ function AdminAppointmentRow({
                     </>
                   ) : (
                     <>
-                      <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                      <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Cancel</button>
                       <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                     </>
                   )}
-
                 </div>
               </div>
             </div>
@@ -11661,22 +11660,22 @@ function AdminAppointmentRow({
 
         {/* Document Preview Modal */}
         {showDocumentPreviewModal && selectedDocument && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-md w-full">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-lg font-medium text-gray-700">Document Preview</span>
+                <span className="text-lg font-medium text-gray-700 dark:text-white">Document Preview</span>
                 <button
                   onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }}
-                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                 >
                   <FaTimes className="w-5 h-5" />
                 </button>
               </div>
               <div className="mb-4 flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-600">📄</div>
+                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-gray-600 dark:text-gray-300">📄</div>
                 <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{selectedDocument.name}</div>
-                  <div className="text-xs text-gray-500 truncate">{selectedDocument.type || 'Document'}</div>
+                  <div className="text-sm font-medium truncate text-gray-800 dark:text-white">{selectedDocument.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{selectedDocument.type || 'Document'}</div>
                 </div>
               </div>
 
@@ -11688,7 +11687,7 @@ function AdminAppointmentRow({
                     placeholder={`Add a caption for ${selectedDocument.name}...`}
                     value={documentCaption}
                     onChange={(e) => setDocumentCaption(e.target.value)}
-                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     rows={2}
                     maxLength={500}
                   />
@@ -11711,7 +11710,7 @@ function AdminAppointmentRow({
                     />
                   </div>
                 </div>
-                <div className="text-xs text-gray-500 mt-1 text-right">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                   {documentCaption.length}/500
                 </div>
               </div>
@@ -11734,7 +11733,7 @@ function AdminAppointmentRow({
                   </>
                 ) : (
                   <>
-                    <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                    <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Cancel</button>
                     <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                   </>
                 )}
@@ -11745,10 +11744,10 @@ function AdminAppointmentRow({
 
         {/* Record Audio Modal */}
         {showRecordAudioModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-md w-full">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-lg font-medium text-gray-700">Record Audio</span>
+                <span className="text-lg font-medium text-gray-700 dark:text-white">Record Audio</span>
                 <button
                   onClick={() => {
                     if (isRecording) {
@@ -11757,19 +11756,19 @@ function AdminAppointmentRow({
                       setShowRecordAudioModal(false);
                     }
                   }}
-                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                 >
                   <FaTimes className="w-5 h-5" />
                 </button>
               </div>
               <div className="flex flex-col items-center justify-center py-6">
-                <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 ${isRecording ? 'bg-rose-100 animate-pulse' : 'bg-gray-100'}`}>
-                  <svg className={`w-10 h-10 ${isRecording ? 'text-rose-600' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 ${isRecording ? 'bg-rose-100 dark:bg-rose-900/30 animate-pulse' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                  <svg className={`w-10 h-10 ${isRecording ? 'text-rose-600 dark:text-rose-400' : 'text-gray-600 dark:text-gray-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
                   </svg>
                 </div>
-                <div className="text-sm text-gray-600 mb-4">
+                <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                   {isRecording ? (
                     isPaused ?
                       `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')} (Paused)` :
@@ -11787,11 +11786,11 @@ function AdminAppointmentRow({
                       ) : (
                         <button onClick={pauseAudioRecording} className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700">Pause</button>
                       )}
-                      <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
+                      <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Cancel</button>
                     </>
                   )}
                 </div>
-                <div className="text-xs text-gray-500">Your mic input stays on device until you choose to send.</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Your mic input stays on device until you choose to send.</div>
               </div>
             </div>
           </div>
