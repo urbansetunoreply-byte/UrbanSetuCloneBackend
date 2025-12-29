@@ -1436,6 +1436,12 @@ export default function Settings() {
             >
               {t('settings.cookie_policy')}
             </Link>
+            <Link
+              to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/community-guidelines' : '/user/community-guidelines'}
+              className="block text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
+            >
+              {t('settings.community_guidelines') || 'Community Guidelines'}
+            </Link>
           </div>
         </SettingSection>
 

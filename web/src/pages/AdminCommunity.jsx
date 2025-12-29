@@ -1982,6 +1982,25 @@ export default function AdminCommunity() {
                                 )}
                             </ul>
                         </div>
+
+                        {/* Community Guidelines Link Card */}
+                        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 transition-colors duration-300">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-amber-100 dark:bg-amber-900/20 rounded-full text-amber-600 dark:text-amber-400">
+                                    <FaShieldAlt />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Guidelines</h3>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                Maintenance of community decorum is essential. Review the guidelines to understand moderation policies.
+                            </p>
+                            <Link
+                                to="/admin/community-guidelines"
+                                className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold hover:underline group"
+                            >
+                                View Guidelines <FaArrowRight className="text-xs group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>

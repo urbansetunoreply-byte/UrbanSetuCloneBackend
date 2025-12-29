@@ -336,11 +336,6 @@ export default function CommunityGuidelines() {
                         </a>
                     </div>
                 </div>
-
-                {/* Copyright */}
-                <div className="text-center text-gray-600 dark:text-gray-400 text-sm mt-8">
-                    © {new Date().getFullYear()} UrbanSetu. All rights reserved.
-                </div>
             </div>
             <ContactSupportWrapper />
         </div>
