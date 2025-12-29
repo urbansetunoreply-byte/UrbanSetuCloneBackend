@@ -481,7 +481,7 @@ export const EmojiButton = ({ onEmojiClick, className = "", inputRef }) => {
         onMouseDown={(e) => {
           e.preventDefault();
         }}
-        className={`w-9 h-9 flex items-center justify-center text-gray-600 bg-white border border-gray-200 shadow-sm hover:shadow-md hover:bg-gray-50 hover:text-yellow-600 rounded-full transition-all ${className}`}
+        className={`w-9 h-9 flex items-center justify-center text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-yellow-600 dark:hover:text-yellow-400 rounded-full transition-all ${className}`}
         title="Add emoji"
       >
         {isMobile && isPickerOpen ? (

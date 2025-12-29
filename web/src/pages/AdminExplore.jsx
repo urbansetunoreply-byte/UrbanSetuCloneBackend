@@ -8,6 +8,7 @@ import SearchSuggestions from '../components/SearchSuggestions';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ListingSkeletonGrid from "../components/skeletons/ListingSkeletonGrid";
 import FilterChips from "../components/search/FilterChips";
+import LocationSelector from "../components/LocationSelector";
 import { Search as SearchIcon, IndianRupee, MapPin, Grid, List, RefreshCw, XCircle } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -50,6 +51,7 @@ export default function AdminExplore() {
   const [deleteError, setDeleteError] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [locationFilter, setLocationFilter] = useState({ state: "", district: "", city: "" });
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -69,6 +71,11 @@ export default function AdminExplore() {
       bathrooms: urlParams.get("bathrooms") || "",
     };
     setFormData(searchObj);
+    setLocationFilter({
+      state: urlParams.get("state") || "",
+      district: urlParams.get("district") || "",
+      city: urlParams.get("city") || "",
+    });
 
     const fetchListings = async () => {
       setLoading(true);
@@ -125,8 +132,14 @@ export default function AdminExplore() {
       city: "", state: "", bedrooms: "", bathrooms: ""
     };
     setFormData(reset);
+    setLocationFilter({ state: "", district: "", city: "" });
     navigate(`?`);
     setIsFiltersOpen(false);
+  };
+
+  const handleLocationChange = (loc) => {
+    setLocationFilter(loc);
+    setFormData((prev) => ({ ...prev, state: loc.state, district: loc.district, city: loc.city }));
   };
 
   // Admin delete flow
@@ -319,6 +332,12 @@ export default function AdminExplore() {
                   </div>
                 </div>
 
+                {/* Location Filter */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Location</label>
+                  <LocationSelector value={locationFilter} onChange={handleLocationChange} mode="search" className="w-full" />
+                </div>
+
                 {/* Type Selection */}
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Transaction</label>
@@ -335,6 +354,57 @@ export default function AdminExplore() {
                         {t}
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Price & Size Filter */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Price Range</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+                      <input
+                        type="number"
+                        name="minPrice"
+                        value={formData.minPrice}
+                        onChange={handleChanges}
+                        placeholder="Min"
+                        className="w-full pl-8 pr-3 py-3 bg-gray-50/50 dark:bg-gray-900/50 border-2 border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 transition-all font-bold text-xs text-gray-800 dark:text-white"
+                      />
+                    </div>
+                    <div className="relative">
+                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+                      <input
+                        type="number"
+                        name="maxPrice"
+                        value={formData.maxPrice}
+                        onChange={handleChanges}
+                        placeholder="Max"
+                        className="w-full pl-8 pr-3 py-3 bg-gray-50/50 dark:bg-gray-900/50 border-2 border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 transition-all font-bold text-xs text-gray-800 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Configuration</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="number"
+                      name="bedrooms"
+                      value={formData.bedrooms}
+                      onChange={handleChanges}
+                      placeholder="Beds"
+                      className="w-full px-4 py-3 bg-gray-50/50 dark:bg-gray-900/50 border-2 border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 transition-all font-bold text-xs text-gray-800 dark:text-white"
+                    />
+                    <input
+                      type="number"
+                      name="bathrooms"
+                      value={formData.bathrooms}
+                      onChange={handleChanges}
+                      placeholder="Baths"
+                      className="w-full px-4 py-3 bg-gray-50/50 dark:bg-gray-900/50 border-2 border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 transition-all font-bold text-xs text-gray-800 dark:text-white"
+                    />
                   </div>
                 </div>
 
