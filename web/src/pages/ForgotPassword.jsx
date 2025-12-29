@@ -563,7 +563,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       >
 
         {/* Right Side - Verification Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors duration-300">
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
           <div className="w-full max-w-[440px] animate-fade-in">
             <div className="text-center mb-10">
               <StepIndicator steps={["Verify Email", "Reset Password"]} current={0} className="mb-8" />
@@ -576,7 +576,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               <p className="text-gray-500 dark:text-gray-400 text-lg transition-colors">Enter your registered email to reset your password.</p>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 relative overflow-hidden transition-colors">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 relative overflow-hidden transition-colors">
               {/* Decorative background element for card */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 dark:bg-red-900/10 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
 
@@ -638,7 +638,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         )
                       )
                     }
-                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-red-500/20 ${(emailVerified && !emailEditMode) || otpLoading || (otpSent && !emailEditMode) ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 cursor-not-allowed border-green-500 pr-24' : (emailVerified ? 'border-green-500 dark:bg-gray-800 dark:text-white' : 'border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white')} hover:border-red-500`}
+                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-red-500/20 ${(emailVerified && !emailEditMode) || otpLoading || (otpSent && !emailEditMode) ? 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 cursor-not-allowed border-green-500 pr-24' : (emailVerified ? 'border-green-500 dark:bg-gray-700 dark:text-white' : 'border-gray-300 dark:border-gray-700 dark:bg-gray-700 dark:text-white')} hover:border-red-500`}
                     required
                   />
                   {/* If captcha required before OTP field is open, show below email (outside input wrapper to avoid layout shift on button) */}
@@ -698,7 +698,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                             }
                           }
                         }}
-                        className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : ''
+                        className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 dark:bg-gray-900 cursor-not-allowed' : ''
                           }`}
                         maxLength="6"
                       />
@@ -889,7 +889,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     >
 
       {/* Right Side - Reset Password Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors duration-300">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
         <div className="w-full max-w-[440px] animate-fade-in">
           <div className="text-center mb-10">
             <StepIndicator steps={["Verify Email", "Reset Password"]} current={1} className="mb-8" />
@@ -902,7 +902,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
             <p className="text-gray-500 dark:text-gray-400 text-lg transition-colors">Create a new strong password to secure your account.</p>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 relative overflow-hidden transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 relative overflow-hidden transition-colors">
             {/* Decorative background element for card */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 dark:bg-green-900/10 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
 
@@ -920,7 +920,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   readOnly
                   disabled
                   startIcon={<Mail className="w-5 h-5" />}
-                  inputClassName="bg-gray-100 dark:bg-gray-800 cursor-not-allowed text-gray-600 dark:text-gray-400 pr-20"
+                  inputClassName="bg-gray-100 dark:bg-gray-900 cursor-not-allowed text-gray-600 dark:text-gray-400 pr-20"
                   endAdornment={
                     <button
                       type="button"
@@ -928,7 +928,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         setStep(1);
                         navigate('/forgot-password?step=1', { replace: true });
                       }}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 dark:text-green-400 bg-gray-100 dark:bg-gray-800 hover:text-green-700 dark:hover:text-green-300 p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/30 transition-all z-20"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 dark:text-green-400 bg-gray-100 dark:bg-gray-900 hover:text-green-700 dark:hover:text-green-300 p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/30 transition-all z-20"
                       title="Edit email address"
                       aria-label="Edit email address"
                     >
@@ -962,7 +962,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       {showPassword ? (<FaEyeSlash className="text-gray-600 dark:text-gray-400" />) : (<FaEye className="text-gray-600 dark:text-gray-400" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'bg-white dark:bg-gray-800 dark:text-white dark:border-gray-700'} pr-12 focus:ring-green-500 focus:border-green-500 hover:border-green-500 transition-colors`}
+                  inputClassName={`${loading ? 'bg-gray-100 dark:bg-gray-900 cursor-not-allowed' : 'bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600'} pr-12 focus:ring-green-500 focus:border-green-500 hover:border-green-500 transition-colors`}
                   required
                 />
               </div>
@@ -1033,7 +1033,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       {showCPassword ? (<FaEyeSlash className="text-gray-400" />) : (<FaEye className="text-gray-400" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'bg-white dark:bg-gray-800 dark:text-white dark:border-gray-700'} pr-12 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 hover:border-green-500`}
+                  inputClassName={`${loading ? 'bg-gray-100 dark:bg-gray-900 cursor-not-allowed' : 'bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600'} pr-12 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 hover:border-green-500`}
                   required
                 />
               </div>

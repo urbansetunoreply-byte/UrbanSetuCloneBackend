@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { FaStar, FaEdit, FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { EmojiButton } from './EmojiPicker';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -16,6 +17,7 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
   const [userCanReview, setUserCanReview] = useState(true);
   const [restrictionReason, setRestrictionReason] = useState('');
   const navigate = useNavigate();
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     checkUserReviewPermissions();
@@ -67,6 +69,21 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
     } catch (error) {
       console.error('Error checking review permissions:', error);
       setUserCanReview(true); // Default to allowing review if check fails
+    }
+  };
+
+  const handleEmojiClick = (emoji) => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const newText = text.substring(0, start) + emoji + text.substring(end);
+      setComment(newText);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+        textarea.focus();
+      }, 0);
     }
   };
 
@@ -198,14 +215,20 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Comment *
           </label>
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows="4"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            placeholder="Share your experience with this property..."
-            maxLength="500"
-          />
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows="4"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white pr-10"
+              placeholder="Share your experience with this property..."
+              maxLength="500"
+            />
+            <div className="absolute bottom-2 right-2">
+              <EmojiButton onEmojiClick={handleEmojiClick} inputRef={textareaRef} />
+            </div>
+          </div>
           <div className="flex justify-between items-center mt-1">
             <span className="text-xs text-gray-500 dark:text-gray-400">
               Minimum 10 characters required

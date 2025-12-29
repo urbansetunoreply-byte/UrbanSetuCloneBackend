@@ -185,9 +185,9 @@ export default function AdminAppointmentListing() {
 
   if (!currentUser) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
-          <div className="text-center text-red-600 text-xl font-semibold py-10">
+      <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-slate-900 min-h-screen py-10 px-2 md:px-8">
+        <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
+          <div className="text-center text-red-600 dark:text-red-400 text-xl font-semibold py-10">
             Please sign in as admin to book an appointment.
           </div>
         </div>
@@ -197,9 +197,9 @@ export default function AdminAppointmentListing() {
 
   if (ownerCheckLoading) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
-          <div className="text-center text-blue-600 text-xl font-semibold py-10">
+      <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-slate-900 min-h-screen py-10 px-2 md:px-8">
+        <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
+          <div className="text-center text-blue-600 dark:text-blue-400 text-xl font-semibold py-10">
             Loading property information...
           </div>
         </div>
@@ -209,9 +209,9 @@ export default function AdminAppointmentListing() {
 
   if (listing && currentUser && currentUser._id === listing.userRef) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
-          <div className="text-center text-red-600 text-xl font-semibold py-10">
+      <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-slate-900 min-h-screen py-10 px-2 md:px-8">
+        <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
+          <div className="text-center text-red-600 dark:text-red-400 text-xl font-semibold py-10">
             You cannot book an appointment for your own property.
           </div>
         </div>
