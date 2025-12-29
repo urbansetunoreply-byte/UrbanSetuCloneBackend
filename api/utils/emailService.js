@@ -154,7 +154,7 @@ const verifyTransporter = async () => {
 
 // Enhanced retry logic with exponential backoff and connection verification
 // Unified email sending function with Brevo primary and Gmail fallback
-const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000) => {
+export const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000) => {
   // Try Brevo first
   try {
     console.log('Attempting to send email via Brevo...');
@@ -258,7 +258,7 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
 };
 
 // Standardized error response format
-const createErrorResponse = (error, context = '') => {
+export const createErrorResponse = (error, context = '') => {
   const errorMessage = error.message || 'Unknown error occurred';
   console.error(`Email sending error${context ? ` (${context})` : ''}:`, error);
 
@@ -271,7 +271,7 @@ const createErrorResponse = (error, context = '') => {
 };
 
 // Standardized success response format
-const createSuccessResponse = (messageId = null, context = '') => {
+export const createSuccessResponse = (messageId = null, context = '') => {
   return {
     success: true,
     messageId: messageId,
@@ -14748,5 +14748,130 @@ export const sendCoinsFrozenEmail = async (email, username, frozenAmount, expiry
     `
   };
   return sendEmailWithRetry(mailOptions);
+};
+
+// Send Admin Call Termination Email
+export const sendAdminCallTerminationEmail = async (email, username, details) => {
+  const {
+    propertyName,
+    reason,
+    appointmentDate,
+    appointmentTime,
+    otherPartyName,
+    isForBuyer
+  } = details;
+
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: `${process.env.EMAIL_FROM_NAME || 'UrbanSetu'} <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: '⚠️ Call Terminated by Admin - UrbanSetu',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Call Terminated by Admin</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">⚠️ Call Terminated by Admin</h1>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">
+              Hello <strong>${username}</strong>,
+            </p>
+            
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+              We're writing to inform you that your active call for the property <strong>"${propertyName}"</strong> was terminated by our administrator.
+            </p>
+            
+            <!-- Call Details Box -->
+            <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 20px; border-radius: 8px; margin: 25px 0;">
+              <h3 style="color: #991b1b; margin: 0 0 15px 0; font-size: 18px;">📞 Call Details</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Property:</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${propertyName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">${isForBuyer ? 'Seller' : 'Buyer'}:</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${otherPartyName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Appointment Date:</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${new Date(appointmentDate).toLocaleDateString('en-IN')}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Scheduled Time:</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">${appointmentTime}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <!-- Reason Box -->
+            ${reason ? `
+              <div style="background-color: #fff7ed; border-left: 4px solid #f97316; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                <h3 style="color: #c2410c; margin: 0 0 10px 0; font-size: 16px;">📋 Termination Reason</h3>
+                <p style="color: #78350f; margin: 0; line-height: 1.6; font-size: 14px;">${reason}</p>
+              </div>
+            ` : ''}
+            
+            <!-- Important Note -->
+            <div style="background-color: #eff6ff; border: 1px solid #3b82f6; padding: 15px; border-radius: 8px; margin: 25px 0;">
+              <p style="color: #1e40af; margin: 0; font-size: 14px; line-height: 1.6;">
+                <strong style="display: block; margin-bottom: 8px;">ℹ️ What This Means:</strong>
+                The call was terminated by our administrative team to ensure compliance with our community guidelines or due to technical/policy issues. Both parties (buyer and seller) have received this notification.
+              </p>
+            </div>
+            
+            <p style="color: #4b5563; line-height: 1.6; margin-top: 25px;">
+              If you believe this termination was made in error or have questions about this action, please don't hesitate to contact our support team.
+            </p>
+            
+            <!-- Action Buttons -->
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${clientBaseUrl}/user/my-appointments" 
+                 style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 600; margin: 5px;">
+                View My Appointments
+              </a>
+              <a href="${clientBaseUrl}/contact" 
+                 style="display: inline-block; background-color: #ffffff; color: #2563eb; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 600; border: 2px solid #2563eb; margin: 5px;">
+                Contact Support
+              </a>
+            </div>
+            
+            <!-- Guidelines Link -->
+            <p style="color: #6b7280; font-size: 13px; text-align: center; margin-top: 20px;">
+              Please review our <a href="${clientBaseUrl}/community-guidelines" style="color: #2563eb; text-decoration: none;">Community Guidelines</a> to ensure a positive experience for all users.
+            </p>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
+              This is an automated notification. Please do not reply to this email.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'admin_call_termination') :
+      createErrorResponse(new Error(result.error), 'admin_call_termination');
+  } catch (error) {
+    return createErrorResponse(error, 'admin_call_termination');
+  }
 };
 
