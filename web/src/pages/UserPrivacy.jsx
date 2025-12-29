@@ -2,6 +2,7 @@ import React from "react";
 
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 export default function UserPrivacy() {
   // Set page title
   usePageTitle("User Privacy Policy - Data Protection");
@@ -95,6 +96,7 @@ export default function UserPrivacy() {
           day: 'numeric'
         })}</p>
       </div>
+      <ContactSupportWrapper />
     </div>
   );
 }

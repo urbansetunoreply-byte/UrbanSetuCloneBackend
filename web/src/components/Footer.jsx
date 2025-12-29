@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaHome, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCookie, FaShieldAlt, FaFileContract, FaEye } from 'react-icons/fa';
+import { FaHome, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCookie, FaShieldAlt, FaFileContract, FaEye, FaHandshake } from 'react-icons/fa';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -158,6 +158,21 @@ const Footer = () => {
                 >
                   <FaCookie className="text-xs" />
                   Cookie Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to={
+                    currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                      ? "/admin/community-guidelines"
+                      : currentUser
+                        ? "/user/community-guidelines"
+                        : "/community-guidelines"
+                  }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors flex items-center gap-2"
+                >
+                  <FaHandshake className="text-xs" />
+                  Community Guidelines
                 </Link>
               </li>
             </ul>

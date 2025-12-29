@@ -3,6 +3,7 @@ import AboutSkeleton from '../components/skeletons/AboutSkeleton';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaDownload, FaAndroid, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage, getDownloadButtonText } from '../utils/androidDownload';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
@@ -17,13 +18,16 @@ export default function About() {
   const { currentUser } = useSelector((state) => state.user) || {};
   let termsLink = '/terms';
   let privacyLink = '/privacy';
+  let communityGuidelinesLink = '/community-guidelines';
   if (currentUser) {
     if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
       termsLink = '/admin/terms';
       privacyLink = '/admin/privacy';
+      communityGuidelinesLink = '/admin/community-guidelines';
     } else {
       termsLink = '/user/terms';
       privacyLink = '/user/privacy';
+      communityGuidelinesLink = '/user/community-guidelines';
     }
   }
 
@@ -381,6 +385,7 @@ export default function About() {
         </div>
         <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">&copy; {new Date().getFullYear()} UrbanSetu. All rights reserved.</div>
       </div>
+      <ContactSupportWrapper />
     </div>
   )
 }

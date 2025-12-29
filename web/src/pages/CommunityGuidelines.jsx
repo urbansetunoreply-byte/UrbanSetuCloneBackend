@@ -1,0 +1,348 @@
+import React, { useState } from 'react';
+import {
+    FaShieldAlt, FaHandshake, FaComments, FaPhone, FaHome,
+    FaStar, FaUserShield, FaExclamationTriangle, FaCheckCircle,
+    FaChevronDown, FaChevronUp, FaVideo, FaFileAlt, FaUsers,
+    FaGavel, FaEye, FaBullhorn, FaLock, FaHeart
+} from 'react-icons/fa';
+import { usePageTitle } from '../hooks/usePageTitle';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
+
+export default function CommunityGuidelines() {
+    usePageTitle("Community Guidelines - UrbanSetu");
+    const [expandedSection, setExpandedSection] = useState(null);
+
+    const guidelines = [
+        {
+            id: 'respect',
+            icon: <FaHeart className="text-3xl text-red-500" />,
+            title: "Respectful Communication",
+            color: "red",
+            rules: [
+                "Treat all users with respect and courtesy in chats, calls, and reviews",
+                "Use professional and appropriate language at all times",
+                "No harassment, bullying, discrimination, or hate speech",
+                "Respect privacy - don't share personal information without consent",
+                "Be patient and understanding during property viewings and negotiations"
+            ]
+        },
+        {
+            id: 'listings',
+            icon: <FaHome className="text-3xl text-blue-500" />,
+            title: "Honest Property Listings",
+            color: "blue",
+            rules: [
+                "Provide accurate and truthful property information",
+                "Use real, recent photos of the property - no misleading images",
+                "Clearly state all features, amenities, and any issues/defects",
+                "Set fair and realistic prices - no price manipulation",
+                "Update listings promptly when property status changes",
+                "Only list properties you have legal authority to rent/sell",
+                "Include accurate ESG (Environmental, Social, Governance) data"
+            ]
+        },
+        {
+            id: 'calls',
+            icon: <FaVideo className="text-3xl text-purple-500" />,
+            title: "Audio & Video Call Conduct",
+            color: "purple",
+            rules: [
+                "Be punctual - join scheduled calls on time",
+                "Ensure proper lighting and audio quality for video calls",
+                "Dress appropriately and maintain professional appearance",
+                "Stay focused - no multitasking or distractions during calls",
+                "Use mute when not speaking to reduce background noise",
+                "No recording of calls without explicit consent from all parties",
+                "Calls may be monitored by admins for quality and safety",
+                "Report any inappropriate behavior immediately"
+            ]
+        },
+        {
+            id: 'chat',
+            icon: <FaComments className="text-3xl text-green-500" />,
+            title: "Chat & Messaging Etiquette",
+            color: "green",
+            rules: [
+                "Keep conversations relevant to property transactions",
+                "No spam, promotional content, or unsolicited advertising",
+                "Don't share external links to competing platforms",
+                "Respect response times - allow reasonable time for replies",
+                "Use appropriate file sharing - only property-related documents/images",
+                "Max file sizes: Images 5MB, Videos 5MB, Documents 10MB",
+                "No sharing of inappropriate, offensive, or illegal content",
+                "Use emojis appropriately and professionally"
+            ]
+        },
+        {
+            id: 'appointments',
+            icon: <FaHandshake className="text-3xl text-orange-500" />,
+            title: "Appointments & Bookings",
+            color: "orange",
+            rules: [
+                "Honor confirmed appointments - be on time",
+                "Provide at least 24 hours notice for cancellations",
+                "Respect the scheduled time - don't overstay property viewings",
+                "Follow safety protocols during in-person visits",
+                "Update appointment status promptly (completed, cancelled, etc.)",
+                "No-show limit: 3 missed appointments may result in restrictions"
+            ]
+        },
+        {
+            id: 'reviews',
+            icon: <FaStar className="text-3xl text-yellow-500" />,
+            title: "Reviews & Ratings",
+            color: "yellow",
+            rules: [
+                "Provide honest, constructive feedback based on actual experience",
+                "Focus on property features and transaction experience",
+                "No fake reviews or review manipulation",
+                "No offensive language or personal attacks in reviews",
+                "Reviews are public - write as you'd want to be reviewed",
+                "Cannot delete reviews once posted - edit only for corrections",
+                "Admins may remove reviews that violate guidelines"
+            ]
+        },
+        {
+            id: 'prohibited',
+            icon: <FaExclamationTriangle className="text-3xl text-red-600" />,
+            title: "Prohibited Activities",
+            color: "red",
+            rules: [
+                "🚫 Fraud, scams, or any deceptive practices",
+                "🚫 Impersonation of other users, admins, or entities",
+                "🚫 Sharing illegal, adult, or harmful content",
+                "🚫 Attempting to bypass or manipulate platform features",
+                "🚫 Using bots, scripts, or automation tools",
+                "🚫 Property squatting or fraudulent ownership claims",
+                "🚫 Money laundering or illegal financial transactions",
+                "🚫 Discriminatory practices in property access",
+                "🚫 Harassment or stalking other users",
+                "🚫 Sharing login credentials or account access"
+            ]
+        },
+        {
+            id: 'content',
+            icon: <FaFileAlt className="text-3xl text-indigo-500" />,
+            title: "Content & Privacy Policy",
+            color: "indigo",
+            rules: [
+                "Respect intellectual property - only upload content you own or have rights to",
+                "Property photos should not include identifiable faces without consent",
+                "Personal data (phone numbers, emails) automatically protected by platform",
+                "Don't screenshot or share private conversations publicly",
+                "Virtual tour images must accurately represent the property",
+                "AI-generated content must be clearly labeled as such",
+                "Report copyright violations immediately"
+            ]
+        },
+        {
+            id: 'admin',
+            icon: <FaUserShield className="text-3xl text-blue-600" />,
+            title: "Admin Monitoring & Rights",
+            color: "blue",
+            rules: [
+                "Admins may monitor calls and chats for quality assurance and safety",
+                "Admins can terminate calls that violate community guidelines",
+                "You'll receive email notifications for admin actions",
+                "Admins may request additional verification for suspicious activity",
+                "Admin decisions are final but can be appealed through support",
+                "Cooperation with admin investigations is mandatory",
+                "False reports to admins may result in account penalties"
+            ]
+        },
+        {
+            id: 'consequences',
+            icon: <FaGavel className="text-3xl text-gray-700 dark:text-gray-400" />,
+            title: "Consequences of Violations",
+            color: "gray",
+            rules: [
+                "⚠️ First Violation: Warning and temporary restrictions",
+                "⚠️ Second Violation: 7-day suspension and feature restrictions",
+                "⚠️ Third Violation: 30-day suspension or permanent ban",
+                "⚠️ Severe Violations: Immediate permanent ban",
+                "📉 SetuCoins penalties for guideline violations",
+                "🚫 Listing removal for fraudulent properties",
+                "⛔ Account termination for illegal activities",
+                "📧 All violations documented and emailed to user",
+                "Legal action may be pursued for serious violations"
+            ]
+        },
+        {
+            id: 'reporting',
+            icon: <FaBullhorn className="text-3xl text-pink-500" />,
+            title: "Reporting & Support",
+            color: "pink",
+            rules: [
+                "Report violations through the 'Report' button in chats, calls, or listings",
+                "Provide detailed information about the violation",
+                "Include screenshots or evidence when possible",
+                "Reports are confidential - reporter identity is protected",
+                "Response time: 24-48 hours for most reports",
+                "Emergency issues: Contact support immediately",
+                "False reports may result in account penalties",
+                "Thank you for helping keep UrbanSetu safe! 🙏"
+            ]
+        },
+        {
+            id: 'features',
+            icon: <FaCheckCircle className="text-3xl text-teal-500" />,
+            title: "Platform Features Guidelines",
+            color: "teal",
+            rules: [
+                "🎮 SetuCoins: Use fairly - no exploitation of gamification system",
+                "🤖 AI Chatbot: Use for property queries only - no abuse",
+                "🔄 Property Comparison: Compare fairly based on actual features",
+                "📊 Year in Review: Data is auto-generated and accurate",
+                "❤️ Wishlist: Keep updated - remove sold/unavailable properties",
+                "👀 Watchlist: Price alerts are for personal use only",
+                "📞 Call History: Private and cannot be shared publicly",
+                "🎥 360° Virtual Tours: Must represent actual property condition",
+                "📝 ESG Data: Must be verified and truthful"
+            ]
+        }
+    ];
+
+    return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+            {/* Background Gradient */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 dark:bg-blue-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 dark:opacity-10"></div>
+                <div className="absolute top-0 right-0 w-96 h-96 bg-purple-400 dark:bg-purple-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 dark:opacity-10"></div>
+                <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-400 dark:bg-pink-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 dark:opacity-10"></div>
+            </div>
+
+            <div className="max-w-5xl mx-auto relative z-10">
+                {/* Header */}
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-blue-900/10 p-8 mb-8 text-center transition-colors">
+                    <div className="flex items-center justify-center gap-4 mb-6">
+                        <FaShieldAlt className="text-5xl text-blue-600 dark:text-blue-400" />
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-blue-700 dark:text-blue-400 drop-shadow">
+                            Community Guidelines
+                        </h1>
+                    </div>
+                    <p className="text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                        Welcome to UrbanSetu! Our community guidelines ensure a safe, respectful, and trustworthy environment for all users. By using our platform, you agree to follow these guidelines.
+                    </p>
+                    <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg">
+                        <FaEye className="text-green-600 dark:text-green-400" />
+                        <span className="text-sm font-medium text-green-800 dark:text-green-300">
+                            Last Updated: December 2025
+                        </span>
+                    </div>
+                </div>
+
+                {/* Introduction */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 mb-8 transition-colors">
+                    <div className="flex items-start gap-4">
+                        <FaLock className="text-3xl text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+                        <div>
+                            <h2 className="text-xl font-bold text-blue-900 dark:text-blue-200 mb-2">
+                                Your Safety is Our Priority
+                            </h2>
+                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                UrbanSetu is committed to providing a secure environment for property seekers, sellers, and agents. These guidelines help maintain the integrity of our platform and protect all users. Violations may result in warnings, suspensions, or permanent bans.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Guidelines Sections */}
+                <div className="space-y-4">
+                    {guidelines.map((section, index) => (
+                        <div
+                            key={section.id}
+                            className="bg-white dark:bg-gray-900 rounded-xl shadow-md dark:shadow-blue-900/10 overflow-hidden transition-all duration-300 hover:shadow-lg"
+                        >
+                            <button
+                                onClick={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
+                                className={`w-full p-6 flex items-center justify-between text-left bg-gradient-to-r from-gray-50 to-${section.color}-50 dark:from-gray-800 dark:to-${section.color}-900/20 hover:from-${section.color}-50 dark:hover:from-${section.color}-900/30 transition-all duration-200`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-3 bg-white dark:bg-gray-800 rounded-lg shadow-md`}>
+                                        {section.icon}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+                                            {section.title}
+                                        </h3>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                            {section.rules.length} guidelines
+                                        </p>
+                                    </div>
+                                </div>
+                                {expandedSection === section.id ? (
+                                    <FaChevronUp className="text-2xl text-gray-600 dark:text-gray-400" />
+                                ) : (
+                                    <FaChevronDown className="text-2xl text-gray-600 dark:text-gray-400" />
+                                )}
+                            </button>
+
+                            {expandedSection === section.id && (
+                                <div className="p-6 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 transition-colors">
+                                    <ul className="space-y-3">
+                                        {section.rules.map((rule, ruleIndex) => (
+                                            <li key={ruleIndex} className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+                                                <FaCheckCircle className={`text-${section.color}-500 mt-1 flex-shrink-0`} />
+                                                <span className="leading-relaxed">{rule}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Footer CTA */}
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 rounded-xl shadow-xl p-8 mt-8 text-center text-white transition-colors">
+                    <FaUsers className="text-5xl mx-auto mb-4 opacity-90" />
+                    <h2 className="text-3xl font-bold mb-4">Together We Build Trust</h2>
+                    <p className="text-lg opacity-90 mb-6 max-w-2xl mx-auto">
+                        By following these guidelines, you help create a safe and positive experience for everyone in the UrbanSetu community. Thank you for being a responsible member!
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a
+                            href="/contact"
+                            className="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-200 shadow-md"
+                        >
+                            Contact Support
+                        </a>
+                        <a
+                            href="/terms"
+                            className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-all duration-200"
+                        >
+                            Read Terms & Conditions
+                        </a>
+                    </div>
+                </div>
+
+                {/* Quick Links */}
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md dark:shadow-blue-900/10 p-6 mt-8 transition-colors">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4 text-center">
+                        Related Resources
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <a href="/privacy" className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:shadow-md transition-all text-center group">
+                            <FaLock className="text-2xl text-blue-600 dark:text-blue-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Privacy Policy</span>
+                        </a>
+                        <a href="/terms" className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:shadow-md transition-all text-center group">
+                            <FaFileAlt className="text-2xl text-purple-600 dark:text-purple-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Terms & Conditions</span>
+                        </a>
+                        <a href="/about" className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:shadow-md transition-all text-center group">
+                            <FaHeart className="text-2xl text-red-600 dark:text-red-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">About UrbanSetu</span>
+                        </a>
+                    </div>
+                </div>
+
+                {/* Copyright */}
+                <div className="text-center text-gray-600 dark:text-gray-400 text-sm mt-8">
+                    © {new Date().getFullYear()} UrbanSetu. All rights reserved.
+                </div>
+            </div>
+            <ContactSupportWrapper />
+        </div>
+    );
+}

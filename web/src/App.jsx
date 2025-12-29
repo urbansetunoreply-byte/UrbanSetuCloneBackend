@@ -136,6 +136,7 @@ const AdminUpdates = lazy(() => import('./pages/AdminUpdates'));
 const Updates = lazy(() => import('./pages/Updates'));
 const LockAccount = lazy(() => import('./pages/security/LockAccount'));
 const UnlockAccount = lazy(() => import('./pages/security/UnlockAccount'));
+const CommunityGuidelines = lazy(() => import('./pages/CommunityGuidelines'));
 
 
 // Loading component
@@ -209,7 +210,7 @@ function normalizeRoute(path, role) {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
   // List of base routes that have public-facing versions
-  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai"];
+  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines"];
 
   // List of base routes that exist for both user and admin but are NOT public
   const parallelBases = [
@@ -752,6 +753,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/cookie-policy" element={currentUser ? <NotFound /> : <CookiePolicy />} />
             <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
             <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
+            <Route path="/community-guidelines" element={currentUser ? <NotFound /> : <CommunityGuidelines />} />
             <Route path="/restore-account/:token" element={<AccountRevocation />} />
             <Route path="/restore-property" element={<RestoreProperty />} />
             <Route path="/offers" element={<Offers />} />
@@ -798,6 +800,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/terms" element={<UserTerms />} />
               <Route path="/user/privacy" element={<UserPrivacy />} />
               <Route path="/user/cookie-policy" element={<UserCookiePolicy />} />
+              <Route path="/user/community-guidelines" element={<CommunityGuidelines />} />
               <Route path="/user/reviews" element={<UserReviews />} />
               <Route path="/user/device-management" element={<DeviceManagement />} />
               <Route path="/user/contact" element={<UserContact />} />
@@ -844,6 +847,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/terms" element={<AdminTerms />} />
               <Route path="/admin/privacy" element={<AdminPrivacy />} />
               <Route path="/admin/cookie-policy" element={<AdminCookiePolicy />} />
+              <Route path="/admin/community-guidelines" element={<CommunityGuidelines />} />
               <Route path="/admin/updates" element={<AdminUpdates />} />
               <Route path="/admin/management" element={<AdminManagement />} />
               <Route path="/admin/reviews" element={<AdminReviews />} />

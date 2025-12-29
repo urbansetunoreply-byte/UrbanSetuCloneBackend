@@ -2,6 +2,7 @@ import React from "react";
 
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 export default function Terms() {
   // Set page title
   usePageTitle("Terms & Conditions - Legal Information");
@@ -243,6 +244,7 @@ export default function Terms() {
           day: 'numeric'
         })}</p>
       </div>
+      <ContactSupportWrapper />
     </div>
   );
 } 

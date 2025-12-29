@@ -3,6 +3,7 @@ import AboutSkeleton from '../components/skeletons/AboutSkeleton';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaAndroid, FaDownload, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { downloadAndroidApp, getDownloadButtonText } from '../utils/androidDownload';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
@@ -14,6 +15,9 @@ export default function PublicAbout() {
   const [aboutData, setAboutData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedFaq, setExpandedFaq] = useState(null);
+  const termsLink = '/terms';
+  const privacyLink = '/privacy';
+  const communityGuidelinesLink = '/community-guidelines';
 
   const handlePhoneClick = (phoneNumber) => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -363,6 +367,7 @@ export default function PublicAbout() {
         </div>
         <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 transition-colors">&copy; {new Date().getFullYear()} UrbanSetu. All rights reserved.</div>
       </div>
+      <ContactSupportWrapper />
     </div>
   );
 } 
