@@ -37,10 +37,9 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
 
     const getRankStyle = (rank) => {
         switch (rank) {
-            case 1: return "bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 border-yellow-300 shadow-yellow-200/40 transform scale-[1.02]";
-            case 2: return "bg-gradient-to-br from-slate-50 to-gray-100 border-slate-200";
-            case 3: return "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200";
-            case 3: return "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200";
+            case 1: return "bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 dark:from-yellow-900/20 dark:via-amber-900/20 dark:to-yellow-900/10 border-yellow-300 dark:border-yellow-700/50 shadow-yellow-200/40 dark:shadow-none transform scale-[1.02]";
+            case 2: return "bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-800 dark:to-gray-900 border-slate-200 dark:border-slate-700";
+            case 3: return "bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-orange-200 dark:border-orange-700/50";
             default: return "bg-white dark:bg-gray-800 border-slate-100 dark:border-gray-700 hover:border-indigo-100 dark:hover:border-gray-600 hover:bg-slate-50/50 dark:hover:bg-gray-700/50";
         }
     };
@@ -149,7 +148,7 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
                                             {user.name} {user.userId === currentUser?._id && <span className="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-[10px] px-2 py-0.5 rounded-full ml-1">YOU</span>}
                                         </p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-[10px] font-black text-indigo-600 flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-tighter">
+                                            <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-300 flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/50 px-2 py-0.5 rounded-md uppercase tracking-tighter">
                                                 <FaFire className="text-orange-500" /> {user.streak} Month Streak
                                             </span>
                                         </div>

@@ -1721,22 +1721,22 @@ export default function AdminDashboard() {
 
           {/* Top Rated Properties */}
           {analytics.topProperties.length > 0 && (
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-6 border border-white/50 dark:border-gray-700">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
                 <FaStar className="text-yellow-500 mr-2" />
                 Top Rated Properties
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {analytics.topProperties.map((property) => (
-                  <div key={property._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <div key={property._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-800 truncate">{property.name}</h4>
-                      <span className="text-sm text-yellow-600 font-semibold">
+                      <h4 className="font-semibold text-gray-800 dark:text-white truncate">{property.name}</h4>
+                      <span className="text-sm text-yellow-600 dark:text-yellow-400 font-semibold">
                         {property.averageRating.toFixed(1)} ⭐
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">{property.city}, {property.state}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{property.city}, {property.state}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">
                       {property.reviewCount} review{property.reviewCount !== 1 ? 's' : ''}
                     </p>
                   </div>
@@ -1746,8 +1746,8 @@ export default function AdminDashboard() {
           )}
 
           {/* Enhanced Watchlist Analytics */}
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-6 border border-white/50 dark:border-gray-700">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
               <FaEye className="text-indigo-500 mr-2" />
               Watchlist Analytics
             </h3>
@@ -1846,25 +1846,25 @@ export default function AdminDashboard() {
             )}
 
             {/* Watchlist Insights */}
-            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-              <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Insights</h4>
+            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-700">
+              <h4 className="text-lg font-semibold text-gray-700 dark:text-white mb-3">Insights</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                  <span className="text-gray-600">
-                    <span className="font-semibold">{analytics.watchlist.totalWatchlists}</span> users have created watchlists
+                  <span className="text-gray-600 dark:text-gray-400">
+                    <span className="font-semibold text-gray-900 dark:text-gray-200">{analytics.watchlist.totalWatchlists}</span> users have created watchlists
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span className="text-gray-600">
-                    <span className="font-semibold">{analytics.watchlist.totalWatchedProperties}</span> unique properties are being watched
+                  <span className="text-gray-600 dark:text-gray-400">
+                    <span className="font-semibold text-gray-900 dark:text-gray-200">{analytics.watchlist.totalWatchedProperties}</span> unique properties are being watched
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-600">
-                    Average of <span className="font-semibold">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Average of <span className="font-semibold text-gray-900 dark:text-gray-200">
                       {analytics.watchlist.totalWatchlists > 0
                         ? Math.round(analytics.watchlist.totalWatchedProperties / analytics.watchlist.totalWatchlists * 10) / 10
                         : 0
@@ -1874,8 +1874,8 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  <span className="text-gray-600">
-                    Most watched property has <span className="font-semibold">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Most watched property has <span className="font-semibold text-gray-900 dark:text-gray-200">
                       {analytics.watchlist.topWatchedProperties.length > 0
                         ? Math.max(...analytics.watchlist.topWatchedProperties.map(p => p.watchCount))
                         : 0
@@ -1889,20 +1889,20 @@ export default function AdminDashboard() {
 
           {/* Recent Listings */}
           {analytics.recentListings.length > 0 && (
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-6 border border-white/50 dark:border-gray-700">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
                 <FaEye className="text-purple-500 mr-2" />
                 Recently Added Listings
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {analytics.recentListings.map((l) => (
-                  <div key={l._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <div key={l._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-800 truncate">{l.name}</h4>
-                      <span className="text-xs text-gray-500">{l.createdAt ? new Date(l.createdAt).toLocaleDateString() : ''}</span>
+                      <h4 className="font-semibold text-gray-800 dark:text-white truncate">{l.name}</h4>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{l.createdAt ? new Date(l.createdAt).toLocaleDateString() : ''}</span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-1">{l.city}, {l.state}</p>
-                    <p className="text-sm text-gray-500">Type: {l.type}{l.offer ? ' • Offer' : ''}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{l.city}, {l.state}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">Type: {l.type}{l.offer ? ' • Offer' : ''}</p>
                   </div>
                 ))}
               </div>
@@ -1927,10 +1927,10 @@ export default function AdminDashboard() {
         <div className="max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8 py-8 overflow-x-hidden">
           {/* Offer Listings */}
           {offerListings.length > 0 && (
-            <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
+            <div className="mb-8 bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-white/50 dark:border-gray-700">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left">🔥 Exclusive Offers</h2>
-                <Link to="/admin/explore?offer=true" className="text-blue-600 hover:underline">View All Offers</Link>
+                <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 animate-slide-in-left">🔥 Exclusive Offers</h2>
+                <Link to="/admin/explore?offer=true" className="text-blue-600 dark:text-blue-400 hover:underline">View All Offers</Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {offerListings.map((listing) => (
@@ -1944,10 +1944,10 @@ export default function AdminDashboard() {
 
           {/* Rent Listings */}
           {rentListings.length > 0 && (
-            <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
+            <div className="mb-8 bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-white/50 dark:border-gray-700">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left delay-200">🏡 Homes for Rent</h2>
-                <Link to="/admin/explore?type=rent" className="text-blue-600 hover:underline">View All Rentals</Link>
+                <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 animate-slide-in-left delay-200">🏡 Homes for Rent</h2>
+                <Link to="/admin/explore?type=rent" className="text-blue-600 dark:text-blue-400 hover:underline">View All Rentals</Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {rentListings.map((listing) => (
@@ -1961,10 +1961,10 @@ export default function AdminDashboard() {
 
           {/* Sale Listings */}
           {saleListings.length > 0 && (
-            <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
+            <div className="mb-8 bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-white/50 dark:border-gray-700">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left delay-400">🏠 Homes for Sale</h2>
-                <Link to="/admin/explore?type=sale" className="text-blue-600 hover:underline">View All Sales</Link>
+                <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 animate-slide-in-left delay-400">🏠 Homes for Sale</h2>
+                <Link to="/admin/explore?type=sale" className="text-blue-600 dark:text-blue-400 hover:underline">View All Sales</Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {saleListings.map((listing) => (
