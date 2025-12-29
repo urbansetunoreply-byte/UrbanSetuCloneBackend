@@ -3087,21 +3087,67 @@ function AdminAppointmentRow({
     return null;
   }, [appt?._id]);
 
-  const handleForceTerminateCall = useCallback(() => {
+  const handleForceTerminateCall = useCallback(async () => {
     if (!socket || !activeLiveCall) {
+      toast.error('No active call to terminate');
       return;
     }
-    setForceTerminateLoading(true);
-    socket.emit('admin-force-end-call', {
-      callId: activeLiveCall.callId,
-      reason: forceTerminateReason.trim()
-    });
 
-    // Safety timeout
-    setTimeout(() => {
+    setForceTerminateLoading(true);
+
+    try {
+      // Emit socket event to terminate call
+      socket.emit('admin-force-end-call', {
+        callId: activeLiveCall.callId,
+        reason: forceTerminateReason.trim(),
+        appointmentId: appt._id
+      });
+
+      // Send email notifications to both buyer and seller
+      try {
+        const emailResponse = await fetch(`${API_BASE_URL}/api/calls/admin/terminate-notification`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            appointmentId: appt._id,
+            callId: activeLiveCall.callId,
+            buyerId: appt.buyerId?._id || appt.buyerId,
+            sellerId: appt.sellerId?._id || appt.sellerId,
+            buyerEmail: appt.buyerId?.email,
+            sellerEmail: appt.sellerId?.email,
+            buyerName: appt.buyerId?.username || 'Buyer',
+            sellerName: appt.sellerId?.username || 'Seller',
+            propertyName: appt.propertyName || 'Property',
+            reason: forceTerminateReason.trim() || 'Administrative action',
+            appointmentDate: appt.date,
+            appointmentTime: appt.time
+          })
+        });
+
+        if (emailResponse.ok) {
+          console.log('Termination emails sent successfully');
+        } else {
+          console.warn('Failed to send termination emails');
+        }
+      } catch (emailError) {
+        console.error('Error sending termination emails:', emailError);
+        // Don't fail the termination if email fails
+      }
+
+      // Safety timeout - close modal and reset state after 5 seconds
+      setTimeout(() => {
+        setForceTerminateLoading(false);
+      }, 5000);
+
+    } catch (error) {
+      console.error('Error terminating call:', error);
+      toast.error('Failed to terminate call');
       setForceTerminateLoading(false);
-    }, 5000);
-  }, [socket, activeLiveCall, forceTerminateReason, setForceTerminateLoading]);
+    }
+  }, [socket, activeLiveCall, forceTerminateReason, setForceTerminateLoading, appt]);
 
   // Map call roles (caller/receiver) to buyer/seller for labeling streams
   const monitorRoles = React.useMemo(() => {
