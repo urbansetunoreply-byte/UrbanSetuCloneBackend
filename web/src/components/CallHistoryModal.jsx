@@ -142,7 +142,7 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
       case 'initiated':
         return <FaClock className="text-yellow-500" />;
       default:
-        return <FaClock className="text-gray-500" />;
+        return <FaClock className="text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -171,9 +171,9 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col transition-colors duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
           <h2 className="text-xl font-bold flex items-center gap-2">
             {isAdmin ? (
               <>
@@ -218,8 +218,8 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
         </div>
 
         {/* Filters Bar */}
-        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-gray-600 text-sm font-medium mr-2">
+        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm font-medium mr-2">
             <FaFilter />
             Filters:
           </div>
@@ -227,7 +227,7 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer"
+            className="px-3 py-1.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md text-sm text-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer"
           >
             <option value="all">All Types</option>
             <option value="audio">Audio Only</option>
@@ -237,7 +237,7 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer"
+            className="px-3 py-1.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md text-sm text-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer"
           >
             <option value="all">All Status</option>
             <option value="ended">Completed</option>
@@ -250,7 +250,7 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                 setFilterType('all');
                 setFilterStatus('all');
               }}
-              className="px-3 py-1.5 text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors ml-auto"
+              className="px-3 py-1.5 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors ml-auto"
             >
               Clear Filters
             </button>
@@ -258,11 +258,11 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 dark:bg-gray-800">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <FaSpinner className="animate-spin text-blue-600 text-3xl mr-3" />
-              <span className="text-gray-600">Loading call history...</span>
+              <FaSpinner className="animate-spin text-blue-600 dark:text-blue-400 text-3xl mr-3" />
+              <span className="text-gray-600 dark:text-gray-400">Loading call history...</span>
             </div>
           ) : error ? (
             <div className="flex items-center justify-center py-12">
@@ -280,12 +280,12 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
           ) : filteredCalls.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <FaPhone className="text-gray-400 text-5xl mx-auto mb-3" />
-                <p className="text-gray-600 font-medium text-lg">No calls found</p>
+                <FaPhone className="text-gray-400 dark:text-gray-500 text-5xl mx-auto mb-3" />
+                <p className="text-gray-600 dark:text-gray-300 font-medium text-lg">No calls found</p>
                 {calls.length > 0 ? (
-                  <p className="text-gray-500 text-sm mt-1">Try adjusting your filters</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Try adjusting your filters</p>
                 ) : (
-                  <p className="text-gray-500 text-sm mt-1">Calls made in this chat will appear here</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Calls made in this chat will appear here</p>
                 )}
               </div>
             </div>
@@ -299,24 +299,24 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                 return (
                   <div
                     key={call._id || call.callId}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white animate-fade-in"
+                    className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-700 animate-fade-in"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         {/* Call Type Icon */}
-                        <div className={`mt-1 p-2 rounded-full ${call.callType === 'video' ? 'bg-blue-100' : 'bg-green-100'
+                        <div className={`mt-1 p-2 rounded-full ${call.callType === 'video' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-green-100 dark:bg-green-900/30'
                           }`}>
                           {call.callType === 'video' ? (
-                            <FaVideo className={`text-lg ${call.callType === 'video' ? 'text-blue-600' : 'text-green-600'}`} />
+                            <FaVideo className={`text-lg ${call.callType === 'video' ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}`} />
                           ) : (
-                            <FaPhone className="text-lg text-green-600" />
+                            <FaPhone className="text-lg text-green-600 dark:text-green-400" />
                           )}
                         </div>
 
                         {/* Call Details */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-gray-800">
+                            <span className="font-semibold text-gray-800 dark:text-white">
                               {isAdmin
                                 ? `${callerName} → ${receiverName}`
                                 : isCaller
@@ -324,12 +324,12 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                                   : `${callerName} called you`
                               }
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               {call.callType === 'video' ? 'Video' : 'Audio'}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-4 text-sm text-gray-600 flex-wrap">
+                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
                             <div className="flex items-center gap-1">
                               <FaClock className="text-xs" />
                               <span>{formatDate(call.startTime || call.createdAt)}</span>
@@ -342,9 +342,9 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                             <div className="flex items-center gap-1">
                               {getStatusIcon(call.status)}
                               <span className={`
-                                ${call.status === 'ended' || call.status === 'accepted' ? 'text-green-600' : ''}
-                                ${call.status === 'rejected' || call.status === 'missed' || call.status === 'cancelled' ? 'text-red-600' : ''}
-                                ${call.status === 'ringing' || call.status === 'initiated' ? 'text-yellow-600' : ''}
+                                ${call.status === 'ended' || call.status === 'accepted' ? 'text-green-600 dark:text-green-400' : ''}
+                                ${call.status === 'rejected' || call.status === 'missed' || call.status === 'cancelled' ? 'text-red-600 dark:text-red-400' : ''}
+                                ${call.status === 'ringing' || call.status === 'initiated' ? 'text-yellow-600 dark:text-yellow-400' : ''}
                                 font-medium
                               `}>
                                 {getStatusText(call.status)}
@@ -360,7 +360,7 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                             setCallToDelete(call);
                             setShowDeleteSingleModal(true);
                           }}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-2 transition-colors ml-2 flex-shrink-0"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full p-2 transition-colors ml-2 flex-shrink-0"
                           title="Delete this call history"
                         >
                           <FaTrash className="w-4 h-4" />
@@ -377,15 +377,15 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
         {/* Delete All Confirmation Modal */}
         {showDeleteAllModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
               <div className="p-6">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaTrash className="text-red-600 text-xl" />
+                  <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaTrash className="text-red-600 dark:text-red-400 text-xl" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete All Call History</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Delete All Call History</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                       Are you sure you want to delete all call history from your view? This action will only remove the calls from your view and will not affect the other party or the database records.
                     </p>
                   </div>
@@ -395,7 +395,7 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                   <button
                     type="button"
                     onClick={() => setShowDeleteAllModal(false)}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Cancel
                   </button>
@@ -416,15 +416,15 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
         {/* Delete Single Call Confirmation Modal */}
         {showDeleteSingleModal && callToDelete && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
               <div className="p-6">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaTrash className="text-red-600 text-xl" />
+                  <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaTrash className="text-red-600 dark:text-red-400 text-xl" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Call History</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Delete Call History</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                       Are you sure you want to delete this call history from your view? This action will only remove the call from your view and will not affect the other party or the database records.
                     </p>
                   </div>
@@ -437,7 +437,7 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                       setShowDeleteSingleModal(false);
                       setCallToDelete(null);
                     }}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Cancel
                   </button>
@@ -456,16 +456,16 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
         )}
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-          <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-lg">
+          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
             <span>Total calls: <strong>{filteredCalls.length}</strong></span>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
-                <FaVideo className="text-blue-600" />
+                <FaVideo className="text-blue-600 dark:text-blue-400" />
                 <span>Video: {filteredCalls.filter(c => c.callType === 'video').length}</span>
               </div>
               <div className="flex items-center gap-1">
-                <FaPhone className="text-green-600" />
+                <FaPhone className="text-green-600 dark:text-green-400" />
                 <span>Audio: {filteredCalls.filter(c => c.callType === 'audio').length}</span>
               </div>
             </div>

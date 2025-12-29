@@ -1591,7 +1591,7 @@ export default function MyAppointments() {
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto relative animate-fadeIn">
                 {/* Close button */}
                 <button
-                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors z-10 shadow"
+                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full p-2 transition-colors z-10 shadow"
                   onClick={() => setShowOtherPartyModal(false)}
                   title="Close"
                   aria-label="Close"
@@ -1600,7 +1600,7 @@ export default function MyAppointments() {
                 </button>
 
                 {/* Header with gradient background */}
-                <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-2xl px-6 py-6 border-b border-gray-200">
+                <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/40 dark:to-purple-900/40 rounded-t-2xl px-6 py-6 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <UserAvatar
@@ -1633,13 +1633,13 @@ export default function MyAppointments() {
                       </div>
                     </div>
                     <div className="text-center">
-                      <h2 className="text-xl font-bold text-blue-800 flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-blue-800 dark:text-blue-300 flex items-center gap-2">
                         {selectedOtherParty.username || 'User'}
                         {selectedOtherParty.role === 'admin' && (
-                          <FaUserShield className="text-purple-600 text-base" title="Admin user" />
+                          <FaUserShield className="text-purple-600 dark:text-purple-400 text-base" title="Admin user" />
                         )}
                       </h2>
-                      <p className="text-sm text-gray-600 capitalize font-medium bg-white px-3 py-1 rounded-full shadow-sm">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 capitalize font-medium bg-white dark:bg-gray-700 px-3 py-1 rounded-full shadow-sm">
                         {(() => {
                           // Determine the opposite role based on current user's role in the appointment
                           const currentUserRole = selectedAppointment.buyerId?._id === currentUser._id || selectedAppointment.buyerId === currentUser._id ? 'buyer' : 'seller';
@@ -1704,13 +1704,13 @@ export default function MyAppointments() {
                   <div className="space-y-4">
                     {canSeeContactInfo ? (
                       <>
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                          <FaEnvelope className="text-blue-500 w-5 h-5 flex-shrink-0" />
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-blue-500">
+                          <FaEnvelope className="text-blue-500 dark:text-blue-400 w-5 h-5 flex-shrink-0" />
                           <div className="flex-1">
-                            <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Email</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Email</p>
                             <a
                               href={`mailto:${selectedOtherParty.email}`}
-                              className="text-blue-700 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                              className="text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 hover:underline font-medium transition-colors duration-200"
                               title="Click to send email"
                             >
                               {selectedOtherParty.email}
@@ -1718,39 +1718,39 @@ export default function MyAppointments() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
-                          <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-green-500">
+                          <FaPhone className="text-green-500 dark:text-green-400 w-5 h-5 flex-shrink-0" />
                           <div className="flex-1">
-                            <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Phone</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Phone</p>
                             {selectedOtherParty.mobileNumber && selectedOtherParty.mobileNumber !== '' ? (
                               <button
                                 onClick={() => handlePhoneClick(selectedOtherParty.mobileNumber)}
-                                className="text-green-700 hover:text-green-800 hover:underline font-medium transition-colors duration-200 text-left"
+                                className="text-green-700 dark:text-green-300 hover:text-green-800 dark:hover:text-green-200 hover:underline font-medium transition-colors duration-200 text-left"
                                 title="Click to call or copy phone number"
                               >
                                 {selectedOtherParty.mobileNumber}
                               </button>
                             ) : (
-                              <p className="text-gray-800 font-medium">Not provided</p>
+                              <p className="text-gray-800 dark:text-gray-300 font-medium">Not provided</p>
                             )}
                           </div>
                         </div>
                       </>
                     ) : (
-                      <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                      <div className="flex items-center gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border-l-4 border-yellow-500">
                         <FaExclamationTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0" />
                         <div>
-                          <p className="text-xs text-yellow-700 uppercase tracking-wide font-semibold">Contact Information Restricted</p>
-                          <p className="text-yellow-800 font-medium">Contact details are only available for accepted appointments</p>
+                          <p className="text-xs text-yellow-700 dark:text-yellow-400 uppercase tracking-wide font-semibold">Contact Information Restricted</p>
+                          <p className="text-yellow-800 dark:text-yellow-200 font-medium">Contact details are only available for accepted appointments</p>
                         </div>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-purple-500">
-                      <FaCalendar className="text-purple-500 w-5 h-5 flex-shrink-0" />
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-purple-500">
+                      <FaCalendar className="text-purple-500 dark:text-purple-400 w-5 h-5 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Member Since</p>
-                        <p className="text-gray-800 font-medium">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Member Since</p>
+                        <p className="text-gray-800 dark:text-gray-200 font-medium">
                           {selectedOtherParty.createdAt ? new Date(selectedOtherParty.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -11893,17 +11893,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {
         showStarredModal && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col transition-colors">
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-yellow-50 to-amber-50">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                   <FaStar className="text-yellow-500" />
                   Starred Messages
                 </h3>
                 <button
                   onClick={fetchStarredMessages}
                   disabled={loadingStarredMessages}
-                  className="p-2 text-yellow-600 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 text-yellow-600 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-300 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/40 dark:hover:bg-yellow-900/60 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Refresh starred messages"
                 >
                   {loadingStarredMessages ? (
@@ -11923,9 +11923,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   </div>
                 ) : starredMessages.length === 0 ? (
                   <div className="text-center py-12">
-                    <FaRegStar className="mx-auto text-6xl text-gray-300 mb-4" />
-                    <h4 className="text-xl font-semibold text-gray-600 mb-2">No Starred Messages</h4>
-                    <p className="text-gray-500">Star important messages to find them easily later.</p>
+                    <FaRegStar className="mx-auto text-6xl text-gray-300 dark:text-gray-600 mb-4" />
+                    <h4 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No Starred Messages</h4>
+                    <p className="text-gray-500 dark:text-gray-400">Star important messages to find them easily later.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -11996,7 +11996,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             <div
                               className={`rounded-2xl px-4 py-3 text-sm shadow-lg break-words relative group cursor-pointer hover:shadow-xl transition-all duration-200 ${isMe
                                 ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600'
-                                : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                                : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                                 }`}
                               onClick={() => {
                                 setShowStarredModal(false);

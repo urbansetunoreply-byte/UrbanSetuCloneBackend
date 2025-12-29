@@ -28,15 +28,15 @@ const ExportChatModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] flex flex-col transition-colors duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 shrink-0">
-          <h3 className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 shrink-0">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Export Chat Transcript
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             disabled={isExporting}
           >
             <FaTimes size={20} />
@@ -46,9 +46,9 @@ const ExportChatModal = ({
         {/* Content */}
         <div className="p-4 sm:p-6 overflow-y-auto">
           {/* Appointment Info */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-2">Appointment Details</h4>
-            <div className="text-sm text-gray-600 space-y-1">
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <h4 className="font-medium text-gray-900 dark:text-gray-200 mb-2">Appointment Details</h4>
+            <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
               <div><strong>Property:</strong> {appointment?.propertyName || 'N/A'}</div>
               <div><strong>Date:</strong> {new Date(appointment?.date).toLocaleDateString()}</div>
               <div><strong>Messages:</strong> {messageCount} messages</div>
@@ -58,11 +58,11 @@ const ExportChatModal = ({
 
           {/* Export Options */}
           <div className="mb-6">
-            <h4 className="font-medium text-gray-900 mb-4">Export Options</h4>
+            <h4 className="font-medium text-gray-900 dark:text-gray-200 mb-4">Export Options</h4>
 
             {/* With Media Option */}
             <div className="mb-4">
-              <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors">
+              <label className="flex items-center p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-colors">
                 <input
                   type="radio"
                   name="exportType"
@@ -74,10 +74,10 @@ const ExportChatModal = ({
                 <div className="flex items-center">
                   <FaImage className="text-blue-500 mr-3" size={20} />
                   <div>
-                    <div className="font-medium text-gray-900">With Media</div>
-                    <div className="text-xs sm:text-sm text-gray-600">
+                    <div className="font-medium text-gray-900 dark:text-white">With Media</div>
+                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                       Include all images in the PDF (larger file size)<br />
-                      <span className="text-xs text-blue-600">✓ Includes reactions, edit indicators, and reply context</span>
+                      <span className="text-xs text-blue-600 dark:text-blue-400">✓ Includes reactions, edit indicators, and reply context</span>
                     </div>
                   </div>
                 </div>
@@ -86,7 +86,7 @@ const ExportChatModal = ({
 
             {/* Without Media Option */}
             <div>
-              <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors">
+              <label className="flex items-center p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-colors">
                 <input
                   type="radio"
                   name="exportType"
@@ -98,10 +98,10 @@ const ExportChatModal = ({
                 <div className="flex items-center">
                   <FaFile className="text-green-500 mr-3" size={20} />
                   <div>
-                    <div className="font-medium text-gray-900">Text Only</div>
-                    <div className="text-xs sm:text-sm text-gray-600">
+                    <div className="font-medium text-gray-900 dark:text-white">Text Only</div>
+                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                       Text messages only with image placeholders (smaller file)<br />
-                      <span className="text-xs text-green-600">✓ Includes reactions, edit indicators, and reply context</span>
+                      <span className="text-xs text-green-600 dark:text-green-400">✓ Includes reactions, edit indicators, and reply context</span>
                     </div>
                   </div>
                 </div>
@@ -110,8 +110,8 @@ const ExportChatModal = ({
           </div>
 
           {/* File Size Estimate */}
-          <div className="mb-6 p-3 bg-blue-50 rounded-lg">
-            <div className="text-sm text-blue-800">
+          <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+            <div className="text-sm text-blue-800 dark:text-blue-300">
               <strong>Estimated file size:</strong> {' '}
               {exportType === 'with-media' ?
                 `${Math.max(1, Math.ceil(imageCount * 0.5 + messageCount * 0.01))} MB` :
@@ -122,11 +122,11 @@ const ExportChatModal = ({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-gray-200 shrink-0">
+        <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 shrink-0">
           <button
             onClick={onClose}
             disabled={isExporting}
-            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

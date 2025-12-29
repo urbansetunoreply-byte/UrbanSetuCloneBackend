@@ -38,19 +38,7 @@ const ChatSettingsModal = ({ isOpen, onClose, settings, updateSetting }) => {
                         </h4>
 
                         <div className="space-y-5">
-                            {/* Dark Mode Toggle */}
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="font-medium">Dark Mode</div>
-                                    <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Use dark theme for chat</div>
-                                </div>
-                                <button
-                                    onClick={() => updateSetting('theme', isDarkMode ? 'light' : 'dark')}
-                                    className={getToggleSwitchClasses(isDarkMode)}
-                                >
-                                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ${isDarkMode ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
-                                </button>
-                            </div>
+
 
                             {/* Theme Color */}
                             <div>
