@@ -10848,7 +10848,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   type={showLockPassword ? "text" : "password"}
                   value={lockConfirmPassword}
                   onChange={(e) => setLockConfirmPassword(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                   placeholder="Confirm password"
                 />
                 <p className="text-xs text-gray-500 mt-1">Note: This is a separate password, not your login password.</p>
@@ -10864,7 +10864,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   setLockConfirmPassword('');
                   setShowLockPassword(false);
                 }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
               >
                 Cancel
               </button>
@@ -10896,20 +10896,20 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {/* Chat Unlock Modal */}
       {showChatUnlockModal && createPortal((
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-orange-600">
                 <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
               </svg>
               Chat is Locked
             </h3>
 
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               This chat is protected with a password. Enter your password to access the chat.
             </p>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -10918,19 +10918,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   type={showUnlockPassword ? "text" : "password"}
                   value={unlockPassword}
                   onChange={(e) => setUnlockPassword(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 pr-10"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 pr-10 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                   placeholder="Enter password"
                   onKeyPress={(e) => e.key === 'Enter' && handleChatUnlock()}
                 />
                 <button
                   type="button"
                   onClick={() => setShowUnlockPassword(!showUnlockPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   {showUnlockPassword ? '👁️' : '👁️‍🗨️'}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Note: This is a separate password, not your login password.</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Note: This is a separate password, not your login password.</p>
             </div>
 
             <div className="flex items-center justify-end mb-4">
@@ -10940,7 +10940,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   setShowChatUnlockModal(false);
                   setShowForgotPasswordModal(true);
                 }}
-                className="text-sm text-blue-600 hover:text-blue-800 underline"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
               >
                 Forgot password?
               </button>
@@ -10954,7 +10954,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   setUnlockPassword('');
                   setShowUnlockPassword(false);
                 }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
               >
                 Cancel
               </button>
@@ -10982,15 +10982,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {
         showForgotPasswordModal && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-red-600">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
                 </svg>
                 Forgot Password
               </h3>
 
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+              <div className="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 mb-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
@@ -10998,8 +10998,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-yellow-800">Warning</h3>
-                    <div className="mt-2 text-sm text-yellow-700">
+                    <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Warning</h3>
+                    <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
                       <p>This action will permanently:</p>
                       <ul className="list-disc list-inside mt-1">
                         <li>Clear all chat messages</li>
@@ -11011,7 +11011,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 </div>
               </div>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 This action cannot be undone. Are you sure you want to proceed?
               </p>
 
@@ -11019,7 +11019,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 <button
                   type="button"
                   onClick={() => setShowForgotPasswordModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
                 >
                   Cancel
                 </button>
@@ -11714,20 +11714,20 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {
         showMessageInfoModal && selectedMessageForInfo && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaInfoCircle className="text-blue-500" /> Message Info
               </h3>
               <div className="space-y-4">
-                <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded p-3 text-sm text-gray-700 dark:text-gray-300">
                   <div className="font-semibold mb-2">Message:</div>
                   <div className="whitespace-pre-wrap break-words">{(selectedMessageForInfo.message || '').slice(0, 200)}{(selectedMessageForInfo.message || '').length > 200 ? '...' : ''}</div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Sent:</span>
-                    <span className="text-sm text-gray-800">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Sent:</span>
+                    <span className="text-sm text-gray-800 dark:text-gray-200">
                       {new Date(selectedMessageForInfo.timestamp).toLocaleString('en-US', {
                         year: 'numeric',
                         month: 'short',
@@ -11741,8 +11741,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
                   {selectedMessageForInfo.deliveredAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Delivered:</span>
-                      <span className="text-sm text-gray-800">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Delivered:</span>
+                      <span className="text-sm text-gray-800 dark:text-gray-200">
                         {new Date(selectedMessageForInfo.deliveredAt).toLocaleString('en-US', {
                           year: 'numeric',
                           month: 'short',
@@ -11757,8 +11757,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
                   {selectedMessageForInfo.readAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Read:</span>
-                      <span className="text-sm text-gray-800">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Read:</span>
+                      <span className="text-sm text-gray-800 dark:text-gray-200">
                         {new Date(selectedMessageForInfo.readAt).toLocaleString('en-US', {
                           year: 'numeric',
                           month: 'short',
@@ -11773,22 +11773,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
                   {!selectedMessageForInfo.deliveredAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Status:</span>
-                      <span className="text-sm text-gray-500">Not delivered yet</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Not delivered yet</span>
                     </div>
                   )}
 
                   {selectedMessageForInfo.deliveredAt && !selectedMessageForInfo.readAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Status:</span>
-                      <span className="text-sm text-blue-600">Delivered</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
+                      <span className="text-sm text-blue-600 dark:text-blue-400">Delivered</span>
                     </div>
                   )}
 
                   {selectedMessageForInfo.readAt && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Status:</span>
-                      <span className="text-sm text-green-600">Read</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
+                      <span className="text-sm text-green-600 dark:text-green-400">Read</span>
                     </div>
                   )}
                 </div>
