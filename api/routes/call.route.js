@@ -251,6 +251,13 @@ router.post("/end", verifyToken, async (req, res) => {
       io.to(`appointment_${call.appointmentId}`).emit('call-ended', { callId, duration });
     }
 
+    // CRITICAL: Clean up activeCalls Map to allow users to make new calls
+    const activeCalls = req.app.get('activeCalls');
+    if (activeCalls) {
+      activeCalls.delete(callId);
+      console.log(`✅ Cleaned up active call: ${callId}`);
+    }
+
     // Send call ended email to both parties
     try {
       const caller = await User.findById(call.callerId);

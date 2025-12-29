@@ -272,6 +272,7 @@ app.set('lastSeenTimes', lastSeenTimes);
 
 // Store active calls (in-memory) - shared across all socket connections
 const activeCalls = new Map(); // callId -> { callerSocketId, receiverSocketId, appointmentId, ... }
+app.set('activeCalls', activeCalls); // Make accessible to routes for cleanup
 
 // Register user appointments socket logic for delivered ticks
 registerUserAppointmentsSocket(io);
