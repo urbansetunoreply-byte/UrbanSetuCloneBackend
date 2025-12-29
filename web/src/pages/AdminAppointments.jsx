@@ -6192,15 +6192,15 @@ function AdminAppointmentRow({
         </button>
         {showPasswordModal && !showChatModal && (
           <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs relative flex flex-col items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xs relative flex flex-col items-center border dark:border-gray-700">
               <button
-                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-2 transition-colors"
                 onClick={() => setShowPasswordModal(false)}
                 title="Close"
               >
                 <FaTimes className="w-4 h-4" />
               </button>
-              <h3 className="text-lg font-bold mb-4 text-blue-700 flex items-center gap-2">
+              <h3 className="text-lg font-bold mb-4 text-blue-700 dark:text-blue-400 flex items-center gap-2">
                 <FaUserShield /> Admin Password Required
               </h3>
               <form onSubmit={handlePasswordSubmit} className="w-full flex flex-col gap-3">
@@ -6208,14 +6208,14 @@ function AdminAppointmentRow({
                   <input
                     ref={passwordInputRef}
                     type="password"
-                    className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-200"
+                    className="border dark:border-gray-600 rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-white"
                     placeholder="Enter your password"
                     value={adminPassword}
                     onChange={e => setAdminPassword(e.target.value)}
                     required
                   />
                   {passwordError && (
-                    <div className="text-red-600 text-sm mt-1">{passwordError}</div>
+                    <div className="text-red-600 dark:text-red-400 text-sm mt-1">{passwordError}</div>
                   )}
                 </div>
                 <button
@@ -6231,7 +6231,7 @@ function AdminAppointmentRow({
         )}
         {showChatModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 p-4">
-            <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl shadow-2xl w-full h-full max-w-6xl max-h-full p-0 relative animate-fadeIn flex flex-col border border-gray-200 transform transition-all duration-500 hover:shadow-3xl">
+            <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-950 rounded-3xl shadow-2xl w-full h-full max-w-6xl max-h-full p-0 relative animate-fadeIn flex flex-col border border-gray-200 dark:border-gray-700 transform transition-all duration-500 hover:shadow-3xl">
               <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b-2 border-blue-700 bg-gradient-to-r from-blue-700 via-purple-700 to-blue-900 rounded-t-3xl relative shadow-2xl sticky top-[env(safe-area-inset-top,0px)] z-30">
                 {isSelectionMode ? (
                   // Multi-select header
@@ -7051,7 +7051,7 @@ function AdminAppointmentRow({
                           <FaEllipsisV className="text-sm" />
                         </button>
                         {showChatOptionsMenu && (
-                          <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
+                          <div className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 min-w-[180px] chat-options-menu">
                             {/* Reports option (appointment-scoped) */}
                             <button
                               className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
@@ -7348,7 +7348,7 @@ function AdminAppointmentRow({
                         <FaCalendarAlt className="text-sm" />
                       </button>
                       {showCalendar && (
-                        <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 min-w-[250px] animate-fadeIn"
+                        <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 min-w-[250px] animate-fadeIn"
                           style={{ zIndex: 9999 }}>
                           <div className="flex items-center justify-between mb-3">
                             <span className="text-sm font-medium text-gray-700">Jump to Date</span>
@@ -7441,7 +7441,7 @@ function AdminAppointmentRow({
 
               <div
                 ref={chatContainerRef}
-                className={`flex-1 overflow-y-auto space-y-2 px-4 pt-4 animate-fadeInChat relative bg-gradient-to-b from-transparent to-blue-50/30 ${isDragOver ? 'bg-blue-50/50 border-2 border-dashed border-blue-300' : ''}`}
+                className={`flex-1 overflow-y-auto space-y-2 px-4 pt-4 animate-fadeInChat relative bg-gradient-to-b from-transparent to-blue-50/30 dark:to-blue-950/30 ${isDragOver ? 'bg-blue-50/50 dark:bg-blue-950/50 border-2 border-dashed border-blue-300 dark:border-blue-700' : ''}`}
                 style={{ minHeight: '400px', maxHeight: 'calc(100vh - 200px)' }}
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -7476,8 +7476,8 @@ function AdminAppointmentRow({
                 }}
               >
                 {/* Privacy Notice for Admins */}
-                <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-400 rounded-r-lg mb-4 backdrop-blur-sm">
-                  <p className="text-sm text-blue-700 font-medium text-center flex items-center justify-center gap-2">
+                <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/40 dark:to-purple-900/40 border-l-4 border-blue-400 rounded-r-lg mb-4 backdrop-blur-sm">
+                  <p className="text-sm text-blue-700 dark:text-blue-300 font-medium text-center flex items-center justify-center gap-2">
                     <span className="animate-gentlePulse">🔒</span>
                     Chats are encrypted and secure. View only for valid purposes like disputes or fraud checks. Unauthorized access or sharing is prohibited and will be logged.
                   </p>
@@ -7540,7 +7540,7 @@ function AdminAppointmentRow({
                       <React.Fragment key={c._id || index}>
                         {isNewDay && (
                           <div className="w-full flex justify-center my-2">
-                            <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
+                            <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white dark:border-gray-700">{getDateLabel(currentDate)}</span>
                           </div>
                         )}
                         {/* New messages divider */}
@@ -7549,11 +7549,11 @@ function AdminAppointmentRow({
                           return messageIndex === localComments.length - unreadNewMessages;
                         })() && (
                             <div className="w-full flex items-center my-2">
-                              <div className="flex-1 h-px bg-gray-300"></div>
-                              <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
+                              <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
+                              <span className="mx-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-full border border-red-200 dark:border-red-800">
                                 New messages
                               </span>
-                              <div className="flex-1 h-px bg-gray-300"></div>
+                              <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
                             </div>
                           )}
                         <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
@@ -7580,8 +7580,8 @@ function AdminAppointmentRow({
                             className={`relative rounded-2xl px-4 sm:px-5 shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c && c.audioUrl ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${settings.messageDensity === 'compact' ? 'py-1' : settings.messageDensity === 'spacious' ? 'py-5' : 'py-3'
                               } ${settings.fontSize === 'small' ? 'text-xs' : settings.fontSize === 'large' ? 'text-base' : 'text-sm'
                               } ${isMe
-                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl'
-                                : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 dark:shadow-blue-900/20 hover:shadow-blue-300 dark:hover:shadow-blue-900/40 hover:shadow-2xl'
+                                : 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 shadow-gray-200 dark:shadow-black/20 hover:shadow-lg dark:hover:shadow-black/40 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-xl'
                               } ${isSelectionMode && selectedMessages.some(msg => msg._id === (c && c._id)) ? 'ring-2 ring-blue-400' : ''}`}
                           >
 
@@ -7608,7 +7608,7 @@ function AdminAppointmentRow({
                               }
 
                               return (
-                                <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
+                                <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/30 dark:to-blue-900/30 hover:from-purple-100 hover:to-blue-100 dark:hover:from-purple-900/50 dark:hover:to-blue-900/50 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
                                   if (c && c.replyTo && messageRefs.current[c.replyTo]) {
                                     messageRefs.current[c.replyTo].scrollIntoView({ behavior: 'smooth', block: 'center' });
                                     messageRefs.current[c.replyTo].classList.add('reply-highlight');
