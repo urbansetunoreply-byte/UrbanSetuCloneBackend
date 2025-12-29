@@ -10082,6 +10082,36 @@ function AdminAppointmentRow({
           </div>
         )}
 
+        {/* Force-terminate Call Confirmation Modal */}
+        {showForceTerminateModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[250]">
+            <div className="bg-white dark:bg-gray-800 dark:border dark:border-gray-700 rounded-xl p-6 w-full max-w-sm relative shadow-2xl">
+              <h3 className="text-lg font-bold mb-4 text-red-600 flex items-center gap-2">
+                <FaBan /> Force Terminate Call
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+                Are you sure you want to force-end this live call? This will disconnect both users immediately.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowForceTerminateModal(false)}
+                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleForceTerminate}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <FaPowerOff size={12} /> Force End Call
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Cancel Appointment Modal */}
         {showCancelModal && appointmentToHandle === appt._id && (
           <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
@@ -10097,13 +10127,13 @@ function AdminAppointmentRow({
                       Are you sure you want to cancel this appointment?
                     </p>
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Reason for cancellation (required):
                       </label>
                       <textarea
                         value={cancelReason}
                         onChange={(e) => setCancelReason(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                         rows="3"
                         placeholder="Please provide a reason for cancelling this appointment..."
                       />
@@ -10119,7 +10149,7 @@ function AdminAppointmentRow({
                       setAppointmentToHandle(null);
                       setCancelReason('');
                     }}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Cancel
                   </button>
@@ -10150,30 +10180,30 @@ function AdminAppointmentRow({
 
           return (
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 animate-fadeIn">
                 <div className="p-6">
                   <div className="flex items-start gap-4 mb-6">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <FaUndo className="text-green-600 text-xl" />
+                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                      <FaUndo className="text-green-600 dark:text-green-400 text-xl" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-800">Reinitiate Appointment</h3>
-                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Reinitiate Appointment</h3>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full font-medium">
                           Buyer: {buyerReinitiationCount}/{maxReinitiations} • Seller: {sellerReinitiationCount}/{maxReinitiations}
                         </span>
                       </div>
                       {showRefundWarning ? (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-3">
+                        <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-3">
                           <p className="text-sm font-semibold mb-1">Reinitiation Disabled</p>
                           <p className="text-sm">The buyer has already received a refund for this appointment.</p>
                         </div>
                       ) : (
                         <>
-                          <p className="text-sm text-gray-600 leading-relaxed text-justify mb-3">
+                          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed text-justify mb-3">
                             Are you sure you want to reinitiate this appointment? This will notify both buyer and seller.
                           </p>
-                          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-lg mb-3">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300 px-4 py-2 rounded-lg mb-3">
                             <p className="text-xs font-semibold mb-1">Reinitiation Count:</p>
                             <p className="text-xs">Buyer: {buyerReinitiationCount}/{maxReinitiations} used • Seller: {sellerReinitiationCount}/{maxReinitiations} used</p>
                           </div>
@@ -10190,7 +10220,7 @@ function AdminAppointmentRow({
                         setAppointmentToHandle(null);
                         setReinitiatePaymentStatus(null);
                       }}
-                      className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                      className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                       Cancel
                     </button>
@@ -10199,7 +10229,7 @@ function AdminAppointmentRow({
                       onClick={confirmReinitiate}
                       disabled={showRefundWarning}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${showRefundWarning
-                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                        ? 'bg-gray-400 dark:bg-gray-700 text-gray-600 dark:text-gray-500 cursor-not-allowed'
                         : 'bg-green-600 text-white hover:bg-green-700'
                         }`}
                     >
@@ -10300,21 +10330,21 @@ function AdminAppointmentRow({
         {/* Starred Messages Modal */}
         {showStarredModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-yellow-50 to-amber-50">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaStar className="text-yellow-500" />
                   Starred Messages
                 </h3>
                 <button
                   onClick={fetchStarredMessages}
                   disabled={loadingStarredMessages}
-                  className="p-2 text-yellow-600 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/40 hover:bg-yellow-200 dark:hover:bg-yellow-900/60 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Refresh starred messages"
                 >
                   {loadingStarredMessages ? (
-                    <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-yellow-600 dark:border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     <FaSync className="w-4 h-4" />
                   )}
@@ -10326,13 +10356,13 @@ function AdminAppointmentRow({
                 {loadingStarredMessages ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-                    <span className="ml-3 text-gray-600">Loading starred messages...</span>
+                    <span className="ml-3 text-gray-600 dark:text-gray-400">Loading starred messages...</span>
                   </div>
                 ) : starredMessages.length === 0 ? (
                   <div className="text-center py-12">
-                    <FaRegStar className="mx-auto text-6xl text-gray-300 mb-4" />
-                    <h4 className="text-xl font-semibold text-gray-600 mb-2">No Starred Messages</h4>
-                    <p className="text-gray-500">Star important messages to find them easily later.</p>
+                    <FaRegStar className="mx-auto text-6xl text-gray-300 dark:text-gray-600 mb-4" />
+                    <h4 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Starred Messages</h4>
+                    <p className="text-gray-500 dark:text-gray-500">Star important messages to find them easily later.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -10346,7 +10376,7 @@ function AdminAppointmentRow({
                             {/* Star indicator and remove button */}
                             <div className={`flex items-center gap-2 mb-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
                               <FaStar className="text-yellow-500 text-xs" />
-                              <span className={`text-xs font-medium ${isMe ? 'text-blue-600' : 'text-green-600'}`}>
+                              <span className={`text-xs font-medium ${isMe ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}`}>
                                 {isMe ? 'You' : (() => {
                                   // Find the sender name based on senderEmail
                                   if (message.senderEmail === appt.buyerId?.email) {
@@ -10359,7 +10389,7 @@ function AdminAppointmentRow({
                                   }
                                 })()}
                               </span>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {messageDate.toLocaleDateString('en-US', {
                                   month: 'short',
                                   day: 'numeric',
@@ -10402,7 +10432,7 @@ function AdminAppointmentRow({
                                     setUnstarringMessageId(null);
                                   }
                                 }}
-                                className="text-red-500 hover:text-red-700 text-xs p-1 rounded-full hover:bg-red-50 transition-colors"
+                                className="text-red-500 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 text-xs p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                                 title="Remove from starred messages"
                                 disabled={unstarringMessageId === message._id}
                               >
@@ -10417,8 +10447,8 @@ function AdminAppointmentRow({
                             {/* Message bubble - styled like chatbox */}
                             <div
                               className={`rounded-2xl px-4 py-3 text-sm shadow-lg break-words relative group cursor-pointer hover:shadow-xl transition-all duration-200 ${isMe
-                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600'
-                                : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600 dark:from-blue-700 dark:to-purple-800'
+                                : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-650 hover:border-gray-300 dark:hover:border-gray-500'
                                 }`}
                               onClick={() => {
                                 setShowStarredModal(false);
@@ -10463,7 +10493,7 @@ function AdminAppointmentRow({
                                   <div className="mb-2">
                                     <video
                                       src={message.videoUrl}
-                                      className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                      className="max-w-full max-h-64 rounded-lg border dark:border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
                                       controls
                                       onClick={(e) => {
                                         e.preventDefault();
@@ -10483,7 +10513,7 @@ function AdminAppointmentRow({
                                 {message.documentUrl && (
                                   <div className="mb-2">
                                     <button
-                                      className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
+                                      className="flex items-center gap-2 px-3 py-2 rounded-lg border dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         const a = document.createElement('a');
@@ -10496,15 +10526,15 @@ function AdminAppointmentRow({
                                       }}
                                     >
                                       <span className="text-2xl">📄</span>
-                                      <span className="text-sm text-blue-700 truncate max-w-[200px]">{message.documentName || 'Document'}</span>
+                                      <span className="text-sm text-blue-700 dark:text-blue-400 truncate max-w-[200px]">{message.documentName || 'Document'}</span>
                                     </button>
                                   </div>
                                 )}
 
                                 {/* Message content - Show preserved content for deleted messages */}
                                 {message.deleted ? (
-                                  <div className="border border-red-300 bg-red-50 rounded p-2 mb-2">
-                                    <div className="flex items-center gap-2 text-red-600 text-xs font-semibold mb-1">
+                                  <div className="border border-red-300 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 rounded p-2 mb-2">
+                                    <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-xs font-semibold mb-1">
                                       <FaBan className="inline-block" />
                                       Message deleted by {message.deletedBy || 'user'} (Admin view - preserved for records)
                                     </div>
@@ -10530,7 +10560,7 @@ function AdminAppointmentRow({
                                             e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
                                           }}
                                         />
-                                        <div className="mt-1 text-xs text-gray-600 italic">
+                                        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400 italic">
                                           Preserved image from deleted message
                                         </div>
                                       </div>
@@ -10541,7 +10571,7 @@ function AdminAppointmentRow({
                                       <div className="mb-2">
                                         <video
                                           src={message.videoUrl}
-                                          className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                          className="max-w-full max-h-64 rounded-lg border dark:border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
                                           controls
                                           onClick={(e) => {
                                             e.preventDefault();
@@ -10553,7 +10583,7 @@ function AdminAppointmentRow({
                                             }
                                           }}
                                         />
-                                        <div className="mt-1 text-xs text-gray-600 italic">
+                                        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400 italic">
                                           Preserved video from deleted message
                                         </div>
                                       </div>
@@ -10562,14 +10592,14 @@ function AdminAppointmentRow({
                                     {/* Show preserved audio if exists */}
                                     {message.audioUrl && (
                                       <div className="mb-2">
-                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-3">
                                           <audio
                                             src={message.audioUrl}
                                             className="w-full"
                                             controls
                                             preload="metadata"
                                           />
-                                          <div className="mt-2 text-xs text-gray-600 italic">
+                                          <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 italic">
                                             Preserved audio from deleted message: {message.audioName || 'Audio file'}
                                           </div>
                                         </div>
@@ -10579,14 +10609,14 @@ function AdminAppointmentRow({
                                     {/* Show preserved document if exists */}
                                     {message.documentUrl && (
                                       <div className="mb-2">
-                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-3">
                                           <div className="flex items-center gap-2 mb-2">
                                             <span className="text-2xl">📄</span>
                                             <div className="flex-1">
-                                              <div className="text-sm font-medium text-gray-800">
+                                              <div className="text-sm font-medium text-gray-800 dark:text-white">
                                                 {message.documentName || 'Document'}
                                               </div>
-                                              <div className="text-xs text-gray-600 italic">
+                                              <div className="text-xs text-gray-600 dark:text-gray-400 italic">
                                                 Preserved document from deleted message
                                               </div>
                                             </div>
@@ -10626,7 +10656,7 @@ function AdminAppointmentRow({
                                       </div>
                                     )}
 
-                                    <div className="text-gray-800 bg-white p-2 rounded border-l-4 border-red-400 relative group">
+                                    <div className="text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 p-2 rounded border-l-4 border-red-400 dark:border-red-600 relative group">
                                       {(() => {
                                         const messageContent = message.originalMessage || message.message;
                                         if (messageContent) {
@@ -10635,7 +10665,7 @@ function AdminAppointmentRow({
                                               <span className="whitespace-pre-wrap break-words">{messageContent}</span>
                                               {/* Copy icon - visible on hover */}
                                               <button
-                                                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-gray-700 bg-white rounded p-1 shadow-sm"
+                                                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-700 rounded p-1 shadow-sm"
                                                 onClick={(e) => { e.stopPropagation(); copyMessageToClipboard(messageContent); }}
                                                 title="Copy deleted message content"
                                                 aria-label="Copy deleted message content"
@@ -10670,7 +10700,7 @@ function AdminAppointmentRow({
                                   onClick={(e) => { e.stopPropagation(); copyMessageToClipboard(message.message); }}
                                   className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-full ${isMe
                                     ? 'bg-white/20 hover:bg-white/30 text-white'
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                    : 'bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 text-gray-600 dark:text-gray-300'
                                     }`}
                                   title="Copy message"
                                 >
@@ -10680,7 +10710,7 @@ function AdminAppointmentRow({
 
                               {/* Edited indicator only (no time display) */}
                               {message.edited && (
-                                <div className={`flex justify-end mt-2 text-xs ${isMe ? 'text-blue-200' : 'text-gray-500'
+                                <div className={`flex justify-end mt-2 text-xs ${isMe ? 'text-blue-200 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'
                                   }`}>
                                   <span className="italic">(Edited)</span>
                                 </div>
@@ -10695,9 +10725,9 @@ function AdminAppointmentRow({
               </div>
 
               {/* Footer */}
-              <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     {starredMessages.length} starred message{starredMessages.length !== 1 ? 's' : ''}
                   </span>
                   <div className="flex gap-2">
@@ -10736,22 +10766,22 @@ function AdminAppointmentRow({
         {/* Appointment-scoped Reports Modal (styled like Starred Messages) */}
         {showReportsModal && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50 flex-shrink-0">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 flex-shrink-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaFlag className="text-red-500" /> Appointment Reports
                 </h3>
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-1 sm:mr-2">
+                  <div className="flex items-center bg-white dark:bg-gray-700 border border-red-200 dark:border-red-800 rounded-lg overflow-hidden mr-1 sm:mr-2">
                     <button
-                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium ${reportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium ${reportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30'}`}
                       onClick={() => setReportsFilter('message')}
                     >
                       Message Reports
                     </button>
                     <button
-                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium border-l border-red-200 ${reportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                      className={`px-2 sm:px-3 py-1.5 text-xs font-medium border-l border-red-200 dark:border-red-800 ${reportsFilter === 'chat' ? 'bg-red-500 text-white' : 'text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30'}`}
                       onClick={() => setReportsFilter('chat')}
                     >
                       Chat Reports
@@ -10760,11 +10790,11 @@ function AdminAppointmentRow({
                   <button
                     onClick={() => fetchAllReports(appt._id, reportsFilters, true)}
                     disabled={reportsLoading}
-                    className="p-2 text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 dark:text-red-300 dark:hover:text-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Refresh reports"
                   >
                     {reportsLoading ? (
-                      <div className="w-4 h-4 border-2 border-red-600 border-top-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-red-600 dark:border-red-300 border-top-transparent rounded-full animate-spin"></div>
                     ) : (
                       <FaSync className="w-4 h-4" />
                     )}
@@ -10779,44 +10809,44 @@ function AdminAppointmentRow({
               </div>
 
               {/* Filters Section - Mobile Optimized */}
-              <div className="p-2 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
+              <div className="p-2 sm:p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0 sticky top-0 z-10">
                 <div className="space-y-3">
                   {/* Primary filters - compact on mobile */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
                       <input
                         type="date"
                         value={reportsFilters.dateFrom}
                         onChange={(e) => setReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">To Date</label>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
                       <input
                         type="date"
                         value={reportsFilters.dateTo}
                         onChange={(e) => setReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Reporter</label>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Reporter</label>
                       <input
                         type="text"
                         placeholder="Reporter"
                         value={reportsFilters.reporter}
                         onChange={(e) => setReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
-                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
                       <select
                         value={reportsFilters.messageType}
                         onChange={(e) => setReportsFilters(prev => ({ ...prev, messageType: e.target.value }))}
-                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       >
                         <option value="all">All Types</option>
                         <option value="text">Text</option>
@@ -10836,12 +10866,12 @@ function AdminAppointmentRow({
                         placeholder="Search..."
                         value={reportsFilters.search}
                         onChange={(e) => setReportsFilters(prev => ({ ...prev, search: e.target.value }))}
-                        className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       />
                       <select
                         value={reportsFilters.sortBy}
                         onChange={(e) => setReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       >
                         <option value="date">Date</option>
                         <option value="user">User</option>
@@ -10850,7 +10880,7 @@ function AdminAppointmentRow({
                       <select
                         value={reportsFilters.sortOrder}
                         onChange={(e) => setReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
-                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       >
                         <option value="desc">↓</option>
                         <option value="asc">↑</option>
@@ -10867,7 +10897,7 @@ function AdminAppointmentRow({
                           sortBy: 'date',
                           sortOrder: 'desc'
                         })}
-                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                       >
                         Clear
                       </button>
@@ -10881,33 +10911,33 @@ function AdminAppointmentRow({
                   </div>
 
                   {/* Report count - compact on mobile */}
-                  <div className="text-xs text-gray-600 text-center sm:text-left">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 text-center sm:text-left">
                     Showing {reports.length} reports for this appointment
                   </div>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto p-3 sm:p-6">
+              <div className="flex-1 overflow-y-auto p-3 sm:p-6 bg-white dark:bg-gray-800">
                 {reportsLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
-                    <span className="ml-3 text-gray-600">Loading reports...</span>
+                    <span className="ml-3 text-gray-600 dark:text-gray-400">Loading reports...</span>
                   </div>
                 ) : reportsError ? (
-                  <div className="text-sm text-red-600">{reportsError}</div>
+                  <div className="text-sm text-red-600 dark:text-red-400">{reportsError}</div>
                 ) : (reports || []).length === 0 ? (
                   <div className="text-center py-12">
-                    <FaFlag className="mx-auto text-6xl text-gray-300 mb-4" />
-                    <h4 className="text-xl font-semibold text-gray-600 mb-2">No Reports</h4>
-                    <p className="text-gray-500">There are no reports for this appointment.</p>
+                    <FaFlag className="mx-auto text-6xl text-gray-300 dark:text-gray-700 mb-4" />
+                    <h4 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Reports</h4>
+                    <p className="text-gray-500 dark:text-gray-500">There are no reports for this appointment.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {(reports || []).filter(r => reportsFilter === 'message' ? r.type === 'message' : r.type !== 'message').map((r, idx) => (
                       <div
                         key={r.notificationId || idx}
-                        className={`border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${r.messageId ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+                        className={`border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow ${r.messageId ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750' : ''}`}
                         onClick={() => {
                           if (!r.messageId) return;
                           setShowReportsModal(false);
@@ -10930,20 +10960,20 @@ function AdminAppointmentRow({
                         }}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                          <div className="text-sm font-semibold text-gray-800 dark:text-white flex items-center gap-2">
                             <FaFlag className="text-red-500" /> {r.type === 'message' ? 'Message Report' : 'Chat Report'}
                           </div>
-                          <div className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleString()}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{new Date(r.createdAt).toLocaleString()}</div>
                         </div>
-                        <div className="mt-2 text-sm text-gray-700 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-                          {r.reporter && (<div><span className="font-medium">Reporter:</span> {r.reporter}</div>)}
-                          {r.between && (<div><span className="font-medium">Between:</span> {r.between}</div>)}
-                          {r.reason && (<div><span className="font-medium">Reason:</span> {r.reason}</div>)}
-                          {r.details && (<div className="md:col-span-2"><span className="font-medium">Details:</span> {r.details}</div>)}
-                          {r.messageId && (<div><span className="font-medium">Message ID:</span> {r.messageId}</div>)}
+                        <div className="mt-2 text-sm text-gray-700 dark:text-gray-300 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                          {r.reporter && (<div><span className="font-medium text-gray-900 dark:text-gray-100">Reporter:</span> {r.reporter}</div>)}
+                          {r.between && (<div><span className="font-medium text-gray-900 dark:text-gray-100">Between:</span> {r.between}</div>)}
+                          {r.reason && (<div><span className="font-medium text-gray-900 dark:text-gray-100">Reason:</span> {r.reason}</div>)}
+                          {r.details && (<div className="md:col-span-2"><span className="font-medium text-gray-900 dark:text-gray-100">Details:</span> {r.details}</div>)}
+                          {r.messageId && (<div><span className="font-medium text-gray-900 dark:text-gray-100">Message ID:</span> {r.messageId}</div>)}
                           {r.messageExcerpt && (
-                            <div className="md:col-span-2 italic text-gray-600">
-                              <span className="font-medium not-italic">Excerpt:</span> “{r.messageExcerpt}”
+                            <div className="md:col-span-2 italic text-gray-600 dark:text-gray-400">
+                              <span className="font-medium not-italic text-gray-900 dark:text-gray-100">Excerpt:</span> “{r.messageExcerpt}”
                             </div>
                           )}
                         </div>
@@ -10959,7 +10989,7 @@ function AdminAppointmentRow({
         {/* Report Details Tooltip */}
         {reportTooltip.show && reportTooltip.details && createPortal((
           <div
-            className="fixed bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-[60] max-w-sm"
+            className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 z-[60] max-w-sm"
             style={{
               left: `${reportTooltip.position.x}px`,
               top: `${reportTooltip.position.y}px`,
@@ -10968,24 +10998,24 @@ function AdminAppointmentRow({
           >
             <div className="flex items-center gap-2 mb-2">
               <FaFlag className="text-red-500 text-sm" />
-              <span className="font-semibold text-gray-800 text-sm">Report Details</span>
+              <span className="font-semibold text-gray-800 dark:text-white text-sm">Report Details</span>
             </div>
-            <div className="space-y-1 text-xs text-gray-700">
+            <div className="space-y-1 text-xs text-gray-700 dark:text-gray-300">
               {reportTooltip.details.reporter && (
-                <div><span className="font-medium">Reporter:</span> {reportTooltip.details.reporter}</div>
+                <div><span className="font-medium text-gray-900 dark:text-gray-100">Reporter:</span> {reportTooltip.details.reporter}</div>
               )}
               {reportTooltip.details.reason && (
-                <div><span className="font-medium">Reason:</span> {reportTooltip.details.reason}</div>
+                <div><span className="font-medium text-gray-900 dark:text-gray-100">Reason:</span> {reportTooltip.details.reason}</div>
               )}
               {reportTooltip.details.details && (
-                <div><span className="font-medium">Details:</span> {reportTooltip.details.details}</div>
+                <div><span className="font-medium text-gray-900 dark:text-gray-100">Details:</span> {reportTooltip.details.details}</div>
               )}
               {reportTooltip.details.messageExcerpt && (
-                <div className="mt-2 p-2 bg-gray-50 rounded text-xs italic">
-                  <span className="font-medium not-italic">Excerpt:</span> "{reportTooltip.details.messageExcerpt}"
+                <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded text-xs italic">
+                  <span className="font-medium not-italic text-gray-900 dark:text-gray-100">Excerpt:</span> "{reportTooltip.details.messageExcerpt}"
                 </div>
               )}
-              <div className="text-gray-500 text-xs mt-2">
+              <div className="text-gray-500 dark:text-gray-400 text-xs mt-2">
                 {new Date(reportTooltip.details.createdAt).toLocaleString()}
               </div>
             </div>
@@ -10995,7 +11025,7 @@ function AdminAppointmentRow({
         {/* Message Info Modal */}
         {showMessageInfoModal && selectedMessageForInfo && (
           <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaInfoCircle className="text-blue-500" /> Message Info
               </h3>
@@ -11077,7 +11107,7 @@ function AdminAppointmentRow({
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => { setShowMessageInfoModal(false); setSelectedMessageForInfo(null); }}
-                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 >
                   Close
                 </button>
@@ -11092,7 +11122,7 @@ function AdminAppointmentRow({
         {/* Call Info Modal */}
         {showCallInfoModal && selectedCallForInfo && (
           <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[100]">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaInfoCircle className="text-blue-500" /> Call Info
               </h3>
@@ -11155,7 +11185,7 @@ function AdminAppointmentRow({
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => { setShowCallInfoModal(false); setSelectedCallForInfo(null); }}
-                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 >
                   Close
                 </button>

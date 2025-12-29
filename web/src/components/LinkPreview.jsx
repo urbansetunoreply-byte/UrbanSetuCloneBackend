@@ -145,7 +145,7 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
 
   return (
     <div
-      className={`bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2 hover:border-gray-300 transition-colors max-w-full ${clickable ? 'cursor-pointer hover:bg-gray-100' : ''} ${className}`}
+      className={`bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-2 hover:border-gray-300 dark:hover:border-gray-600 transition-colors max-w-full ${clickable ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700' : ''} ${className}`}
       onClick={clickable ? handlePreviewClick : undefined}
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
@@ -172,21 +172,21 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
         <div className="flex-1 min-w-0 max-w-full">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0 max-w-full">
-              <h4 className="text-sm font-medium text-gray-900 break-words line-clamp-2" title={preview.title}>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words line-clamp-2" title={preview.title}>
                 {preview.title}
               </h4>
-              <p className="text-xs text-gray-600 mt-1 break-words line-clamp-2" title={preview.description}>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 break-words line-clamp-2" title={preview.description}>
                 {preview.description}
               </p>
               <div className="flex items-center space-x-2 mt-2">
-                <span className="text-xs text-gray-500 break-all">{preview.siteName}</span>
-                <FaExternalLinkAlt className="text-xs text-gray-400 flex-shrink-0" />
+                <span className="text-xs text-gray-500 dark:text-gray-400 break-all">{preview.siteName}</span>
+                <FaExternalLinkAlt className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0" />
               </div>
             </div>
             {onRemove && showRemoveButton && (
               <button
                 onClick={onRemove}
-                className="text-gray-600 transition-colors ml-2"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors ml-2"
               >
                 <FaTimes className="text-sm" />
               </button>

@@ -189,7 +189,7 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
   // Dynamic positioning classes and styles - constrained within chatbox (desktop), fixed overlay (mobile)
   const isMobile = window.innerWidth < 768;
   // Force above positioning on desktop to avoid overlapping the input area
-  let positionClasses = `absolute z-[60] bg-white rounded-lg shadow-xl border border-gray-200 ${true ? 'bottom-full mb-2' : 'top-full mt-2'
+  let positionClasses = `absolute z-[60] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 ${true ? 'bottom-full mb-2' : 'top-full mt-2'
     }`;
   if (position.center && isMobile) {
     positionClasses += '';
