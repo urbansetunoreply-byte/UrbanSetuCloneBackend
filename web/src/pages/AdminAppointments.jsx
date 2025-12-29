@@ -11259,6 +11259,21 @@ function AdminAppointmentRow({
                       {activeLiveCall && monitorCallId === activeLiveCall.callId ? 'Live Monitor' : 'Not Live'}
                     </span>
                   </span>
+
+                  {/* Call Type Indicator */}
+                  {activeLiveCall && monitorCallId === activeLiveCall.callId && (
+                    <span className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide bg-blue-600/90 text-white border border-white/10 shadow-sm transition-all animate-fadeIn">
+                      {activeLiveCall.callType === 'video' ? (
+                        <FaVideo className="text-[10px]" />
+                      ) : (
+                        <FaPhone className="text-[10px]" />
+                      )}
+                      <span>
+                        {activeLiveCall.callType === 'video' ? 'Video Call' : 'Audio Call'}
+                      </span>
+                    </span>
+                  )}
+
                   <span className="hidden sm:inline text-xs sm:text-sm text-white/70">
                     {appt.propertyName || 'Appointment'} • {appt.date ? new Date(appt.date).toLocaleDateString('en-IN') : ''}
                   </span>
