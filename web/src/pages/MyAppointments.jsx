@@ -1211,7 +1211,7 @@ export default function MyAppointments() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 py-10 px-2 md:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-slate-900 py-10 px-2 md:px-8">
       {/* Chat Settings Modal */}
       <ChatSettingsModal
         isOpen={showChatSettings}
@@ -1234,10 +1234,10 @@ export default function MyAppointments() {
       )}
 
       {/* Camera Modal - Temporarily disabled */}
-      <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
+      <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
           <div>
-            <h3 className="text-2xl md:text-3xl font-extrabold text-blue-700 drop-shadow">
+            <h3 className="text-2xl md:text-3xl font-extrabold text-blue-700 dark:text-blue-400 drop-shadow">
               {showArchived ? `Archived Appointments (${filteredArchivedAppointments.length})` : `My Appointments (${appointments.length})`}
             </h3>
             {!showArchived && (
@@ -1282,9 +1282,9 @@ export default function MyAppointments() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex items-center gap-2">
-              <label className="font-semibold text-sm">Status:</label>
+              <label className="font-semibold text-sm dark:text-gray-300">Status:</label>
               <select
-                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm"
+                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -1302,9 +1302,9 @@ export default function MyAppointments() {
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <label className="font-semibold text-sm">Role:</label>
+              <label className="font-semibold text-sm dark:text-gray-300">Role:</label>
               <select
-                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm"
+                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
               >
@@ -1316,18 +1316,18 @@ export default function MyAppointments() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex items-center gap-2">
-              <label className="font-semibold text-sm">From:</label>
+              <label className="font-semibold text-sm dark:text-gray-300">From:</label>
               <input
                 type="date"
-                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm"
+                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
                 max={endDate || undefined}
               />
-              <label className="font-semibold text-sm">To:</label>
+              <label className="font-semibold text-sm dark:text-gray-300">To:</label>
               <input
                 type="date"
-                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm"
+                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
                 min={startDate || undefined}
@@ -1348,7 +1348,7 @@ export default function MyAppointments() {
 
         {/* Description text for archived appointments */}
         {showArchived && (
-          <p className="text-center text-gray-600 mb-6">
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
             📋 View and manage archived appointments. You can unarchive them to move them back to active appointments.
           </p>
         )}
@@ -1361,7 +1361,7 @@ export default function MyAppointments() {
             <div className="overflow-x-auto">
               <table className="w-full border-collapse rounded-lg overflow-hidden">
                 <thead>
-                  <tr className="bg-gradient-to-r from-gray-100 to-gray-200">
+                  <tr className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-800 dark:text-gray-200">
                     <th className="border p-2">Date & Time</th>
                     <th className="border p-2">Property</th>
                     <th className="border p-2">Role</th>
@@ -1370,7 +1370,7 @@ export default function MyAppointments() {
                     <th className="border p-2">Message</th>
                     <th className="border p-2">Status</th>
                     <th className="border p-2">Payment</th>
-                    <th className="border p-2">Actions</th>
+                    <th className="border p-2 dark:border-gray-600">Actions</th>
                     <th className="border p-2">Connect</th>
                   </tr>
                 </thead>
@@ -1439,7 +1439,7 @@ export default function MyAppointments() {
             <div className="overflow-x-auto">
               <table className="w-full border-collapse rounded-lg overflow-hidden">
                 <thead>
-                  <tr className="bg-gradient-to-r from-blue-100 to-purple-100">
+                  <tr className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/40 dark:to-purple-900/40 text-gray-800 dark:text-gray-200">
                     <th className="border p-2">Date & Time</th>
                     <th className="border p-2">Property</th>
                     <th className="border p-2">Role</th>
@@ -1516,7 +1516,7 @@ export default function MyAppointments() {
         {/* Pagination for regular appointments */}
         {!showArchived && totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -1526,7 +1526,7 @@ export default function MyAppointments() {
                   toast.info(`Navigated to page ${Math.max(1, currentPage - 1)}`);
                 }}
                 disabled={currentPage === 1}
-                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
               >
                 Previous
               </button>
@@ -6229,11 +6229,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     : null;
   return (
     <>
-      <tr className={`hover:bg-blue-50 transition align-top ${!isUpcoming ? 'bg-gray-100' : ''}`} data-appointment-id={appt._id}>
-        <td className="border p-2">
+      <tr className={`hover:bg-blue-50 dark:hover:bg-gray-800 transition align-top ${!isUpcoming ? 'bg-gray-100 dark:bg-gray-900' : 'dark:bg-gray-800'}`} data-appointment-id={appt._id}>
+        <td className="border p-2 dark:border-gray-700 dark:text-gray-200">
           <div>
             <div>{new Date(appt.date).toLocaleDateString('en-GB')}</div>
-            <div className="text-sm text-gray-600">{appt.time}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{appt.time}</div>
             {!isUpcoming && (
               <div className={`text-xs font-medium mt-1 ${appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
                 ? 'text-green-600'
@@ -6251,12 +6251,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
             )}
           </div>
         </td>
-        <td className="border p-2">
+        <td className="border p-2 dark:border-gray-700 dark:text-gray-200">
           <div>
             {appt.listingId ? (
               <Link
                 to={isAdminContext ? `/admin/listing/${appt.listingId._id}` : `/user/listing/${appt.listingId._id}`}
-                className="font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                className="font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline cursor-pointer"
               >
                 {appt.propertyName}
               </Link>
@@ -6265,17 +6265,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
             )}
           </div>
         </td>
-        <td className="border p-2 text-center">
-          <span className={`px-3 py-1 rounded-full text-xs font-bold ${isSeller ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"
+        <td className="border p-2 text-center dark:border-gray-700">
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${isSeller ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200" : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
             }`}>
             {isSeller ? "Seller" : "Buyer"}
           </span>
         </td>
-        <td className="border p-2">
+        <td className="border p-2 dark:border-gray-700 dark:text-gray-200">
           <div>
             {canSeeContactInfo ? (
               <button
-                className="font-semibold text-blue-700 hover:underline text-left"
+                className="font-semibold text-blue-700 hover:underline text-left dark:text-blue-400"
                 style={{ cursor: 'pointer' }}
                 onClick={() => onShowOtherParty({
                   ...otherParty,
@@ -6292,24 +6292,24 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
             )}
             {canSeeContactInfo ? (
               <>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   <a
                     href={`mailto:${otherParty?.email}`}
-                    className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors duration-200"
                     title="Click to send email"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {otherParty?.email}
                   </a>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   {otherParty?.mobileNumber && otherParty?.mobileNumber !== '' ? (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handlePhoneClick(otherParty.mobileNumber);
                       }}
-                      className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200"
+                      className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 hover:underline transition-colors duration-200"
                       title="Click to call or copy phone number"
                     >
                       {otherParty.mobileNumber}
@@ -6320,24 +6320,24 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 </div>
               </>
             ) : (
-              <div className="text-sm text-gray-500 italic">
+              <div className="text-sm text-gray-500 italic dark:text-gray-400">
                 {isAdmin ? "Contact info available" : "Contact info hidden until accepted"}
               </div>
             )}
           </div>
         </td>
-        <td className="border p-2 capitalize">
+        <td className="border p-2 capitalize dark:border-gray-700 dark:text-gray-200">
           <div className="flex flex-col gap-1">
             <span>{appt.purpose}</span>
             {/* Rental Status Badge */}
             {appt.purpose === 'rent' && appt.rentalStatus && (
-              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${appt.rentalStatus === 'active_rental' ? 'bg-green-100 text-green-700' :
-                appt.rentalStatus === 'contract_signed' ? 'bg-blue-100 text-blue-700' :
-                  appt.rentalStatus === 'move_in_pending' ? 'bg-yellow-100 text-yellow-700' :
-                    appt.rentalStatus === 'move_out_pending' ? 'bg-orange-100 text-orange-700' :
-                      appt.rentalStatus === 'completed' ? 'bg-gray-100 text-gray-700' :
-                        appt.rentalStatus === 'terminated' ? 'bg-red-100 text-red-700' :
-                          'bg-purple-100 text-purple-700'
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${appt.rentalStatus === 'active_rental' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200' :
+                appt.rentalStatus === 'contract_signed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
+                  appt.rentalStatus === 'move_in_pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' :
+                    appt.rentalStatus === 'move_out_pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' :
+                      appt.rentalStatus === 'completed' ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300' :
+                        appt.rentalStatus === 'terminated' ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' :
+                          'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
                 }`}>
                 {appt.rentalStatus === 'pending_contract' ? 'Contract Pending' :
                   appt.rentalStatus === 'contract_signed' ? 'Contract Signed' :
@@ -6351,10 +6351,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
             )}
           </div>
         </td>
-        <td className="border p-2 max-w-xs truncate">{appt.message || 'No message provided'}</td>
-        <td className="border p-2 text-center">
+        <td className="border p-2 max-w-xs truncate dark:border-gray-700 dark:text-gray-200">{appt.message || 'No message provided'}</td>
+        <td className="border p-2 text-center dark:border-gray-700">
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${!isUpcoming && appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
-            ? 'bg-green-100 text-green-700'
+            ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200'
             : getStatusColor(appt.status)
             }`}>
             {!isUpcoming && appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
@@ -6368,10 +6368,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     : appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
           </span>
         </td>
-        <td className="border p-2 text-center">
+        <td className="border p-2 text-center dark:border-gray-700">
           <PaymentStatusCell appointment={appt} isBuyer={isBuyer} />
         </td>
-        <td className="border p-2 text-center">
+        <td className="border p-2 text-center dark:border-gray-700">
           <div className="flex flex-col gap-2">
             {/* For archived appointments, show unarchive button */}
             {isArchived ? (
@@ -6388,7 +6388,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 {!isUpcoming ? (
                   <div className="flex flex-col gap-2">
                     <button
-                      className="text-red-500 hover:text-red-700 text-xl"
+                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xl"
                       onClick={handlePermanentDelete}
                       title="Delete outdated appointment from table"
                     >
@@ -6590,7 +6590,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
             )}
           </div>
         </td>
-        <td className="border p-2 text-center relative">
+        <td className="border p-2 text-center relative dark:border-gray-700">
           <button
             className={`flex items-center justify-center rounded-full p-3 shadow-lg mx-auto relative transform transition-all duration-200 group ${'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white hover:shadow-xl hover:scale-105'
               }`}
@@ -6669,7 +6669,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               }}
             >
               <div
-                className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-hidden quick-reactions-modal"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-hidden quick-reactions-modal"
                 onMouseDown={(e) => {
                   e.stopPropagation(); // Prevent any event bubbling
                 }}
@@ -6678,7 +6678,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 }}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <div className="text-lg font-semibold text-gray-800">Quick Reactions</div>
+                  <div className="text-lg font-semibold text-gray-800 dark:text-gray-100">Quick Reactions</div>
                   <button
                     onMouseDown={(e) => {
                       e.stopPropagation(); // Prevent event bubbling
@@ -6689,7 +6689,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                       setShowReactionsEmojiPicker(false);
                       setReactionEmojiSearchTerm(''); // Clear search when closing
                     }}
-                    className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full p-2 transition-colors"
                     title="Close"
                   >
                     <FaTimes size={16} />
@@ -6704,7 +6704,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                       placeholder="Search emojis..."
                       value={reactionEmojiSearchTerm}
                       onChange={(e) => setReactionEmojiSearchTerm(e.target.value)}
-                      className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -6715,13 +6715,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     </div>
                   </div>
                   {reactionEmojiSearchTerm && (
-                    <div className="mt-2 text-sm text-gray-500">
+                    <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                       {getFilteredEmojis(reactionEmojiSearchTerm).length} emoji{getFilteredEmojis(reactionEmojiSearchTerm).length !== 1 ? 's' : ''} found
                     </div>
                   )}
                 </div>
                 <div
-                  className="overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                  className="overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800"
                   onMouseDown={(e) => {
                     e.stopPropagation(); // Prevent any event bubbling
                   }}
@@ -6760,7 +6760,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             toast.error('Unable to add reaction - missing message information');
                           }
                         }}
-                        className="w-10 h-10 flex items-center justify-center text-xl hover:scale-110 transition-all duration-200 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md"
+                        className="w-10 h-10 flex items-center justify-center text-xl hover:scale-110 transition-all duration-200 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-gray-300 hover:shadow-md"
                         title={`React with ${emoji}`}
                       >
                         {emoji}
@@ -6771,7 +6771,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               </div>
             </div>
           )}
-          <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl shadow-2xl w-full h-full max-w-6xl max-h-full p-0 relative animate-fadeIn flex flex-col border border-gray-200 transform transition-all duration-500 hover:shadow-3xl overflow-hidden">
+          <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 rounded-3xl shadow-2xl w-full h-full max-w-6xl max-h-full p-0 relative animate-fadeIn flex flex-col border border-gray-200 dark:border-gray-700 transform transition-all duration-500 hover:shadow-3xl overflow-hidden">
             <>
               {/* Chat Header (sticky on mobile to avoid URL bar overlap) */}
               <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 border-b-2 border-blue-700 bg-gradient-to-r from-blue-700 via-purple-700 to-blue-900 rounded-t-3xl relative shadow-2xl flex-shrink-0 md:sticky md:top-0 sticky top-[env(safe-area-inset-top,0px)] z-30">
@@ -7379,7 +7379,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             <FaEllipsisV size={14} />
                           </button>
                           {showHeaderMoreMenu && (
-                            <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
+                            <div className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 min-w-[180px] chat-options-menu">
                               {(selectedMessageForHeaderOptions.senderEmail === currentUser.email) ? (
                                 <>
                                   {/* Download option for image messages */}
@@ -7471,7 +7471,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                     </button>
                                   )}
                                   <button
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2"
                                     onClick={() => { showMessageInfo(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
                                   >
                                     <FaInfoCircle className="text-sm" />
@@ -7480,7 +7480,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   <button
                                     className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${isChatSendBlocked
                                       ? 'text-gray-400 cursor-not-allowed'
-                                      : 'text-gray-700 hover:bg-gray-100'
+                                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                                       }`}
                                     onClick={() => {
                                       if (isChatSendBlocked) {
@@ -7504,7 +7504,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   <button
                                     className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${isChatSendBlocked || editingComment !== null
                                       ? 'text-gray-400 cursor-not-allowed'
-                                      : 'text-gray-700 hover:bg-gray-100'
+                                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                                       }`}
                                     onClick={() => {
                                       if (isChatSendBlocked) {
@@ -7842,7 +7842,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           <FaEllipsisV className="text-sm" />
                         </button>
                         {showChatOptionsMenu && (
-                          <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
+                          <div className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 min-w-[180px] chat-options-menu">
                             {/* Contact Information option - only show for accepted status */}
                             {canSeeContactInfo && (
                               <button
@@ -7863,7 +7863,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             )}
                             {/* Refresh option */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2"
                               onClick={() => {
                                 fetchLatestComments();
                                 setShowChatOptionsMenu(false);
@@ -7874,7 +7874,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             </button>
                             {/* Settings option */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2"
                               onClick={() => {
                                 setShowSettingsModal(true);
                                 setShowChatOptionsMenu(false);
@@ -7910,7 +7910,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
                             {/* Keyboard shortcuts and file upload guidelines */}
                             <button
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2"
                               onClick={() => {
                                 setShowShortcutTip(!showShortcutTip);
                                 setShowChatOptionsMenu(false);
@@ -8185,17 +8185,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               <div className="flex-1 flex flex-col min-h-0">
                 {/* Pinned Messages Section */}
                 {pinnedMessages.length > 0 && (
-                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-b border-purple-200 px-4 py-3 flex-shrink-0">
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-800 border-b border-purple-200 dark:border-gray-700 px-4 py-3 flex-shrink-0">
                     <div className="flex items-center gap-2 mb-2">
                       <FaThumbtack className="text-purple-600 text-sm" />
-                      <span className="text-purple-700 font-semibold text-sm">Pinned Messages</span>
-                      <span className="text-purple-600 text-xs">({pinnedMessages.length})</span>
+                      <span className="text-purple-700 dark:text-purple-400 font-semibold text-sm">Pinned Messages</span>
+                      <span className="text-purple-600 dark:text-purple-400 text-xs">({pinnedMessages.length})</span>
                     </div>
                     <div className="space-y-2 max-h-24 overflow-y-auto">
                       {pinnedMessages.map((pinnedMsg) => (
                         <div
                           key={pinnedMsg._id}
-                          className={`bg-white rounded-lg p-2 border-l-4 border-purple-500 cursor-pointer transition-all duration-200 hover:shadow-md ${highlightedPinnedMessage === pinnedMsg._id ? 'ring-2 ring-purple-400 shadow-lg' : ''
+                          className={`bg-white dark:bg-gray-700 rounded-lg p-2 border-l-4 border-purple-500 cursor-pointer transition-all duration-200 hover:shadow-md ${highlightedPinnedMessage === pinnedMsg._id ? 'ring-2 ring-purple-400 shadow-lg' : ''
                             }`}
                           onClick={() => {
                             // Highlight the pinned message and scroll to it
@@ -8225,7 +8225,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   }
                                 </span>
                               </div>
-                              <div className="text-sm text-gray-800 line-clamp-2">
+                              <div className="text-sm text-gray-800 dark:text-gray-200 line-clamp-2">
                                 {pinnedMsg.message}
                               </div>
                             </div>
@@ -8249,7 +8249,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 {/* Messages Container */}
                 <div
                   ref={chatContainerRef}
-                  className={`flex-1 overflow-y-auto space-y-2 px-4 pt-4 animate-fadeInChat relative bg-gradient-to-b from-transparent to-blue-50/30 ${isDragOver ? 'bg-blue-50/50 border-2 border-dashed border-blue-300' : ''}`}
+                  className={`flex-1 overflow-y-auto space-y-2 px-4 pt-4 animate-fadeInChat relative bg-gradient-to-b from-transparent to-blue-50/30 dark:to-slate-900/50 ${isDragOver ? 'bg-blue-50/50 dark:bg-blue-900/20 border-2 border-dashed border-blue-300 dark:border-blue-700' : ''}`}
                   onDragOver={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -8293,9 +8293,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 >
                   {/* Privacy Notice - First item in chat */}
                   <div
-                    className="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-400 rounded-r-lg mb-4 backdrop-blur-sm"
+                    className="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-l-4 border-blue-400 rounded-r-lg mb-4 backdrop-blur-sm"
                   >
-                    <p className="text-sm text-blue-700 font-medium text-center flex items-center justify-center gap-2">
+                    <p className="text-sm text-blue-700 dark:text-blue-300 font-medium text-center flex items-center justify-center gap-2">
                       <span className="animate-gentlePulse">🔒</span>
                       Your privacy is our top priority — all your chats and data are fully encrypted for your safety
                     </p>
@@ -8401,8 +8401,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                               className={`relative rounded-2xl px-4 sm:px-5 shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c.audioUrl && !c.deleted ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${settings.messageDensity === 'compact' ? 'py-1' : settings.messageDensity === 'spacious' ? 'py-5' : 'py-3'
                                 } ${settings.fontSize === 'small' ? 'text-xs' : settings.fontSize === 'large' ? 'text-base' : 'text-sm'
                                 } ${isMe
-                                  ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl'
-                                  : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                                  ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 dark:shadow-blue-900/40 hover:shadow-blue-300 hover:shadow-2xl'
+                                  : 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-750 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 shadow-gray-200 dark:shadow-gray-900/40 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-xl'
                                 } ${highlightedPinnedMessage === c._id ? 'ring-4 ring-purple-400 shadow-2xl scale-105' : ''
                                 } ${isSelectionMode && selectedMessages.some(msg => msg._id === c._id) ? 'ring-2 ring-blue-400' : ''}`}
                               style={{ animationDelay: `${0.03 * index}s` }}
@@ -8430,7 +8430,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                 }
 
                                 return (
-                                  <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
+                                  <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 dark:hover:from-purple-900/40 dark:hover:to-blue-900/40 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
                                     if (messageRefs.current[c.replyTo]) {
                                       messageRefs.current[c.replyTo].scrollIntoView({ behavior: 'smooth', block: 'center' });
                                       messageRefs.current[c.replyTo].classList.add('reply-highlight');
@@ -8439,7 +8439,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                       }, 1600);
                                     }
                                   }} role="button" tabIndex={0} aria-label="Go to replied message">
-                                    <span className="text-xs text-gray-700 font-medium truncate max-w-[150px] flex items-center gap-1">
+                                    <span className="text-xs text-gray-700 dark:text-gray-300 font-medium truncate max-w-[150px] flex items-center gap-1">
                                       <span className="text-purple-500">↩</span>
                                       {repliedMessage?.message?.substring(0, 30) || 'Original message'}{repliedMessage?.message?.length > 30 ? '...' : ''}
                                     </span>
@@ -8448,7 +8448,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                               })()}
                               {/* Sender label for admin messages */}
                               {!isMe && (c.senderEmail !== appt.buyerId?.email) && (c.senderEmail !== appt.sellerId?.email) && (
-                                <div className="font-semibold mb-1 text-xs text-purple-600">UrbanSetu</div>
+                                <div className="font-semibold mb-1 text-xs text-purple-600 dark:text-purple-400">UrbanSetu</div>
                               )}
                               <div className={`text-left ${isMe ? 'font-medium' : ''} ${settings.fontSize === 'small' ? 'text-sm' : settings.fontSize === 'large' ? 'text-lg' : 'text-base'
                                 }`}>
@@ -8677,11 +8677,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                   {/* Audio options dropdown - Main Menu */}
                                                   <div
                                                     data-audio-menu={c._id}
-                                                    className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                    className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999]"
                                                   >
                                                     <div className="py-1">
                                                       <button
-                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
@@ -8702,7 +8702,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                       </button>
 
                                                       <button
-                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
@@ -8727,7 +8727,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                   {/* Audio Speed Menu */}
                                                   <div
                                                     data-audio-speed-menu={c._id}
-                                                    className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                    className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999]"
                                                   >
                                                     <div className="py-1">
                                                       <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
@@ -8753,7 +8753,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                         <button
                                                           key={speed}
                                                           data-speed-option={speed}
-                                                          className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${speed === 1 ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                                                          className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${speed === 1 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                                             }`}
                                                           onClick={(e) => {
                                                             e.stopPropagation();
@@ -8801,7 +8801,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                   {/* Audio Controls Menu */}
                                                   <div
                                                     data-audio-controls-menu={c._id}
-                                                    className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                    className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999]"
                                                   >
                                                     <div className="py-1">
                                                       <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
@@ -8825,7 +8825,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                       </div>
 
                                                       <button
-                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
@@ -8849,7 +8849,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                       </button>
 
                                                       <button
-                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
@@ -8869,7 +8869,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                       </button>
 
                                                       <button
-                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
@@ -8896,7 +8896,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                               </div>
                                             </div>
                                             {c.message && (
-                                              <div className={`mt-2 text-sm whitespace-pre-wrap break-words ${isMe ? 'text-white' : 'text-gray-700'}`}>
+                                              <div className={`mt-2 text-sm whitespace-pre-wrap break-words ${isMe ? 'text-white' : 'text-gray-700 dark:text-gray-200'}`}>
                                                 {c.message}
                                                 {c.edited && (
                                                   <span className={`ml-2 text-[10px] italic whitespace-nowrap ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>(Edited)</span>
@@ -9369,10 +9369,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               {/* Reply indicator */}
               {replyTo && (
                 <div className="px-4 mb-2">
-                  <div className="flex items-center bg-blue-50 border-l-4 border-blue-400 px-2 py-1 rounded">
-                    <span className="text-xs text-gray-700 font-semibold mr-2">Replying to:</span>
-                    <span className="text-xs text-gray-600 truncate max-w-[200px]">{replyTo.message?.substring(0, 40)}{replyTo.message?.length > 40 ? '...' : ''}</span>
-                    <button className="ml-auto text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors" onClick={() => setReplyTo(null)} title="Cancel reply">
+                  <div className="flex items-center bg-blue-50 dark:bg-blue-900/40 border-l-4 border-blue-400 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-700 dark:text-gray-300 font-semibold mr-2">Replying to:</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[200px]">{replyTo.message?.substring(0, 40)}{replyTo.message?.length > 40 ? '...' : ''}</span>
+                    <button className="ml-auto text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-1 transition-colors" onClick={() => setReplyTo(null)} title="Cancel reply">
                       <FaTimes className="w-3 h-3" />
                     </button>
                   </div>
@@ -9384,11 +9384,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               {/* Edit indicator */}
               {editingComment && (
                 <div className="px-4 mb-2">
-                  <div className="flex items-center bg-yellow-50 border-l-4 border-yellow-400 px-2 py-1 rounded">
-                    <span className="text-xs text-yellow-700 font-semibold mr-2">✏️ Editing message:</span>
-                    <span className="text-xs text-yellow-600 truncate">{editText}</span>
+                  <div className="flex items-center bg-yellow-50 dark:bg-yellow-900/40 border-l-4 border-yellow-400 px-2 py-1 rounded">
+                    <span className="text-xs text-yellow-700 dark:text-yellow-300 font-semibold mr-2">✏️ Editing message:</span>
+                    <span className="text-xs text-yellow-600 dark:text-yellow-400 truncate">{editText}</span>
                     <button
-                      className="ml-auto text-yellow-400 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-full p-1 transition-colors"
+                      className="ml-auto text-yellow-400 dark:text-yellow-300 hover:text-yellow-700 dark:hover:text-yellow-100 bg-yellow-100 dark:bg-yellow-900/60 hover:bg-yellow-200 dark:hover:bg-yellow-800 rounded-full p-1 transition-colors"
                       onClick={() => {
                         setEditingComment(null);
                         setEditText("");
@@ -9429,7 +9429,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 </div>
               )}
               {/* Message Input Footer - Sticky */}
-              <div className="flex gap-2 mt-1 px-3 pb-2 flex-shrink-0 bg-gradient-to-b from-transparent to-white pt-2 items-end">
+              <div className="flex gap-2 mt-1 px-3 pb-2 flex-shrink-0 bg-gradient-to-b from-transparent to-white dark:to-gray-900 pt-2 items-end">
                 {/* Message Input Container with Attachment and Emoji Icons Inside */}
                 <div className="flex-1 relative">
                   {/* Link Preview Container with Height and Width Constraints */}
@@ -9449,10 +9449,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   )}
                   {/* Formatting toolbar - Collapsible */}
                   {showTextStylingPanel && (
-                    <div className="relative mb-2 animate-slideDown bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded-lg border border-purple-200 shadow-sm">
+                    <div className="relative mb-2 animate-slideDown bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-800 p-3 rounded-lg border border-purple-200 dark:border-gray-700 shadow-sm">
                       {/* Close button */}
                       <button
-                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 hover:bg-white hover:bg-opacity-50 rounded-full p-1 transition-colors z-10"
+                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-white dark:hover:bg-gray-700 hover:bg-opacity-50 rounded-full p-1 transition-colors z-10"
                         onClick={() => setShowTextStylingPanel(false)}
                         title="Close text styling panel"
                         aria-label="Close text styling panel"
@@ -9462,7 +9462,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         </svg>
                       </button>
                       <div className="flex flex-wrap items-center gap-2 pr-8">
-                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9471,7 +9471,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `**${selected || 'bold'}**`; const next = base.slice(0, start) + wrapped + base.slice(end); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'bold').length); } catch (_) { } }, 0);
                           });
                         }} disabled={isChatSendBlocked}>B</button>
-                        <button type="button" className={`px-2 py-1 text-xs rounded border italic ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border italic ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9480,7 +9480,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `*${selected || 'italic'}*`; const next = base.slice(0, start) + wrapped + base.slice(end); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 1, start + 1 + (selected || 'italic').length); } catch (_) { } }, 0);
                           });
                         }} disabled={isChatSendBlocked}>I</button>
-                        <button type="button" className={`px-2 py-1 text-xs rounded border underline ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border underline ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9489,7 +9489,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `__${selected || 'underline'}__`; const next = base.slice(0, start) + wrapped + base.slice(end); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'underline').length); } catch (_) { } }, 0);
                           });
                         }} disabled={isChatSendBlocked}>U</button>
-                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9498,7 +9498,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0, start) + wrapped + base.slice(end); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'strike').length); } catch (_) { } }, 0);
                           });
                         }} disabled={isChatSendBlocked}>S</button>
-                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9507,7 +9507,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0, start); const after = base.slice(start); const next = `${before}- ${after}`; setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2); } catch (_) { } }, 0);
                           });
                         }} disabled={isChatSendBlocked}>• List</button>
-                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9535,7 +9535,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             const next = `${before}${nextNum}. ${after}`; setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + (nextNum.toString().length) + 2, start + (nextNum.toString().length) + 2); } catch (_) { } }, 0);
                           });
                         }} disabled={isChatSendBlocked}>1. List</button>
-                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9544,7 +9544,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0, start); const after = base.slice(start); const next = `${before}> ${after}`; setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2); } catch (_) { } }, 0);
                           });
                         }} disabled={isChatSendBlocked}>&gt; Quote</button>
-                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Tag Property" onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} title="Tag Property" onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9553,7 +9553,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const insert = '@'; const next = base.slice(0, start) + insert + base.slice(start); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 1, start + 1); } catch (_) { } }, 0);
                           });
                         }} disabled={isChatSendBlocked}>@Prop</button>
-                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Insert appointment card" onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} title="Insert appointment card" onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9562,7 +9562,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const card = '[Appointment: date • time • with]'; const next = base.slice(0, start) + card + base.slice(start); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 13, start + 13); } catch (_) { } }, 0);
                           });
                         }} disabled={isChatSendBlocked}>Appt</button>
-                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Insert service link" onClick={() => {
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`} title="Insert service link" onClick={() => {
                           if (isChatSendBlocked) {
                             toast.info('Formatting disabled for this appointment status. You can view chat history.');
                             return;
@@ -9576,8 +9576,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   )}
                   {/* Property mention suggestions */}
                   {comment && /@[^\s]*$/.test(comment) && (
-                    <div className="absolute bottom-16 left-2 right-2 bg-white border-2 border-blue-300 rounded-lg shadow-2xl max-h-60 overflow-auto z-30 animate-fadeIn">
-                      <div className="p-3 text-sm font-medium text-blue-600 border-b border-gray-200 bg-blue-50">
+                    <div className="absolute bottom-16 left-2 right-2 bg-white dark:bg-gray-800 border-2 border-blue-300 dark:border-blue-700 rounded-lg shadow-2xl max-h-60 overflow-auto z-30 animate-fadeIn">
+                      <div className="p-3 text-sm font-medium text-blue-600 dark:text-blue-300 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/40">
                         <div className="flex items-center gap-2">
                           {!propertiesLoaded ? (
                             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -9640,9 +9640,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           .filter(p => p.name && p.name.toLowerCase().includes(query));
 
 
-                        if (uniqueProps.length === 0) return <div className="p-3 text-sm text-gray-500 text-center">No properties found. Try typing more characters.</div>;
+                        if (uniqueProps.length === 0) return <div className="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">No properties found. Try typing more characters.</div>;
                         return uniqueProps.slice(0, 8).map((p, index) => (
-                          <button key={`${p.id}-${index}`} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 transition-colors" onClick={() => {
+                          <button key={`${p.id}-${index}`} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" onClick={() => {
                             const el = inputRef.current; const base = comment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
                             const token = `@[${p.name}](${p.id})`;
                             const next = base.slice(0, start) + token + ' ' + base.slice(start + m[0].length);
@@ -9650,7 +9650,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             setTimeout(() => { try { el?.focus(); el?.setSelectionRange(start + token.length + 1, start + token.length + 1); } catch (_) { } }, 0);
                           }}>
                             <div className="flex items-center space-x-3">
-                              <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
+                              <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
                                 {p.image ? (
                                   <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -9660,8 +9660,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium text-gray-900 truncate">{p.name}</div>
-                                <div className="text-sm text-gray-500">
+                                <div className="font-medium text-gray-900 dark:text-white truncate">{p.name}</div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                   {p.city && p.state ? `${p.city}, ${p.state}` : (p.city || p.state || 'Location not available')}
                                 </div>
                                 {p.price && p.price > 0 ? (
@@ -9681,7 +9681,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   )}
                   <textarea
                     rows={1}
-                    className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                    className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white dark:bg-gray-800 dark:text-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800"
                     style={{
                       minHeight: '48px',
                       maxHeight: '144px', // 6 lines * 24px line height
@@ -9883,7 +9883,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                       disabled={uploadingFile || isChatSendBlocked}
                       className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${uploadingFile || isChatSendBlocked
                         ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
+                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 hover:shadow-md active:scale-95'
                         }`}
                       aria-haspopup="true"
                       aria-expanded={showAttachmentPanel}
@@ -9892,14 +9892,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                       {uploadingFile ? (
                         <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
                       ) : (
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                         </svg>
                       )}
                     </button>
                     {showAttachmentPanel && !isChatSendBlocked && (
-                      <div ref={attachmentPanelRef} className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-48 py-2 z-20">
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                      <div ref={attachmentPanelRef} className="absolute bottom-10 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg w-48 py-2 z-20">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
@@ -9920,7 +9920,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           />
                         </label>
                         {/* Camera - Simple file input approach */}
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h2l1-2h6l1 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
                           </svg>
@@ -9939,7 +9939,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             }}
                           />
                         </label>
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                           </svg>
@@ -9964,7 +9964,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             }}
                           />
                         </label>
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
@@ -9989,7 +9989,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           />
                         </label>
                         {/* Audio */}
-                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                           <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
@@ -12081,9 +12081,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               </div>
 
               {/* Footer */}
-              <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     {starredMessages.length} starred message{starredMessages.length !== 1 ? 's' : ''}
                   </span>
                   <div className="flex gap-2">
@@ -12123,10 +12123,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {
         showPinModal && messageToPin && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
               {/* Header */}
-              <div className="flex items-center p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="flex items-center p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/40 dark:to-blue-900/40">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaThumbtack className="text-purple-500" />
                   Pin Message
                 </h3>
@@ -12135,7 +12135,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               {/* Content */}
               <div className="p-6">
                 <div className="mb-4">
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
                     {Array.isArray(messageToPin)
                       ? `Choose how long to pin these ${messageToPin.length} messages:`
                       : 'Choose how long to pin this message:'}
@@ -12143,7 +12143,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
                   {/* Pin Duration Options */}
                   <div className="space-y-3">
-                    <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <label className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                       <input
                         type="radio"
                         name="pinDuration"
@@ -12153,12 +12153,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         className="text-purple-600"
                       />
                       <div className="flex-1">
-                        <div className="font-medium text-gray-800">24 Hours</div>
-                        <div className="text-sm text-gray-500">Pin for 24 hours</div>
+                        <div className="font-medium text-gray-800 dark:text-gray-200">24 Hours</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Pin for 24 hours</div>
                       </div>
                     </label>
 
-                    <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <label className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                       <input
                         type="radio"
                         name="pinDuration"
@@ -12168,12 +12168,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         className="text-purple-600"
                       />
                       <div className="flex-1">
-                        <div className="font-medium text-gray-800">7 Days</div>
-                        <div className="text-sm text-gray-500">Pin for 7 days</div>
+                        <div className="font-medium text-gray-800 dark:text-gray-200">7 Days</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Pin for 7 days</div>
                       </div>
                     </label>
 
-                    <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <label className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                       <input
                         type="radio"
                         name="pinDuration"
@@ -12183,12 +12183,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         className="text-purple-600"
                       />
                       <div className="flex-1">
-                        <div className="font-medium text-gray-800">30 Days</div>
-                        <div className="text-sm text-gray-500">Pin for 30 days</div>
+                        <div className="font-medium text-gray-800 dark:text-gray-200">30 Days</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Pin for 30 days</div>
                       </div>
                     </label>
 
-                    <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <label className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                       <input
                         type="radio"
                         name="pinDuration"
@@ -12198,8 +12198,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         className="text-purple-600"
                       />
                       <div className="flex-1">
-                        <div className="font-medium text-gray-800">Custom</div>
-                        <div className="text-sm text-gray-500">Pin for custom hours</div>
+                        <div className="font-medium text-gray-800 dark:text-gray-200">Custom</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Pin for custom hours</div>
                       </div>
                     </label>
                   </div>
@@ -12207,7 +12207,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   {/* Custom Hours Input */}
                   {pinDuration === 'custom' && (
                     <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Custom Hours
                       </label>
                       <input
@@ -12216,32 +12216,32 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         max="8760"
                         value={customHours}
                         onChange={(e) => setCustomHours(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
                         placeholder="Enter hours (1-8760)"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Maximum: 8760 hours (1 year)
                       </p>
                     </div>
                   )}
 
                   {/* Message Preview */}
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <div className="text-sm text-gray-600 mb-2">
+                  <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                       {Array.isArray(messageToPin) ? 'Messages to pin:' : 'Message to pin:'}
                     </div>
                     {Array.isArray(messageToPin) ? (
                       <div className="space-y-2 max-h-32 overflow-y-auto">
                         {messageToPin.map((msg, index) => (
-                          <div key={msg._id} className="text-sm text-gray-800 bg-white p-2 rounded border">
-                            <span className="font-medium text-xs text-gray-500">#{index + 1}: </span>
+                          <div key={msg._id} className="text-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 p-2 rounded border dark:border-gray-700">
+                            <span className="font-medium text-xs text-gray-500 dark:text-gray-400">#{index + 1}: </span>
                             {msg.message?.substring(0, 80)}
                             {msg.message?.length > 80 ? '...' : ''}
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-gray-800 bg-white p-2 rounded border">
+                      <div className="text-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 p-2 rounded border dark:border-gray-700">
                         {messageToPin.message?.substring(0, 100)}
                         {messageToPin.message?.length > 100 ? '...' : ''}
                       </div>
@@ -12251,7 +12251,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               </div>
 
               {/* Footer */}
-              <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+              <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-end gap-3">
                 <button
                   onClick={() => {
                     setShowPinModal(false);
@@ -12259,7 +12259,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     setPinDuration('24hrs');
                     setCustomHours(24);
                   }}
-                  className="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
                 >
                   Cancel
                 </button>
@@ -12743,27 +12743,27 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   };
 
   if (loading) {
-    return <div className="h-6 w-20 bg-gray-200 rounded animate-pulse"></div>;
+    return <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>;
   }
 
   // Determine the display status based on latest payment record only
   const getDisplayStatus = () => {
     // First check if there's a payment record
     if (!paymentStatus) {
-      return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800' };
+      return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' };
     }
 
     // Check if admin marked this payment
     const isAdminMarked = Boolean(paymentStatus?.metadata?.adminMarked);
     if (isAdminMarked) {
-      return { status: 'admin_confirmed', text: 'Paid (Admin)', color: 'bg-green-100 text-green-800' };
+      return { status: 'admin_confirmed', text: 'Paid (Admin)', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' };
     }
 
     // For sellers, hide refund-related statuses (refunded, partially_refunded, failed)
     // Only show these statuses to buyers
     if (!isBuyer && ['refunded', 'partially_refunded', 'failed'].includes(paymentStatus.status)) {
       // For sellers, show as completed/paid instead of refund statuses
-      return { status: 'completed', text: 'Paid', color: 'bg-green-100 text-green-800' };
+      return { status: 'completed', text: 'Paid', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' };
     }
 
     // For user payments, show regular payment status
@@ -12773,17 +12773,17 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   const getPaymentStatusInfo = (status) => {
     switch (status) {
       case 'completed':
-        return { status: 'completed', text: 'Paid', color: 'bg-green-100 text-green-800' };
+        return { status: 'completed', text: 'Paid', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' };
       case 'pending':
-        return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800' };
+        return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' };
       case 'failed':
-        return { status: 'failed', text: 'Failed', color: 'bg-red-100 text-red-800' };
+        return { status: 'failed', text: 'Failed', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' };
       case 'refunded':
-        return { status: 'refunded', text: 'Refunded', color: 'bg-blue-100 text-blue-800' };
+        return { status: 'refunded', text: 'Refunded', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' };
       case 'partially_refunded':
-        return { status: 'partially_refunded', text: 'Partial Refund', color: 'bg-orange-100 text-orange-800' };
+        return { status: 'partially_refunded', text: 'Partial Refund', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' };
       default:
-        return { status: 'unknown', text: status, color: 'bg-gray-100 text-gray-800' };
+        return { status: 'unknown', text: status, color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
     }
   };
 
@@ -13099,10 +13099,10 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* Refund Request Modal */}
       {showRefundRequestModal && paymentStatus && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-            <div className="p-6 border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaUndo className="text-orange-600" />
                   Request Refund
                 </h3>
@@ -13117,33 +13117,33 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
             <form onSubmit={handleRefundRequest} className="p-6">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Payment Details
                 </label>
-                <div className="bg-gray-50 rounded-lg p-3">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Property:</span>
-                    <span className="font-medium">{appointment.propertyName}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Property:</span>
+                    <span className="font-medium dark:text-gray-200">{appointment.propertyName}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Amount:</span>
-                    <span className="font-medium">
+                    <span className="text-gray-600 dark:text-gray-400">Amount:</span>
+                    <span className="font-medium dark:text-gray-200">
                       {paymentStatus.currency === 'INR' ? '₹' : '$'}{paymentStatus.amount.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Payment ID:</span>
-                    <span className="font-mono text-sm">{paymentStatus.paymentId}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Payment ID:</span>
+                    <span className="font-mono text-sm dark:text-gray-200">{paymentStatus.paymentId}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Appointment Status:</span>
-                    <span className="font-medium capitalize">{appointment.status.replace(/([A-Z])/g, ' $1').trim()}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Appointment Status:</span>
+                    <span className="font-medium capitalize dark:text-gray-200">{appointment.status.replace(/([A-Z])/g, ' $1').trim()}</span>
                   </div>
                 </div>
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Refund Type
                 </label>
                 <div className="flex gap-4">
@@ -13162,7 +13162,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                       }}
                       className="mr-2"
                     />
-                    Full Refund ({paymentStatus.currency === 'INR' ? '₹' : '$'}{paymentStatus.amount.toLocaleString()})
+                    <span className="dark:text-gray-200">Full Refund ({paymentStatus.currency === 'INR' ? '₹' : '$'}{paymentStatus.amount.toLocaleString()})</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -13173,14 +13173,14 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                       onChange={(e) => setRefundRequestForm(prev => ({ ...prev, type: e.target.value }))}
                       className="mr-2"
                     />
-                    Partial Refund
+                    <span className="dark:text-gray-200">Partial Refund</span>
                   </label>
                 </div>
               </div>
 
               {refundRequestForm.type === 'partial' && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Refund Amount
                   </label>
                   <div className="relative">
@@ -13194,7 +13194,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                       max={paymentStatus.amount}
                       min="1"
                       step="0.01"
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                       required
                     />
                   </div>
@@ -13202,14 +13202,14 @@ function PaymentStatusCell({ appointment, isBuyer }) {
               )}
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Refund Reason
                 </label>
                 <textarea
                   value={refundRequestForm.reason}
                   onChange={(e) => setRefundRequestForm(prev => ({ ...prev, reason: e.target.value }))}
                   placeholder="Please explain why you need a refund..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                   rows="3"
                   required
                 />
@@ -13219,7 +13219,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 <button
                   type="button"
                   onClick={() => setShowRefundRequestModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
@@ -13249,10 +13249,10 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* Appeal Modal */}
       {showAppealModal && refundRequestStatus && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-            <div className="p-6 border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaUndo className="text-purple-600" />
                   Submit Appeal
                 </h3>
@@ -13267,39 +13267,39 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
             <form onSubmit={handleAppealSubmit} className="p-6">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Refund Request Details
                 </label>
-                <div className="bg-gray-50 rounded-lg p-3">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Property:</span>
-                    <span className="font-medium">{appointment.propertyName}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Property:</span>
+                    <span className="font-medium dark:text-gray-200">{appointment.propertyName}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Original Reason:</span>
-                    <span className="font-medium text-sm">{refundRequestStatus.reason}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Original Reason:</span>
+                    <span className="font-medium text-sm dark:text-gray-200">{refundRequestStatus.reason}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Requested Amount:</span>
-                    <span className="font-medium">
+                    <span className="text-gray-600 dark:text-gray-400">Requested Amount:</span>
+                    <span className="font-medium dark:text-gray-200">
                       {paymentStatus.currency === 'INR' ? '₹' : '$'}{refundRequestStatus.requestedAmount.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Status:</span>
-                    <span className="font-medium text-red-600 capitalize">{refundRequestStatus.status}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Status:</span>
+                    <span className="font-medium text-red-600 dark:text-red-400 capitalize">{refundRequestStatus.status}</span>
                   </div>
                 </div>
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Appeal Reason
                 </label>
                 <select
                   value={appealForm.reason}
                   onChange={(e) => setAppealForm(prev => ({ ...prev, reason: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   required
                 >
                   <option value="">Select a reason for your appeal</option>
@@ -13313,14 +13313,14 @@ function PaymentStatusCell({ appointment, isBuyer }) {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Appeal Details
                 </label>
                 <textarea
                   value={appealForm.text}
                   onChange={(e) => setAppealForm(prev => ({ ...prev, text: e.target.value }))}
                   placeholder="Please provide detailed information about why you believe your refund request should be reconsidered..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   rows="4"
                   required
                 />
@@ -13330,7 +13330,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 <button
                   type="button"
                   onClick={() => setShowAppealModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
