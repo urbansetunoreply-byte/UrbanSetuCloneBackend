@@ -9124,15 +9124,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                               }
                               return true; // Show inline bar for above positioning
                             })() && (
-                                <div className={`absolute -top-8 ${isMe ? 'right-0' : 'left-0'} bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300`} style={{ minWidth: 'max-content' }}>
+                                <div className={`absolute -top-8 ${isMe ? 'right-0' : 'left-0'} bg-red-500 dark:bg-red-900/40 rounded-full shadow-lg border-2 border-red-600 dark:border-red-800 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300`} style={{ minWidth: 'max-content' }}>
                                   {/* Quick reaction buttons */}
                                   <button
                                     onClick={() => handleQuickReaction(c._id, '👍')}
                                     className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                                       : c.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                                       }`}
                                     disabled={isChatSendBlocked}
                                     title={isChatSendBlocked ? "Reactions disabled" : "Like"}
@@ -9142,10 +9142,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   <button
                                     onClick={() => handleQuickReaction(c._id, '❤️')}
                                     className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                                       : c.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                                       }`}
                                     disabled={isChatSendBlocked}
                                     title={isChatSendBlocked ? "Reactions disabled" : "Love"}
@@ -9155,10 +9155,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   <button
                                     onClick={() => handleQuickReaction(c._id, '😂')}
                                     className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                                       : c.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                                       }`}
                                     disabled={isChatSendBlocked}
                                     title={isChatSendBlocked ? "Reactions disabled" : "Laugh"}
@@ -9168,10 +9168,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   <button
                                     onClick={() => handleQuickReaction(c._id, '😮')}
                                     className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                                       : c.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                                       }`}
                                     disabled={isChatSendBlocked}
                                     title={isChatSendBlocked ? "Reactions disabled" : "Wow"}
@@ -9181,10 +9181,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   <button
                                     onClick={() => handleQuickReaction(c._id, '😢')}
                                     className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                                       : c.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                                       }`}
                                     disabled={isChatSendBlocked}
                                     title={isChatSendBlocked ? "Reactions disabled" : "Sad"}
@@ -9194,22 +9194,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   <button
                                     onClick={() => handleQuickReaction(c._id, '😡')}
                                     className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                                       : c.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                                       }`}
                                     disabled={isChatSendBlocked}
                                     title={isChatSendBlocked ? "Reactions disabled" : "Angry"}
                                   >
                                     😡
                                   </button>
-                                  <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                                  <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
                                   <button
                                     onClick={toggleReactionsEmojiPicker}
                                     className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
-                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                      ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
+                                      : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                                       }`}
                                     disabled={isChatSendBlocked}
                                     title={isChatSendBlocked ? "Reactions disabled" : "More emojis"}
@@ -9260,7 +9260,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
                     return (
                       <div
-                        className="fixed bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300"
+                        className="fixed bg-red-500 dark:bg-red-900/40 rounded-full shadow-lg border-2 border-red-600 dark:border-red-800 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300"
                         style={{
                           minWidth: 'max-content',
                           top: `${messageRect.bottom + 2}px`,
@@ -9272,10 +9272,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         <button
                           onClick={() => handleQuickReaction(comment._id, '👍')}
                           className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                             : comment.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                              : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                             }`}
                           disabled={isChatSendBlocked}
                           title={isChatSendBlocked ? "Reactions disabled" : "Like"}
@@ -9285,10 +9285,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         <button
                           onClick={() => handleQuickReaction(comment._id, '❤️')}
                           className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                             : comment.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                              : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                             }`}
                           disabled={isChatSendBlocked}
                           title={isChatSendBlocked ? "Reactions disabled" : "Love"}
@@ -9298,10 +9298,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😂')}
                           className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                             : comment.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                              : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                             }`}
                           disabled={isChatSendBlocked}
                           title={isChatSendBlocked ? "Reactions disabled" : "Laugh"}
@@ -9311,10 +9311,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😮')}
                           className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                             : comment.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                              : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                             }`}
                           disabled={isChatSendBlocked}
                           title={isChatSendBlocked ? "Reactions disabled" : "Wow"}
@@ -9324,10 +9324,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😢')}
                           className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                             : comment.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                              : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                             }`}
                           disabled={isChatSendBlocked}
                           title={isChatSendBlocked ? "Reactions disabled" : "Sad"}
@@ -9337,22 +9337,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😡')}
                           className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
                             : comment.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                              ? 'bg-blue-100 border-2 border-blue-400'
-                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                              : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                             }`}
                           disabled={isChatSendBlocked}
                           title={isChatSendBlocked ? "Reactions disabled" : "Angry"}
                         >
                           😡
                         </button>
-                        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
                         <button
                           onClick={toggleReactionsEmojiPicker}
                           className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
-                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
-                            : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                            ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed opacity-50'
+                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-110'
                             }`}
                           disabled={isChatSendBlocked}
                           title={isChatSendBlocked ? "Reactions disabled" : "More emojis"}
