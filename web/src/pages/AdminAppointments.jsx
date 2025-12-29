@@ -3223,6 +3223,11 @@ function AdminAppointmentRow({
       callId: activeLiveCall.callId,
       reason: forceTerminateReason.trim()
     });
+
+    // Safety timeout
+    setTimeout(() => {
+      setForceTerminateLoading(false);
+    }, 5000);
   }, [socket, activeLiveCall, forceTerminateReason, setForceTerminateLoading]);
 
   // Map call roles (caller/receiver) to buyer/seller for labeling streams
@@ -4308,6 +4313,16 @@ function AdminAppointmentRow({
       socket.off('call-accepted', handleCallEnded);
     };
   }, [appt?._id, socket]);
+
+  // Handle auto-closing of force terminate modal when call ends
+  useEffect(() => {
+    if (forceTerminateLoading && !activeLiveCall) {
+      setShowForceTerminateModal(false);
+      setForceTerminateLoading(false);
+      setForceTerminateReason('');
+      toast.success('Live call terminated successfully.');
+    }
+  }, [activeLiveCall, forceTerminateLoading]);
 
   // Auto-scroll to bottom when chat modal opens
   React.useEffect(() => {
