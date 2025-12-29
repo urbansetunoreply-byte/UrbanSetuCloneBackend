@@ -857,6 +857,10 @@ export const useCall = () => {
             });
 
             peer.on('error', (err) => {
+              // Silence specific errors during intentional teardown or aborts
+              if (isEndingCallRef.current || (err.message && (err.message.includes('Abort') || err.message.includes('Close called')))) {
+                return;
+              }
               console.error('Peer connection error:', err);
               // Only end call if connection fails completely and no stream
               if (!remoteStream) {
@@ -962,6 +966,10 @@ export const useCall = () => {
         });
 
         peer.on('error', (err) => {
+          // Silence specific errors during intentional teardown or aborts
+          if (isEndingCallRef.current || (err.message && (err.message.includes('Abort') || err.message.includes('Close called')))) {
+            return;
+          }
           console.error('Peer connection error:', err);
           toast.error('Connection error occurred');
           endCall();
@@ -1481,7 +1489,7 @@ export const useCall = () => {
 
           const videoTrack = cameraStream.getVideoTracks()[0];
           const audioTrack = cameraStream.getAudioTracks()[0];
-          const sender = peerRef.current?._pc.getSenders().find(s =>
+          const sender = peerRef.current?._pc?.getSenders()?.find(s =>
             s.track && s.track.kind === 'video'
           );
 
@@ -1490,7 +1498,7 @@ export const useCall = () => {
           }
 
           // Restore audio
-          const audioSender = peerRef.current?._pc.getSenders().find(s =>
+          const audioSender = peerRef.current?._pc?.getSenders()?.find(s =>
             s.track && s.track.kind === 'audio'
           );
           if (audioSender && audioTrack && !isMuted) {
@@ -1598,7 +1606,7 @@ export const useCall = () => {
 
       // Replace audio tracks
       const audioTrack = newStream.getAudioTracks()[0];
-      const sender = peerRef.current?._pc.getSenders().find(s =>
+      const sender = peerRef.current?._pc?.getSenders()?.find(s =>
         s.track && s.track.kind === 'audio'
       );
 
@@ -1650,6 +1658,7 @@ export const useCall = () => {
 
     const checkConnectionQuality = async () => {
       try {
+        if (!peerRef.current || !peerRef.current._pc || isEndingCallRef.current) return;
         const stats = await peerRef.current._pc.getStats();
         let packetsLost = 0;
         let packetsReceived = 0;
@@ -1689,7 +1698,10 @@ export const useCall = () => {
 
         setConnectionQuality(quality);
       } catch (error) {
-        console.error('Error checking connection quality:', error);
+        // Silently ignore errors during teardown
+        if (!isEndingCallRef.current && peerRef.current?._pc) {
+          console.error('Error checking connection quality:', error);
+        }
       }
     };
 
