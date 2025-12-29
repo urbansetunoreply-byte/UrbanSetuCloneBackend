@@ -10017,7 +10017,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         {/* Record Audio */}
                         <button
                           type="button"
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
                           onClick={() => {
                             setShowRecordAudioModal(true);
                             setShowAttachmentPanel(false);
@@ -11570,8 +11570,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {
         showReportChatModal && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 dark:border dark:border-gray-700 rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaFlag className="text-red-500" /> Report Chat
               </h3>
 
@@ -11579,9 +11579,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <FaInfoCircle className="text-blue-500 text-sm" />
-                  <span className="text-sm font-medium text-gray-700">The last 5 messages in this chat will be sent to UrbanSetu. This person won't know you reported them:</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">The last 5 messages in this chat will be sent to UrbanSetu. This person won't know you reported them:</span>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 max-h-48 overflow-y-auto">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700 max-h-48 overflow-y-auto">
                   {filteredComments.slice(-5).map((message, index) => (
                     <div key={message._id || index} className="mb-3 last:mb-0">
                       <div className="flex items-start gap-2">
@@ -11590,14 +11590,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-semibold text-gray-600">
+                            <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
                               {message.senderName || 'Unknown User'}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
                               {new Date(message.timestamp).toLocaleString()}
                             </span>
                           </div>
-                          <div className="text-sm text-gray-700 bg-white rounded p-2 border border-gray-200">
+                          <div className="text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 rounded p-2 border border-gray-200 dark:border-gray-700">
                             {message.type === 'image' ? (
                               <div className="flex items-center gap-2">
                                 <span>📷 Image: {message.message}</span>
@@ -11619,7 +11619,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     </div>
                   ))}
                   {filteredComments.length === 0 && (
-                    <div className="text-center text-gray-500 text-sm py-4">
+                    <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
                       No messages to report
                     </div>
                   )}
@@ -11628,11 +11628,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
                   <select
                     value={reportChatReason}
                     onChange={(e) => setReportChatReason(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white dark:bg-gray-700"
                   >
                     <option value="">Select a reason</option>
                     <option value="harassment">Harassment or bullying</option>
@@ -11646,7 +11646,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                 </div>
                 {reportChatReason && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {reportChatReason === 'other' ? 'Additional details *' : 'Additional details (optional)'}
                     </label>
                     <textarea
@@ -11654,7 +11654,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                       onChange={(e) => setReportChatDetails(e.target.value)}
                       rows={4}
                       placeholder={reportChatReason === 'other' ? 'Please provide details about the issue...' : 'Provide more context to help admins review this chat...'}
-                      className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white dark:bg-gray-700"
                     />
                   </div>
                 )}
@@ -11666,7 +11666,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     setReportChatReason('');
                     setReportChatDetails('');
                   }}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
                 >
                   Cancel
                 </button>
