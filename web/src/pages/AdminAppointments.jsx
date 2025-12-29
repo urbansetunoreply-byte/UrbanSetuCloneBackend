@@ -10153,36 +10153,6 @@ function AdminAppointmentRow({
           </div>
         )}
 
-        {/* Force-terminate Call Confirmation Modal */}
-        {showForceTerminateModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[250]">
-            <div className="bg-white dark:bg-gray-800 dark:border dark:border-gray-700 rounded-xl p-6 w-full max-w-sm relative shadow-2xl">
-              <h3 className="text-lg font-bold mb-4 text-red-600 flex items-center gap-2">
-                <FaBan /> Force Terminate Call
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
-                Are you sure you want to force-end this live call? This will disconnect both users immediately.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowForceTerminateModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleForceTerminate}
-                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
-                >
-                  <FaPowerOff size={12} /> Force End Call
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Cancel Appointment Modal */}
         {showCancelModal && appointmentToHandle === appt._id && (
           <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
