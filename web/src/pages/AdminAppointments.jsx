@@ -5695,14 +5695,14 @@ function AdminAppointmentRow({
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "pending": return "bg-yellow-100 text-yellow-700";
-      case "accepted": return "bg-green-100 text-green-700";
-      case "rejected": return "bg-red-100 text-red-700";
-      case "cancelledByBuyer": return "bg-red-100 text-red-700";
-      case "cancelledBySeller": return "bg-red-100 text-red-700";
-      case "cancelledByAdmin": return "bg-red-100 text-red-700";
-      case "deletedByAdmin": return "bg-gray-100 text-gray-700";
-      default: return "bg-gray-100 text-gray-700";
+      case "pending": return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
+      case "accepted": return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+      case "rejected": return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      case "cancelledByBuyer": return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      case "cancelledBySeller": return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      case "cancelledByAdmin": return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      case "deletedByAdmin": return "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
+      default: return "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
     }
   };
 
@@ -6013,63 +6013,63 @@ function AdminAppointmentRow({
   }, [appt._id]);
 
   return (
-    <tr className={`hover:bg-blue-50 transition align-top ${isArchived ? 'bg-gray-50' : ''} ${!isUpcoming ? (isArchived ? 'bg-gray-100' : 'bg-gray-100') : ''}`}>
-      <td className="border p-2">
+    <tr className={`hover:bg-blue-50 dark:hover:bg-gray-700/50 transition align-top ${isArchived ? 'bg-gray-50 dark:bg-gray-800/50' : ''} ${!isUpcoming ? (isArchived ? 'bg-gray-100 dark:bg-gray-900/50' : 'bg-gray-100 dark:bg-gray-900/50') : ''}`}>
+      <td className="border dark:border-gray-700 p-2 text-gray-800 dark:text-gray-200">
         <div>
           <div>{new Date(appt.date).toLocaleDateString('en-GB')}</div>
-          <div className="text-sm text-gray-600">{appt.time}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">{appt.time}</div>
           {!isUpcoming && (
-            <div className="text-xs text-red-600 font-medium mt-1">Outdated</div>
+            <div className="text-xs text-red-600 dark:text-red-400 font-medium mt-1">Outdated</div>
           )}
           {isArchived && appt.archivedAt && (
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Archived: {new Date(appt.archivedAt).toLocaleDateString('en-GB')}
             </div>
           )}
         </div>
       </td>
-      <td className="border p-2">
+      <td className="border dark:border-gray-700 p-2 text-gray-800 dark:text-gray-200">
         <div>
           {appt.listingId ? (
             <Link
               to={`/admin/listing/${appt.listingId._id}`}
-              className="font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+              className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline cursor-pointer"
             >
               {appt.propertyName}
             </Link>
           ) : (
-            <div className="font-semibold">{appt.propertyName}</div>
+            <div className="font-semibold text-gray-800 dark:text-gray-200">{appt.propertyName}</div>
           )}
         </div>
       </td>
-      <td className="border p-2 text-center">
+      <td className="border dark:border-gray-700 p-2 text-center">
         <AdminPaymentStatusCell appointmentId={appt._id} appointment={appt} />
       </td>
-      <td className="border p-2">
+      <td className="border dark:border-gray-700 p-2 text-gray-800 dark:text-gray-200">
         <button
           onClick={() => onUserClick(appt.buyerId?._id)}
-          className="text-blue-600 hover:text-blue-800 hover:underline text-left"
+          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-left"
           title="Click to view buyer details"
         >
           <div className="font-semibold">{appt.buyerId?.username || 'Unknown'}</div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             <a
               href={`mailto:${appt.buyerId?.email || appt.email}`}
-              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors duration-200"
               title="Click to send email"
               onClick={(e) => e.stopPropagation()}
             >
               {appt.buyerId?.email || appt.email}
             </a>
           </div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             {appt.buyerId?.mobileNumber && appt.buyerId?.mobileNumber !== '' ? (
               <span
                 onClick={(e) => {
                   e.stopPropagation();
                   handlePhoneClick(appt.buyerId.mobileNumber);
                 }}
-                className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200 cursor-pointer"
+                className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 hover:underline transition-colors duration-200 cursor-pointer"
                 title="Click to call or copy phone number"
               >
                 {appt.buyerId.mobileNumber}
@@ -6080,31 +6080,31 @@ function AdminAppointmentRow({
           </div>
         </button>
       </td>
-      <td className="border p-2">
+      <td className="border dark:border-gray-700 p-2 text-gray-800 dark:text-gray-200">
         <button
           onClick={() => onUserClick(appt.sellerId?._id)}
-          className="text-blue-600 hover:text-blue-800 hover:underline text-left"
+          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-left"
           title="Click to view seller details"
         >
           <div className="font-semibold">{appt.sellerId?.username || 'Unknown'}</div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             <a
               href={`mailto:${appt.sellerId?.email}`}
-              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors duration-200"
               title="Click to send email"
               onClick={(e) => e.stopPropagation()}
             >
               {appt.sellerId?.email}
             </a>
           </div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             {appt.sellerId?.mobileNumber && appt.sellerId?.mobileNumber !== '' ? (
               <span
                 onClick={(e) => {
                   e.stopPropagation();
                   handlePhoneClick(appt.sellerId.mobileNumber);
                 }}
-                className="text-green-600 hover:text-green-800 hover:underline transition-colors duration-200 cursor-pointer"
+                className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 hover:underline transition-colors duration-200 cursor-pointer"
                 title="Click to call or copy phone number"
               >
                 {appt.sellerId.mobileNumber}
@@ -6115,9 +6115,9 @@ function AdminAppointmentRow({
           </div>
         </button>
       </td>
-      <td className="border p-2 capitalize">{appt.purpose}</td>
-      <td className="border p-2 max-w-xs truncate">{appt.message || 'No message provided'}</td>
-      <td className="border p-2 text-center">
+      <td className="border dark:border-gray-700 p-2 capitalize text-gray-800 dark:text-gray-200">{appt.purpose}</td>
+      <td className="border dark:border-gray-700 p-2 max-w-xs truncate text-gray-800 dark:text-gray-200">{appt.message || 'No message provided'}</td>
+      <td className="border dark:border-gray-700 p-2 text-center">
         <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(appt.status)}`}>
           {appt.status === "deletedByAdmin" ? "Deleted by Admin" :
             appt.status === "cancelledByBuyer" ? "Cancelled by Buyer" :
@@ -6126,10 +6126,10 @@ function AdminAppointmentRow({
                   appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
         </span>
         {appt.status === "deletedByAdmin" && appt.adminComment && (
-          <div className="text-xs text-gray-600 mt-1">"{appt.adminComment}"</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">"{appt.adminComment}"</div>
         )}
         {(appt.status === "cancelledByBuyer" || appt.status === "cancelledBySeller") && (
-          <div className="text-xs text-gray-600 mt-1">
+          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
             {appt.status === "cancelledByBuyer"
               ? `Buyer reinitiations: ${appt.buyerReinitiationCount || 0}/2`
               : `Seller reinitiations: ${appt.sellerReinitiationCount || 0}/2`
@@ -6137,7 +6137,7 @@ function AdminAppointmentRow({
           </div>
         )}
       </td>
-      <td className="border p-2 text-center">
+      <td className="border dark:border-gray-700 p-2 text-center">
         <div className="flex flex-col gap-2">
           {isArchived ? (
             // Archived appointments - show unarchive button
@@ -6181,7 +6181,7 @@ function AdminAppointmentRow({
           )}
         </div>
       </td>
-      <td className="border p-2 text-center relative">
+      <td className="border dark:border-gray-700 p-2 text-center relative">
         <button
           className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-3 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 mx-auto relative group"
           title="Open Chat"
@@ -6765,13 +6765,13 @@ function AdminAppointmentRow({
                             <FaEllipsisV size={14} />
                           </button>
                           {showHeaderMoreMenu && (
-                            <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
+                            <div className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 min-w-[180px] chat-options-menu">
                               {(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.senderEmail === currentUser.email) ? (
                                 <>
                                   {/* Download option for image messages */}
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl && (
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={() => {
                                         handleDownloadChatImage(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id);
                                         setShowHeaderMoreMenu(false);
@@ -6785,7 +6785,7 @@ function AdminAppointmentRow({
                                   {/* Download option for video messages */}
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl && (
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
                                           const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
@@ -6823,7 +6823,7 @@ function AdminAppointmentRow({
                                   {/* Download option for audio messages */}
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
                                           const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
@@ -6857,14 +6857,14 @@ function AdminAppointmentRow({
                                     </button>
                                   )}
                                   <button
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                     onClick={() => { showMessageInfo(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
                                   >
                                     <FaInfoCircle className="text-sm" />
                                     Info
                                   </button>
                                   <button
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                     onClick={() => { startEditing(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
                                     disabled={editingComment !== null}
                                   >
@@ -6872,7 +6872,7 @@ function AdminAppointmentRow({
                                     Edit
                                   </button>
                                   <button
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 flex items-center gap-2"
                                     onClick={() => { handleDeleteClick(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
                                   >
                                     <FaTrash className="text-sm" />
@@ -6884,7 +6884,7 @@ function AdminAppointmentRow({
                                   {/* Download option for image messages (for received messages) */}
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl && (
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={() => {
                                         handleDownloadChatImage(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id);
                                         setShowHeaderMoreMenu(false);
@@ -6898,7 +6898,7 @@ function AdminAppointmentRow({
                                   {/* Download option for video messages (for received messages) */}
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl && (
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
                                           const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
@@ -6936,7 +6936,7 @@ function AdminAppointmentRow({
                                   {/* Download option for audio messages (for received messages) */}
                                   {selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl && (
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
                                           const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
@@ -6970,14 +6970,14 @@ function AdminAppointmentRow({
                                     </button>
                                   )}
                                   <button
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                     onClick={() => { showMessageInfo(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
                                   >
                                     <FaInfoCircle className="text-sm" />
                                     Info
                                   </button>
                                   <button
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 flex items-center gap-2"
                                     onClick={() => { handleDeleteClick(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
                                   >
                                     <FaTrash className="text-sm" />
@@ -7309,7 +7309,7 @@ function AdminAppointmentRow({
                         </button>
                       )}
                       <button
-                        className="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors z-10 shadow"
+                        className="text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-full p-2 transition-colors z-10 shadow"
                         onClick={() => {
                           setShowChatModal(false);
                           // Close reactions bar when chat modal closes
@@ -7351,7 +7351,7 @@ function AdminAppointmentRow({
                         <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 min-w-[250px] animate-fadeIn"
                           style={{ zIndex: 9999 }}>
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-gray-700">Jump to Date</span>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Jump to Date</span>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -7369,10 +7369,10 @@ function AdminAppointmentRow({
                               e.stopPropagation();
                               handleDateSelect(e.target.value);
                             }}
-                            className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             max={formatDateForInput(new Date())}
                           />
-                          <div className="text-xs text-gray-500 mt-2">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                             Select a date to jump to the first message from that day
                           </div>
                         </div>
@@ -7512,9 +7512,9 @@ function AdminAppointmentRow({
                   if (mergedTimeline.length === 0) {
                     return (
                       <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                        <FaCommentDots className="text-gray-300 text-4xl mb-3" />
-                        <p className="text-gray-500 font-medium text-sm">No messages in this conversation</p>
-                        <p className="text-gray-400 text-xs mt-1">Monitor and manage communication between parties</p>
+                        <FaCommentDots className="text-gray-300 dark:text-gray-600 text-4xl mb-3" />
+                        <p className="text-gray-500 dark:text-gray-400 font-medium text-sm">No messages in this conversation</p>
+                        <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Monitor and manage communication between parties</p>
                       </div>
                     );
                   }
@@ -7625,7 +7625,7 @@ function AdminAppointmentRow({
                               );
                             })()}
                             <div className="font-semibold mb-2 flex items-center gap-2 justify-start text-left">
-                              <span className={`truncate max-w-[120px] min-w-[60px] inline-block align-middle overflow-hidden text-ellipsis text-left ${isMe ? 'text-blue-100' : 'text-gray-700'
+                              <span className={`truncate max-w-[120px] min-w-[60px] inline-block align-middle overflow-hidden text-ellipsis text-left ${isMe ? 'text-blue-100' : 'text-gray-700 dark:text-gray-300'
                                 }`}>
                                 {isMe ? "You" : (() => {
                                   // Check if sender is buyer or seller to get their name
@@ -7653,7 +7653,7 @@ function AdminAppointmentRow({
                                     if (locallyHidden) {
                                       // Show collapsed placeholder for hidden deleted message
                                       return (
-                                        <div className="border border-gray-300 bg-gray-100 rounded p-2 mb-2">
+                                        <div className="border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800/50 rounded p-2 mb-2">
                                           <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2 text-gray-600 text-xs">
                                               <FaBan className="inline-block" />
@@ -7673,8 +7673,8 @@ function AdminAppointmentRow({
 
                                     // Show full deleted message content
                                     return (
-                                      <div className="border border-red-300 bg-red-50 rounded p-2 mb-2">
-                                        <div className="flex items-center gap-2 text-red-600 text-xs font-semibold mb-1">
+                                      <div className="border border-red-300 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 rounded p-2 mb-2">
+                                        <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-xs font-semibold mb-1">
                                           <FaBan className="inline-block" />
                                           Message deleted by {(c && c.deletedBy) || 'user'} (Admin view - preserved for records)
                                         </div>
@@ -7707,7 +7707,7 @@ function AdminAppointmentRow({
                                           <div className="mb-2">
                                             <video
                                               src={c.videoUrl}
-                                              className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                              className="max-w-full max-h-64 rounded-lg border dark:border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
                                               controls
                                               onClick={(e) => {
                                                 e.preventDefault();
@@ -7728,7 +7728,7 @@ function AdminAppointmentRow({
                                         {/* Show preserved audio if exists */}
                                         {c && c.audioUrl && (
                                           <div className="mb-2">
-                                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                            <div className="bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg p-3">
                                               <audio
                                                 src={c.audioUrl}
                                                 className="w-full"
@@ -7745,9 +7745,9 @@ function AdminAppointmentRow({
                                         {/* Show preserved document if exists */}
                                         {c && c.documentUrl && (
                                           <div className="mb-2">
-                                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                            <div className="bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg p-3">
                                               <div className="flex items-center gap-2 mb-2">
-                                                <div className="flex-1 flex items-center gap-3 cursor-pointer hover:bg-gray-200 p-2 rounded transition-colors"
+                                                <div className="flex-1 flex items-center gap-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 p-2 rounded transition-colors"
                                                   onClick={() => {
                                                     // Construct preview URL
                                                     const ext = c.documentUrl.split('.').pop().toLowerCase();
@@ -7762,10 +7762,10 @@ function AdminAppointmentRow({
                                                 >
                                                   <span className="text-2xl">📄</span>
                                                   <div>
-                                                    <div className="text-sm font-medium text-gray-800 hover:text-blue-600 underline">
+                                                    <div className="text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 underline">
                                                       {c.documentName || 'Document'}
                                                     </div>
-                                                    <div className="text-xs text-gray-600 italic">
+                                                    <div className="text-xs text-gray-600 dark:text-gray-400 italic">
                                                       Preserved document from deleted message
                                                     </div>
                                                   </div>
@@ -7825,7 +7825,7 @@ function AdminAppointmentRow({
                                           </button>
                                         )}
 
-                                        <div className="text-gray-800 bg-white p-2 rounded border-l-4 border-red-400 relative group">
+                                        <div className="text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 p-2 rounded border-l-4 border-red-400 dark:border-red-800 relative group">
                                           {(() => {
                                             const messageContent = (c && c.originalMessage) || (c && c.message);
                                             if (messageContent) {
@@ -7834,7 +7834,7 @@ function AdminAppointmentRow({
                                                   <span className="whitespace-pre-wrap break-words">{messageContent}</span>
                                                   {/* Copy icon - visible on hover */}
                                                   <button
-                                                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-gray-700 bg-white rounded p-1 shadow-sm"
+                                                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-700 rounded p-1 shadow-sm"
                                                     onClick={() => copyMessageToClipboard(messageContent)}
                                                     title="Copy deleted message content"
                                                     aria-label="Copy deleted message content"
@@ -7845,7 +7845,7 @@ function AdminAppointmentRow({
                                               );
                                             } else {
                                               return (
-                                                <span className="text-gray-500 italic">
+                                                <span className="text-gray-500 dark:text-gray-400 italic">
                                                   [Message content not preserved - this message was deleted before content preservation was implemented]
                                                 </span>
                                               );
@@ -7922,7 +7922,7 @@ function AdminAppointmentRow({
                                           />
                                           <div className={`mt-1 text-xs ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
                                             <button
-                                              className={`${isMe ? 'text-white hover:text-blue-100' : 'text-blue-600 hover:underline'}`}
+                                              className={`${isMe ? 'text-white hover:text-blue-100' : 'text-blue-600 dark:text-blue-400 hover:underline'}`}
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 const a = document.createElement('a');
@@ -8031,7 +8031,7 @@ function AdminAppointmentRow({
                                                     Download
                                                   </span>
                                                 </button>
-                                                <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500'}`} data-audio-id={c._id}>1x</span>
+                                                <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`} data-audio-id={c._id}>1x</span>
                                               </div>
 
                                               {/* Three dots menu for audio options */}
@@ -8063,11 +8063,11 @@ function AdminAppointmentRow({
                                                 {/* Audio options dropdown - Main Menu */}
                                                 <div
                                                   data-audio-menu={c._id}
-                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999]"
                                                 >
                                                   <div className="py-1">
                                                     <button
-                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                                       onClick={(e) => {
                                                         e.stopPropagation();
                                                         const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
@@ -8088,7 +8088,7 @@ function AdminAppointmentRow({
                                                     </button>
 
                                                     <button
-                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                                       onClick={(e) => {
                                                         e.stopPropagation();
                                                         const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
@@ -8113,12 +8113,12 @@ function AdminAppointmentRow({
                                                 {/* Audio Speed Menu */}
                                                 <div
                                                   data-audio-speed-menu={c._id}
-                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999]"
                                                 >
                                                   <div className="py-1">
-                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide flex items-center gap-2">
                                                       <button
-                                                        className="p-1 hover:bg-gray-100 rounded"
+                                                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
@@ -8139,7 +8139,7 @@ function AdminAppointmentRow({
                                                       <button
                                                         key={speed}
                                                         data-speed-option={speed}
-                                                        className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${speed === 1 ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                                                        className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${speed === 1 ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                                           }`}
                                                         onClick={(e) => {
                                                           e.stopPropagation();
@@ -8187,10 +8187,10 @@ function AdminAppointmentRow({
                                                 {/* Audio Controls Menu */}
                                                 <div
                                                   data-audio-controls-menu={c._id}
-                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999]"
                                                 >
                                                   <div className="py-1">
-                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide flex items-center gap-2">
                                                       <button
                                                         className="p-1 hover:bg-gray-100 rounded"
                                                         onClick={(e) => {
@@ -8291,7 +8291,7 @@ function AdminAppointmentRow({
                                       )}
                                       {/* Document Message */}
                                       {c && c.documentUrl && (
-                                        <div className="mb-2 group relative flex items-center bg-gray-50/90 hover:bg-white border hover:border-blue-200 text-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all w-fit max-w-[85%] sm:max-w-[320px]">
+                                        <div className="mb-2 group relative flex items-center bg-gray-50/90 dark:bg-gray-800 hover:bg-white dark:hover:bg-gray-700 border dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-500 text-gray-800 dark:text-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all w-fit max-w-[85%] sm:max-w-[320px]">
                                           {/* Clickable Area for View */}
                                           <div
                                             className="flex-1 flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50/30 transition-colors min-w-0"
@@ -8308,20 +8308,20 @@ function AdminAppointmentRow({
                                             }}
                                             title="Click to view document"
                                           >
-                                            <div className="bg-blue-100 p-2 rounded-lg text-blue-600 flex-shrink-0">
+                                            <div className="bg-blue-100 dark:bg-blue-900/40 p-2 rounded-lg text-blue-600 dark:text-blue-400 flex-shrink-0">
                                               <FaFileAlt size={16} />
                                             </div>
                                             <div className="flex flex-col min-w-0 overflow-hidden">
-                                              <span className="text-sm font-medium truncate text-gray-900 w-full text-left">{c.documentName || 'Document'}</span>
+                                              <span className="text-sm font-medium truncate text-gray-900 dark:text-gray-100 w-full text-left">{c.documentName || 'Document'}</span>
                                             </div>
                                           </div>
 
                                           {/* Separator */}
-                                          <div className="w-[1px] h-8 bg-gray-200 flex-shrink-0" />
+                                          <div className="w-[1px] h-8 bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
 
                                           {/* Download Button */}
                                           <button
-                                            className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex-shrink-0 z-10"
+                                            className="p-3 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors flex-shrink-0 z-10"
                                             title="Download"
                                             onClick={async (e) => {
                                               e.stopPropagation();
@@ -8402,7 +8402,7 @@ function AdminAppointmentRow({
                                 <FaStar className={`${isMe ? 'text-yellow-300' : 'text-yellow-500'} text-[10px]`} />
                               )}
                               {settings.showTimestamps && (
-                                <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
+                                <span className={`${isMe ? 'text-blue-200 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'} text-[10px]`}>
                                   {new Date(c && c.timestamp ? c.timestamp : Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                                 </span>
                               )}
@@ -8417,7 +8417,7 @@ function AdminAppointmentRow({
                               )}
                               {/* Options icon - visible for all messages (including deleted) */}
                               <button
-                                className={`${(c && c.senderEmail) === currentUser.email ? 'text-blue-200 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
+                                className={`${(c && c.senderEmail) === currentUser.email ? 'text-blue-200 hover:text-white dark:text-blue-300 dark:hover:text-blue-100' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'} transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white/20 dark:hover:bg-gray-700/50 ml-1`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setHeaderOptionsMessageId(c && c._id);
@@ -8452,12 +8452,12 @@ function AdminAppointmentRow({
                                           onClick={() => handleQuickReaction(c && c._id, emoji)}
                                           className={`text-xs rounded-full px-2 py-1 flex items-center gap-1 transition-all duration-200 hover:scale-105 ${hasUserReaction
                                             ? 'bg-blue-500 border-2 border-blue-600 hover:bg-blue-600 shadow-md'
-                                            : 'bg-gray-100 border border-gray-300 hover:bg-gray-200'
+                                            : 'bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
                                             }`}
                                           title={`${userNames} reacted with ${emoji}${hasUserReaction ? ' (Click to remove)' : ' (Click to add)'}`}
                                         >
                                           <span>{emoji}</span>
-                                          <span className={`${hasUserReaction ? 'text-white font-semibold' : 'text-gray-600'}`}>
+                                          <span className={`${hasUserReaction ? 'text-white font-semibold' : 'text-gray-600 dark:text-gray-400'}`}>
                                             {reactions.length}
                                           </span>
                                         </button>
@@ -8494,13 +8494,13 @@ function AdminAppointmentRow({
                                 }
                                 return true; // Show inline bar for above positioning
                               })() && (
-                                  <div className={`absolute -top-8 ${isMe ? 'right-0' : 'left-0'} bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300`} style={{ minWidth: 'max-content' }}>
+                                  <div className={`absolute -top-8 ${isMe ? 'right-0' : 'left-0'} bg-red-500 dark:bg-red-900/40 rounded-full shadow-lg border-2 border-red-600 dark:border-red-800 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300`} style={{ minWidth: 'max-content' }}>
                                     {/* Quick reaction buttons */}
                                     <button
                                       onClick={() => handleQuickReaction(c && c._id, '👍')}
                                       className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                       title="Like"
                                     >
@@ -8509,8 +8509,8 @@ function AdminAppointmentRow({
                                     <button
                                       onClick={() => handleQuickReaction(c && c._id, '❤️')}
                                       className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                       title="Love"
                                     >
@@ -8519,8 +8519,8 @@ function AdminAppointmentRow({
                                     <button
                                       onClick={() => handleQuickReaction(c && c._id, '😂')}
                                       className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                       title="Laugh"
                                     >
@@ -8529,8 +8529,8 @@ function AdminAppointmentRow({
                                     <button
                                       onClick={() => handleQuickReaction(c && c._id, '😮')}
                                       className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                       title="Wow"
                                     >
@@ -8539,8 +8539,8 @@ function AdminAppointmentRow({
                                     <button
                                       onClick={() => handleQuickReaction(c && c._id, '😢')}
                                       className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                       title="Sad"
                                     >
@@ -8549,17 +8549,17 @@ function AdminAppointmentRow({
                                     <button
                                       onClick={() => handleQuickReaction(c && c._id, '😡')}
                                       className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${(c && c.reactions)?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                                        ? 'bg-blue-100 border-2 border-blue-400'
-                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                       title="Angry"
                                     >
                                       😡
                                     </button>
-                                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
                                     <button
                                       onClick={toggleReactionsEmojiPicker}
-                                      className="w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform bg-gray-50 hover:bg-gray-100 rounded-full"
+                                      className="w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
                                       title="More emojis"
                                     >
                                       ➕
@@ -8619,7 +8619,7 @@ function AdminAppointmentRow({
 
                     return (
                       <div
-                        className="fixed bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300"
+                        className="fixed bg-red-500 dark:bg-red-900/40 rounded-full shadow-lg border-2 border-red-600 dark:border-red-800 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300"
                         style={{
                           minWidth: 'max-content',
                           top: `${messageRect.bottom + 2}px`,
@@ -8631,8 +8631,8 @@ function AdminAppointmentRow({
                         <button
                           onClick={() => handleQuickReaction(comment._id, '👍')}
                           className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                            ? 'bg-blue-100 border-2 border-blue-400'
-                            : 'bg-gray-50 hover:bg-gray-100'
+                            ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                           title="Like"
                         >
@@ -8641,8 +8641,8 @@ function AdminAppointmentRow({
                         <button
                           onClick={() => handleQuickReaction(comment._id, '❤️')}
                           className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                            ? 'bg-blue-100 border-2 border-blue-400'
-                            : 'bg-gray-50 hover:bg-gray-100'
+                            ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                           title="Love"
                         >
@@ -8651,8 +8651,8 @@ function AdminAppointmentRow({
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😂')}
                           className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                            ? 'bg-blue-100 border-2 border-blue-400'
-                            : 'bg-gray-50 hover:bg-gray-100'
+                            ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                           title="Laugh"
                         >
@@ -8661,8 +8661,8 @@ function AdminAppointmentRow({
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😮')}
                           className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                            ? 'bg-blue-100 border-2 border-blue-400'
-                            : 'bg-gray-50 hover:bg-gray-100'
+                            ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                           title="Wow"
                         >
@@ -8671,8 +8671,8 @@ function AdminAppointmentRow({
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😢')}
                           className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                            ? 'bg-blue-100 border-2 border-blue-400'
-                            : 'bg-gray-50 hover:bg-gray-100'
+                            ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                           title="Sad"
                         >
@@ -8681,8 +8681,8 @@ function AdminAppointmentRow({
                         <button
                           onClick={() => handleQuickReaction(comment._id, '😡')}
                           className={`w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform rounded-full ${comment.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                            ? 'bg-blue-100 border-2 border-blue-400'
-                            : 'bg-gray-50 hover:bg-gray-100'
+                            ? 'bg-blue-100 dark:bg-blue-900/40 border-2 border-blue-400 dark:border-blue-500'
+                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                           title="Angry"
                         >
@@ -8691,7 +8691,7 @@ function AdminAppointmentRow({
                         <div className="w-px h-6 bg-gray-300 mx-1"></div>
                         <button
                           onClick={toggleReactionsEmojiPicker}
-                          className="w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform bg-gray-50 hover:bg-gray-100 rounded-full"
+                          className="w-8 h-8 flex items-center justify-center text-lg hover:scale-110 transition-transform bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
                           title="More emojis"
                         >
                           ➕
@@ -8721,7 +8721,7 @@ function AdminAppointmentRow({
                   }}
                 >
                   <div
-                    className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-hidden quick-reactions-modal"
+                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-hidden quick-reactions-modal"
                     onMouseDown={(e) => {
                       e.stopPropagation(); // Prevent any event bubbling
                     }}
@@ -8730,7 +8730,7 @@ function AdminAppointmentRow({
                     }}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <div className="text-lg font-semibold text-gray-800">Quick Reactions</div>
+                      <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">Quick Reactions</div>
                       <button
                         onMouseDown={(e) => {
                           e.stopPropagation(); // Prevent event bubbling
@@ -8741,7 +8741,7 @@ function AdminAppointmentRow({
                           setShowReactionsEmojiPicker(false);
                           setReactionEmojiSearchTerm(''); // Clear search when closing
                         }}
-                        className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-2 transition-colors"
                         title="Close"
                       >
                         <FaTimes size={16} />
@@ -8756,7 +8756,7 @@ function AdminAppointmentRow({
                           placeholder="Search emojis..."
                           value={reactionEmojiSearchTerm}
                           onChange={(e) => setReactionEmojiSearchTerm(e.target.value)}
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                           onMouseDown={(e) => e.stopPropagation()}
                           onClick={(e) => e.stopPropagation()}
                         />
@@ -8773,7 +8773,7 @@ function AdminAppointmentRow({
                       )}
                     </div>
                     <div
-                      className="overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                      className="overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800"
                       onMouseDown={(e) => {
                         e.stopPropagation(); // Prevent any event bubbling
                       }}
@@ -8807,7 +8807,7 @@ function AdminAppointmentRow({
                               e.stopPropagation();
                               e.preventDefault();
                             }}
-                            className="w-10 h-10 flex items-center justify-center text-xl hover:scale-110 transition-all duration-200 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md"
+                            className="w-10 h-10 flex items-center justify-center text-xl hover:scale-110 transition-all duration-200 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-md"
                             title={`React with ${emoji}`}
                           >
                             {emoji}
@@ -8917,32 +8917,32 @@ function AdminAppointmentRow({
                         </svg>
                       </button>
                       <div className="flex flex-wrap items-center gap-2 pr-8">
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors" onClick={() => {
                           applyFormattingAndClose(() => {
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `**${selected || 'bold'}**`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'bold').length); } catch (_) { } }, 0);
                           });
                         }}>B</button>
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 italic" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors italic" onClick={() => {
                           applyFormattingAndClose(() => {
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `*${selected || 'italic'}*`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 1, start + 1 + (selected || 'italic').length); } catch (_) { } }, 0);
                           });
                         }}>I</button>
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100 underline" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors underline" onClick={() => {
                           applyFormattingAndClose(() => {
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `__${selected || 'underline'}__`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'underline').length); } catch (_) { } }, 0);
                           });
                         }}>U</button>
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors" onClick={() => {
                           applyFormattingAndClose(() => {
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = newComment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0, start) + wrapped + base.slice(end); setNewComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'strike').length); } catch (_) { } }, 0);
                           });
                         }}>S</button>
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors" onClick={() => {
                           applyFormattingAndClose(() => {
                             const el = inputRef.current; if (!el) return; const base = newComment || ''; const start = el.selectionStart || 0; setNewComment(base.slice(0, start) + `- ` + base.slice(start));
                           });
                         }}>• List</button>
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors" onClick={() => {
                           const el = inputRef.current; if (!el) return; const base = newComment || ''; const start = el.selectionStart || 0; const before = base.slice(0, start); const after = base.slice(start);
                           // Find existing numbered list items to determine next number
                           const lines = before.split('\n');
@@ -8965,22 +8965,22 @@ function AdminAppointmentRow({
                             setNewComment(base.slice(0, start) + `${nextNum}. ` + base.slice(start));
                           });
                         }}>1. List</button>
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors" onClick={() => {
                           applyFormattingAndClose(() => {
                             const el = inputRef.current; if (!el) return; const base = newComment || ''; const start = el.selectionStart || 0; setNewComment(base.slice(0, start) + `> ` + base.slice(start));
                           });
                         }}>&gt; Quote</button>
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Tag Property" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors" title="Tag Property" onClick={() => {
                           applyFormattingAndClose(() => {
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = newComment || ''; const insert = '@'; setNewComment(base.slice(0, start) + insert + base.slice(start));
                           });
                         }}>@Prop</button>
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert appointment card" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors" title="Insert appointment card" onClick={() => {
                           applyFormattingAndClose(() => {
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = newComment || ''; const card = '[Appointment: date • time • with]'; setNewComment(base.slice(0, start) + card + base.slice(start));
                           });
                         }}>Appt</button>
-                        <button type="button" className="px-2 py-1 text-xs rounded border hover:bg-gray-100" title="Insert service link" onClick={() => {
+                        <button type="button" className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors" title="Insert service link" onClick={() => {
                           applyFormattingAndClose(() => {
                             const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = newComment || ''; const link = 'Book Movers: /user/movers'; setNewComment(base.slice(0, start) + link + base.slice(start));
                           });
@@ -9056,7 +9056,7 @@ function AdminAppointmentRow({
 
                         if (uniqueProps.length === 0) return <div className="p-3 text-sm text-gray-500 text-center">No properties found. Try typing more characters.</div>;
                         return uniqueProps.slice(0, 8).map((p, index) => (
-                          <button key={`${p.id}-${index}`} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 transition-colors" onClick={() => {
+                          <button key={`${p.id}-${index}`} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors" onClick={() => {
                             const el = inputRef.current; const base = newComment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
                             const token = `@[${p.name}](${p.id})`;
                             const next = base.slice(0, start) + token + ' ' + base.slice(start + m[0].length);
@@ -9064,26 +9064,26 @@ function AdminAppointmentRow({
                             setTimeout(() => { try { el?.focus(); el?.setSelectionRange(start + token.length + 1, start + token.length + 1); } catch (_) { } }, 0);
                           }}>
                             <div className="flex items-center space-x-3">
-                              <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
+                              <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                                 {p.image ? (
                                   <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                                 ) : (
-                                  <div className="text-gray-500 text-xs text-center">
+                                  <div className="text-gray-500 dark:text-gray-400 text-xs text-center">
                                     <div className="font-bold">🏠</div>
                                   </div>
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium text-gray-900 truncate">{p.name}</div>
-                                <div className="text-sm text-gray-500">
+                                <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{p.name}</div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                   {p.city && p.state ? `${p.city}, ${p.state}` : (p.city || p.state || 'Location not available')}
                                 </div>
                                 {p.price && p.price > 0 ? (
-                                  <div className="text-sm font-semibold text-green-600">₹{Number(p.price).toLocaleString()}</div>
+                                  <div className="text-sm font-semibold text-green-600 dark:text-green-400">₹{Number(p.price).toLocaleString()}</div>
                                 ) : (
-                                  <div className="text-sm text-gray-400">Price not available</div>
+                                  <div className="text-sm text-gray-400 dark:text-gray-500">Price not available</div>
                                 )}
-                                <div className="text-xs text-gray-400">
+                                <div className="text-xs text-gray-400 dark:text-gray-500">
                                   {[p.bedrooms > 0 && `${p.bedrooms}BHK`, p.area > 0 && `${p.area} sq ft`].filter(Boolean).join(' • ') || 'Details not available'}
                                 </div>
                               </div>
