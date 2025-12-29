@@ -4,7 +4,7 @@ import { FaTimes, FaPalette, FaFont, FaExpandAlt, FaVolumeUp, FaKeyboard, FaCloc
 const ChatSettingsModal = ({ isOpen, onClose, settings, updateSetting }) => {
     if (!isOpen) return null;
 
-    const isDarkMode = settings.theme === 'dark';
+    const isDarkMode = settings.theme === 'dark' || document.documentElement.classList.contains('dark');
 
     const getToggleSwitchClasses = (isEnabled) => {
         return `w-12 h-6 rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${isEnabled ? 'bg-blue-600' : 'bg-gray-300'

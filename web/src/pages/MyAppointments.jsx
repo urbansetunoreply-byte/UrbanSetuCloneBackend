@@ -1337,7 +1337,7 @@ export default function MyAppointments() {
               <FaSearch className="text-gray-500 hover:text-blue-500 transition-colors duration-200" />
               <input
                 type="text"
-                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm flex-1"
+                className="border rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-200 text-sm flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-900"
                 placeholder="Search by property, message, or user..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -10805,21 +10805,21 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       {/* Chat Lock Modal */}
       {showChatLockModal && createPortal((
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-blue-600">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-blue-600 dark:text-blue-400">
                 <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
               </svg>
               Lock Chat
             </h3>
 
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Create a password to lock your chat. You'll need this password to access the chat later.
             </p>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Password (minimum 4 characters)
                 </label>
                 <div className="relative">
@@ -10827,13 +10827,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     type={showLockPassword ? "text" : "password"}
                     value={lockPassword}
                     onChange={(e) => setLockPassword(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     placeholder="Enter password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowLockPassword(!showLockPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200"
                   >
                     {showLockPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
