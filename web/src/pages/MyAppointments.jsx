@@ -8091,16 +8091,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         <FaCalendarAlt className="text-sm" />
                       </button>
                       {showCalendar && (
-                        <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 min-w-[250px] animate-fadeIn"
+                        <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 min-w-[250px] animate-fadeIn"
                           style={{ zIndex: 9999 }}>
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-gray-700">Jump to Date</span>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Jump to Date</span>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setShowCalendar(false);
                               }}
-                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                              className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                             >
                               <FaTimes size={14} />
                             </button>
@@ -8112,10 +8112,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                               e.stopPropagation();
                               handleDateSelect(e.target.value);
                             }}
-                            className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                             max={formatDateForInput(new Date())}
                           />
-                          <div className="text-xs text-gray-500 mt-2">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                             Select a date to jump to the first message from that day
                           </div>
                         </div>
