@@ -1707,7 +1707,7 @@ export default function MyAppointments() {
                         <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-blue-500">
                           <FaEnvelope className="text-blue-500 dark:text-blue-400 w-5 h-5 flex-shrink-0" />
                           <div className="flex-1">
-                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Email</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-300 uppercase tracking-wide font-semibold">Email</p>
                             <a
                               href={`mailto:${selectedOtherParty.email}`}
                               className="text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 hover:underline font-medium transition-colors duration-200"
@@ -1721,7 +1721,7 @@ export default function MyAppointments() {
                         <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-green-500">
                           <FaPhone className="text-green-500 dark:text-green-400 w-5 h-5 flex-shrink-0" />
                           <div className="flex-1">
-                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Phone</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-300 uppercase tracking-wide font-semibold">Phone</p>
                             {selectedOtherParty.mobileNumber && selectedOtherParty.mobileNumber !== '' ? (
                               <button
                                 onClick={() => handlePhoneClick(selectedOtherParty.mobileNumber)}
@@ -1749,7 +1749,7 @@ export default function MyAppointments() {
                     <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-purple-500">
                       <FaCalendar className="text-purple-500 dark:text-purple-400 w-5 h-5 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Member Since</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-300 uppercase tracking-wide font-semibold">Member Since</p>
                         <p className="text-gray-800 dark:text-gray-200 font-medium">
                           {selectedOtherParty.createdAt ? new Date(selectedOtherParty.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
@@ -1949,7 +1949,7 @@ export default function MyAppointments() {
                     setShowUnarchiveModal(false);
                     setAppointmentToHandle(null);
                   }}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancel
                 </button>
@@ -10076,7 +10076,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
               {/* Multi-Image Preview Modal - Positioned as overlay */}
               {showImagePreviewModal && selectedFiles.length > 0 && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
                   <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-lg font-medium text-gray-700 dark:text-white">
@@ -10326,7 +10326,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
               {/* Video Preview Modal */}
               {showVideoPreviewModal && selectedVideo && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
                   <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-lg font-medium text-gray-700 dark:text-white">Video Preview</span>
@@ -10409,7 +10409,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
               {/* Audio Preview Modal */}
               {showAudioPreviewModal && selectedAudio && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
                   <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-lg font-medium text-gray-700 dark:text-white">Audio Preview</span>
@@ -10486,7 +10486,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
               {/* Record Audio Modal */}
               {showRecordAudioModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
                   <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-md w-full">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-lg font-medium text-gray-700 dark:text-white">Record Audio</span>
@@ -10534,7 +10534,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
               {/* Document Preview Modal */}
               {showDocumentPreviewModal && selectedDocument && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
                   <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-md w-full">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-lg font-medium text-gray-700 dark:text-white">Document Preview</span>

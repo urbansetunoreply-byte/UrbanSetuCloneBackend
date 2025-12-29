@@ -2112,14 +2112,14 @@ export default function AdminAppointments() {
         {/* Reports Modal - Admin-wide (styled like Starred Messages) */}
         {showAdminReportsModal && createPortal((
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-6xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50 flex-shrink-0">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30 flex-shrink-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaFlag className="text-red-500" /> Reported Items
                 </h3>
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <div className="flex items-center bg-white border border-red-200 rounded-lg overflow-hidden mr-1 sm:mr-2">
+                  <div className="flex items-center bg-white dark:bg-gray-700 border border-red-200 dark:border-red-800 rounded-lg overflow-hidden mr-1 sm:mr-2">
                     <button
                       className={`px-2 sm:px-3 py-1.5 text-xs font-medium ${adminReportsFilter === 'message' ? 'bg-red-500 text-white' : 'text-red-600 hover:bg-red-50'}`}
                       onClick={() => setAdminReportsFilter('message')}
@@ -2136,7 +2136,7 @@ export default function AdminAppointments() {
                   <button
                     onClick={() => fetchAdminReports(adminReportsFilters, true)}
                     disabled={adminReportsLoading}
-                    className="p-2 text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Refresh reports"
                   >
                     {adminReportsLoading ? (
@@ -2155,44 +2155,44 @@ export default function AdminAppointments() {
               </div>
 
               {/* Filters Section - Mobile Optimized */}
-              <div className="p-2 sm:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 sticky top-0 z-10">
+              <div className="p-2 sm:p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0 sticky top-0 z-10">
                 <div className="space-y-3">
                   {/* Primary filters - compact on mobile */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
                       <input
                         type="date"
                         value={adminReportsFilters.dateFrom}
                         onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">To Date</label>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
                       <input
                         type="date"
                         value={adminReportsFilters.dateTo}
                         onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Reporter</label>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Reporter</label>
                       <input
                         type="text"
                         placeholder="Reporter"
                         value={adminReportsFilters.reporter}
                         onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
-                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                       <select
                         value={adminReportsFilters.status}
                         onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, status: e.target.value }))}
-                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       >
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
@@ -2209,12 +2209,12 @@ export default function AdminAppointments() {
                         placeholder="Search..."
                         value={adminReportsFilters.search}
                         onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, search: e.target.value }))}
-                        className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       />
                       <select
                         value={adminReportsFilters.sortBy}
                         onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       >
                         <option value="date">Date</option>
                         <option value="user">User</option>
@@ -2223,7 +2223,7 @@ export default function AdminAppointments() {
                       <select
                         value={adminReportsFilters.sortOrder}
                         onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
-                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                       >
                         <option value="desc">↓</option>
                         <option value="asc">↑</option>
@@ -2240,7 +2240,7 @@ export default function AdminAppointments() {
                           sortBy: 'date',
                           sortOrder: 'desc'
                         })}
-                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                        className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                       >
                         Clear
                       </button>
@@ -2260,12 +2260,11 @@ export default function AdminAppointments() {
                 </div>
               </div>
 
-              {/* Content */}
               <div className="flex-1 overflow-y-auto p-3 sm:p-6">
                 {adminReportsLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
-                    <span className="ml-3 text-gray-600">Loading reports...</span>
+                    <span className="ml-3 text-gray-600 dark:text-gray-300">Loading reports...</span>
                   </div>
                 ) : adminReportsError ? (
                   <div className="text-sm text-red-600">{adminReportsError}</div>
@@ -2278,14 +2277,14 @@ export default function AdminAppointments() {
                 ) : (
                   <div className="space-y-4">
                     {(adminReports || []).filter(r => adminReportsFilter === 'message' ? r.type === 'message' : r.type !== 'message').map((r, idx) => (
-                      <div key={r.notificationId || idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div key={r.notificationId || idx} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
-                          <div className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                          <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                             <FaFlag className="text-red-500" /> {r.type === 'message' ? 'Message Report' : 'Chat Report'}
                           </div>
-                          <div className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleString()}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{new Date(r.createdAt).toLocaleString()}</div>
                         </div>
-                        <div className="mt-2 text-sm text-gray-700 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                        <div className="mt-2 text-sm text-gray-700 dark:text-gray-300 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
                           {r.reporter && (<div><span className="font-medium">Reporter:</span> {r.reporter}</div>)}
                           {r.appointmentRef && (<div><span className="font-medium">Appointment:</span> {r.appointmentRef}</div>)}
                           {r.between && (<div><span className="font-medium">Between:</span> {r.between}</div>)}
@@ -2293,7 +2292,7 @@ export default function AdminAppointments() {
                           {r.details && (<div className="md:col-span-2"><span className="font-medium">Details:</span> {r.details}</div>)}
                           {r.messageId && (<div><span className="font-medium">Message ID:</span> {r.messageId}</div>)}
                           {r.messageExcerpt && (
-                            <div className="md:col-span-2 italic text-gray-600">
+                            <div className="md:col-span-2 italic text-gray-600 dark:text-gray-400">
                               <span className="font-medium not-italic">Excerpt:</span> "{r.messageExcerpt}"
                             </div>
                           )}
@@ -2347,10 +2346,10 @@ export default function AdminAppointments() {
       {/* User Modal - Enhanced Design */}
       {showUserModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4" style={{ overflow: 'hidden' }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto relative animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto relative animate-fadeIn">
             {/* Close button */}
             <button
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors z-40 shadow"
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-2 transition-colors z-40 shadow"
               onClick={() => setShowUserModal(false)}
               title="Close"
               aria-label="Close"
@@ -2361,12 +2360,12 @@ export default function AdminAppointments() {
             {userLoading ? (
               <div className="flex items-center justify-center p-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <p className="ml-4 text-gray-600">Loading user details...</p>
+                <p className="ml-4 text-gray-600 dark:text-gray-300">Loading user details...</p>
               </div>
             ) : selectedUser ? (
               <>
                 {/* Header with gradient background (sticky on mobile) */}
-                <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-2xl px-6 py-6 border-b border-gray-200 sticky top-[env(safe-area-inset-top,0px)] z-20">
+                <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/40 dark:to-purple-900/40 rounded-t-2xl px-6 py-6 border-b border-gray-200 dark:border-gray-700 sticky top-[env(safe-area-inset-top,0px)] z-20">
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <UserAvatar
@@ -2374,7 +2373,7 @@ export default function AdminAppointments() {
                         size="w-16 h-16"
                         textSize="text-lg"
                         showBorder={true}
-                        className="border-4 border-white shadow-lg"
+                        className="border-4 border-white dark:border-gray-700 shadow-lg"
                       />
                       <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full flex items-center justify-center">
                         {selectedUser.role === 'admin' || selectedUser.role === 'rootadmin' ? (
@@ -2385,14 +2384,14 @@ export default function AdminAppointments() {
                       </div>
                     </div>
                     <div className="text-center">
-                      <h2 className="text-xl font-bold text-blue-800 flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-blue-800 dark:text-blue-300 flex items-center gap-2">
                         {selectedUser.username}
                         {(selectedUser.role === 'admin' || selectedUser.role === 'rootadmin') && (
                           <FaUserShield className="text-purple-600 text-base" title="Admin user" />
                         )}
                       </h2>
                       <div className="flex gap-2 mt-1">
-                        <p className="text-sm text-gray-600 capitalize font-medium bg-white px-3 py-1 rounded-full shadow-sm">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 capitalize font-medium bg-white dark:bg-gray-800 px-3 py-1 rounded-full shadow-sm">
                           {selectedUser.role || 'User'}
                         </p>
                         {selectedUser.adminApprovalStatus && (
@@ -2413,13 +2412,13 @@ export default function AdminAppointments() {
                 {/* Body with enhanced styling */}
                 <div className="px-6 py-6 space-y-4">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-blue-500">
                       <FaEnvelope className="text-blue-500 w-5 h-5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Email</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Email</p>
                         <a
                           href={`mailto:${selectedUser.email}`}
-                          className="text-blue-700 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                          className="text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline font-medium transition-colors duration-200"
                           title="Click to send email"
                         >
                           {selectedUser.email}
@@ -2427,29 +2426,29 @@ export default function AdminAppointments() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-green-500">
                       <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Phone</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Phone</p>
                         {selectedUser.mobileNumber && selectedUser.mobileNumber !== '' ? (
                           <button
                             onClick={() => handlePhoneClick(selectedUser.mobileNumber)}
-                            className="text-green-700 hover:text-green-800 hover:underline font-medium transition-colors duration-200 text-left"
+                            className="text-green-700 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 hover:underline font-medium transition-colors duration-200 text-left"
                             title="Click to call or copy phone number"
                           >
                             {selectedUser.mobileNumber}
                           </button>
                         ) : (
-                          <p className="text-gray-800 font-medium">Not provided</p>
+                          <p className="text-gray-800 dark:text-gray-300 font-medium">Not provided</p>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-purple-500">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-purple-500">
                       <FaCalendar className="text-purple-500 w-5 h-5 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Member Since</p>
-                        <p className="text-gray-800 font-medium">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Member Since</p>
+                        <p className="text-gray-800 dark:text-gray-200 font-medium">
                           {new Date(selectedUser.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -2522,14 +2521,14 @@ export default function AdminAppointments() {
       {/* Missing Appointment Error Modal */}
       {missingChatbookError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden transform transition-all scale-100">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden transform transition-all scale-100">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-pink-600"></div>
             <div className="text-center">
-              <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-red-100 dark:bg-red-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FaBan className="text-red-500 text-2xl" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Appointment Not Found</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Appointment Not Found</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 The appointment you are trying to access could not be found. It may have been deleted, archived, or does not exist.
               </p>
               <div className="flex gap-3 justify-center">
@@ -2538,7 +2537,7 @@ export default function AdminAppointments() {
                     setMissingChatbookError(null);
                     navigate('/admin/appointments', { replace: true });
                   }}
-                  className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                  className="px-5 py-2.5 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                 >
                   Close
                 </button>

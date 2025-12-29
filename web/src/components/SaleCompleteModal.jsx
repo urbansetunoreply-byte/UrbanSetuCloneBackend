@@ -18,14 +18,14 @@ const SaleCompleteModal = ({ isOpen, onClose, onConfirm }) => {
                 </div>
 
                 <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 dark:border-red-600 p-4 mb-6">
-                    <p className="text-sm text-red-700 dark:text-red-300">
+                    <div className="text-sm text-red-700 dark:text-red-300">
                         <span className="font-bold">Warning:</span> This action is irreversible and will:
                         <ul className="list-disc ml-4 mt-1">
                             <li>Permanently mark the property as "Sold"</li>
                             <li>Disable all further edits and bookings</li>
                             <li>Send confirmation emails to both parties</li>
                         </ul>
-                    </p>
+                    </div>
                 </div>
 
                 <div className="flex gap-4">
