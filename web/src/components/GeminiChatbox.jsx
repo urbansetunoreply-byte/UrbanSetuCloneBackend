@@ -19,59 +19,7 @@ import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-markdown';
 
-// --- INTELLIGENCE SYSTEM UTILS ---
-const RESTRICTED_PATTERNS = {
-    abuse: /\b(fuck|shit|asshole|bitch|bastard|cunt|dick|pussy|whore|slut)\b/i,
-    hate_speech: /\b(nigger|faggot|retard|spic|kike|chink|tranny|dyke)\b/i,
-    spam: /\b(buy now|click here|subscribe now|lottery winner|claim prize|credit score|viagra|cialis)\b/i,
-    self_harm: /\b(kill myself|suicide|end my life|cut myself|die now)\b/i
-};
 
-const checkRestrictedContent = (text) => {
-    if (!text) return { isRestricted: false };
-
-    for (const [category, pattern] of Object.entries(RESTRICTED_PATTERNS)) {
-        if (pattern.test(text)) {
-            return {
-                isRestricted: true,
-                reason: category,
-                category: 'System Flag',
-                subCategory: category === 'self_harm' ? 'Violence & self-harm' :
-                    category === 'spam' ? 'Spam, fraud & deception' : 'Bullying & harassment'
-            };
-        }
-    }
-    return { isRestricted: false };
-};
-
-const autoReportRestrictedContent = async (content, reason) => {
-    try {
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-        // Create a dummy ID for the system report if needed
-        const messageId = `sys_flag_${Date.now()}`;
-
-        await fetch(`${API_BASE_URL}/api/report-message/create`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-                messageId: messageId,
-                messageContent: '[RESTRICTED CONTENT HIDDEN FROM CHAT]',
-                prompt: content, // Send the actual content as prompt for admin review
-                category: 'System Flag',
-                subCategory: reason === 'self_harm' ? 'Violence & self-harm' :
-                    reason === 'spam' ? 'Spam, fraud & deception' : 'Bullying & harassment',
-                description: `[AUTO-DETECTED] System blocked a restricted prompt. Reason: ${reason}. Please review immediately.`,
-                adminNotes: 'High Priority: Auto-flagged by Intelligence System.',
-                priority: 'high'
-            })
-        });
-        console.log('Restricted content auto-reported successfully');
-    } catch (error) {
-        console.error('Failed to auto-report restricted content:', error);
-    }
-};
-// ---------------------------------
 
 const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const { currentUser } = useSelector((state) => state.user);
