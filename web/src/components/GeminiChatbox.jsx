@@ -1834,18 +1834,25 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 });
 
                 try {
+                    let buffer = '';
                     while (!isStreamingComplete) {
                         const { done, value } = await reader.read();
 
                         if (done) break;
 
-                        const chunk = decoder.decode(value);
-                        const lines = chunk.split('\n');
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+
+                        // Keep the last line in the buffer as it may be incomplete
+                        buffer = lines.pop() || '';
 
                         for (const line of lines) {
-                            if (line.startsWith('data: ')) {
+                            const trimmedLine = line.trim();
+                            if (!trimmedLine) continue;
+
+                            if (trimmedLine.startsWith('data: ')) {
                                 try {
-                                    const streamData = JSON.parse(line.slice(6));
+                                    const streamData = JSON.parse(trimmedLine.slice(6));
 
                                     if (streamData.type === 'chunk') {
                                         streamingResponse += streamData.content;
@@ -1887,6 +1894,32 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             }
                         }
                     }
+
+                    // Process any remaining content in buffer (though SSE usually ends with newline)
+                    if (buffer.trim().startsWith('data: ')) {
+                        try {
+                            const streamData = JSON.parse(buffer.trim().slice(6));
+                            if (streamData.type === 'done') {
+                                isStreamingComplete = true;
+                                streamingResponse = streamData.content;
+                                // Finalize message...
+                                setMessages(prev => {
+                                    const currentMessages = Array.isArray(prev) ? prev : [];
+                                    const updatedMessages = [...currentMessages];
+                                    const lastMessage = updatedMessages[updatedMessages.length - 1];
+                                    if (lastMessage && lastMessage.isStreaming) {
+                                        lastMessage.content = streamingResponse;
+                                        delete lastMessage.isStreaming;
+                                    }
+                                    return updatedMessages;
+                                });
+                                setIsLoading(false);
+                            }
+                        } catch (e) {
+                            console.warn('Error parsing final buffer:', e);
+                        }
+                    }
+
                 } finally {
                     reader.releaseLock();
                 }
