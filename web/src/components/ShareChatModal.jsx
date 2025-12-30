@@ -135,7 +135,7 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white flex justify-between items-center">
                     <h3 className="text-xl font-bold flex items-center gap-2">
                         <FaShareAlt /> Share Chat
@@ -161,37 +161,37 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                     {!loading && !shareData && (
                         <>
                             <div className="text-center space-y-2">
-                                <div className="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <FaGlobe className="text-blue-500 text-3xl" />
+                                <div className="bg-blue-50 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <FaGlobe className="text-blue-500 dark:text-blue-400 text-3xl" />
                                 </div>
-                                <h4 className="text-lg font-semibold text-gray-800">Share this conversation</h4>
-                                <p className="text-sm text-gray-500">
+                                <h4 className="text-lg font-semibold text-gray-800 dark:text-white">Share this conversation</h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
                                     Create a public link to share this chat. Anyone with the link will be able to view the messages.
                                 </p>
                             </div>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Chat Title (Public)</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chat Title (Public)</label>
                                     <input
                                         type="text"
                                         value={customTitle}
                                         onChange={(e) => setCustomTitle(e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
                                         placeholder="Enter a title for the shared chat"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Link Expiry</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Link Expiry</label>
                                     <div className="grid grid-cols-3 gap-2">
                                         {['7days', '30days', 'never'].map((type) => (
                                             <button
                                                 key={type}
                                                 onClick={() => setExpiryType(type)}
                                                 className={`py-2 text-sm rounded-lg border transition-all ${expiryType === type
-                                                    ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium'
-                                                    : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                    ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium dark:bg-blue-900/30 dark:border-blue-500 dark:text-blue-300'
+                                                    : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
                                                     }`}
                                             >
                                                 {type === '7days' && '7 Days'}
@@ -215,12 +215,12 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
 
                     {shareData && !showRevokeConfirm && (
                         <div className="space-y-6">
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-start gap-3">
                                 <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
                                 <div>
-                                    <h4 className="font-semibold text-green-800 text-sm">Link is Active</h4>
-                                    <p className="text-xs text-green-700 mt-1">This chat is publicly accessible via the link below.</p>
-                                    <ul className="text-xs text-green-700 mt-2 list-disc list-inside space-y-1">
+                                    <h4 className="font-semibold text-green-800 dark:text-green-300 text-sm">Link is Active</h4>
+                                    <p className="text-xs text-green-700 dark:text-green-400 mt-1">This chat is publicly accessible via the link below.</p>
+                                    <ul className="text-xs text-green-700 dark:text-green-400 mt-2 list-disc list-inside space-y-1">
                                         <li>Shared content is read-only.</li>
                                         <li>If you continue chatting, click <b>Update Link</b> to sync new messages.</li>
                                     </ul>
@@ -228,14 +228,14 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Shared Link</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Shared Link</label>
                                 <div className="flex gap-2">
-                                    <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 text-gray-600 text-sm flex-1 truncate select-all">
+                                    <div className="bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg p-3 text-gray-600 dark:text-gray-300 text-sm flex-1 truncate select-all">
                                         {window.location.origin}{shareData.url}
                                     </div>
                                     <button
                                         onClick={copyToClipboard}
-                                        className={`px-4 rounded-lg font-medium transition-colors ${copied ? 'bg-green-500 text-white' : 'bg-gray-800 text-white hover:bg-gray-900'
+                                        className={`px-4 rounded-lg font-medium transition-colors ${copied ? 'bg-green-500 text-white' : 'bg-gray-800 dark:bg-gray-700 text-white hover:bg-gray-900 dark:hover:bg-gray-600'
                                             }`}
                                     >
                                         {copied ? <FaCheck /> : <FaCopy />}
@@ -244,13 +244,13 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                    <span className="text-gray-500 block text-xs uppercase tracking-wide">Views</span>
-                                    <span className="font-bold text-gray-800 text-lg">{shareData.views}</span>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <span className="text-gray-500 dark:text-gray-400 block text-xs uppercase tracking-wide">Views</span>
+                                    <span className="font-bold text-gray-800 dark:text-white text-lg">{shareData.views}</span>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                    <span className="text-gray-500 block text-xs uppercase tracking-wide">Expires</span>
-                                    <span className="font-bold text-gray-800">
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <span className="text-gray-500 dark:text-gray-400 block text-xs uppercase tracking-wide">Expires</span>
+                                    <span className="font-bold text-gray-800 dark:text-white">
                                         {shareData.expiresAt
                                             ? new Date(shareData.expiresAt).toLocaleDateString('en-IN')
                                             : 'Never'}
@@ -258,16 +258,16 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                                 </div>
                             </div>
 
-                            <div className="border-t border-gray-100 pt-4 flex gap-3">
+                            <div className="border-t border-gray-100 dark:border-gray-700 pt-4 flex gap-3">
                                 <button
                                     onClick={handleUpdate}
-                                    className="flex-1 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 rounded-lg transition-colors"
+                                    className="flex-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 font-medium py-2 rounded-lg transition-colors"
                                 >
                                     Update Link
                                 </button>
                                 <button
                                     onClick={() => setShowRevokeConfirm(true)}
-                                    className="flex-1 bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
                                 >
                                     <FaTrash className="text-sm" /> Revoke Link
                                 </button>
@@ -277,17 +277,17 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
 
                     {shareData && showRevokeConfirm && (
                         <div className="space-y-6 text-center animate-fade-in">
-                            <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="bg-red-50 dark:bg-red-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <FaTrash className="text-red-500 text-3xl" />
                             </div>
-                            <h4 className="text-lg font-bold text-gray-900">Revoke Shared Link?</h4>
-                            <p className="text-gray-600 text-sm">
+                            <h4 className="text-lg font-bold text-gray-900 dark:text-white">Revoke Shared Link?</h4>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm">
                                 Are you sure you want to delete this shared link? Anyone with the link will no longer be able to access this conversation.
                             </p>
                             <div className="flex gap-3 pt-2">
                                 <button
                                     onClick={() => setShowRevokeConfirm(false)}
-                                    className="flex-1 bg-gray-100 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-200 transition-colors"
+                                    className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white font-medium py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                 >
                                     Cancel
                                 </button>
