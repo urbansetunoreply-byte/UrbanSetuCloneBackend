@@ -44,27 +44,53 @@ const SeasonalEffects = () => {
             10% { opacity: 0.8; }
             100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
           }
+          @keyframes kite-fly {
+            0% { transform: translate(50vw, 100vh) rotate(-10deg) scale(0.5); opacity: 0; }
+            20% { opacity: 1; }
+            50% { transform: translate(var(--kx), 50vh) rotate(10deg) scale(0.8); }
+            100% { transform: translate(var(--dx), -20vh) rotate(-5deg) scale(1); opacity: 0; }
+          }
         `}
             </style>
 
-            {particles.map((p) => (
-                <div
-                    key={p.id}
-                    className="absolute top-0"
-                    style={{
-                        left: p.left,
-                        width: theme.effect === 'hearts' ? p.size * 2 : p.size,
-                        height: p.size,
-                        backgroundColor: theme.effect === 'hearts' ? 'transparent' : p.color,
-                        borderRadius: theme.effect === 'snow' ? '50%' : theme.effect === 'confetti' ? '0%' : '0%',
-                        fontSize: theme.effect === 'hearts' ? p.size : 0,
-                        opacity: p.opacity,
-                        animation: `${theme.effect === 'hearts' ? 'seasonal-float-up' : 'seasonal-fall'} ${p.animationDuration} linear ${p.animationDelay} infinite`,
-                    }}
-                >
-                    {theme.effect === 'hearts' && '❤️'}
-                </div>
-            ))}
+            {particles.map((p) => {
+                // Determine animation name based on theme effect
+                let animationName = 'seasonal-fall';
+                if (theme.effect === 'hearts' || theme.effect === 'float-up') animationName = 'seasonal-float-up';
+                else if (theme.effect === 'kite') animationName = 'kite-fly';
+
+                // Determine content based on theme effect
+                let content = '';
+                if (theme.effect === 'hearts') content = '❤️';
+                else if (theme.effect === 'kite') content = '🪁';
+                else if (theme.effect === 'leaf') content = '🍃';
+                else if (theme.effect === 'flower') content = '🌺';
+                else if (theme.effect === 'moon') content = '🌙';
+                else if (theme.effect === 'mango') content = '🥭';
+                else if (theme.effect === 'snow') content = ''; // Snow is CSS shape
+                else if (theme.effect === 'confetti') content = ''; // Confetti is CSS shape
+
+                return (
+                    <div
+                        key={p.id}
+                        className="absolute top-0"
+                        style={{
+                            left: p.left,
+                            width: content ? 'auto' : (theme.effect === 'snow' ? p.size : p.size),
+                            height: content ? 'auto' : p.size,
+                            backgroundColor: content ? 'transparent' : p.color,
+                            borderRadius: theme.effect === 'snow' ? '50%' : '0%',
+                            fontSize: content ? p.size : 0,
+                            opacity: p.opacity,
+                            animation: `${animationName} ${p.animationDuration} linear ${p.animationDelay} infinite`,
+                            '--kx': `${Math.random() * 20 - 10}vw`,
+                            '--dx': `${Math.random() * 100 - 50}vw`
+                        }}
+                    >
+                        {content}
+                    </div>
+                );
+            })}
         </div>
     );
 };
