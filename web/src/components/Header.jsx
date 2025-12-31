@@ -14,6 +14,7 @@ import SearchSuggestions from './SearchSuggestions';
 import { LogIn } from "lucide-react";
 import { UserPlus, LogOut } from "lucide-react";
 import ThemeToggle from "./ThemeToggle.jsx";
+import SeasonalEffects from './SeasonalEffects';
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 
 export default function Header() {
@@ -460,8 +461,9 @@ export default function Header() {
               />
 
               {/* Menu Panel */}
-              <div className="relative ml-auto w-80 max-w-sm h-full bg-white dark:bg-gray-900 shadow-2xl transform transition-transform duration-300 ease-in-out animate-mobile-menu-in">
-                <div className="flex flex-col h-full">
+              <div className="relative ml-auto w-80 max-w-sm h-full bg-white dark:bg-gray-900 shadow-2xl transform transition-transform duration-300 ease-in-out animate-mobile-menu-in overflow-hidden">
+                <SeasonalEffects />
+                <div className="flex flex-col h-full relative z-10">
                   {/* Header */}
                   <div className={`${getHeaderGradient()} p-6 text-white`}>
                     <div className="flex items-center justify-between">
