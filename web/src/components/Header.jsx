@@ -332,6 +332,79 @@ export default function Header() {
                   {theme?.logoDecoration === 'flag' && (
                     <span className="absolute -top-3 -right-2 text-xs filter drop-shadow-md">🇮🇳</span>
                   )}
+                  {theme?.logoDecoration === 'heart' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-pulse">❤️</span>
+                  )}
+                  {theme?.logoDecoration === 'pumpkin' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🎃</span>
+                  )}
+                  {theme?.logoDecoration === 'colors' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-spin-slow">🎨</span>
+                  )}
+                  {theme?.logoDecoration === 'mango' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🥭</span>
+                  )}
+                  {theme?.logoDecoration === 'moon' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🌙</span>
+                  )}
+                  {theme?.logoDecoration === 'bow' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md -rotate-45">🏹</span>
+                  )}
+                  {theme?.logoDecoration === 'rakhi' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🧵</span>
+                  )}
+                  {theme?.logoDecoration === 'modak' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🥟</span>
+                  )}
+                  {theme?.logoDecoration === 'flower' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-spin" style={{ animationDuration: '8s' }}>🌺</span>
+                  )}
+                  {theme?.logoDecoration === 'marigold' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🌼</span>
+                  )}
+                  {theme?.logoDecoration === 'diya' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-pulse">🪔</span>
+                  )}
+                  {theme?.logoDecoration === 'snow-cap' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">❄️</span>
+                  )}
+                  {/* Extended Festival Decorations */}
+                  {theme?.logoDecoration === 'clover' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">☘️</span>
+                  )}
+                  {theme?.logoDecoration === 'leaf' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🌱</span>
+                  )}
+                  {theme?.logoDecoration === 'glasses' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">👓</span>
+                  )}
+                  {theme?.logoDecoration === 'turkey' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🦃</span>
+                  )}
+                  {theme?.logoDecoration === 'dragon' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🐉</span>
+                  )}
+                  {theme?.logoDecoration === 'trident' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🔱</span>
+                  )}
+                  {theme?.logoDecoration === 'mace' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🙏</span>
+                  )}
+                  {theme?.logoDecoration === 'cross' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">✝️</span>
+                  )}
+                  {theme?.logoDecoration === 'egg' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🥚</span>
+                  )}
+                  {theme?.logoDecoration === 'lantern' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🕌</span>
+                  )}
+                  {theme?.logoDecoration === 'chariot' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🎡</span>
+                  )}
+                  {theme?.logoDecoration === 'flute' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🪈</span>
+                  )}
                 </div>
                 <div>
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg flex items-center">
