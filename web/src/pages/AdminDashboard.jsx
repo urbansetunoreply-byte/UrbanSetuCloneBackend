@@ -28,11 +28,16 @@ import { toast } from 'react-toastify';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import axios from 'axios';
 import { usePageTitle } from '../hooks/usePageTitle';
+import axios from 'axios';
+import { usePageTitle } from '../hooks/usePageTitle';
+import DailyQuote from "../components/DailyQuote";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminDashboard() {
   // Set page title
   usePageTitle("Admin Dashboard - Analytics & Management");
+  const theme = useSeasonalTheme();
 
   const { currentUser } = useSelector((state) => state.user);
   const [offerListings, setOfferListings] = useState([]);
@@ -880,24 +885,34 @@ export default function AdminDashboard() {
 
       {/* Enhanced Analytics Dashboard */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-        {/* Admin Analytics Main Heading */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center gap-4 mb-4">
-            <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg">
-              <FaChartLine className="text-white text-3xl" />
-            </div>
-            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              Admin Analytics
+        {/* Admin Analytics Main Heading - Replaced with Welcome Section */}
+        {/* Welcome Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-900 dark:to-indigo-900 rounded-3xl p-8 mb-8 text-white shadow-xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-1/4 -translate-y-1/4 transition-transform duration-700 group-hover:scale-110">
+            <FaChartLine className="text-9xl" />
+          </div>
+          <div className="relative z-10">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
+              Welcome back, {currentUser.username}! 👋
+              {theme && <span className="text-2xl animate-bounce" title={theme.name}>{theme.icon}</span>}
             </h1>
+            <p className="text-blue-100 text-lg max-w-2xl">
+              {theme?.greeting ? theme.greeting : "Here's what's happening with your platform today."} Check your analytics and manage listings efficiently.
+            </p>
           </div>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Comprehensive insights and management tools for platform oversight, security monitoring, and business intelligence
-          </p>
-          <div className="flex items-center justify-center gap-2 mt-4">
-            <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
-            <div className="w-8 h-1 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"></div>
-            <div className="w-4 h-1 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full"></div>
+          <div className="flex gap-3 relative z-10 w-full md:w-auto">
+            <Link to="/profile" className="flex-1 md:flex-none bg-white/10 hover:bg-white/20 backdrop-blur-lg text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+              <FaUsers /> Manage Profile
+            </Link>
+            <Link to="/create-listing" className="flex-1 md:flex-none bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+              <FaHome /> New Listing
+            </Link>
           </div>
+        </div>
+
+        {/* Daily Quote Section */}
+        <div className="mb-8 rounded-2xl overflow-hidden shadow-sm">
+          <DailyQuote className="bg-white dark:bg-gray-800 border-none" />
         </div>
 
         {/* Critical Operations - Most Urgent for Admin Daily Tasks */}

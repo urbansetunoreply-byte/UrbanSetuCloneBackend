@@ -27,15 +27,30 @@ export const useSeasonalTheme = () => {
 
         // New Year (Dec 30 - Jan 5)
         if (isDateBetween(11, 30, 0, 5)) {
+            const displayYear = month === 11 ? year + 1 : year;
             return {
                 id: 'newyear',
                 name: 'New Year',
                 icon: '🎉',
                 secondaryIcon: '🎆',
-                greeting: 'Happy New Year!',
+                greeting: `Happy New Year ${displayYear}!`,
                 effect: 'confetti',
                 textGradient: 'bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600',
                 logoDecoration: 'party-hat'
+            };
+        }
+
+        // National Youth Day (Jan 12)
+        if (month === 0 && day === 12) {
+            return {
+                id: 'youthday',
+                name: 'National Youth Day',
+                icon: '💪',
+                secondaryIcon: '✨',
+                greeting: 'Arise, Awake, and Stop Not!',
+                effect: 'none',
+                textGradient: 'bg-gradient-to-r from-orange-500 via-yellow-500 to-red-500',
+                logoDecoration: 'torch'
             };
         }
 
@@ -50,6 +65,20 @@ export const useSeasonalTheme = () => {
                 effect: 'none',
                 textGradient: 'bg-gradient-to-r from-orange-500 via-white to-green-600',
                 logoDecoration: 'flag'
+            };
+        }
+
+        // National Science Day (Feb 28)
+        if (month === 1 && day === 28) {
+            return {
+                id: 'scienceday',
+                name: 'National Science Day',
+                icon: '🔬',
+                secondaryIcon: '⚛️',
+                greeting: 'Celebrating Science & Innovation!',
+                effect: 'none',
+                textGradient: 'bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-800',
+                logoDecoration: 'atom'
             };
         }
 
@@ -75,9 +104,23 @@ export const useSeasonalTheme = () => {
                 icon: '☘️',
                 secondaryIcon: '🍺',
                 greeting: 'Happy St. Patrick\'s Day!',
-                effect: 'none', // Could add clover rain later
+                effect: 'none',
                 textGradient: 'bg-gradient-to-r from-green-400 via-green-600 to-emerald-700',
                 logoDecoration: 'clover'
+            };
+        }
+
+        // World Health Day (Apr 7)
+        if (month === 3 && day === 7) {
+            return {
+                id: 'healthday',
+                name: 'World Health Day',
+                icon: '⚕️',
+                secondaryIcon: '🍎',
+                greeting: 'Health is Wealth!',
+                effect: 'none',
+                textGradient: 'bg-gradient-to-r from-green-500 via-teal-500 to-blue-500',
+                logoDecoration: 'cross' // Reuse cross or add new
             };
         }
 
@@ -91,6 +134,34 @@ export const useSeasonalTheme = () => {
                 greeting: 'Happy Earth Day!',
                 effect: 'none',
                 textGradient: 'bg-gradient-to-r from-blue-400 via-green-500 to-teal-600',
+                logoDecoration: 'leaf'
+            };
+        }
+
+        // International Workers' Day (May 1)
+        if (month === 4 && day === 1) {
+            return {
+                id: 'mayday',
+                name: 'Workers\' Day',
+                icon: '🛠️',
+                secondaryIcon: '👷',
+                greeting: 'Honoring Hard Work!',
+                effect: 'none',
+                textGradient: 'bg-gradient-to-r from-red-600 via-orange-600 to-red-800',
+                logoDecoration: 'hammer'
+            };
+        }
+
+        // World Environment Day (Jun 5)
+        if (month === 5 && day === 5) {
+            return {
+                id: 'environmentday',
+                name: 'World Environment Day',
+                icon: '🌿',
+                secondaryIcon: '♻️',
+                greeting: 'Protect Our Planet!',
+                effect: 'none',
+                textGradient: 'bg-gradient-to-r from-green-400 via-emerald-500 to-green-700',
                 logoDecoration: 'leaf'
             };
         }
@@ -109,6 +180,38 @@ export const useSeasonalTheme = () => {
             };
         }
 
+        // Engineer's Day India (Sep 15)
+        if (month === 8 && day === 15) {
+            return {
+                id: 'engineersday',
+                name: 'Engineer\'s Day',
+                icon: '⚙️',
+                secondaryIcon: '📐',
+                greeting: 'Happy Engineer\'s Day!',
+                effect: 'none',
+                textGradient: 'bg-gradient-to-r from-gray-600 via-blue-600 to-gray-800',
+                logoDecoration: 'gear'
+            };
+        }
+
+        // World Habitat Day & Architecture Day (1st Monday of Oct - approx Oct 1-7)
+        // Simplified logic: Just check if date is 1-7 Oct and it's a Monday, OR broadly celebrate the week for architecture
+        if (month === 9 && day >= 1 && day <= 7) {
+            const isMonday = new Date(year, 9, day).getDay() === 1;
+            if (isMonday || day === 4) { // 4th is standard or just celebrate the week
+                return {
+                    id: 'architecture',
+                    name: 'Architecture Week',
+                    icon: '🏛️',
+                    secondaryIcon: '🏗️',
+                    greeting: 'Building the Future!',
+                    effect: 'none',
+                    textGradient: 'bg-gradient-to-r from-slate-500 via-stone-500 to-zinc-600',
+                    logoDecoration: 'building'
+                };
+            }
+        }
+
         // Gandhi Jayanti (Oct 2)
         if (month === 9 && day === 2) {
             return {
@@ -120,6 +223,20 @@ export const useSeasonalTheme = () => {
                 effect: 'none',
                 textGradient: 'bg-gradient-to-r from-orange-300 via-white to-green-300',
                 logoDecoration: 'glasses'
+            };
+        }
+
+        // World Space Week (Oct 4-10)
+        if (month === 9 && day >= 4 && day <= 10) {
+            return {
+                id: 'spaceweek',
+                name: 'World Space Week',
+                icon: '🚀',
+                secondaryIcon: '🌌',
+                greeting: 'Exploring the Universe!',
+                effect: 'none',
+                textGradient: 'bg-gradient-to-r from-indigo-900 via-purple-800 to-black',
+                logoDecoration: 'rocket'
             };
         }
 

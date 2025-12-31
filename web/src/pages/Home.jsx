@@ -19,6 +19,7 @@ import {
 } from "react-icons/fa";
 import AdsterraBanner from "../components/AdsterraBanner";
 import SeasonalEffects from "../components/SeasonalEffects";
+import DailyQuote from "../components/DailyQuote";
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -159,6 +160,7 @@ export default function Home() {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen relative overflow-hidden font-sans transition-colors duration-300">
       <SeasonalEffects />
+      <DailyQuote />
       {/* Background Animations */}
       <style>
         {`
