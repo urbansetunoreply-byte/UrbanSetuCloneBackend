@@ -18,10 +18,13 @@ import {
   FaMobile, FaDesktop, FaTablet, FaInfoCircle, FaArrowRight
 } from "react-icons/fa";
 import AdsterraBanner from "../components/AdsterraBanner";
+import SeasonalEffects from "../components/SeasonalEffects";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Home() {
+  const theme = useSeasonalTheme();
   // Set page title
   usePageTitle("Dashboard - Find Your Dream Home");
 
@@ -155,6 +158,7 @@ export default function Home() {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen relative overflow-hidden font-sans transition-colors duration-300">
+      <SeasonalEffects />
       {/* Background Animations */}
       <style>
         {`
@@ -210,7 +214,7 @@ export default function Home() {
 
                     return (
                       <span className="text-lg sm:text-xl font-bold flex items-center gap-2">
-                        <span className="text-gray-700 dark:text-gray-200">{greet},</span>
+                        <span className="text-gray-700 dark:text-gray-200">{theme?.greeting || greet},</span>
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
                           {name}!
                         </span>

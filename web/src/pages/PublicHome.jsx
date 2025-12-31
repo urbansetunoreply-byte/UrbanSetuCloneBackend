@@ -18,10 +18,13 @@ import {
 } from "react-icons/fa";
 import AdsterraBanner from "../components/AdsterraBanner";
 import AdHighperformanceBanner from "../components/AdHighperformanceBanner";
+import SeasonalEffects from "../components/SeasonalEffects";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PublicHome() {
+  const theme = useSeasonalTheme();
   // Set page title
   usePageTitle("Find Your Dream Home - Smart Real Estate Platform");
 
@@ -143,6 +146,7 @@ export default function PublicHome() {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-950 min-h-screen relative overflow-hidden font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      <SeasonalEffects />
       {/* Background Animations */}
       <style>
         {`
@@ -189,7 +193,13 @@ export default function PublicHome() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 dark:bg-blue-600 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
               </span>
-              #1 Real Estate Platform in India
+              {theme ? (
+                <span className="flex items-center gap-2">
+                  {theme.icon} {theme.greeting}
+                </span>
+              ) : (
+                "#1 Real Estate Platform in India"
+              )}
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-6 animate-fade-in-delay transition-colors">

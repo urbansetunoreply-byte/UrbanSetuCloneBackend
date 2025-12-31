@@ -14,8 +14,10 @@ import SearchSuggestions from './SearchSuggestions';
 import { LogIn } from "lucide-react";
 import { UserPlus, LogOut } from "lucide-react";
 import ThemeToggle from "./ThemeToggle.jsx";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 
 export default function Header() {
+  const theme = useSeasonalTheme();
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
@@ -309,25 +311,47 @@ export default function Header() {
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-2">
             {/* Logo/Title - Left Aligned */}
-            <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} className="flex-shrink-0 group">
+            <Link to={location.pathname.startsWith('/user') ? '/user' : '/'} className="flex-shrink-0 group relative">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="p-2 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                    <FaHome className="text-xl sm:text-2xl text-yellow-400 drop-shadow-lg" />
+                    <FaHome className={`text-xl sm:text-2xl drop-shadow-lg ${theme?.id === 'christmas' ? 'text-green-500' : 'text-yellow-400'}`} />
                   </div>
-                  <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                  <div className={`absolute -inset-1 bg-gradient-to-r ${theme?.textGradient ? theme.textGradient.replace('bg-clip-text text-transparent', '') : 'from-yellow-400 to-orange-500'} rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300`}></div>
+
+                  {/* Seasonal Logo Interaction - Santa Hat / Party Hat */}
+                  {theme?.logoDecoration === 'santa-hat' && (
+                    <span className="absolute -top-3 -right-2 text-2xl filter drop-shadow-md animate-bounce" style={{ animationDuration: '3s' }}>🎅</span>
+                  )}
+                  {theme?.logoDecoration === 'party-hat' && (
+                    <span className="absolute -top-4 -right-2 text-xl filter drop-shadow-md rotate-12">🎉</span>
+                  )}
+                  {theme?.logoDecoration === 'kite' && (
+                    <span className="absolute -top-4 -right-3 text-xl filter drop-shadow-md -rotate-12">🪁</span>
+                  )}
+                  {theme?.logoDecoration === 'flag' && (
+                    <span className="absolute -top-3 -right-2 text-xs filter drop-shadow-md">🇮🇳</span>
+                  )}
                 </div>
                 <div>
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg">
-                    <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-                      Urban
-                    </span>
-                    <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent ml-1">
-                      Setu
-                    </span>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg flex items-center">
+                    {theme ? (
+                      <span className={`${theme.textGradient} bg-clip-text text-transparent`}>
+                        UrbanSetu
+                      </span>
+                    ) : (
+                      <>
+                        <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+                          Urban
+                        </span>
+                        <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent ml-1">
+                          Setu
+                        </span>
+                      </>
+                    )}
                   </h1>
-                  <p className="text-xs text-white/70 font-medium tracking-wider uppercase">
-                    Real Estate Excellence
+                  <p className="text-xs text-white/70 font-medium tracking-wider uppercase flex items-center gap-1">
+                    Real Estate Excellence {theme?.secondaryIcon && <span className="opacity-80">{theme.secondaryIcon}</span>}
                   </p>
                 </div>
               </div>

@@ -33,6 +33,7 @@ import avataaarsSchema from '../data/dicebear-avataaars-schema.json';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSignout } from '../hooks/useSignout';
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Animation CSS classes
@@ -242,6 +243,7 @@ const AnimatedCounter = ({ end, duration = 1000, delay = 0 }) => {
 };
 
 export default function Profile() {
+  const theme = useSeasonalTheme();
   // Set page title
   usePageTitle("My Profile - Account Settings");
 
@@ -1284,6 +1286,9 @@ export default function Profile() {
                     <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                       {currentUser.username}
                     </span>
+                    {theme?.icon && (
+                      <span className="text-2xl ml-2 animate-bounce" title={theme.name}>{theme.icon}</span>
+                    )}
                     {currentUser.role === 'admin' && (
                       <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-sm px-3 py-1 rounded-full font-medium transform transition-all duration-300 hover:scale-110 hover:bg-purple-200 dark:hover:bg-purple-800 flex items-center gap-1">
                         <FaCrown className="w-3 h-3 text-blue-500" />
