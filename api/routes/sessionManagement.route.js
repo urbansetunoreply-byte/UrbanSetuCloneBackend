@@ -446,7 +446,9 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
       userId,
       search = '',
       dateRange = 'all',
-      role = 'all'
+      role = 'all',
+      startDate,
+      endDate
     } = req.query;
 
     let filter = {};
@@ -464,7 +466,12 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
     }
 
     // Date range filter
-    if (dateRange !== 'all') {
+    if (startDate && endDate) {
+      filter.timestamp = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    } else if (dateRange !== 'all') {
       const now = new Date();
       let cutoffDate;
 

@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import {
   FaSync, FaSearch, FaFilter, FaHistory, FaGlobe, FaDesktop, FaUser,
   FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaFileAlt,
-  FaChartLine, FaMapMarkerAlt, FaFileExport, FaTrash, FaFingerprint
+  FaChartLine, FaMapMarkerAlt, FaFileExport, FaTrash, FaFingerprint, FaTimes, FaCalendarAlt
 } from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -41,6 +41,14 @@ const SessionAuditLogs = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showAuditStats, setShowAuditStats] = useState(false);
   const [showVisitorStatsToggle, setShowVisitorStatsToggle] = useState(false);
+
+  // Modal states
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportOption, setExportOption] = useState('all'); // 'all' or 'range'
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
 
   // Visitors state
   const [visitors, setVisitors] = useState([]);
@@ -464,26 +472,7 @@ const SessionAuditLogs = () => {
               {activeTab === 'audit' && (
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      const rows = logs.map(l => ({
-                        timestamp: new Date(l.timestamp).toISOString(),
-                        user: l.userId?.username || '',
-                        email: l.userId?.email || '',
-                        role: l.role || '',
-                        action: l.action,
-                        ip: l.ip,
-                        location: l.location || '',
-                        device: l.device || '',
-                        suspicious: l.isSuspicious ? 'yes' : 'no'
-                      }));
-                      const header = ['timestamp', 'user', 'email', 'role', 'action', 'ip', 'location', 'device', 'suspicious'];
-                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url; a.download = `session-logs-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
-                      URL.revokeObjectURL(url);
-                    }}
+                    onClick={() => setShowExportModal(true)}
                     className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 shadow-sm text-sm font-medium rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     title="Export logs as CSV"
                   >
@@ -493,31 +482,7 @@ const SessionAuditLogs = () => {
 
                   {currentUser?.role === 'rootadmin' && (
                     <button
-                      onClick={async () => {
-                        const confirmed = window.confirm('This will permanently delete all session audit logs. Continue?');
-                        if (!confirmed) return;
-                        try {
-                          setIsClearing(true);
-                          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`, {
-                            method: 'DELETE',
-                            credentials: 'include',
-                            headers: { 'Content-Type': 'application/json' }
-                          });
-                          const data = await res.json();
-                          if (!res.ok || !data.success) {
-                            throw new Error(data.message || `Failed with status ${res.status}`);
-                          }
-                          toast.success(data.message || 'Audit logs cleared');
-                          setLogs([]);
-                          setTotalLogs(0);
-                          setLastUpdated(new Date());
-                        } catch (err) {
-                          console.error('Failed to clear audit logs', err);
-                          toast.error(err.message || 'Failed to clear audit logs');
-                        } finally {
-                          setIsClearing(false);
-                        }
-                      }}
+                      onClick={() => setShowClearModal(true)}
                       className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-red-200 text-red-600 dark:border-red-800 dark:text-red-400 shadow-sm text-sm font-medium rounded-lg bg-white dark:bg-gray-700 hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:border-red-700 transition-colors ${isClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
                       title="Clear all audit logs"
                       disabled={isClearing}
@@ -1427,6 +1392,225 @@ const SessionAuditLogs = () => {
           </>
         )}
       </div>
+      {/* Clear Logs Confirmation Modal */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
+                <FaTrash className="text-xl text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
+                Clear All Audit Logs
+              </h3>
+              <p className="text-center text-gray-500 dark:text-gray-400 mb-6">
+                Are you sure you want to permanently delete all session audit logs? This action cannot be undone.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowClearModal(false)}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      setIsClearing(true);
+                      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' }
+                      });
+                      const data = await res.json();
+                      if (!res.ok || !data.success) {
+                        throw new Error(data.message || `Failed with status ${res.status}`);
+                      }
+                      toast.success(data.message || 'Audit logs cleared');
+                      setLogs([]);
+                      setTotalLogs(0);
+                      setLastUpdated(new Date());
+                      setShowClearModal(false);
+                    } catch (err) {
+                      console.error('Failed to clear audit logs', err);
+                      toast.error(err.message || 'Failed to clear audit logs');
+                    } finally {
+                      setIsClearing(false);
+                    }
+                  }}
+                  disabled={isClearing}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
+                >
+                  {isClearing ? <FaSync className="animate-spin mr-2" /> : null}
+                  {isClearing ? 'Clearing...' : 'Yes, Delete All'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Export Options Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
+                    <FaFileExport className="text-xl text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Export Logs
+                  </h3>
+                </div>
+                <button onClick={() => setShowExportModal(false)} className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="mb-6 space-y-4">
+                <label className="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <input
+                    type="radio"
+                    name="exportOption"
+                    value="all"
+                    checked={exportOption === 'all'}
+                    onChange={() => setExportOption('all')}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <div className="ml-3">
+                    <span className="block text-sm font-medium text-gray-900 dark:text-white">Export All Logs</span>
+                    <span className="block text-xs text-gray-500 dark:text-gray-400">Download complete history of all sessions</span>
+                  </div>
+                </label>
+
+                <label className="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <div className="flex items-center h-5">
+                    <input
+                      type="radio"
+                      name="exportOption"
+                      value="range"
+                      checked={exportOption === 'range'}
+                      onChange={() => setExportOption('range')}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="ml-3 w-full">
+                    <span className="block text-sm font-medium text-gray-900 dark:text-white">Export Date Range</span>
+                    <span className="block text-xs text-gray-500 dark:text-gray-400 mb-3">Download logs for a specific period</span>
+
+                    {exportOption === 'range' && (
+                      <div className="grid grid-cols-2 gap-3 mt-2 animate-fade-in">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                          <input
+                            type="date"
+                            value={exportStartDate}
+                            onChange={(e) => setExportStartDate(e.target.value)}
+                            className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                          <input
+                            type="date"
+                            value={exportEndDate}
+                            onChange={(e) => setExportEndDate(e.target.value)}
+                            className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowExportModal(false)}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      setIsExporting(true);
+                      // Construct params
+                      const params = new URLSearchParams({
+                        limit: 100000,
+                      });
+
+                      if (exportOption === 'range') {
+                        if (!exportStartDate || !exportEndDate) {
+                          toast.error('Please select both start and end dates');
+                          setIsExporting(false);
+                          return;
+                        }
+                        params.append('startDate', exportStartDate);
+                        params.append('endDate', exportEndDate);
+                      }
+
+                      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs?${params}`, {
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' }
+                      });
+
+                      if (!res.ok) throw new Error('Failed to fetch logs');
+
+                      const data = await res.json();
+                      if (!data.success) throw new Error(data.message);
+
+                      const exportLogs = data.logs || [];
+                      if (exportLogs.length === 0) {
+                        toast.info('No logs found to export');
+                        setIsExporting(false);
+                        return;
+                      }
+
+                      // Generate CSV
+                      const rows = exportLogs.map(l => ({
+                        timestamp: new Date(l.timestamp).toISOString(),
+                        user: l.userId?.username || '',
+                        email: l.userId?.email || '',
+                        role: l.role || '',
+                        action: l.action,
+                        ip: l.ip,
+                        location: l.location || '',
+                        device: l.device || '',
+                        suspicious: l.isSuspicious ? 'yes' : 'no'
+                      }));
+                      const header = ['timestamp', 'user', 'email', 'role', 'action', 'ip', 'location', 'device', 'suspicious'];
+                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url; a.download = `session-logs-${exportOption}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+                      URL.revokeObjectURL(url);
+
+                      setShowExportModal(false);
+                      toast.success(`Exported ${exportLogs.length} logs successfully`);
+                    } catch (err) {
+                      console.error('Export failed', err);
+                      toast.error('Export failed: ' + err.message);
+                    } finally {
+                      setIsExporting(false);
+                    }
+                  }}
+                  disabled={isExporting}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                >
+                  {isExporting ? <FaSync className="animate-spin mr-2" /> : <FaFileExport className="mr-2" />}
+                  {isExporting ? 'Exporting...' : 'Export CSV'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
