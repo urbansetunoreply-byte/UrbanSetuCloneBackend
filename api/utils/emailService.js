@@ -14985,3 +14985,114 @@ export const sendFestivalGreetingEmail = async (email, username, theme) => {
   }
 };
 
+// Send Review Submitted Email
+export const sendReviewReceivedEmail = async (email, username, propertyName, reviewLink) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Review Received - Pending Approval - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Review Submission Confirmation</p>
+          </div>
+          
+          <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2563eb;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">We Received Your Review</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Hello <strong>${username}</strong>,<br/>
+              Thank you for sharing your experience! We have received your review for <strong>"${propertyName}"</strong>.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Your review is currently pending approval to ensure it meets our community guidelines. You will be notified once it has been processed.
+            </p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${reviewLink}" style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Your Reviews</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? createSuccessResponse(result.messageId, 'review_received') : createErrorResponse(new Error(result.error), 'review_received');
+  } catch (error) {
+    return createErrorResponse(error, 'review_received');
+  }
+};
+
+// Send Review Status Update Email (Approved/Rejected)
+export const sendReviewStatusUpdateEmail = async (email, username, propertyName, status, reason, reviewLink) => {
+  const isApproved = status === 'approved';
+  // Determine color: Green for approved, Red for rejected
+  const color = isApproved ? '#10b981' : '#ef4444';
+  const title = isApproved ? 'Review Published!' : 'Review Rejected';
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `${title} - UrbanSetu`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: ${color}; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Review Status Update</p>
+          </div>
+          
+          <div style="background-color: ${isApproved ? '#f0fdf4' : '#fef2f2'}; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid ${color};">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">${title}</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Hello <strong>${username}</strong>,<br/>
+              Your review for <strong>"${propertyName}"</strong> has been <strong>${status}</strong>.
+            </p>
+            
+            ${!isApproved && reason ? `
+            <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #fee2e2;">
+              <strong style="color: #ef4444;">Reason for Rejection:</strong><br/>
+              <p style="margin: 5px 0 0 0; color: #4b5563;">${reason}</p>
+            </div>
+            ` : ''}
+
+            ${isApproved ? `
+            <p style="color: #4b5563; margin: 0 0 15px 0;">
+              Your review is now live and helping other users make informed decisions!
+            </p>
+            ` : `
+            <p style="color: #4b5563; margin: 0 0 15px 0;">
+              Please review our community guidelines and consider submitting a modified review.
+            </p>
+            `}
+            
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${reviewLink}" style="display: inline-block; background-color: ${color}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                ${isApproved ? 'View Review on Property' : 'Check My Reviews'}
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? createSuccessResponse(result.messageId, 'review_status_update') : createErrorResponse(new Error(result.error), 'review_status_update');
+  } catch (error) {
+    return createErrorResponse(error, 'review_status_update');
+  }
+};
+

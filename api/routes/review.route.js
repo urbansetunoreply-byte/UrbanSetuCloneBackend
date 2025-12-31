@@ -7,6 +7,7 @@ import Notification from '../models/notification.model.js';
 import booking from '../models/booking.model.js';
 import { errorHandler } from '../utils/error.js';
 import ReviewReply from '../models/reviewReply.model.js';
+import { sendReviewReceivedEmail, sendReviewStatusUpdateEmail } from '../utils/emailService.js';
 
 const router = express.Router();
 
@@ -141,6 +142,14 @@ router.post('/create', verifyToken, async (req, res, next) => {
     // Emit socket event for real-time review creation
     const io = req.app.get('io');
     if (io) io.emit('reviewUpdated', maskedReview);
+
+    // Send email confirmation to user
+    try {
+      const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+      await sendReviewReceivedEmail(user.email, user.username, listing.name, `${clientUrl}/user/reviews`);
+    } catch (emailError) {
+      console.error('Failed to send review confirmation email:', emailError);
+    }
 
     res.status(201).json({
       success: true,
@@ -511,6 +520,28 @@ router.put('/admin/status/:reviewId', verifyToken, async (req, res, next) => {
     } catch (notificationError) {
       console.error('Failed to send notification:', notificationError);
     }
+
+    // Send automated email to review author regarding status update
+    try {
+      const reviewAuthor = await User.findById(review.userId);
+      const listingForEmail = await Listing.findById(review.listingId);
+
+      if (reviewAuthor && listingForEmail) {
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+        const link = status === 'approved' ? `${clientUrl}/listing/${listingForEmail._id}` : `${clientUrl}/user/reviews`;
+        await sendReviewStatusUpdateEmail(
+          reviewAuthor.email,
+          reviewAuthor.username,
+          listingForEmail.name,
+          status,
+          adminNote,
+          link
+        );
+      }
+    } catch (emailError) {
+      console.error('Failed to send status update email:', emailError);
+    }
+
     res.status(200).json({
       success: true,
       message: `Review ${status} successfully`,
