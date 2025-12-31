@@ -41,8 +41,28 @@ export default function AdminUpdates() {
         isActive: true
     });
     const [submitting, setSubmitting] = useState(false);
-    const [uploadingImage, setUploadingImage] = useState(false);
-    const [uploadingVideo, setUploadingVideo] = useState(false);
+    const [imageErrors, setImageErrors] = useState({});
+    const [uploadingImages, setUploadingImages] = useState({});
+    const [videoErrors, setVideoErrors] = useState({});
+    const [uploadingVideos, setUploadingVideos] = useState({});
+
+    const validateImageUrl = (url) => {
+        if (!url) return true;
+        try { new URL(url); } catch { return false; }
+        const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+        const hasImageExtension = imageExtensions.some(ext => url.toLowerCase().includes(ext));
+        const isCloudinaryUrl = url.includes('cloudinary.com');
+        return hasImageExtension || url.includes('images') || url.includes('img') || isCloudinaryUrl;
+    };
+
+    const validateVideoUrl = (url) => {
+        if (!url) return true;
+        try { new URL(url); } catch { return false; }
+        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mkv'];
+        const hasVideoExtension = videoExtensions.some(ext => url.toLowerCase().includes(ext));
+        const isCloudinaryUrl = url.includes('cloudinary.com');
+        return hasVideoExtension || url.includes('video') || isCloudinaryUrl;
+    };
 
     // Delete Confirmation State
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -138,24 +158,63 @@ export default function AdminUpdates() {
     };
 
 
-    const handleFileUpload = async (file, type) => {
+    const handleImageChange = (index, url) => {
+        const newImageUrls = [...formData.imageUrls];
+        newImageUrls[index] = url;
+        setFormData({ ...formData, imageUrls: newImageUrls });
+
+        const newImageErrors = { ...imageErrors };
+        if (url && !validateImageUrl(url)) {
+            newImageErrors[index] = "Please enter a valid image URL";
+        } else {
+            delete newImageErrors[index];
+        }
+        setImageErrors(newImageErrors);
+    };
+
+    const handleVideoUrlChange = (index, url) => {
+        const newVideoUrls = [...formData.videoUrls];
+        newVideoUrls[index] = url;
+        setFormData({ ...formData, videoUrls: newVideoUrls });
+        const newVideoErrors = { ...videoErrors };
+        if (url && !validateVideoUrl(url)) {
+            newVideoErrors[index] = 'Please enter a valid video URL';
+        } else {
+            delete newVideoErrors[index];
+        }
+        setVideoErrors(newVideoErrors);
+    };
+
+    const handleFileUpload = async (index, file, type) => {
         if (!file) return;
 
-        // Validation
         if (type === 'image') {
-            if (!file.type.startsWith('image/')) return toast.error('Please upload an image file');
-            if (file.size > 5 * 1024 * 1024) return toast.error('Image size must be less than 5MB');
-            setUploadingImage(true);
+            if (!file.type.startsWith('image/')) {
+                setImageErrors(prev => ({ ...prev, [index]: 'Please select an image file' }));
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                setImageErrors(prev => ({ ...prev, [index]: 'Image size must be less than 5MB' }));
+                return;
+            }
+            setUploadingImages(prev => ({ ...prev, [index]: true }));
+            setImageErrors(prev => ({ ...prev, [index]: '' }));
         } else {
-            if (!file.type.startsWith('video/')) return toast.error('Please upload a video file');
-            if (file.size > 10 * 1024 * 1024) return toast.error('Video size must be less than 10MB');
-            setUploadingVideo(true);
+            if (!file.type.startsWith('video/')) {
+                setVideoErrors(prev => ({ ...prev, [index]: 'Please select a video file' }));
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                setVideoErrors(prev => ({ ...prev, [index]: 'Video size must be less than 10MB' }));
+                return;
+            }
+            setUploadingVideos(prev => ({ ...prev, [index]: true }));
+            setVideoErrors(prev => ({ ...prev, [index]: '' }));
         }
 
         try {
             const uploadFormData = new FormData();
             uploadFormData.append(type === 'image' ? 'image' : 'video', file);
-
             const endpoint = type === 'image' ? '/api/upload/image' : '/api/upload/video';
 
             const res = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -167,30 +226,40 @@ export default function AdminUpdates() {
             const data = await res.json();
 
             if (data.success || res.ok) {
-                // Determine the correct key based on API response structure
                 const url = type === 'image' ? (data.imageUrl || data.url) : (data.videoUrl || data.url);
-
                 if (url) {
-                    setFormData(prev => ({
-                        ...prev,
-                        [type === 'image' ? 'imageUrls' : 'videoUrls']: [
-                            ...prev[type === 'image' ? 'imageUrls' : 'videoUrls'],
-                            url
-                        ]
-                    }));
+                    if (type === 'image') {
+                        const newImageUrls = [...formData.imageUrls];
+                        newImageUrls[index] = url;
+                        setFormData(prev => ({ ...prev, imageUrls: newImageUrls }));
+                        setImageErrors(prev => {
+                            const newErrors = { ...prev };
+                            delete newErrors[index];
+                            return newErrors;
+                        });
+                    } else {
+                        const newVideoUrls = [...formData.videoUrls];
+                        newVideoUrls[index] = url;
+                        setFormData(prev => ({ ...prev, videoUrls: newVideoUrls }));
+                        setVideoErrors(prev => {
+                            const newErrors = { ...prev };
+                            delete newErrors[index];
+                            return newErrors;
+                        });
+                    }
                     toast.success(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully`);
-                } else {
-                    toast.error('Upload successful but no URL returned');
                 }
             } else {
                 toast.error(data.message || 'Upload failed');
+                if (type === 'image') setImageErrors(prev => ({ ...prev, [index]: 'Upload failed' }));
+                else setVideoErrors(prev => ({ ...prev, [index]: 'Upload failed' }));
             }
         } catch (error) {
             console.error(error);
             toast.error('Error uploading file');
         } finally {
-            if (type === 'image') setUploadingImage(false);
-            else setUploadingVideo(false);
+            if (type === 'image') setUploadingImages(prev => ({ ...prev, [index]: false }));
+            else setUploadingVideos(prev => ({ ...prev, [index]: false }));
         }
     };
 
@@ -199,12 +268,36 @@ export default function AdminUpdates() {
             ...prev,
             [type]: prev[type].filter((_, i) => i !== index)
         }));
+
+        if (type === 'imageUrls') {
+            const newErrors = { ...imageErrors };
+            delete newErrors[index];
+            setImageErrors(newErrors);
+            const newUploading = { ...uploadingImages };
+            delete newUploading[index];
+            setUploadingImages(newUploading);
+        } else {
+            const newErrors = { ...videoErrors };
+            delete newErrors[index];
+            setVideoErrors(newErrors);
+            const newUploading = { ...uploadingVideos };
+            delete newUploading[index];
+            setUploadingVideos(newUploading);
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.title || !formData.description) {
             return toast.error('Title and description are required');
+        }
+
+        // Check for media errors
+        if (Object.keys(imageErrors).length > 0) {
+            return toast.error("Please fix the image URL errors before submitting");
+        }
+        if (Object.keys(videoErrors).length > 0) {
+            return toast.error("Please fix the video URL errors before submitting");
         }
 
         setSubmitting(true);
@@ -485,121 +578,146 @@ export default function AdminUpdates() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Media</label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Image Upload */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Images</label>
-                                                {uploadingImage && <Loader size={14} className="animate-spin text-blue-600 dark:text-blue-400" />}
-                                            </div>
-                                            <label className="cursor-pointer text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
-                                                <Upload size={14} /> Add Image
-                                                <input
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleFileUpload(e.target.files[0], 'image')}
-                                                />
-                                            </label>
-                                        </div>
-
-                                        {/* Image List */}
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {formData.imageUrls.map((url, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 h-24 flex items-center justify-center group cursor-pointer"
-                                                    onClick={() => {
-                                                        setSelectedImageIndex(index);
-                                                        setShowImagePreview(true);
-                                                    }}
-                                                >
-                                                    <img
-                                                        src={url}
-                                                        alt={`Preview ${index}`}
-                                                        className="max-h-full max-w-full object-contain"
-                                                        onError={(e) => e.target.src = 'https://via.placeholder.com/150?text=Error'}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleRemoveMedia(index, 'imageUrls');
-                                                        }}
-                                                        className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 hover:scale-110"
-                                                    >
-                                                        <XCircle size={14} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            {formData.imageUrls.length === 0 && (
-                                                <div className="col-span-2 py-4 text-center text-gray-400 dark:text-gray-500 text-sm border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg">
-                                                    No images added
-                                                </div>
-                                            )}
-                                        </div>
+                                {/* Images Section */}
+                                <div className="space-y-4 mb-6">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Property Images</label>
+                                        <p className="text-gray-600 dark:text-gray-400 text-xs">Supported: JPG, PNG, GIF, WebP (max 5MB)</p>
                                     </div>
 
-                                    {/* Video Upload */}
                                     <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Videos</label>
-                                                {uploadingVideo && <Loader size={14} className="animate-spin text-blue-600 dark:text-blue-400" />}
-                                            </div>
-                                            <label className="cursor-pointer text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
-                                                <Upload size={14} /> Add Video
-                                                <input
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept="video/*"
-                                                    onChange={(e) => handleFileUpload(e.target.files[0], 'video')}
-                                                />
-                                            </label>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            {formData.videoUrls.map((url, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 group cursor-pointer h-32"
-                                                    onClick={() => {
-                                                        setSelectedVideoIndex(index);
-                                                        setShowVideoPreview(true);
-                                                    }}
-                                                >
-                                                    <video
-                                                        src={url}
-                                                        className="w-full h-full object-cover bg-black pointer-events-none"
+                                        {formData.imageUrls.map((url, index) => (
+                                            <div key={index} className="space-y-2">
+                                                <div className="flex gap-2 items-center">
+                                                    <input
+                                                        type="text"
+                                                        placeholder={`Image URL ${index + 1}`}
+                                                        value={url || ""}
+                                                        onChange={(e) => handleImageChange(index, e.target.value)}
+                                                        className={`flex-1 p-2 text-sm border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors ${imageErrors[index] ? 'border-red-500' : ''}`}
                                                     />
+                                                    <label className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition cursor-pointer flex-shrink-0 text-xs font-medium">
+                                                        {uploadingImages[index] ? 'Uploading...' : 'Upload'}
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => handleFileUpload(index, e.target.files[0], 'image')}
+                                                            className="hidden"
+                                                            disabled={uploadingImages[index]}
+                                                        />
+                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveMedia(index, 'imageUrls')}
+                                                        className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition flex-shrink-0"
+                                                        title="Remove"
+                                                    >
+                                                        <XCircle size={16} />
+                                                    </button>
+                                                </div>
+                                                {imageErrors[index] && <p className="text-red-500 text-xs">{imageErrors[index]}</p>}
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, imageUrls: [...prev.imageUrls, ""] }))}
+                                            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium flex items-center gap-1"
+                                        >
+                                            <Plus size={16} /> Add Another Image
+                                        </button>
+                                    </div>
 
-                                                    {/* Play Icon Overlay */}
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-                                                        <div className="bg-white/80 p-2 rounded-full w-10 h-10 flex items-center justify-center shadow-lg">
-                                                            <Play size={18} className="text-gray-900 fill-current ml-0.5" />
+                                    {/* Image Previews */}
+                                    {formData.imageUrls.some(url => url) && (
+                                        <div className="grid grid-cols-4 gap-2 mt-4">
+                                            {formData.imageUrls.map((url, index) => (
+                                                url ? (
+                                                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 group">
+                                                        <img
+                                                            src={url}
+                                                            alt={`Preview ${index}`}
+                                                            className="w-full h-full object-cover cursor-pointer"
+                                                            onClick={() => {
+                                                                setSelectedImageIndex(index);
+                                                                setShowImagePreview(true);
+                                                            }}
+                                                            onError={(e) => e.target.src = 'https://via.placeholder.com/150?text=Error'}
+                                                        />
+                                                    </div>
+                                                ) : null
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Videos Section */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Videos</label>
+                                        <p className="text-gray-600 dark:text-gray-400 text-xs">Supported: MP4, WebM (max 10MB)</p>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {formData.videoUrls.map((url, index) => (
+                                            <div key={index} className="space-y-2">
+                                                <div className="flex gap-2 items-center">
+                                                    <input
+                                                        type="text"
+                                                        placeholder={`Video URL ${index + 1}`}
+                                                        value={url || ""}
+                                                        onChange={(e) => handleVideoUrlChange(index, e.target.value)}
+                                                        className={`flex-1 p-2 text-sm border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors ${videoErrors[index] ? 'border-red-500' : ''}`}
+                                                    />
+                                                    <label className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition cursor-pointer flex-shrink-0 text-xs font-medium">
+                                                        {uploadingVideos[index] ? 'Uploading...' : 'Upload'}
+                                                        <input
+                                                            type="file"
+                                                            accept="video/*"
+                                                            onChange={(e) => handleFileUpload(index, e.target.files[0], 'video')}
+                                                            className="hidden"
+                                                            disabled={uploadingVideos[index]}
+                                                        />
+                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveMedia(index, 'videoUrls')}
+                                                        className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition flex-shrink-0"
+                                                        title="Remove"
+                                                    >
+                                                        <XCircle size={16} />
+                                                    </button>
+                                                </div>
+                                                {videoErrors[index] && <p className="text-red-500 text-xs">{videoErrors[index]}</p>}
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, videoUrls: [...prev.videoUrls, ""] }))}
+                                            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium flex items-center gap-1"
+                                        >
+                                            <Plus size={16} /> Add Another Video
+                                        </button>
+                                    </div>
+
+                                    {/* Video Previews */}
+                                    {formData.videoUrls.some(url => url) && (
+                                        <div className="grid grid-cols-4 gap-2 mt-4">
+                                            {formData.videoUrls.map((url, index) => (
+                                                url ? (
+                                                    <div key={index} className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 group cursor-pointer"
+                                                        onClick={() => {
+                                                            setSelectedVideoIndex(index);
+                                                            setShowVideoPreview(true);
+                                                        }}>
+                                                        <video src={url} className="w-full h-full object-cover pointer-events-none" />
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30">
+                                                            <Play size={20} className="text-white drop-shadow-md" />
                                                         </div>
                                                     </div>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleRemoveMedia(index, 'videoUrls');
-                                                        }}
-                                                        className="absolute top-2 right-2 z-10 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 hover:scale-110"
-                                                    >
-                                                        <XCircle size={14} />
-                                                    </button>
-                                                </div>
+                                                ) : null
                                             ))}
-                                            {formData.videoUrls.length === 0 && (
-                                                <div className="py-4 text-center text-gray-400 dark:text-gray-500 text-sm border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg">
-                                                    No videos added
-                                                </div>
-                                            )}
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
 
