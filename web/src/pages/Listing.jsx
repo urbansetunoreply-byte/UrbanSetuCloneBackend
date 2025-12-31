@@ -30,6 +30,7 @@ import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
 import VirtualTourViewer from "../components/VirtualTourViewer"; // Import the viewer component
 import VirtualStagingTool from "../components/VirtualStagingTool"; // Import Virtual Staging Tool
 import ListingSkeleton from "../components/skeletons/ListingSkeleton"; // Import ListingSkeleton
+import SeasonalEffects from "../components/SeasonalEffects";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UNAVAILABLE_STATUSES = ['reserved', 'under_contract', 'rented', 'sold', 'suspended'];
@@ -1404,6 +1405,7 @@ export default function Listing() {
   return (
     <>
       <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-950 dark:to-gray-900 min-h-screen py-10 px-2 md:px-8 transition-colors duration-300">
+        <SeasonalEffects />
         <div className="max-w-4xl w-full mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-blue-900/10 p-3 sm:p-6 relative overflow-x-hidden border border-transparent dark:border-gray-800 transition-colors duration-300">
           {listing.isDeleted && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
