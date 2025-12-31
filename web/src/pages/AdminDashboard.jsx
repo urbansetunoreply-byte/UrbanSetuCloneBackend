@@ -28,8 +28,6 @@ import { toast } from 'react-toastify';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import axios from 'axios';
 import { usePageTitle } from '../hooks/usePageTitle';
-import axios from 'axios';
-import { usePageTitle } from '../hooks/usePageTitle';
 import DailyQuote from "../components/DailyQuote";
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
