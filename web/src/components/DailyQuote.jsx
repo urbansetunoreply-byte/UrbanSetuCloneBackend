@@ -32,15 +32,8 @@ const DailyQuote = ({ className = "" }) => {
     const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
-        // Generate a determinstic index based on the day of the year
-        const today = new Date();
-        const start = new Date(today.getFullYear(), 0, 0);
-        const diff = today - start;
-        const oneDay = 1000 * 60 * 60 * 24;
-        const dayOfYear = Math.floor(diff / oneDay);
-
-        // Use modulo to cycle through quotes
-        const index = dayOfYear % quotes.length;
+        // Pick a random quote on mount to ensure variety
+        const index = Math.floor(Math.random() * quotes.length);
         setQuote(quotes[index]);
     }, []);
 

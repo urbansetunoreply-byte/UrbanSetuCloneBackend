@@ -899,10 +899,10 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex gap-3 relative z-10 w-full md:w-auto">
-            <Link to="/profile" className="flex-1 md:flex-none bg-white/10 hover:bg-white/20 backdrop-blur-lg text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+            <Link to="/admin/profile" className="flex-1 md:flex-none bg-white/10 hover:bg-white/20 backdrop-blur-lg text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
               <FaUsers /> Manage Profile
             </Link>
-            <Link to="/create-listing" className="flex-1 md:flex-none bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+            <Link to="/admin/create-listing" className="flex-1 md:flex-none bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
               <FaHome /> New Listing
             </Link>
           </div>
