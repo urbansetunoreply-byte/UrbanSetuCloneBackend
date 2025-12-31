@@ -68,6 +68,7 @@ const SeasonalEffects = () => {
                 else if (theme.effect === 'leaf') content = '🍃';
                 else if (theme.effect === 'flower') content = '🌺';
                 else if (theme.effect === 'moon') content = '🌙';
+                else if (theme.effect === 'lantern') content = '🏮';
                 else if (theme.effect === 'mango') content = '🥭';
                 else if (theme.effect === 'snow') content = ''; // Snow is CSS shape
                 else if (theme.effect === 'confetti') content = ''; // Confetti is CSS shape

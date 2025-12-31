@@ -427,6 +427,30 @@ export default function Header() {
                   {theme?.logoDecoration === 'rocket' && (
                     <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-pulse">🚀</span>
                   )}
+                  {theme?.logoDecoration === 'bonfire' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-pulse">🔥</span>
+                  )}
+                  {theme?.logoDecoration === 'peace' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">☮️</span>
+                  )}
+                  {theme?.logoDecoration === 'harvest' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🌾</span>
+                  )}
+                  {theme?.logoDecoration === 'tie' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">👔</span>
+                  )}
+                  {theme?.logoDecoration === 'khanda' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">☬</span>
+                  )}
+                  {theme?.logoDecoration === 'gudi' && (
+                    <span className="absolute -top-4 -right-3 text-xl filter drop-shadow-md -rotate-12">🪁</span>
+                  )}
+                  {theme?.logoDecoration === 'sun' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-spin-slow">☀️</span>
+                  )}
+                  {theme?.logoDecoration === 'venus' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">♀️</span>
+                  )}
                 </div>
                 <div>
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg flex items-center">

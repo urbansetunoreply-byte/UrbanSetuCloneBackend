@@ -110,6 +110,20 @@ export const useSeasonalTheme = () => {
             };
         }
 
+        // International Women's Day (Mar 8)
+        if (month === 2 && day === 8) {
+            return {
+                id: 'womensday',
+                name: 'Women\'s Day',
+                icon: '👩',
+                secondaryIcon: '💐',
+                greeting: 'Happy Women\'s Day!',
+                effect: 'flower',
+                textGradient: 'bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600',
+                logoDecoration: 'venus'
+            };
+        }
+
         // St. Patrick's Day (Mar 17)
         if (month === 2 && day === 17) {
             return {
@@ -377,7 +391,19 @@ export const useSeasonalTheme = () => {
             { id: 'onam', year: 2025, month: 8, day: 5, window: 2, name: 'Onam', icon: '⛵', sec: '🌺', greet: 'Happy Onam!', effect: 'flower', grad: 'bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400', deco: 'flower' },
             { id: 'navaratri', year: 2025, month: 8, day: 22, window: 9, name: 'Navaratri', icon: '🔱', sec: '💃', greet: 'Happy Navaratri!', effect: 'flower', grad: 'bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500', deco: 'trident' },
             { id: 'dussehra', year: 2025, month: 9, day: 2, window: 1, name: 'Dussehra', icon: '🏹', sec: '🌼', greet: 'Happy Dussehra!', effect: 'leaf', grad: 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600', deco: 'bow' },
+            { id: 'karwachauth', year: 2025, month: 9, day: 10, window: 0, name: 'Karwa Chauth', icon: '🌕', sec: '🥣', greet: 'Happy Karwa Chauth!', effect: 'moon', grad: 'bg-gradient-to-r from-red-600 via-pink-600 to-purple-600', deco: 'moon' },
             { id: 'diwali', year: 2025, month: 9, day: 20, window: 3, name: 'Diwali', icon: '🪔', sec: '✨', greet: 'Happy Diwali!', effect: 'confetti', grad: 'bg-gradient-to-r from-yellow-300 via-orange-500 to-red-600', deco: 'diya' },
+            { id: 'chhath', year: 2025, month: 9, day: 27, window: 3, name: 'Chhath Puja', icon: '🌅', sec: '🕉️', greet: 'Happy Chhath Puja!', effect: 'none', grad: 'bg-gradient-to-r from-orange-500 via-yellow-500 to-red-500', deco: 'sun' },
+
+            { id: 'lohri', year: 2025, month: 0, day: 13, window: 0, name: 'Lohri', icon: '🔥', sec: '🥜', greet: 'Happy Lohri!', effect: 'none', grad: 'bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500', deco: 'bonfire' },
+            { id: 'basant', year: 2025, month: 1, day: 2, window: 0, name: 'Basant Panchami', icon: '🪁', sec: '🌼', greet: 'Happy Basant Panchami!', effect: 'kite', grad: 'bg-gradient-to-r from-yellow-400 via-orange-300 to-yellow-600', deco: 'kite' },
+            { id: 'gudipadwa', year: 2025, month: 2, day: 30, window: 1, name: 'Gudi Padwa', icon: '🪁', sec: '🎋', greet: 'Happy Gudi Padwa!', effect: 'none', grad: 'bg-gradient-to-r from-green-500 via-yellow-500 to-orange-500', deco: 'gudi' },
+            { id: 'mahavir', year: 2025, month: 3, day: 10, window: 0, name: 'Mahavir Jayanti', icon: '🕉️', sec: '🙏', greet: 'Happy Mahavir Jayanti', effect: 'none', grad: 'bg-gradient-to-r from-yellow-500 via-orange-400 to-red-500', deco: 'peace' },
+            { id: 'baisakhi', year: 2025, month: 3, day: 14, window: 0, name: 'Baisakhi', icon: '🌾', sec: '🥁', greet: 'Happy Baisakhi!', effect: 'flower', grad: 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600', deco: 'harvest' },
+            { id: 'buddha', year: 2025, month: 4, day: 12, window: 0, name: 'Buddha Purnima', icon: '🏵️', sec: '🧘', greet: 'Happy Buddha Purnima', effect: 'flower', grad: 'bg-gradient-to-r from-orange-300 via-yellow-200 to-orange-500', deco: 'lotus' },
+            { id: 'mothers', year: 2025, month: 4, day: 11, window: 0, name: 'Mother\'s Day', icon: '👩‍👧‍👦', sec: '💐', greet: 'Happy Mother\'s Day!', effect: 'hearts', grad: 'bg-gradient-to-r from-pink-400 via-rose-400 to-red-400', deco: 'heart' },
+            { id: 'fathers', year: 2025, month: 5, day: 15, window: 0, name: 'Father\'s Day', icon: '👨‍👧‍👦', sec: '👔', greet: 'Happy Father\'s Day!', effect: 'none', grad: 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-700', deco: 'tie' },
+            { id: 'gurunanak', year: 2025, month: 10, day: 5, window: 0, name: 'Guru Nanak Jayanti', icon: 'ੴ', sec: '🕯️', greet: 'Happy Gurpurab!', effect: 'flower', grad: 'bg-gradient-to-r from-orange-500 via-yellow-400 to-orange-600', deco: 'khanda' },
 
             // 2026
             { id: 'cny', year: 2026, month: 1, day: 17, window: 3, name: 'Chinese New Year', icon: '🐉', sec: '🧧', greet: 'Gong Xi Fa Cai!', effect: 'confetti', grad: 'bg-gradient-to-r from-red-600 via-yellow-500 to-red-600', deco: 'dragon' },
@@ -398,7 +424,18 @@ export const useSeasonalTheme = () => {
             { id: 'onam', year: 2026, month: 7, day: 26, window: 2, name: 'Onam', icon: '⛵', sec: '🌺', greet: 'Happy Onam!', effect: 'flower', grad: 'bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400', deco: 'flower' },
             { id: 'navaratri', year: 2026, month: 9, day: 11, window: 9, name: 'Navaratri', icon: '🔱', sec: '💃', greet: 'Happy Navaratri!', effect: 'flower', grad: 'bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500', deco: 'trident' },
             { id: 'dussehra', year: 2026, month: 9, day: 20, window: 1, name: 'Dussehra', icon: '🏹', sec: '🌼', greet: 'Happy Dussehra!', effect: 'leaf', grad: 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600', deco: 'bow' },
+            { id: 'karwachauth', year: 2026, month: 9, day: 29, window: 0, name: 'Karwa Chauth', icon: '🌕', sec: '🥣', greet: 'Happy Karwa Chauth!', effect: 'moon', grad: 'bg-gradient-to-r from-red-600 via-pink-600 to-purple-600', deco: 'moon' },
             { id: 'diwali', year: 2026, month: 10, day: 8, window: 3, name: 'Diwali', icon: '🪔', sec: '✨', greet: 'Happy Diwali!', effect: 'confetti', grad: 'bg-gradient-to-r from-yellow-300 via-orange-500 to-red-600', deco: 'diya' },
+            { id: 'chhath', year: 2026, month: 10, day: 15, window: 3, name: 'Chhath Puja', icon: '🌅', sec: '🕉️', greet: 'Happy Chhath Puja!', effect: 'none', grad: 'bg-gradient-to-r from-orange-500 via-yellow-500 to-red-500', deco: 'sun' },
+            { id: 'lohri', year: 2026, month: 0, day: 13, window: 0, name: 'Lohri', icon: '🔥', sec: '🥜', greet: 'Happy Lohri!', effect: 'none', grad: 'bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500', deco: 'bonfire' },
+            { id: 'basant', year: 2026, month: 0, day: 24, window: 0, name: 'Basant Panchami', icon: '🪁', sec: '🌼', greet: 'Happy Basant Panchami!', effect: 'kite', grad: 'bg-gradient-to-r from-yellow-400 via-orange-300 to-yellow-600', deco: 'kite' },
+            { id: 'gudipadwa', year: 2026, month: 2, day: 19, window: 1, name: 'Gudi Padwa', icon: '🪁', sec: '🎋', greet: 'Happy Gudi Padwa!', effect: 'none', grad: 'bg-gradient-to-r from-green-500 via-yellow-500 to-orange-500', deco: 'gudi' },
+            { id: 'mahavir', year: 2026, month: 2, day: 31, window: 0, name: 'Mahavir Jayanti', icon: '🕉️', sec: '🙏', greet: 'Happy Mahavir Jayanti', effect: 'none', grad: 'bg-gradient-to-r from-yellow-500 via-orange-400 to-red-500', deco: 'peace' },
+            { id: 'baisakhi', year: 2026, month: 3, day: 14, window: 0, name: 'Baisakhi', icon: '🌾', sec: '🥁', greet: 'Happy Baisakhi!', effect: 'flower', grad: 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600', deco: 'harvest' },
+            { id: 'mothers', year: 2026, month: 4, day: 10, window: 0, name: 'Mother\'s Day', icon: '👩‍👧‍👦', sec: '💐', greet: 'Happy Mother\'s Day!', effect: 'hearts', grad: 'bg-gradient-to-r from-pink-400 via-rose-400 to-red-400', deco: 'heart' },
+            { id: 'buddha', year: 2026, month: 4, day: 31, window: 0, name: 'Buddha Purnima', icon: '🏵️', sec: '🧘', greet: 'Happy Buddha Purnima', effect: 'flower', grad: 'bg-gradient-to-r from-orange-300 via-yellow-200 to-orange-500', deco: 'lotus' },
+            { id: 'fathers', year: 2026, month: 5, day: 21, window: 0, name: 'Father\'s Day', icon: '👨‍👧‍👦', sec: '👔', greet: 'Happy Father\'s Day!', effect: 'none', grad: 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-700', deco: 'tie' },
+            { id: 'gurunanak', year: 2026, month: 10, day: 24, window: 0, name: 'Guru Nanak Jayanti', icon: 'ੴ', sec: '🕯️', greet: 'Happy Gurpurab!', effect: 'flower', grad: 'bg-gradient-to-r from-orange-500 via-yellow-400 to-orange-600', deco: 'khanda' },
         ];
 
         for (const f of festivals) {
