@@ -12,7 +12,7 @@ const SeasonalEffects = () => {
         }
 
         // Generate particles only once on mount/theme change to avoid re-renders
-        const particleCount = theme.effect === 'snow' ? 50 : theme.effect === 'confetti' ? 40 : 20;
+        const particleCount = theme.effect === 'snow' ? 50 : (theme.effect === 'confetti' || theme.effect === 'tricolor') ? 40 : 20;
         const newParticles = Array.from({ length: particleCount }).map((_, i) => ({
             id: i,
             left: Math.random() * 100 + 'vw',
@@ -22,7 +22,9 @@ const SeasonalEffects = () => {
             size: Math.random() * 10 + 5 + 'px',
             color: theme.effect === 'confetti'
                 ? ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][Math.floor(Math.random() * 5)]
-                : '#FFF'
+                : theme.effect === 'tricolor'
+                    ? ['#FF9933', '#FFFFFF', '#138808'][Math.floor(Math.random() * 3)] // India Saffron, White, Green
+                    : '#FFF'
         }));
 
         setParticles(newParticles);
@@ -69,6 +71,7 @@ const SeasonalEffects = () => {
                 else if (theme.effect === 'mango') content = '🥭';
                 else if (theme.effect === 'snow') content = ''; // Snow is CSS shape
                 else if (theme.effect === 'confetti') content = ''; // Confetti is CSS shape
+                else if (theme.effect === 'tricolor') content = ''; // Tricolor is CSS shape (Rect)
 
                 return (
                     <div

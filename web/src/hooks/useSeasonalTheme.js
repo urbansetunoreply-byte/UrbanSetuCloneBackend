@@ -54,6 +54,20 @@ export const useSeasonalTheme = () => {
             };
         }
 
+        // Army Day (Jan 15)
+        if (month === 0 && day === 15) {
+            return {
+                id: 'armyday',
+                name: 'Indian Army Day',
+                icon: '🫡',
+                secondaryIcon: '🇮🇳',
+                greeting: 'Saluting our Heroes!',
+                effect: 'tricolor',
+                textGradient: 'bg-gradient-to-r from-orange-600 via-white to-green-700',
+                logoDecoration: 'flag'
+            };
+        }
+
         // Republic Day India (Jan 24-26)
         if (month === 0 && day >= 24 && day <= 26) {
             return {
@@ -62,7 +76,7 @@ export const useSeasonalTheme = () => {
                 icon: '🇮🇳',
                 secondaryIcon: '🫡',
                 greeting: 'Happy Republic Day!',
-                effect: 'none',
+                effect: 'tricolor',
                 textGradient: 'bg-gradient-to-r from-orange-500 via-white to-green-600',
                 logoDecoration: 'flag'
             };
@@ -120,7 +134,7 @@ export const useSeasonalTheme = () => {
                 greeting: 'Health is Wealth!',
                 effect: 'none',
                 textGradient: 'bg-gradient-to-r from-green-500 via-teal-500 to-blue-500',
-                logoDecoration: 'cross' // Reuse cross or add new
+                logoDecoration: 'cross'
             };
         }
 
@@ -132,7 +146,7 @@ export const useSeasonalTheme = () => {
                 icon: '🌍',
                 secondaryIcon: '🌱',
                 greeting: 'Happy Earth Day!',
-                effect: 'none',
+                effect: 'leaf',
                 textGradient: 'bg-gradient-to-r from-blue-400 via-green-500 to-teal-600',
                 logoDecoration: 'leaf'
             };
@@ -160,9 +174,23 @@ export const useSeasonalTheme = () => {
                 icon: '🌿',
                 secondaryIcon: '♻️',
                 greeting: 'Protect Our Planet!',
-                effect: 'none',
+                effect: 'leaf',
                 textGradient: 'bg-gradient-to-r from-green-400 via-emerald-500 to-green-700',
                 logoDecoration: 'leaf'
+            };
+        }
+
+        // International Yoga Day (Jun 21)
+        if (month === 5 && day === 21) {
+            return {
+                id: 'yogaday',
+                name: 'International Yoga Day',
+                icon: '🧘',
+                secondaryIcon: '🕉️',
+                greeting: 'Yoga for Harmony & Peace!',
+                effect: 'none',
+                textGradient: 'bg-gradient-to-r from-orange-400 via-yellow-400 to-green-500',
+                logoDecoration: 'lotus'
             };
         }
 
@@ -174,9 +202,23 @@ export const useSeasonalTheme = () => {
                 icon: '🇮🇳',
                 secondaryIcon: '🎆',
                 greeting: 'Happy Independence Day!',
-                effect: 'none',
+                effect: 'tricolor',
                 textGradient: 'bg-gradient-to-r from-orange-500 via-white to-green-600',
                 logoDecoration: 'flag'
+            };
+        }
+
+        // Teacher's Day (Sep 5)
+        if (month === 8 && day === 5) {
+            return {
+                id: 'teachersday',
+                name: 'Teacher\'s Day',
+                icon: '👩‍🏫',
+                secondaryIcon: '📚',
+                greeting: 'Thank You Teachers!',
+                effect: 'flower',
+                textGradient: 'bg-gradient-to-r from-purple-600 via-pink-600 to-red-600',
+                logoDecoration: 'book'
             };
         }
 
@@ -195,10 +237,9 @@ export const useSeasonalTheme = () => {
         }
 
         // World Habitat Day & Architecture Day (1st Monday of Oct - approx Oct 1-7)
-        // Simplified logic: Just check if date is 1-7 Oct and it's a Monday, OR broadly celebrate the week for architecture
         if (month === 9 && day >= 1 && day <= 7) {
             const isMonday = new Date(year, 9, day).getDay() === 1;
-            if (isMonday || day === 4) { // 4th is standard or just celebrate the week
+            if (isMonday || day === 4) {
                 return {
                     id: 'architecture',
                     name: 'Architecture Week',
@@ -220,7 +261,7 @@ export const useSeasonalTheme = () => {
                 icon: '👓',
                 secondaryIcon: '🕊️',
                 greeting: 'Remembering Bapu',
-                effect: 'none',
+                effect: 'tricolor',
                 textGradient: 'bg-gradient-to-r from-orange-300 via-white to-green-300',
                 logoDecoration: 'glasses'
             };
@@ -251,6 +292,20 @@ export const useSeasonalTheme = () => {
                 effect: 'none',
                 textGradient: 'bg-gradient-to-r from-orange-500 via-purple-600 to-black',
                 logoDecoration: 'pumpkin'
+            };
+        }
+
+        // Children's Day (Nov 14)
+        if (month === 10 && day === 14) {
+            return {
+                id: 'childrensday',
+                name: 'Children\'s Day',
+                icon: '👶',
+                secondaryIcon: '🎈',
+                greeting: 'Happy Children\'s Day!',
+                effect: 'confetti',
+                textGradient: 'bg-gradient-to-r from-yellow-400 via-pink-400 to-blue-400',
+                logoDecoration: 'balloon'
             };
         }
 
