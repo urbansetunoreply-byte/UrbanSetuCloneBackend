@@ -17,6 +17,12 @@ export const startFestivalGreetingScheduler = () => {
                 return;
             }
 
+            // Strict check: Only send email on the specific celebration day, not just during the display window
+            if (!theme.shouldSendEmail) {
+                console.log(`   Theme '${theme.name}' is active, but today is not the designtated email sending day. Skipping.`);
+                return;
+            }
+
             const currentYear = new Date().getFullYear();
             const festivalId = theme.id;
 

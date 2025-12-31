@@ -30,6 +30,7 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
     // --- 1. Fixed Date Festivals (World & National) ---
 
     // New Year (Dec 30 - Jan 5)
+    // Email only on Jan 1st
     if (isDateBetween(11, 30, 0, 5)) {
         const displayYear = month === 11 ? year + 1 : year;
         return {
@@ -39,7 +40,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🎆',
             greeting: `Happy New Year ${displayYear}!`,
             description: `Wishing you a prosperous New Year ${displayYear}! May this year bring you joy, success, and your dream home.`,
-            logoDecoration: 'party-hat'
+            logoDecoration: 'party-hat',
+            shouldSendEmail: (month === 0 && day === 1)
         };
     }
 
@@ -52,11 +54,13 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '✨',
             greeting: 'Arise, Awake, and Stop Not!',
             description: 'Celebrating the energy and potential of youth on Swami Vivekananda\'s birth anniversary.',
-            logoDecoration: 'torch'
+            logoDecoration: 'torch',
+            shouldSendEmail: true
         };
     }
 
     // Republic Day India (Jan 24-26)
+    // Email only on Jan 26th
     if (month === 0 && day >= 24 && day <= 26) {
         return {
             id: 'republic',
@@ -65,7 +69,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🫡',
             greeting: 'Happy Republic Day!',
             description: 'Celebrating the spirit of India. Jai Hind!',
-            logoDecoration: 'flag'
+            logoDecoration: 'flag',
+            shouldSendEmail: (day === 26)
         };
     }
 
@@ -78,11 +83,13 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '⚛️',
             greeting: 'Celebrating Science & Innovation!',
             description: 'Honoring the discovery of the Raman Effect and the spirit of scientific inquiry.',
-            logoDecoration: 'atom'
+            logoDecoration: 'atom',
+            shouldSendEmail: true
         };
     }
 
     // Valentine's Week (Feb 10 - 14)
+    // Email only on Valentine's Day (Feb 14)
     if (month === 1 && day >= 10 && day <= 14) {
         return {
             id: 'valentine',
@@ -91,7 +98,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '💘',
             greeting: 'Happy Valentine\'s Day!',
             description: 'Spreading love and happiness. May you find a home you fall in love with!',
-            logoDecoration: 'heart'
+            logoDecoration: 'heart',
+            shouldSendEmail: (day === 14)
         };
     }
 
@@ -104,7 +112,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🍺',
             greeting: 'Happy St. Patrick\'s Day!',
             description: 'Wishing you the luck of the Irish today!',
-            logoDecoration: 'clover'
+            logoDecoration: 'clover',
+            shouldSendEmail: true
         };
     }
 
@@ -117,7 +126,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🍎',
             greeting: 'Health is Wealth!',
             description: 'Prioritizing health and well-being for everyone.',
-            logoDecoration: 'cross'
+            logoDecoration: 'cross',
+            shouldSendEmail: true
         };
     }
 
@@ -130,7 +140,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🌱',
             greeting: 'Happy Earth Day!',
             description: 'Let\'s pledge to protect our planet and build sustainable communities.',
-            logoDecoration: 'leaf'
+            logoDecoration: 'leaf',
+            shouldSendEmail: true
         };
     }
 
@@ -143,7 +154,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '👷',
             greeting: 'Honoring Hard Work!',
             description: 'Celebrating the contributions of workers everywhere.',
-            logoDecoration: 'hammer'
+            logoDecoration: 'hammer',
+            shouldSendEmail: true
         };
     }
 
@@ -156,7 +168,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '♻️',
             greeting: 'Protect Our Planet!',
             description: 'Time for Nature. Let\'s nurture the environment for a better tomorrow.',
-            logoDecoration: 'leaf'
+            logoDecoration: 'leaf',
+            shouldSendEmail: true
         };
     }
 
@@ -169,7 +182,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🎆',
             greeting: 'Happy Independence Day!',
             description: 'Freedom, Liberty, and Unity. Wishing you a proud Independence Day.',
-            logoDecoration: 'flag'
+            logoDecoration: 'flag',
+            shouldSendEmail: true
         };
     }
 
@@ -182,7 +196,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '📐',
             greeting: 'Happy Engineer\'s Day!',
             description: 'Saluting the architects of our modern world.',
-            logoDecoration: 'gear'
+            logoDecoration: 'gear',
+            shouldSendEmail: true
         };
     }
 
@@ -197,7 +212,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
                 secondaryIcon: '🏗️',
                 greeting: 'Building the Future!',
                 description: 'Celebrating architecture and the power of design to transform lives.',
-                logoDecoration: 'building'
+                logoDecoration: 'building',
+                shouldSendEmail: true
             };
         }
     }
@@ -211,11 +227,13 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🕊️',
             greeting: 'Remembering Bapu',
             description: 'Be the change you wish to see in the world.',
-            logoDecoration: 'glasses'
+            logoDecoration: 'glasses',
+            shouldSendEmail: true
         };
     }
 
     // World Space Week (Oct 4-10)
+    // Email on first day Oct 4
     if (month === 9 && day >= 4 && day <= 10) {
         return {
             id: 'spaceweek',
@@ -224,7 +242,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🌌',
             greeting: 'Exploring the Universe!',
             description: 'Celebrating science and technology, and their contribution to the betterment of the human condition.',
-            logoDecoration: 'rocket'
+            logoDecoration: 'rocket',
+            shouldSendEmail: (day === 4)
         };
     }
 
@@ -237,7 +256,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '👻',
             greeting: 'Happy Halloween!',
             description: 'Trick or Treat! Have a spooktacular day!',
-            logoDecoration: 'pumpkin'
+            logoDecoration: 'pumpkin',
+            shouldSendEmail: true
         };
     }
 
@@ -250,11 +270,13 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🍂',
             greeting: 'Happy Thanksgiving!',
             description: 'Giving thanks for blessings, family, and home.',
-            logoDecoration: 'turkey'
+            logoDecoration: 'turkey',
+            shouldSendEmail: true
         };
     }
 
     // Christmas (Dec 20-29)
+    // Email on Dec 25
     if (month === 11 && day >= 20 && day <= 29) {
         return {
             id: 'christmas',
@@ -263,11 +285,13 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🎄',
             greeting: 'Merry Christmas!',
             description: 'Wishing you peace, joy, and love this Christmas season.',
-            logoDecoration: 'santa-hat'
+            logoDecoration: 'santa-hat',
+            shouldSendEmail: (day === 25)
         };
     }
 
     // Pongal / Sankranti (Jan 13-17)
+    // Email on Jan 14 (typical main day)
     if (month === 0 && day >= 13 && day <= 17) {
         return {
             id: 'sankranti',
@@ -276,7 +300,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
             secondaryIcon: '🌾',
             greeting: 'Happy Makar Sankranti / Pongal!',
             description: 'Harvesting happiness and prosperity. Happy festivities!',
-            logoDecoration: 'kite'
+            logoDecoration: 'kite',
+            shouldSendEmail: (day === 14)
         };
     }
 
@@ -319,7 +344,8 @@ export const getSeasonalTheme = (dateInput = new Date()) => {
                     secondaryIcon: f.sec,
                     greeting: f.greet,
                     description: f.desc,
-                    logoDecoration: f.deco
+                    logoDecoration: f.deco,
+                    shouldSendEmail: (month === f.month && day === f.day)
                 };
             }
         }
