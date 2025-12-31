@@ -312,7 +312,7 @@ export default function AdminHeader() {
                     <span className="absolute -top-4 -right-3 text-xl filter drop-shadow-md -rotate-12">🪁</span>
                   )}
                   {theme?.logoDecoration === 'flag' && (
-                    <span className="absolute -top-3 -right-2 text-xs filter drop-shadow-md">🇮🇳</span>
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🇮🇳</span>
                   )}
                   {theme?.logoDecoration === 'heart' && (
                     <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-pulse">❤️</span>
@@ -386,6 +386,27 @@ export default function AdminHeader() {
                   )}
                   {theme?.logoDecoration === 'flute' && (
                     <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🪈</span>
+                  )}
+                  {theme?.logoDecoration === 'torch' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🔥</span>
+                  )}
+                  {theme?.logoDecoration === 'atom' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-spin-slow">⚛️</span>
+                  )}
+                  {theme?.logoDecoration === 'lotus' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🪷</span>
+                  )}
+                  {theme?.logoDecoration === 'book' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">📚</span>
+                  )}
+                  {theme?.logoDecoration === 'balloon' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-bounce">🎈</span>
+                  )}
+                  {theme?.logoDecoration === 'building' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md">🏗️</span>
+                  )}
+                  {theme?.logoDecoration === 'rocket' && (
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-pulse">🚀</span>
                   )}
                 </div>
                 <div>
