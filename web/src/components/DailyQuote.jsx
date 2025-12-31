@@ -2,29 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { FaQuoteLeft, FaQuoteRight, FaTimes } from 'react-icons/fa';
 
 const quotes = [
-    // General Motivation
-    { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
-    { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
-    { text: "Success is not final, failure is not fatal: It is the courage to continue that counts.", author: "Winston Churchill" },
+    // Real Estate Facts & "Did You Know?"
+    { text: "90% of all millionaires become so through owning real estate.", author: "Andrew Carnegie" },
+    { text: "McDonald's is actually one of the world's largest real estate companies, not just a burger chain.", author: "Real Estate Fact" },
+    { text: "The White House in Washington D.C. has 132 rooms, 35 bathrooms, and 6 levels.", author: "Property Trivia" },
+    { text: "The term 'mortgage' comes from Old French words meaning 'death pledge'.", author: "Historical Fact" },
+    { text: "Using a real estate agent to sell a home can increase the sale price by up to 22%.", author: "Market Insight" },
+    { text: "The Burj Khalifa in Dubai is so tall that you can watch the sunset from the base, then take the elevator to the top to watch it again.", author: "Architectural Wonder" },
+    { text: "Staged homes sell 73% faster than non-staged homes on average.", author: "Selling Tip" },
+    { text: "The most expensive private home in the world is Antilia in Mumbai, valued at over $2 billion.", author: "Luxury Real Estate" },
+    { text: "A 'buyers market' is when there are more homes for sale than there are buyers.", author: "Market Terminology" },
+    { text: "Renovating a kitchen or bathroom usually offers the highest return on investment (ROI) for sellers.", author: "Investment Tip" },
 
-    // Real Estate Wisdom
-    { text: "Real estate cannot be lost or stolen, nor can it be carried away.", author: "Franklin D. Roosevelt" },
+    // Iconic Real Estate Wisdom
+    { text: "Real estate cannot be lost or stolen, nor can it be carried away. Purchased with common sense..., it is about the safest investment in the world.", author: "Franklin D. Roosevelt" },
     { text: "Buy land, they're not making it anymore.", author: "Mark Twain" },
     { text: "The best investment on Earth is earth.", author: "Louis Glickman" },
-    { text: "Real estate is an imperishable asset, ever increasing in value.", author: "Russell Sage" },
+    { text: "Price is what you pay. Value is what you get.", author: "Warren Buffett" },
+    { text: "Location, location, location.", author: "Harold Samuel" },
+    { text: "Landlords grow rich in their sleep.", author: "John Stuart Mill" },
 
-    // Scientific Inspiration
-    { text: "Imagination is more important than knowledge.", author: "Albert Einstein" },
-    { text: "Somewhere, something incredible is waiting to be known.", author: "Carl Sagan" },
-    { text: "Science remains the most reliable path to truth.", author: "Neil deGrasse Tyson" },
+    // Urban & Architectural Trivia
+    { text: "Feng Shui concepts are increasingly requested by home buyers to ensure positive energy flow.", author: "Design Trend" },
+    { text: "The 'Hollywood Sign' originally read 'Hollywoodland' and was an advertisement for a real estate development.", author: "LA Trivia" },
+    { text: "In Japan, it is common to demolish and rebuild houses every 30 years rather than renovate.", author: "Global Real Estate" },
+    { text: "The Great Pyramid of Giza was the tallest man-made structure for over 3,800 years.", author: "Ancient Architecture" },
 
-    // Life & Architecture
-    { text: "We shape our buildings; thereafter they shape us.", author: "Winston Churchill" },
-    { text: "Architecture is a visual art, and the buildings speak for themselves.", author: "Julia Morgan" },
+    // Smart Home & Future
+    { text: "Smart home technology can increase a home's resale value by up to 5%.", author: "Tech Insight" },
+    { text: "Green buildings with solar panels sell 4% more than homes without them.", author: "Sustainability Fact" },
 
-    // Indian Wisdom
-    { text: "You have to dream before your dreams can come true.", author: "A. P. J. Abdul Kalam" },
-    { text: "Be the change that you wish to see in the world.", author: "Mahatma Gandhi" }
+    // Indian Real Estate Context
+    { text: "RERA (Real Estate Regulatory Authority) was introduced in 2016 to protect home buyers in India.", author: "Indian Real Estate" },
+    { text: "Vaastu Shastra compliance can increase a property's asking price by 10-15% in India.", author: "Market Reality" },
+    { text: "Bangalore is known as the 'Silicon Valley of India', driving massive commercial real estate value.", author: "City Spotlight" }
 ];
 
 const DailyQuote = ({ className = "" }) => {
@@ -32,8 +43,15 @@ const DailyQuote = ({ className = "" }) => {
     const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
-        // Pick a random quote on mount to ensure variety
-        const index = Math.floor(Math.random() * quotes.length);
+        // Generate a determinstic index based on the day of the year
+        const today = new Date();
+        const start = new Date(today.getFullYear(), 0, 0);
+        const diff = today - start;
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfYear = Math.floor(diff / oneDay);
+
+        // Use modulo to cycle through quotes
+        const index = dayOfYear % quotes.length;
         setQuote(quotes[index]);
     }, []);
 
