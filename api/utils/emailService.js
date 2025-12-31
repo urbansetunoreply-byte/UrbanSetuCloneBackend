@@ -14905,3 +14905,83 @@ export const sendAdminCallTerminationEmail = async (email, username, details) =>
   }
 };
 
+// Send Festival Greeting Email
+export const sendFestivalGreetingEmail = async (email, username, theme) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `${theme.icon} ${theme.greeting} - UrbanSetu`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 0; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); overflow: hidden;">
+          
+          <!-- Decorative Header based on Festival -->
+          <div style="background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 40px 20px; text-align: center; position: relative;">
+            <div style="font-size: 64px; margin-bottom: 10px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));">
+              ${theme.icon}
+            </div>
+            <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+              ${theme.greeting}
+            </h1>
+            <div style="position: absolute; top: 20px; right: 20px; font-size: 24px; opacity: 0.8;">
+              ${theme.secondaryIcon || ''}
+            </div>
+            <div style="position: absolute; bottom: 20px; left: 20px; font-size: 24px; opacity: 0.8;">
+              ${theme.secondaryIcon || ''}
+            </div>
+          </div>
+          
+          <div style="padding: 30px;">
+            <p style="color: #4b5563; font-size: 18px; line-height: 1.6; margin-bottom: 20px;">
+              Dear <strong>${username}</strong>,
+            </p>
+            
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid #7c3aed;">
+              <p style="color: #1f2937; margin: 0; font-size: 16px; line-height: 1.6; font-style: italic;">
+                "${theme.description}"
+              </p>
+            </div>
+            
+            <p style="color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;">
+              On this auspicious occasion of <strong>${theme.name}</strong>, everyone at UrbanSetu wishes you happiness, prosperity, and the warmth of home.
+            </p>
+
+            <p style="color: #4b5563; margin: 0 0 30px 0; line-height: 1.6;">
+              May your home be filled with joy and laughter today and always!
+            </p>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+              <a href="${clientBaseUrl}" style="display: inline-block; background: linear-gradient(90deg, #2563eb, #7c3aed); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3); transition: transform 0.2s;">
+                Visit UrbanSetu
+              </a>
+            </div>
+          </div>
+          
+          <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0 0 10px 0; font-size: 14px;">
+              Celebrating with you,
+            </p>
+            <p style="color: #6b7280; margin: 0; font-weight: bold; font-size: 16px;">
+              The UrbanSetu Team
+            </p>
+            <p style="color: #9ca3af; margin: 20px 0 0 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
+              You received this email because you are a valued member of our community.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'festival_greeting') :
+      createErrorResponse(new Error(result.error), 'festival_greeting');
+  } catch (error) {
+    return createErrorResponse(error, 'festival_greeting');
+  }
+};
+

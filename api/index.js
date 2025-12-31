@@ -81,6 +81,7 @@ import { setupAllHooks } from "./middleware/dataSyncHooks.js";
 import { startScheduledSync } from "./services/scheduledSyncService.js";
 import { initializeYearInReviewScheduler } from "./utils/yearInReviewScheduler.js";
 import { startCoinExpiryScheduler } from "./schedulers/coinExpiryScheduler.js";
+import { startFestivalGreetingScheduler } from "./schedulers/festivalGreetingScheduler.js";
 
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -171,6 +172,7 @@ connectToMongoDB().then(() => {
   startReferralReminderScheduler();
   initializeYearInReviewScheduler();
   startCoinExpiryScheduler();
+  startFestivalGreetingScheduler();
 });
 
 const __dirname = path.resolve();

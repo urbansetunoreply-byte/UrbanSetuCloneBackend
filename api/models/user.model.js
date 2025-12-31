@@ -262,6 +262,11 @@ const userSchema = new mongoose.Schema({
     type: [Number], // Array of years for which review has been sent
     default: []
   },
+  festivalGreetingsSent: [{
+    year: Number,
+    festivalId: String,
+    sentAt: { type: Date, default: Date.now }
+  }],
   // Security Lock Fields
   securityLockToken: { type: String, select: false },
   securityLockExpires: { type: Date, select: false },
