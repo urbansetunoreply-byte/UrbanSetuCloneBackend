@@ -421,13 +421,60 @@ const InvestmentTools = () => {
   };
 
   const exportResults = () => {
-    const dataStr = JSON.stringify({ calculations: savedCalculations, currentResults: results }, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
+    // Helper function to escape CSV fields
+    const escapeCsvField = (field) => {
+      if (field === null || field === undefined) return '';
+      const stringValue = String(field);
+      // If the field contains special characters, wrap in quotes and escape internal quotes
+      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
+    };
+
+    // Prepare CSV headers
+    const headers = ['Date', 'Calculation Type', 'Input Details', 'Result Summary'];
+
+    // Prepare CSV rows from saved calculations
+    const rows = savedCalculations.map(calc => {
+      const date = new Date(calc.timestamp).toLocaleString();
+
+      // Format inputs as a readable string
+      const inputs = Object.entries(calc.data)
+        .map(([key, value]) => {
+          // Format specific keys for better readability
+          const formattedKey = key.replace(/([A-Z])/g, ' $1').trim().replace(/^\w/, c => c.toUpperCase());
+          return `${formattedKey}: ${value}`;
+        })
+        .join('; ');
+
+      // Format results as a readable string
+      const results = Object.entries(calc.result)
+        .map(([key, value]) => {
+          const formattedKey = key.replace(/([A-Z])/g, ' $1').trim().replace(/^\w/, c => c.toUpperCase());
+          return `${formattedKey}: ${value}`;
+        })
+        .join('; ');
+
+      return [
+        escapeCsvField(date),
+        escapeCsvField(calc.type),
+        escapeCsvField(inputs),
+        escapeCsvField(results)
+      ].join(',');
+    });
+
+    // Combine headers and rows
+    const csvContent = [headers.join(','), ...rows].join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'investment-calculations.json';
+    link.download = `investment_analysis_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
