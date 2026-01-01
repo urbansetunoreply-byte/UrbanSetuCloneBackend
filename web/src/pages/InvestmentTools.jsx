@@ -485,11 +485,21 @@ const InvestmentTools = () => {
   };
 
   const handleSuggestionClick = (suggestion) => {
+    // Construct full location string
+    const locationParts = [suggestion.address, suggestion.city, suggestion.state].filter(Boolean);
+    const fullLocation = locationParts.join(', ');
+
+    // Determine price field based on property type
+    const priceStr = suggestion.price ? String(suggestion.price) : '';
+    const isRent = suggestion.type && suggestion.type.toLowerCase() === 'rent';
+
     setNewProperty(prev => ({
       ...prev,
-      name: suggestion.displayText || suggestion.name,
-      location: suggestion.address || prev.location,
-      value: suggestion.regularPrice ? String(suggestion.regularPrice) : prev.value
+      name: suggestion.name,
+      location: fullLocation || prev.location,
+      // If rent, price goes to monthlyRent. If sale, price goes to value.
+      value: !isRent ? (priceStr || prev.value) : prev.value,
+      monthlyRent: isRent ? (priceStr || prev.monthlyRent) : prev.monthlyRent
     }));
     setShowSuggestions(false);
   };
