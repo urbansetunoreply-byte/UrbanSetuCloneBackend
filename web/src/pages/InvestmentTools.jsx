@@ -24,6 +24,7 @@ import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import contactSupportWrapper from '../components/ContactSupportWrapper';
 import investmentAnalysisService from '../services/investmentAnalysisService';
 import SearchSuggestions from '../components/SearchSuggestions';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const InvestmentTools = () => {
   usePageTitle("Investment Tools - Real Estate Investment Calculator");
@@ -34,6 +35,7 @@ const InvestmentTools = () => {
   const [riskAssessmentData, setRiskAssessmentData] = useState(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showClearHistoryModal, setShowClearHistoryModal] = useState(false);
 
   // ROI Calculator State
   const [roiData, setRoiData] = useState({
@@ -530,7 +532,7 @@ const InvestmentTools = () => {
             Export Results
           </button>
           <button
-            onClick={() => setSavedCalculations([])}
+            onClick={() => setShowClearHistoryModal(true)}
             className="px-6 py-3 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
           >
             <FaHistory className="text-sm" />
@@ -1265,6 +1267,19 @@ const InvestmentTools = () => {
           </div>
         )}
       </div>
+
+      <ConfirmationModal
+        isOpen={showClearHistoryModal}
+        onClose={() => setShowClearHistoryModal(false)}
+        onConfirm={() => {
+          setSavedCalculations([]);
+          setShowClearHistoryModal(false);
+        }}
+        title="Clear Calculation History"
+        message="Are you sure you want to clear your entire calculation history? This action cannot be undone."
+        confirmText="Clear History"
+        isDestructive={true}
+      />
 
       {/* Contact Support Wrapper */}
       <ContactSupportWrapper />
