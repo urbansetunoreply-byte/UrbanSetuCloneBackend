@@ -442,7 +442,7 @@ export const getDeletedListings = async (req, res, next) => {
 export const restoreDeletedListing = async (req, res, next) => {
   try {
     // 2. Find record
-    const deletedRecord = await DeletedListing.findById(id);
+    const deletedRecord = await DeletedListing.findById(req.params.id);
     if (!deletedRecord) {
       return next(errorHandler(404, 'Deleted listing record not found'));
     }

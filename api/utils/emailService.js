@@ -15096,3 +15096,52 @@ export const sendReviewStatusUpdateEmail = async (email, username, propertyName,
   }
 };
 
+// Send Property Restored Email
+export const sendPropertyRestoredEmail = async (email, { propertyName, propertyId, restoredBy }) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Property Restored - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Property Restoration Notice</p>
+          </div>
+
+          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10b981;">
+            <h2 style="color: #064e3b; margin: 0 0 15px 0; font-size: 20px;">Property Restored Successfully</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Good news! Your property <strong>"${propertyName}"</strong> has been restored by the ${restoredBy || 'Admin Team'}.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0;">
+              It is now active and visible on the platform again.
+            </p>
+
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${clientBaseUrl}/listing/${propertyId}" style="display: inline-block; background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Property</a>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'property_restored') :
+      createErrorResponse(new Error(result.error), 'property_restored');
+  } catch (error) {
+    return createErrorResponse(error, 'property_restored');
+  }
+};
+
