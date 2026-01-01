@@ -21,7 +21,9 @@ import {
 } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import contactSupportWrapper from '../components/ContactSupportWrapper';
 import investmentAnalysisService from '../services/investmentAnalysisService';
+import SearchSuggestions from '../components/SearchSuggestions';
 
 const InvestmentTools = () => {
   usePageTitle("Investment Tools - Real Estate Investment Calculator");
@@ -31,6 +33,7 @@ const InvestmentTools = () => {
   const [marketAnalysisData, setMarketAnalysisData] = useState(null);
   const [riskAssessmentData, setRiskAssessmentData] = useState(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // ROI Calculator State
   const [roiData, setRoiData] = useState({
@@ -118,6 +121,8 @@ const InvestmentTools = () => {
 
       const data = await investmentAnalysisService.getMarketAnalysis(location, filters);
       setMarketAnalysisData(data);
+      setResults(prev => ({ ...prev, market: data }));
+      saveCalculation('Market Analysis', marketData, data);
     } catch (error) {
       console.error('Error fetching market analysis:', error);
       alert('Failed to fetch market analysis data');
@@ -151,6 +156,8 @@ const InvestmentTools = () => {
 
       const data = await investmentAnalysisService.getRiskAssessment(propertyData, location);
       setRiskAssessmentData(data);
+      setResults(prev => ({ ...prev, risk: data }));
+      saveCalculation('Risk Assessment', riskData, data);
     } catch (error) {
       console.error('Error fetching risk assessment:', error);
       alert('Failed to fetch risk assessment data');
@@ -477,6 +484,16 @@ const InvestmentTools = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleSuggestionClick = (suggestion) => {
+    setNewProperty(prev => ({
+      ...prev,
+      name: suggestion.displayText || suggestion.name,
+      location: suggestion.address || prev.location,
+      value: suggestion.regularPrice ? String(suggestion.regularPrice) : prev.value
+    }));
+    setShowSuggestions(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -797,13 +814,30 @@ const InvestmentTools = () => {
             <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Add New Property</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <input
-                  type="text"
-                  placeholder="Property Name"
-                  value={newProperty.name}
-                  onChange={(e) => setNewProperty({ ...newProperty, name: e.target.value })}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Property Name"
+                    value={newProperty.name}
+                    onChange={(e) => {
+                      setNewProperty({ ...newProperty, name: e.target.value });
+                      if (e.target.value.length >= 2) setShowSuggestions(true);
+                      else setShowSuggestions(false);
+                    }}
+                    onFocus={() => {
+                      if (newProperty.name.length >= 2) setShowSuggestions(true);
+                    }}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                  />
+                  <SearchSuggestions
+                    searchTerm={newProperty.name}
+                    onSuggestionClick={handleSuggestionClick}
+                    onClose={() => setShowSuggestions(false)}
+                    isVisible={showSuggestions}
+                    className="mt-1"
+                  />
+                </div>
                 <input
                   type="number"
                   placeholder="Property Value ($)"
@@ -1116,24 +1150,24 @@ const InvestmentTools = () => {
             </button>
 
             {/* Risk Assessment Results */}
-            {riskAssessmentData && (
+            {results.risk && (
               <div className="mt-6">
                 <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg mb-4">
                   <div className="text-center">
                     <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Risk Assessment Result</h3>
-                    <p className={`text-3xl font-bold mb-2 ${riskAssessmentData.riskColor}`}>
-                      {riskAssessmentData.riskLevel}
+                    <p className={`text-3xl font-bold mb-2 ${results.risk.riskColor}`}>
+                      {results.risk.riskLevel}
                     </p>
-                    <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">{riskAssessmentData.recommendation}</p>
+                    <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">{results.risk.recommendation}</p>
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Risk Score: {riskAssessmentData.riskScore}/20</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Risk Score: {results.risk.riskScore}/20</p>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full ${riskAssessmentData.riskScore <= 5 ? 'bg-green-500' :
-                            riskAssessmentData.riskScore <= 10 ? 'bg-yellow-500' :
-                              riskAssessmentData.riskScore <= 15 ? 'bg-orange-500' : 'bg-red-500'
+                          className={`h-2 rounded-full ${results.risk.riskScore <= 5 ? 'bg-green-500' :
+                            results.risk.riskScore <= 10 ? 'bg-yellow-500' :
+                              results.risk.riskScore <= 15 ? 'bg-orange-500' : 'bg-red-500'
                             }`}
-                          style={{ width: `${(riskAssessmentData.riskScore / 20) * 100}%` }}
+                          style={{ width: `${(results.risk.riskScore / 20) * 100}%` }}
                         ></div>
                       </div>
                     </div>
@@ -1144,7 +1178,7 @@ const InvestmentTools = () => {
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
                     <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Risk Factors</h4>
                     <div className="space-y-2">
-                      {riskAssessmentData.riskFactors.map((factor, index) => (
+                      {results.risk.riskFactors.map((factor, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                           <FaInfoCircle className="text-blue-500" />
                           {factor}
@@ -1156,7 +1190,7 @@ const InvestmentTools = () => {
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
                     <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Mitigation Strategies</h4>
                     <div className="space-y-2">
-                      {riskAssessmentData.mitigationStrategies.map((strategy, index) => (
+                      {results.risk.mitigationStrategies && results.risk.mitigationStrategies.map((strategy, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                           <FaShieldAlt className="text-green-500" />
                           {strategy}
@@ -1169,7 +1203,7 @@ const InvestmentTools = () => {
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg mt-4">
                   <h4 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Last Updated</h4>
                   <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                    {new Date(riskAssessmentData.lastUpdated).toLocaleString()}
+                    {results.risk.lastUpdated ? new Date(results.risk.lastUpdated).toLocaleString() : new Date().toLocaleString()}
                   </p>
                 </div>
               </div>
