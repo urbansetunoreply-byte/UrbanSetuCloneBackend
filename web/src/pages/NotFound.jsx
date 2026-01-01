@@ -7,7 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function NotFound() {
   // Set page title
-  usePageTitle("404 Not Found - Page Not Found");
+  usePageTitle("Page Not Found");
   const navigate = useNavigate();
 
   const { currentUser } = useSelector((state) => state.user);
