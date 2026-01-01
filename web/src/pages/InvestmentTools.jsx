@@ -233,15 +233,18 @@ const InvestmentTools = () => {
 
     // Annual calculations
     const annualRent = mr * 12;
-    const annualExpenses = (me + monthlyPayment) * 12;
-    const netAnnualIncome = annualRent - annualExpenses;
+    const annualOperatingExpenses = me * 12;
+    const annualMortgage = monthlyPayment * 12;
+    const annualExpenses = annualOperatingExpenses + annualMortgage;
+    const netAnnualIncome = annualRent - annualExpenses; // Cash Flow
     const annualAppreciation = pv * (ar / 100);
     const totalAnnualReturn = netAnnualIncome + annualAppreciation;
+    const noi = annualRent - annualOperatingExpenses; // Net Operating Income
 
     // ROI calculations
-    const cashOnCashROI = (netAnnualIncome / dp) * 100;
-    const totalROI = (totalAnnualReturn / dp) * 100;
-    const capRate = (netAnnualIncome / pv) * 100;
+    const cashOnCashROI = dp > 0 ? (netAnnualIncome / dp) * 100 : 0;
+    const totalROI = dp > 0 ? (totalAnnualReturn / dp) * 100 : 0;
+    const capRate = pv > 0 ? (noi / pv) * 100 : 0;
 
     const result = {
       monthlyPayment: monthlyPayment.toFixed(2),
@@ -351,83 +354,7 @@ const InvestmentTools = () => {
   };
 
   // Risk Assessment Functions
-  const assessRisk = () => {
-    const {
-      propertyValue,
-      location,
-      propertyType,
-      marketVolatility,
-      tenantStability,
-      maintenanceHistory,
-      neighborhoodGrowth
-    } = riskData;
 
-    // Risk scoring algorithm
-    let riskScore = 0;
-    let riskFactors = [];
-
-    // Market volatility scoring
-    const volatilityScores = { low: 1, medium: 3, high: 5 };
-    riskScore += volatilityScores[marketVolatility] || 3;
-
-    // Tenant stability scoring
-    const stabilityScores = { high: 1, medium: 3, low: 5 };
-    riskScore += stabilityScores[tenantStability] || 3;
-
-    // Maintenance history scoring
-    const maintenanceScores = { excellent: 1, good: 2, fair: 3, poor: 5 };
-    riskScore += maintenanceScores[maintenanceHistory] || 2;
-
-    // Neighborhood growth scoring
-    const growthScores = { growing: 1, stable: 2, declining: 4 };
-    riskScore += growthScores[neighborhoodGrowth] || 2;
-
-    // Location risk (simplified)
-    if (location.toLowerCase().includes('downtown') || location.toLowerCase().includes('city center')) {
-      riskScore += 1;
-    } else if (location.toLowerCase().includes('suburb') || location.toLowerCase().includes('residential')) {
-      riskScore -= 1;
-    }
-
-    // Property type risk
-    if (propertyType === 'commercial') {
-      riskScore += 2;
-    } else if (propertyType === 'luxury') {
-      riskScore += 1;
-    }
-
-    // Determine risk level
-    let riskLevel, riskColor, recommendation;
-    if (riskScore <= 8) {
-      riskLevel = 'Low Risk';
-      riskColor = 'text-green-600';
-      recommendation = 'Safe investment with good potential returns';
-    } else if (riskScore <= 12) {
-      riskLevel = 'Medium Risk';
-      riskColor = 'text-yellow-600';
-      recommendation = 'Moderate risk with balanced potential';
-    } else {
-      riskLevel = 'High Risk';
-      riskColor = 'text-red-600';
-      recommendation = 'High risk investment, consider carefully';
-    }
-
-    const result = {
-      riskScore: riskScore,
-      riskLevel,
-      riskColor,
-      recommendation,
-      riskFactors: [
-        `Market Volatility: ${marketVolatility}`,
-        `Tenant Stability: ${tenantStability}`,
-        `Maintenance History: ${maintenanceHistory}`,
-        `Neighborhood Growth: ${neighborhoodGrowth}`
-      ]
-    };
-
-    setResults({ ...results, risk: result });
-    saveCalculation('Risk Assessment', riskData, result);
-  };
 
   const exportResults = () => {
     // Helper function to escape CSV fields
