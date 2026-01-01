@@ -37,6 +37,33 @@ router.get('/public', async (req, res, next) => {
     }
 });
 
+// Helper function for broadcasting updates
+const broadcastUpdate = (update) => {
+    (async () => {
+        try {
+            console.log(`Starting update broadcast for: ${update.title}`);
+            // Fetch all users with valid emails
+            const users = await User.find({ email: { $exists: true, $ne: '' } }, 'email');
+
+            console.log(`Found ${users.length} users to notify.`);
+
+            for (const user of users) {
+                try {
+                    await sendUpdateAnnouncementEmail(user.email, update);
+                } catch (err) {
+                    console.error(`Failed to send announcement to ${user.email}`, err);
+                }
+                // Optional: slight delay to prevent rate limits if list is huge
+                // await new Promise(resolve => setTimeout(resolve, 50)); 
+            }
+            console.log(`Update broadcast completed for ${users.length} users.`);
+        } catch (err) {
+            console.error('Error in update broadcast:', err);
+        }
+    })();
+};
+
+
 // Create a new update (Admin only)
 router.post('/', verifyToken, async (req, res, next) => {
     try {
@@ -53,25 +80,7 @@ router.post('/', verifyToken, async (req, res, next) => {
 
         // Send email broadcast if active
         if (savedUpdate.isActive) {
-            // Execute in background
-            (async () => {
-                try {
-                    console.log('Starting update bioadcast...');
-                    const users = await User.find({}, 'email');
-                    for (const user of users) {
-                        try {
-                            if (user.email) {
-                                await sendUpdateAnnouncementEmail(user.email, savedUpdate);
-                            }
-                        } catch (err) {
-                            console.error(`Failed to send announcement to ${user.email}`, err);
-                        }
-                    }
-                    console.log(`Update broadcast completed for ${users.length} users.`);
-                } catch (err) {
-                    console.error('Error in update broadcast:', err);
-                }
-            })();
+            broadcastUpdate(savedUpdate);
         }
 
         res.status(201).json({ success: true, data: savedUpdate });
@@ -103,18 +112,28 @@ router.put('/:id', verifyToken, async (req, res, next) => {
             return res.status(403).json({ success: false, message: 'Access denied' });
         }
 
+        const existingUpdate = await PlatformUpdate.findById(req.params.id);
+        if (!existingUpdate) {
+            return res.status(404).json({ success: false, message: 'Update not found' });
+        }
+
+        const wasActive = existingUpdate.isActive;
+
         const updatedUpdate = await PlatformUpdate.findByIdAndUpdate(
             req.params.id,
             { ...req.body },
             { new: true }
         );
 
-        if (!updatedUpdate) {
-            return res.status(404).json({ success: false, message: 'Update not found' });
+        // Send email broadcast if it was inactive before and is now active
+        if (!wasActive && updatedUpdate.isActive) {
+            console.log('Update activated! Triggering broadcast.');
+            broadcastUpdate(updatedUpdate);
         }
 
         res.status(200).json({ success: true, data: updatedUpdate });
     } catch (error) {
+        // If update failed, no email sent
         next(error);
     }
 });
