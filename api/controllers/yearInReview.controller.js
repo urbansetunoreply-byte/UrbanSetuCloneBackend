@@ -66,9 +66,22 @@ export const getUserYearInReview = async (req, res, next) => {
         const now = new Date();
         const oneDay = 24 * 60 * 60 * 1000;
 
+
         if (now - joinDate < oneDay) {
             return res.status(400).json({ message: "Welcome to UrbanSetu! Your journey has just begun. Come back later to see your flashback!" });
         }
+
+        // Check if the review has been released via email
+        // This ensures the page is only available after the automated email is sent
+        const sentYears = user.yearInReviewSent || [];
+        const isReleased = sentYears.some(y => y.toString() === year.toString());
+
+        if (!isReleased) {
+            return res.status(400).json({
+                message: `Your ${year} Flashback is still being accepted/prepared! You will be notified via email when it is ready.`
+            });
+        }
+
 
         const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
         const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
