@@ -389,6 +389,7 @@ const YearInReview = ({ isAdmin = false }) => {
         const isFuture = parseInt(year) > new Date().getFullYear();
         // If the error suggests it's just not ready yet (time based), use a "Coming Soon" vibe
         const isPending = error && (error.includes("prepared") || error.includes("Not Ready"));
+        const isBeforeTime = error && error.includes("member");
 
         return (
             <div className={`fixed inset-0 z-[1000] bg-[#0f172a] text-white flex flex-col items-center justify-center p-10 text-center font-inter`}>
@@ -398,10 +399,10 @@ const YearInReview = ({ isAdmin = false }) => {
                     className="max-w-md"
                 >
                     <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 mx-auto border border-white/10">
-                        {isFuture || isPending ? <FaRocket className="text-4xl text-blue-400 opacity-50" /> : <FaMagic className="text-4xl text-indigo-400 opacity-50" />}
+                        {isFuture || isPending ? <FaRocket className="text-4xl text-blue-400 opacity-50" /> : (isBeforeTime ? <FaCalendarAlt className="text-4xl text-orange-400 opacity-50" /> : <FaMagic className="text-4xl text-indigo-400 opacity-50" />)}
                     </div>
                     <h1 className="text-4xl font-black mb-4 tracking-tighter">
-                        {isFuture ? "Mission to the Future?" : (isPending ? "Coming Soon" : `Quiet Year in ${year}`)}
+                        {isFuture ? "Mission to the Future?" : (isPending ? "Coming Soon" : (isBeforeTime ? "Before Your Time" : `Quiet Year in ${year}`))}
                     </h1>
                     <p className="text-white/60 mb-10 leading-relaxed font-medium">
                         {error || (isFuture

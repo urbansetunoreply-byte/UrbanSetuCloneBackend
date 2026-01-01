@@ -63,6 +63,15 @@ export const getUserYearInReview = async (req, res, next) => {
         // Check if user is brand new (less than 1 day old)
         const user = await User.findById(userId);
         const joinDate = new Date(user.createdAt);
+        const joinYear = joinDate.getFullYear();
+        const targetYear = parseInt(year);
+
+        if (targetYear < joinYear) {
+            return res.status(400).json({
+                message: `You weren't a member of UrbanSetu in ${year}. Your journey started in ${joinYear}!`
+            });
+        }
+
         const now = new Date();
         const oneDay = 24 * 60 * 60 * 1000;
 
