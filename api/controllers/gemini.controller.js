@@ -566,11 +566,30 @@ export const chatWithGemini = async (req, res) => {
                 } catch (e) { console.error(e); }
             }
 
-            res.status(200).json({
-                success: true,
-                response: responseText,
-                sessionId: currentSessionId
-            });
+            if (enableStreaming === true || enableStreaming === 'true') {
+                // Check current origin for CORS
+                const origin = req.headers.origin || 'https://urbansetu.vercel.app';
+
+                res.writeHead(200, {
+                    'Content-Type': 'text/plain; charset=utf-8',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive',
+                    'Access-Control-Allow-Origin': origin,
+                    'Access-Control-Allow-Credentials': 'true'
+                });
+
+                // Simulate streaming for standard response
+                // We send the entire content in one chunk effectively, adapting to the SSE protocol expected by frontend
+                res.write(`data: ${JSON.stringify({ type: 'chunk', content: responseText, done: false })}\n\n`);
+                res.write(`data: ${JSON.stringify({ type: 'done', content: responseText, done: true })}\n\n`);
+                res.end();
+            } else {
+                res.status(200).json({
+                    success: true,
+                    response: responseText,
+                    sessionId: currentSessionId
+                });
+            }
         }
 
     } catch (error) {
