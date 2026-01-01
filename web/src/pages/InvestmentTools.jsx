@@ -62,7 +62,20 @@ const InvestmentTools = () => {
   });
 
   // Portfolio State
-  const [portfolio, setPortfolio] = useState([]);
+  const [portfolio, setPortfolio] = useState(() => {
+    try {
+      const saved = localStorage.getItem('investmentPortfolio');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to load portfolio:", e);
+      return [];
+    }
+  });
+
+  // Save portfolio to localStorage
+  useEffect(() => {
+    localStorage.setItem('investmentPortfolio', JSON.stringify(portfolio));
+  }, [portfolio]);
   const [newProperty, setNewProperty] = useState({
     name: '',
     value: '',
@@ -320,7 +333,17 @@ const InvestmentTools = () => {
         id: Date.now(),
         roi: ((parseFloat(newProperty.monthlyRent) * 12) / parseFloat(newProperty.value) * 100).toFixed(2)
       };
-      setPortfolio([...portfolio, property]);
+      const updatedPortfolio = [...portfolio, property];
+      setPortfolio(updatedPortfolio);
+
+      // Save to calculation history as well
+      saveCalculation('Portfolio Property Added', newProperty, {
+        propertyName: property.name,
+        propertyValue: property.value,
+        monthlyRent: property.monthlyRent,
+        estimatedROI: property.roi + '%',
+        totalPortfolioValue: updatedPortfolio.reduce((sum, p) => sum + parseFloat(p.value), 0).toFixed(2)
+      });
       setNewProperty({
         name: '',
         value: '',
