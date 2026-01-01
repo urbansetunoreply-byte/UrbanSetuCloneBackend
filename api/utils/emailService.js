@@ -15097,38 +15097,63 @@ export const sendReviewStatusUpdateEmail = async (email, username, propertyName,
 };
 
 // Send Property Restored Email
-export const sendPropertyRestoredEmail = async (email, { propertyName, propertyId, restoredBy }) => {
+export const sendPropertyRestoredEmail = async (email, { propertyName, propertyId, restoredBy, propertyAddress, propertyPrice, propertyImage }) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+
+  // Format price if available
+  const formattedPrice = propertyPrice ? new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0
+  }).format(propertyPrice) : null;
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Property Restored - UrbanSetu',
+    subject: `Property Restored: ${propertyName} - UrbanSetu`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
-            <p style="color: #6b7280; margin: 10px 0 0 0;">Property Restoration Notice</p>
-          </div>
-
-          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10b981;">
-            <h2 style="color: #064e3b; margin: 0 0 15px 0; font-size: 20px;">Property Restored Successfully</h2>
-            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
-              Good news! Your property <strong>"${propertyName}"</strong> has been restored by the ${restoredBy || 'Admin Team'}.
-            </p>
-            <p style="color: #4b5563; margin: 0 0 15px 0;">
-              It is now active and visible on the platform again.
-            </p>
-
-            <div style="text-align: center; margin: 25px 0;">
-              <a href="${clientBaseUrl}/listing/${propertyId}" style="display: inline-block; background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Property</a>
+        <div style="background-color: white; padding: 0; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+          
+          ${propertyImage ? `
+            <div style="height: 200px; width: 100%; overflow: hidden;">
+              <img src="${propertyImage}" alt="${propertyName}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
-          </div>
+          ` : ''}
 
-          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
-            </p>
+          <div style="padding: 30px;">
+            <div style="text-align: center; margin-bottom: 25px;">
+              <h1 style="color: #2563eb; margin: 0; font-size: 26px;">UrbanSetu</h1>
+              <p style="color: #6b7280; margin: 5px 0 0 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Restoration Notice</p>
+            </div>
+
+            <div style="background-color: #ecfdf5; padding: 25px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #10b981;">
+              <h2 style="color: #064e3b; margin: 0 0 15px 0; font-size: 18px;">Property Restored Successfully</h2>
+              <p style="color: #374151; margin: 0 0 15px 0; line-height: 1.6;">
+                Good news! Your listing <strong>"${propertyName}"</strong> has been successfully restored by the ${restoredBy || 'Admin Team'}.
+              </p>
+              
+              <div style="background-color: rgba(255,255,255,0.6); padding: 15px; border-radius: 6px; margin-top: 15px;">
+                ${propertyAddress ? `<p style="margin: 0 0 5px 0; color: #4b5563; font-size: 14px;">📍 ${propertyAddress}</p>` : ''}
+                ${formattedPrice ? `<p style="margin: 0; color: #10b981; font-weight: bold; font-size: 16px;">${formattedPrice}</p>` : ''}
+              </div>
+
+              <p style="color: #374151; margin: 15px 0 0 0; line-height: 1.6;">
+                It is now active and visible on the platform again. Potential buyers/renters can view it immediately.
+              </p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${clientBaseUrl}/listing/${propertyId}" style="display: inline-block; background-color: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">
+                View Active Listing
+              </a>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+                © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -516,6 +516,9 @@ export const restoreDeletedListing = async (req, res, next) => {
         const emailDetails = {
           propertyName: listingData.name,
           propertyId: listingData._id,
+          propertyAddress: listingData.address,
+          propertyPrice: listingData.offer ? listingData.discountPrice : listingData.regularPrice,
+          propertyImage: listingData.imageUrls && listingData.imageUrls.length > 0 ? listingData.imageUrls[0] : null,
           restoredBy: 'Admin Team'
         };
 
