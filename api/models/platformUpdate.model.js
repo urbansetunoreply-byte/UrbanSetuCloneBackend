@@ -17,8 +17,8 @@ const platformUpdateSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['feature', 'improvement', 'fix', 'announcement'],
-        default: 'feature'
+        enum: ['feature', 'new_feature', 'improvement', 'fix', 'bug_fix', 'announcement'],
+        default: 'new_feature'
     },
     tags: [{
         type: String,
