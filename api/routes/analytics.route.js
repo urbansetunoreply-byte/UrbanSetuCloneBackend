@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/property/:id/market-data', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Get property details
     const property = await Listing.findById(id);
     if (!property) {
@@ -28,7 +28,7 @@ router.get('/property/:id/market-data', verifyToken, async (req, res) => {
     };
 
     const marketData = await realTimeDataService.getPropertyMarketData(id, location);
-    
+
     res.json({
       success: true,
       data: marketData
@@ -43,7 +43,7 @@ router.get('/property/:id/market-data', verifyToken, async (req, res) => {
 router.get('/location/intelligence', verifyToken, async (req, res) => {
   try {
     const { city, district, state, latitude, longitude } = req.query;
-    
+
     if (!city) {
       return res.status(400).json({ error: 'City is required' });
     }
@@ -57,7 +57,7 @@ router.get('/location/intelligence', verifyToken, async (req, res) => {
     };
 
     const locationData = await realTimeDataService.getLocationIntelligence(location);
-    
+
     res.json({
       success: true,
       data: locationData
@@ -72,14 +72,14 @@ router.get('/location/intelligence', verifyToken, async (req, res) => {
 router.get('/market/trends', verifyToken, async (req, res) => {
   try {
     const { city, type } = req.query;
-    
+
     if (!city) {
       return res.status(400).json({ error: 'City is required' });
     }
 
     const location = { city, type };
     const trends = await realTimeDataService.getMarketTrends(location);
-    
+
     res.json({
       success: true,
       data: trends
@@ -94,7 +94,7 @@ router.get('/market/trends', verifyToken, async (req, res) => {
 router.get('/property/:id/investment-analysis', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Get property details
     const property = await Listing.findById(id);
     if (!property) {
@@ -120,11 +120,11 @@ router.get('/property/:id/investment-analysis', verifyToken, async (req, res) =>
 
     // Calculate investment analysis
     const investmentAnalysis = await realTimeDataService.getInvestmentAnalysis(
-      property, 
-      marketData, 
+      property,
+      marketData,
       locationData
     );
-    
+
     res.json({
       success: true,
       data: {
@@ -151,7 +151,7 @@ router.get('/property/:id/investment-analysis', verifyToken, async (req, res) =>
 router.get('/location/weather', verifyToken, async (req, res) => {
   try {
     const { latitude, longitude } = req.query;
-    
+
     if (!latitude || !longitude) {
       return res.status(400).json({ error: 'Latitude and longitude are required' });
     }
@@ -162,7 +162,7 @@ router.get('/location/weather', verifyToken, async (req, res) => {
     };
 
     const weatherData = await realTimeDataService.getWeatherData(location);
-    
+
     res.json({
       success: true,
       data: weatherData
@@ -177,7 +177,7 @@ router.get('/location/weather', verifyToken, async (req, res) => {
 router.get('/property/:id/analytics', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Get property details
     const property = await Listing.findById(id);
     if (!property) {
@@ -210,11 +210,11 @@ router.get('/property/:id/analytics', verifyToken, async (req, res) => {
 
     // Calculate investment analysis
     const investmentAnalysis = await realTimeDataService.getInvestmentAnalysis(
-      property, 
-      marketData, 
+      property,
+      marketData,
       locationData
     );
-    
+
     res.json({
       success: true,
       data: {
@@ -247,7 +247,7 @@ router.get('/property/:id/analytics', verifyToken, async (req, res) => {
 router.post('/property/analytics', verifyToken, async (req, res) => {
   try {
     const { location, filters, propertyData, analysisType } = req.body;
-    
+
     if (!location || !analysisType) {
       return res.status(400).json({ error: 'Location and analysisType are required' });
     }
@@ -258,32 +258,58 @@ router.post('/property/analytics', verifyToken, async (req, res) => {
       // Market analysis
       const { city, district, state, latitude, longitude } = location;
       const { propertyType, timeFrame } = filters || {};
-      
+
       const locationData = {
         city,
         district,
         state,
         latitude: parseFloat(latitude) || null,
         longitude: parseFloat(longitude) || null,
-        type: propertyType || 'apartment'
+        type: propertyType || 'apartment',
+        bedrooms: 2 // Default assumption for general market check
       };
 
-      // Get market trends and location intelligence
-      const [marketTrends, locationIntelligence] = await Promise.all([
+      // Get market trends, property market data (general), and location intelligence
+      const [marketTrends, propertyMarketInfo, locationIntelligence] = await Promise.all([
         realTimeDataService.getMarketTrends(locationData),
+        realTimeDataService.getPropertyMarketData('000000000000000000000000', locationData),
         realTimeDataService.getLocationIntelligence(locationData)
       ]);
 
+      // Dynamic Calculations using Service Methods
+      const marketScore = realTimeDataService.calculateMarketScore(city, state, propertyType || 'apartment');
+      const demandLevel = realTimeDataService.calculateDemandLevel(city, state, propertyType || 'apartment');
+      const supplyLevel = realTimeDataService.calculateSupplyLevel(city, state, propertyType || 'apartment');
+      const riskLevel = realTimeDataService.calculateRiskLevel(city, state, propertyType || 'apartment');
+      const averageDays = realTimeDataService.calculateDaysOnMarket(city, state, propertyType || 'apartment');
+
+      const priceGrowthVal = marketTrends && marketTrends.priceGrowth !== undefined ? marketTrends.priceGrowth : 0;
+      const priceTrendStr = `${priceGrowthVal > 0 ? '+' : ''}${priceGrowthVal.toFixed(1)}%`;
+
+      const recommendation = realTimeDataService.getRecommendation(marketScore, priceGrowthVal);
+
+      // Calculate avg price per sq ft from property market info if available
+      let pricePerSqFtStr = '₹8,500'; // Default fallback
+      if (propertyMarketInfo && propertyMarketInfo.averagePrice) {
+        // Estimate avg area (e.g. 1000 sqft) if not available, or just use raw price average
+        // propertyMarketInfo.pricePerSqft is an array of objects
+        const ppsfArr = propertyMarketInfo.pricePerSqft || [];
+        if (ppsfArr.length > 0) {
+          const avgPpsf = ppsfArr.reduce((sum, item) => sum + item.price, 0) / ppsfArr.length;
+          pricePerSqFtStr = `₹${Math.round(avgPpsf).toLocaleString()}`;
+        }
+      }
+
       // Calculate market analysis
       result = {
-        priceTrend: marketTrends.priceTrend || '+5.2%',
-        marketScore: marketTrends.marketScore || '78/100',
-        demandLevel: marketTrends.demandLevel || 'High',
-        supplyLevel: marketTrends.supplyLevel || 'Medium',
-        averageDaysOnMarket: marketTrends.averageDaysOnMarket || '32',
-        pricePerSqFt: marketTrends.pricePerSqFt || '₹8,500',
-        recommendation: marketTrends.recommendation || 'Buy',
-        riskLevel: marketTrends.riskLevel || 'Low-Medium',
+        priceTrend: priceTrendStr,
+        marketScore: `${marketScore}/100`,
+        demandLevel: demandLevel,
+        supplyLevel: supplyLevel,
+        averageDaysOnMarket: averageDays,
+        pricePerSqFt: pricePerSqFtStr,
+        recommendation: recommendation,
+        riskLevel: riskLevel,
         lastUpdated: new Date()
       };
 
@@ -291,10 +317,10 @@ router.post('/property/analytics', verifyToken, async (req, res) => {
       // Risk assessment
       const { city, state } = location;
       const { propertyValue, marketVolatility, tenantStability, maintenanceHistory, neighborhoodGrowth } = propertyData || {};
-      
+
       // Calculate risk score
       let riskScore = 0;
-      
+
       // Market volatility scoring
       const volatilityScores = { low: 1, medium: 3, high: 5 };
       riskScore += volatilityScores[marketVolatility] || 3;
