@@ -2123,6 +2123,47 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
+    // Handle code block copy button clicks (delegated)
+    useEffect(() => {
+        const handleCopyClick = (e) => {
+            const btn = e.target.closest('.code-copy-btn');
+            if (btn) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const codeAttr = btn.getAttribute('data-code');
+                if (!codeAttr) return;
+
+                try {
+                    const code = decodeURIComponent(codeAttr);
+                    if (code) {
+                        copyToClipboard(code);
+
+                        // Visual feedback: Change icon to checkmark temporarily
+                        if (!btn.hasAttribute('data-original-html')) {
+                            btn.setAttribute('data-original-html', btn.innerHTML);
+                        }
+
+                        const checkIcon = `<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg" class="text-green-400"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+                        btn.innerHTML = checkIcon;
+
+                        setTimeout(() => {
+                            if (btn && document.contains(btn)) {
+                                btn.innerHTML = btn.getAttribute('data-original-html');
+                            }
+                        }, 2000);
+                    }
+                } catch (err) {
+                    console.error('Failed to copy code:', err);
+                }
+            }
+        };
+
+        document.addEventListener('click', handleCopyClick);
+        return () => document.removeEventListener('click', handleCopyClick);
+    }, []);
+
     const retryMessage = async (originalMessage, messageIndex) => {
         if (!originalMessage || isLoading) return;
 
@@ -4073,13 +4114,28 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 try {
                     // Highlight the code with Prism.js
                     const highlightedCode = Prism.highlight(cleanCode, Prism.languages[lang] || Prism.languages.text, lang);
-                    return `<div class="code-block"><pre class="bg-gray-900 dark:bg-gray-800 text-gray-100 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-700 dark:border-gray-600"><code class="language-${lang}">${highlightedCode}</code></pre></div>`;
+                    return `<div class="code-block relative group">
+                        <button class="code-copy-btn absolute top-2 right-2 p-1.5 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-300 hover:text-white transition-all opacity-0 group-hover:opacity-100 z-10" aria-label="Copy code" title="Copy code" data-code="${encodeURIComponent(cleanCode)}">
+                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                        <pre class="bg-gray-900 dark:bg-gray-800 text-gray-100 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-700 dark:border-gray-600"><code class="language-${lang}">${highlightedCode}</code></pre>
+                    </div>`;
                 } catch (error) {
                     console.warn('Code highlighting failed:', error);
-                    return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-300 dark:border-gray-600"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
+                    return `<div class="code-block relative group">
+                        <button class="code-copy-btn absolute top-2 right-2 p-1.5 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-300 hover:text-white transition-all opacity-0 group-hover:opacity-100 z-10" aria-label="Copy code" title="Copy code" data-code="${encodeURIComponent(cleanCode)}">
+                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                        <pre class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-300 dark:border-gray-600"><code class="language-${lang}">${cleanCode}</code></pre>
+                    </div>`;
                 }
             } else {
-                return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-300 dark:border-gray-600"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
+                return `<div class="code-block relative group">
+                    <button class="code-copy-btn absolute top-2 right-2 p-1.5 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-300 hover:text-white transition-all opacity-0 group-hover:opacity-100 z-10" aria-label="Copy code" title="Copy code" data-code="${encodeURIComponent(cleanCode)}">
+                        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <pre class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-300 dark:border-gray-600"><code class="language-${lang}">${cleanCode}</code></pre>
+                </div>`;
             }
         });
 
