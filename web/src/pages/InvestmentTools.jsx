@@ -36,6 +36,7 @@ const InvestmentTools = () => {
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showClearHistoryModal, setShowClearHistoryModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   // ROI Calculator State
   const [roiData, setRoiData] = useState({
@@ -841,7 +842,7 @@ const InvestmentTools = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => removeFromPortfolio(property.id)}
+                      onClick={() => setItemToDelete(property.id)}
                       className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2"
                     >
                       <FaTimes className="text-lg" />
@@ -1205,6 +1206,21 @@ const InvestmentTools = () => {
         title="Clear Calculation History"
         message="Are you sure you want to clear your entire calculation history? This action cannot be undone."
         confirmText="Clear History"
+        isDestructive={true}
+      />
+
+      <ConfirmationModal
+        isOpen={itemToDelete !== null}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={() => {
+          if (itemToDelete) {
+            removeFromPortfolio(itemToDelete);
+            setItemToDelete(null);
+          }
+        }}
+        title="Remove Property"
+        message="Are you sure you want to remove this property from your portfolio?"
+        confirmText="Remove"
         isDestructive={true}
       />
 
