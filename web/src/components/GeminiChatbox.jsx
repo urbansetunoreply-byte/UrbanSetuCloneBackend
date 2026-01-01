@@ -4115,7 +4115,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Highlight the code with Prism.js
                     const highlightedCode = Prism.highlight(cleanCode, Prism.languages[lang] || Prism.languages.text, lang);
                     return `<div class="code-block relative group my-4 rounded-lg overflow-hidden border border-gray-700 dark:border-gray-600 bg-gray-900 dark:bg-gray-800">
-                        <button class="code-copy-btn absolute top-2 right-2 p-1.5 rounded-lg text-gray-400 hover:text-white transition-all z-10 hover:bg-white/10" aria-label="Copy code" title="Copy code" data-code="${encodeURIComponent(cleanCode)}">
+                        <button class="code-copy-btn absolute top-2 right-2 p-1.5 rounded-lg text-gray-400 hover:text-white transition-all z-10 hover:bg-white/10 flex items-center justify-center" aria-label="Copy code" title="Copy code" data-code="${encodeURIComponent(cleanCode)}">
                             <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
                         <pre class="bg-gray-900 dark:bg-gray-800 text-gray-100 dark:text-gray-200 p-4 overflow-x-auto border-none m-0"><code class="language-${lang}">${highlightedCode}</code></pre>
@@ -4123,7 +4123,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 } catch (error) {
                     console.warn('Code highlighting failed:', error);
                     return `<div class="code-block relative group my-4 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800">
-                        <button class="code-copy-btn absolute top-2 right-2 p-1.5 rounded-lg text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-all z-10 hover:bg-black/5 dark:hover:bg-white/10" aria-label="Copy code" title="Copy code" data-code="${encodeURIComponent(cleanCode)}">
+                        <button class="code-copy-btn absolute top-2 right-2 p-1.5 rounded-lg text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-all z-10 hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center" aria-label="Copy code" title="Copy code" data-code="${encodeURIComponent(cleanCode)}">
                             <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
                         <pre class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 p-4 overflow-x-auto border-none m-0"><code class="language-${lang}">${cleanCode}</code></pre>
@@ -4131,7 +4131,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
             } else {
                 return `<div class="code-block relative group my-4 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800">
-                    <button class="code-copy-btn absolute top-2 right-2 p-1.5 rounded-lg text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-all z-10 hover:bg-black/5 dark:hover:bg-white/10" aria-label="Copy code" title="Copy code" data-code="${encodeURIComponent(cleanCode)}">
+                    <button class="code-copy-btn absolute top-2 right-2 p-1.5 rounded-lg text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-all z-10 hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center" aria-label="Copy code" title="Copy code" data-code="${encodeURIComponent(cleanCode)}">
                         <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                     </button>
                     <pre class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 p-4 overflow-x-auto border-none m-0"><code class="language-${lang}">${cleanCode}</code></pre>
