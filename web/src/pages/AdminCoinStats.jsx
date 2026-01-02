@@ -128,6 +128,15 @@ export default function AdminCoinStats() {
                 setAdjustmentReason('');
                 fetchUserHistory(selectedUser._id);
                 fetchStats();
+
+                // Refresh user data to show updated balance
+                try {
+                    const userRes = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${selectedUser._id}`);
+                    const userData = await userRes.json();
+                    if (userData) setSelectedUser(userData);
+                } catch (e) {
+                    console.error("Failed to refresh user data", e);
+                }
             } else {
                 toast.error(data.message || "Adjustment failed");
             }
@@ -301,6 +310,13 @@ export default function AdminCoinStats() {
                                         <FaUser className="text-xs" /> {selectedUser.email}
                                     </p>
                                     <div className="flex flex-wrap gap-4 mt-1 text-xs font-semibold">
+                                        <div className="bg-white/20 px-2 py-1 rounded text-white border border-white/20 flex items-center gap-1">
+                                            <FaCoins className="text-yellow-300" />
+                                            <span>Total:</span>
+                                            <span className="text-indigo-100 font-bold">
+                                                {selectedUser.gamification?.setuCoinsBalance?.toLocaleString() || 0}
+                                            </span>
+                                        </div>
                                         {selectedUser.gamification?.coinsExpiryDate && (
                                             <div className="bg-white/20 px-2 py-1 rounded text-white border border-white/20 flex items-center gap-1">
                                                 <span>Expires:</span>
