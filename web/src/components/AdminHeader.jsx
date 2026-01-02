@@ -56,10 +56,28 @@ export default function AdminHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const searchContainerRef = useRef(null);
+
   useEffect(() => {
     if (searchOpen && searchInputRef.current) {
       searchInputRef.current.focus();
     }
+  }, [searchOpen]);
+
+  // Handle click outside to close search
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setSearchOpen(false);
+      }
+    };
+
+    if (searchOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [searchOpen]);
 
   // Prevent background scrolling when mobile menu is open
@@ -469,7 +487,7 @@ export default function AdminHeader() {
                     <FaSearch className="text-base" />
                   </button>
                 ) : (
-                  <div className="relative">
+                  <div className="relative" ref={searchContainerRef}>
                     <form
                       onSubmit={handleSearch}
                       className="flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-yellow-300 focus-within:bg-white/20 transition-all duration-300 w-48"
