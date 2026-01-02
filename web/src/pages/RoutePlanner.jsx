@@ -7,6 +7,8 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import '../styles/routePlannerSuggestions.css';
 
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useHeader } from '../contexts/HeaderContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,6 +21,7 @@ export default function RoutePlanner() {
 
   // Header context
   const { hideHeader, showHeader } = useHeader();
+  const { currentUser } = useSelector((state) => state.user);
 
   // State management
   const [stops, setStops] = useState([{ address: '', coordinates: null }]);
@@ -785,7 +788,12 @@ export default function RoutePlanner() {
     // Check for location permission in settings
     const allowLocationAccess = localStorage.getItem('allowLocationAccess');
     if (allowLocationAccess !== 'true') {
-      toast.info("Please enable Location Access in Settings > Privacy to use this feature.");
+      const settingsPath = currentUser?.role?.includes('admin') ? '/admin/settings' : '/user/settings';
+      toast.info(
+        <div>
+          Please enable Location Access in <Link to={settingsPath} className="font-bold underline">Settings &gt; Privacy</Link>
+        </div>
+      );
       return;
     }
 
