@@ -77,6 +77,7 @@ export default function Settings() {
     return saved !== null ? saved === 'true' : false;
   });
   const [isRequestingLocation, setIsRequestingLocation] = useState(false);
+  const [isRequestingPush, setIsRequestingPush] = useState(false);
 
   // Language & Region
   const [language, setLanguage] = useState(() => {
@@ -754,10 +755,20 @@ export default function Settings() {
   const handlePushNotificationsChange = async (value) => {
     scrollPositionRef.current = window.scrollY;
     if (value && 'Notification' in window) {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        showToast(t('messages.push_denied'), 'error');
-        return;
+      if (Notification.permission !== 'granted') {
+        setIsRequestingPush(true);
+        try {
+          const permission = await Notification.requestPermission();
+          setIsRequestingPush(false);
+          if (permission !== 'granted') {
+            showToast(t('messages.push_denied'), 'error');
+            return;
+          }
+        } catch (error) {
+          setIsRequestingPush(false);
+          console.error(error);
+          return;
+        }
       }
     }
     setPushNotifications(value);
@@ -1180,6 +1191,7 @@ export default function Settings() {
               checked={pushNotifications}
               onChange={handlePushNotificationsChange}
               description="Receive browser push notifications"
+              isLoading={isRequestingPush}
             />
             <SelectOption
               label={t('settings.notification_sound')}
