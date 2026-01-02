@@ -72,6 +72,10 @@ export default function Settings() {
     const saved = localStorage.getItem('dataSharing');
     return saved !== null ? saved === 'true' : true;
   });
+  const [allowLocationAccess, setAllowLocationAccess] = useState(() => {
+    const saved = localStorage.getItem('allowLocationAccess');
+    return saved !== null ? saved === 'true' : false;
+  });
 
   // Language & Region
   const [language, setLanguage] = useState(() => {
@@ -821,6 +825,13 @@ export default function Settings() {
     showToast(t('messages.data_sharing_saved'));
   };
 
+  const handleLocationAccessChange = (value) => {
+    scrollPositionRef.current = window.scrollY;
+    setAllowLocationAccess(value);
+    localStorage.setItem('allowLocationAccess', value.toString());
+    showToast('Location access preference saved');
+  };
+
   const handleLanguageChange = (value) => {
     scrollPositionRef.current = window.scrollY;
     setLanguage(value);
@@ -1188,6 +1199,12 @@ export default function Settings() {
               checked={dataSharing}
               onChange={handleDataSharingChange}
               description="Allow anonymous data sharing to improve our services"
+            />
+            <ToggleSwitch
+              label="Location Access for Route Planner"
+              checked={allowLocationAccess}
+              onChange={handleLocationAccessChange}
+              description="Allow Route Planner to automatically access your location"
             />
           </div>
         </SettingSection>

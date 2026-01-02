@@ -782,6 +782,13 @@ export default function RoutePlanner() {
 
   // Use current location
   const useCurrentLocation = async (index) => {
+    // Check for location permission in settings
+    const allowLocationAccess = localStorage.getItem('allowLocationAccess');
+    if (allowLocationAccess !== 'true') {
+      toast.info("Please enable Location Access in Settings > Privacy to use this feature.");
+      return;
+    }
+
     if (!navigator.geolocation) {
       toast.error('Geolocation is not supported by this browser');
       return;
