@@ -76,6 +76,7 @@ export default function Settings() {
     const saved = localStorage.getItem('allowLocationAccess');
     return saved !== null ? saved === 'true' : false;
   });
+  const [isRequestingLocation, setIsRequestingLocation] = useState(false);
 
   // Language & Region
   const [language, setLanguage] = useState(() => {
@@ -827,9 +828,38 @@ export default function Settings() {
 
   const handleLocationAccessChange = (value) => {
     scrollPositionRef.current = window.scrollY;
-    setAllowLocationAccess(value);
-    localStorage.setItem('allowLocationAccess', value.toString());
-    showToast('Location access preference saved');
+
+    if (value) {
+      if (!navigator.geolocation) {
+        showToast('Geolocation is not supported by this browser', 'error');
+        return;
+      }
+
+      setIsRequestingLocation(true);
+      navigator.geolocation.getCurrentPosition(
+        () => {
+          setAllowLocationAccess(true);
+          localStorage.setItem('allowLocationAccess', 'true');
+          showToast('Location access granted preference saved');
+          setIsRequestingLocation(false);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          if (error.code === error.PERMISSION_DENIED) {
+            showToast('Location permission denied. Please allow it in browser settings.', 'error');
+          } else {
+            showToast('Failed to access location.', 'error');
+          }
+          setAllowLocationAccess(false);
+          setIsRequestingLocation(false);
+        },
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      setAllowLocationAccess(false);
+      localStorage.setItem('allowLocationAccess', 'false');
+      showToast('Location access disabled');
+    }
   };
 
   const handleLanguageChange = (value) => {
@@ -1205,6 +1235,7 @@ export default function Settings() {
               checked={allowLocationAccess}
               onChange={handleLocationAccessChange}
               description="Allow Route Planner to automatically access your location"
+              isLoading={isRequestingLocation}
             />
             <div className="flex justify-end pt-2 pb-1">
               <Link
