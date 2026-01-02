@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner, FaBullhorn, FaDesktop } from "react-icons/fa";
+import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner, FaBullhorn, FaDesktop, FaLocationArrow } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -1206,6 +1206,14 @@ export default function Settings() {
               onChange={handleLocationAccessChange}
               description="Allow Route Planner to automatically access your location"
             />
+            <div className="flex justify-end pt-2 pb-1">
+              <Link
+                to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/route-planner' : '/user/route-planner'}
+                className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline flex items-center gap-2 transition-colors"
+              >
+                Go to Route Planner <FaLocationArrow className="text-xs" />
+              </Link>
+            </div>
           </div>
         </SettingSection>
 
