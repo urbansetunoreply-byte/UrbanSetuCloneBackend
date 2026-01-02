@@ -108,6 +108,14 @@ export default function AdminCoinStats() {
             return;
         }
 
+        if (adjustmentType === 'debit') {
+            const balance = selectedUser.gamification?.setuCoinsBalance || 0;
+            if (parseInt(adjustmentAmount) > balance) {
+                toast.error(`Cannot revoke more than available balance (${balance})`);
+                return;
+            }
+        }
+
         try {
             setIsProcessing(true);
             const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/admin/adjust`, {
@@ -484,7 +492,9 @@ export default function AdminCoinStats() {
                                     type="number"
                                     value={adjustmentAmount}
                                     onChange={(e) => setAdjustmentAmount(e.target.value)}
-                                    placeholder="Enter amount (e.g. 100)"
+                                    placeholder={adjustmentType === 'debit'
+                                        ? `Available: ${selectedUser.gamification?.setuCoinsBalance?.toLocaleString() || 0}`
+                                        : "Enter amount (e.g. 100)"}
                                     className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold text-lg bg-white dark:bg-gray-700 dark:text-white"
                                 />
                             </div>
