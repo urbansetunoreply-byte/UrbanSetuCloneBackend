@@ -102,7 +102,8 @@ export default function AdminListings() {
     minPrice: '',
     maxPrice: '',
     city: '',
-    state: ''
+    state: '',
+    published: 'all'
   });
 
   const buildParams = (startIndex, limit) => {
@@ -118,6 +119,7 @@ export default function AdminListings() {
     if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
     if (filters.city) params.set('city', filters.city);
     if (filters.state) params.set('state', filters.state);
+    if (filters.published !== 'all') params.set('published', filters.published);
     return params;
   };
 
@@ -467,6 +469,11 @@ export default function AdminListings() {
                 <option value="all">Offer: Any</option>
                 <option value="true">Offer: Yes</option>
                 <option value="false">Offer: No</option>
+              </select>
+              <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" value={filters.published} onChange={(e) => setFilters({ ...filters, published: e.target.value })}>
+                <option value="all">Status: Any</option>
+                <option value="true">Verified (Published)</option>
+                <option value="false">Pending (Unpublished)</option>
               </select>
               <div className="grid grid-cols-2 gap-2">
                 <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" value={filters.furnished} onChange={(e) => setFilters({ ...filters, furnished: e.target.value })}>

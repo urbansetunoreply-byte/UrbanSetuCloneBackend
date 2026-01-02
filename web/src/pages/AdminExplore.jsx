@@ -35,6 +35,7 @@ export default function AdminExplore() {
     state: "",
     bedrooms: "",
     bathrooms: "",
+    published: "all",
   });
 
   const [listings, setListings] = useState([]);
@@ -69,6 +70,7 @@ export default function AdminExplore() {
       state: urlParams.get("state") || "",
       bedrooms: urlParams.get("bedrooms") || "",
       bathrooms: urlParams.get("bathrooms") || "",
+      published: urlParams.get("published") || "all",
     };
     setFormData(searchObj);
     setLocationFilter({
@@ -129,7 +131,8 @@ export default function AdminExplore() {
     const reset = {
       searchTerm: "", type: "all", parking: false, furnished: false, offer: false,
       sort: "createdAt", order: "desc", minPrice: "", maxPrice: "",
-      city: "", state: "", bedrooms: "", bathrooms: ""
+      city: "", state: "", bedrooms: "", bathrooms: "",
+      published: "all"
     };
     setFormData(reset);
     setLocationFilter({ state: "", district: "", city: "" });
@@ -336,6 +339,30 @@ export default function AdminExplore() {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Location</label>
                   <LocationSelector value={locationFilter} onChange={handleLocationChange} mode="search" className="w-full" />
+                </div>
+
+
+                {/* Verification Status */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Verification Status</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'all', label: 'All' },
+                      { value: 'true', label: 'Verified' },
+                      { value: 'false', label: 'Pending' }
+                    ].map((status) => (
+                      <button
+                        key={status.value}
+                        type="button"
+                        onClick={() => setFormData(p => ({ ...p, published: status.value }))}
+                        className={`py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border-2 transition-all ${formData.published === status.value
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                          : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-indigo-300'}`}
+                      >
+                        {status.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Type Selection */}

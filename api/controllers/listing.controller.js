@@ -893,6 +893,15 @@ export const getListings = async (req, res, next) => {
     if (bedrooms) query.bedrooms = bedrooms;
     if (bathrooms) query.bathrooms = bathrooms;
 
+    // Published/Verified Filter (User Request: "published and notpublished" check)
+    // "Published" generally maps to Verified in this system context for filtering purpose
+    const published = req.query.published;
+    if (published === 'true') {
+      query.isVerified = true;
+    } else if (published === 'false') {
+      query.isVerified = false;
+    }
+
     // Verification Filter: Only show verified and public properties to non-admin users
     // Check if user is authenticated and is admin
     const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'rootadmin' || req.user.isDefaultAdmin);
