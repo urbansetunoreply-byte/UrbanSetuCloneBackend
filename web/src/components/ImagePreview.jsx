@@ -377,15 +377,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     }
   };
 
-  const handleMouseMove = (e) => {
-    if (isDragging && scale > 1) {
-      hasMovedRef.current = true;
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
-    }
-  };
+
 
   const handleMouseUp = () => {
     if (isDragging && hasMovedRef.current) {
@@ -652,7 +644,18 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     setShowControls(prev => !prev);
   };
 
-  const handleWrapperMouseMove = () => {
+  const handleWrapperMouseMove = (e) => {
+    // Mouse Dragging Logic
+    if (isDragging && scale > 1) {
+      e.preventDefault();
+      hasMovedRef.current = true;
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+
+    // Toggle controls on mouse move (if not touch)
     if (!isTouchRef.current && !showControls) setShowControls(true);
   };
 
