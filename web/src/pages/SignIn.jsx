@@ -89,12 +89,12 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
     }, [location.search, navigate]);
 
-    // Check for 'ref' parameter to show context toast
+    // Check for 'redirect' parameter to show context toast
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
-        const refParam = searchParams.get('ref');
+        const redirectParam = searchParams.get('redirect');
 
-        if (refParam) {
+        if (redirectParam) {
             const actionMessages = {
                 like: "Please sign in to like this content",
                 dislike: "Please sign in to react",
@@ -106,12 +106,18 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 review: "Please sign in to leave a review",
                 rate: "Please sign in to rate",
                 access: "Please sign in to access this page",
-                save: "Please sign in to save this item"
+                save: "Please sign in to save this item",
+                vote: "Please sign in to vote"
             };
-            const message = actionMessages[refParam] || "Please sign in to continue";
+
+            let message = actionMessages[redirectParam];
+            if (!message) {
+                message = "Please sign in to access this page";
+            }
+
             // Check if toast is already active to prevent duplicates
-            if (!toast.isActive(`signin-ref-${refParam}`)) {
-                toast.info(message, { toastId: `signin-ref-${refParam}` });
+            if (!toast.isActive(`signin-redirect-${redirectParam}`)) {
+                toast.info(message, { toastId: `signin-redirect-${redirectParam}` });
             }
         }
     }, [location.search]);
