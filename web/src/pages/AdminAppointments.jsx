@@ -8343,7 +8343,7 @@ function AdminAppointmentRow({
                                                     </button>
 
                                                     <button
-                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                                       onClick={(e) => {
                                                         e.stopPropagation();
                                                         const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
@@ -8363,7 +8363,7 @@ function AdminAppointmentRow({
                                                     </button>
 
                                                     <button
-                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                                                       onClick={(e) => {
                                                         e.stopPropagation();
                                                         const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
