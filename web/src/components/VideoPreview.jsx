@@ -57,6 +57,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const justClickedRef = useRef(false);
   const isTouchRef = useRef(false);
   const touchStartRef = useRef({ time: 0, x: 0, y: 0 });
+  const wasPlayingRef = useRef(false);
 
   // Initialize
   useEffect(() => {
@@ -158,9 +159,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           if (document.fullscreenElement) {
             return;
           }
-          if (videoRef.current && !videoRef.current.paused) {
-            videoRef.current.pause();
-            setIsPlaying(false);
+          if (videoRef.current) {
+            wasPlayingRef.current = !videoRef.current.paused;
+            if (!videoRef.current.paused) {
+              videoRef.current.pause();
+              setIsPlaying(false);
+            }
           }
           setShowCloseConfirm(true);
           break;
@@ -430,9 +434,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       return;
     }
 
-    if (videoRef.current && !videoRef.current.paused) {
-      videoRef.current.pause();
-      setIsPlaying(false);
+    if (videoRef.current) {
+      wasPlayingRef.current = !videoRef.current.paused;
+      if (!videoRef.current.paused) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
     }
     setShowCloseConfirm(true);
   };
@@ -446,6 +453,9 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const cancelClose = (e) => {
     e?.stopPropagation();
     setShowCloseConfirm(false);
+    if (wasPlayingRef.current) {
+      setIsPlaying(true);
+    }
   };
 
   // Drag & Speed Logic
