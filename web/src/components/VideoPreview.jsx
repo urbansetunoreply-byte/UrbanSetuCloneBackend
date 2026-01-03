@@ -49,6 +49,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const containerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
   const singleClickTimeoutRef = useRef(null);
+  const speedTimeoutRef = useRef(null);
+  const originalSpeedRef = useRef(1);
+  const isSpeedingRef = useRef(false);
+  const ignoreClickRef = useRef(false);
 
   // Initialize
   useEffect(() => {
@@ -187,6 +191,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   };
 
   const handleVideoAreaClick = (e) => {
+    // Check if we should ignore click (due to long press speed interaction)
+    if (ignoreClickRef.current) {
+      ignoreClickRef.current = false;
+      return;
+    }
+
     // Detect Double Tap
     const now = Date.now();
     const timeDiff = now - lastTapRef.current;
@@ -378,7 +388,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     showFeedback(`${speeds[nextIdx]}x Speed`);
   };
 
-  // Drag Logic
+  // Drag & Speed Logic
   const handleMouseDown = (e) => {
     if (scale > 1) {
       e.preventDefault();
@@ -387,6 +397,14 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         x: e.clientX - position.x,
         y: e.clientY - position.y
       });
+    } else {
+      // Speed Logic (Long Press)
+      originalSpeedRef.current = playbackRate;
+      speedTimeoutRef.current = setTimeout(() => {
+        isSpeedingRef.current = true;
+        setPlaybackRate(2.0);
+        showFeedback("2x Speed");
+      }, 500);
     }
   };
 
@@ -401,6 +419,16 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   };
 
   const handleMouseUp = () => {
+    if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
+
+    if (isSpeedingRef.current) {
+      // Revert speed
+      setPlaybackRate(originalSpeedRef.current);
+      isSpeedingRef.current = false;
+      ignoreClickRef.current = true; // Prevent click from toggling controls
+      showFeedback(`${originalSpeedRef.current}x Speed`); // Optional confirmation
+    }
+
     setIsDragging(false);
   };
 
