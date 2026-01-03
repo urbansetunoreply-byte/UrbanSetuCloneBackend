@@ -35,7 +35,19 @@ const quotes = [
     // Indian Real Estate Context
     { text: "RERA (Real Estate Regulatory Authority) was introduced in 2016 to protect home buyers in India.", author: "Indian Real Estate" },
     { text: "Vaastu Shastra compliance can increase a property's asking price by 10-15% in India.", author: "Market Reality" },
-    { text: "Bangalore is known as the 'Silicon Valley of India', driving massive commercial real estate value.", author: "City Spotlight" }
+    { text: "Bangalore is known as the 'Silicon Valley of India', driving massive commercial real estate value.", author: "City Spotlight" },
+
+    // Classics & Philosophy
+    { text: "Investing in real estate is smart because property is tangible. People always have, and always will, need shelter.", author: "Kathy Fettke" },
+    { text: "The major fortunes in America have been made in land.", author: "John D. Rockefeller" },
+    { text: "Don't wait to buy real estate. Buy real estate and wait.", author: "Will Rogers" },
+    { text: "Home is where one starts from.", author: "T.S. Eliot" },
+    { text: "A house is made with walls and beams; a home is built with love and dreams.", author: "Ralph Waldo Emerson" },
+    { text: "He is not a full man who does not own a piece of the earth.", author: "Hebrew Proverb" },
+    { text: "Real estate is the purest form of entrepreneurship.", author: "Brian Buffini" },
+    { text: "In the real estate business, you learn more about people, and you learn more about community issues.", author: "Johnny Isakson" },
+    { text: "Homeownership is the cornerstone of a strong community.", author: "Rick Renzi" },
+    { text: "The best time to buy a home is always five years ago.", author: "Ray Brown" }
 ];
 
 const DailyQuote = ({ className = "" }) => {
