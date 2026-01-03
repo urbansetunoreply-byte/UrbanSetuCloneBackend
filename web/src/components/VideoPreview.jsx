@@ -417,10 +417,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           src={videos[currentIndex]}
           className={`shadow-xl transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
           playsInline
+          preload="auto"
           autoPlay
           onLoadedMetadata={updateVideoDims}
           onLoadStart={() => setIsLoading(true)}
           onWaiting={() => setIsLoading(true)}
+          onLoadedData={() => setIsLoading(false)}
           onCanPlay={() => setIsLoading(false)}
           onPlaying={() => setIsLoading(false)}
           onError={handleVideoError}
