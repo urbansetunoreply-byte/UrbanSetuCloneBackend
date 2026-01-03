@@ -5,7 +5,8 @@ import LocationSelector from "../components/LocationSelector";
 import ESGManagement from "../components/ESGManagement";
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { FaCompass } from "react-icons/fa";
+import { FaCompass, FaPlay } from "react-icons/fa";
+import VideoPreview from '../components/VideoPreview';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function CreateListing() {
@@ -92,6 +93,7 @@ export default function CreateListing() {
   const [consent, setConsent] = useState(false);
   // LocationSelector state
   const [locationState, setLocationState] = useState({ state: "", district: "", city: "", cities: [] });
+  const [previewVideo, setPreviewVideo] = useState(null);
 
   // Get the previous path for redirection
   const getPreviousPath = () => {
@@ -1046,11 +1048,20 @@ export default function CreateListing() {
                   {url && (
                     <div className="w-full rounded-lg overflow-hidden bg-black">
                       <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
-                        <video
-                          src={url}
-                          className="absolute inset-0 w-full h-full object-contain bg-black"
-                          controls
-                        />
+                        <div className="absolute inset-0 w-full h-full bg-black cursor-pointer group" onClick={() => setPreviewVideo(url)}>
+                          <video
+                            src={url}
+                            className="w-full h-full object-contain"
+                            muted
+                            playsInline
+                            preload="metadata"
+                          />
+                          <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <FaPlay className="text-white text-xl ml-1" />
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1160,6 +1171,11 @@ export default function CreateListing() {
             </button>
           </div>
           {error && <p className="text-red-500 text-center">{error}</p>}
+          <VideoPreview
+            isOpen={!!previewVideo}
+            onClose={() => setPreviewVideo(null)}
+            videos={previewVideo ? [previewVideo] : []}
+          />
         </form>
       </div>
     </div>

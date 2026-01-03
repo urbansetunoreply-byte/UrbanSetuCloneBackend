@@ -4,7 +4,8 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import LocationSelector from "../components/LocationSelector";
 import ESGManagement from "../components/ESGManagement";
 import { toast } from 'react-toastify';
-import { FaCompass } from "react-icons/fa";
+import { FaCompass, FaPlay } from "react-icons/fa";
+import VideoPreview from '../components/VideoPreview';
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -1050,12 +1051,19 @@ export default function EditListing() {
                   )}
                   {url && (
                     <div className="w-full rounded-lg overflow-hidden bg-black">
-                      <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+                      <div className="absolute inset-0 w-full h-full bg-black cursor-pointer group" onClick={() => setPreviewVideo(url)}>
                         <video
                           src={url}
-                          className="absolute inset-0 w-full h-full object-contain bg-black"
-                          controls
+                          className="w-full h-full object-contain"
+                          muted
+                          playsInline
+                          preload="metadata"
                         />
+                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <FaPlay className="text-white text-xl ml-1" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1204,6 +1212,11 @@ export default function EditListing() {
             </button>
           </div>
           {error && <p className="text-red-500 text-center">{error}</p>}
+          <VideoPreview
+            isOpen={!!previewVideo}
+            onClose={() => setPreviewVideo(null)}
+            videos={previewVideo ? [previewVideo] : []}
+          />
         </form>
       </div>
     </div>

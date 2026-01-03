@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import VideoPreview from '../components/VideoPreview';
 import {
+    Play,
     Rocket,
     Zap,
     Bug,
@@ -25,6 +27,7 @@ const Updates = () => {
     const [filter, setFilter] = useState('all');
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [previewVideo, setPreviewVideo] = useState(null);
 
     useEffect(() => {
         fetchUpdates();
@@ -208,12 +211,20 @@ const Updates = () => {
                                         {/* Videos */}
                                         {(update.videoUrls?.length > 0 ? update.videoUrls : (update.videoUrl ? [update.videoUrl] : [])).map((url, i) => (
                                             <div key={`vid-${i}`} className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm bg-black">
-                                                <video
-                                                    src={url}
-                                                    className="w-full h-auto"
-                                                    controls
-                                                    playsInline
-                                                />
+                                                <div className="relative group/video cursor-pointer" onClick={() => setPreviewVideo(url)}>
+                                                    <video
+                                                        src={url}
+                                                        className="w-full h-auto"
+                                                        muted
+                                                        playsInline
+                                                        preload="metadata"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/30 group-hover/video:bg-black/40 transition-colors flex items-center justify-center">
+                                                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover/video:scale-110 transition-transform">
+                                                            <Play className="w-6 h-6 text-white fill-white" />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -263,6 +274,11 @@ const Updates = () => {
                     </div>
                 )}
             </div>
+            <VideoPreview
+                isOpen={!!previewVideo}
+                onClose={() => setPreviewVideo(null)}
+                videos={previewVideo ? [previewVideo] : []}
+            />
         </div>
     );
 };
