@@ -200,10 +200,18 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           onClose();
           break;
         case 'ArrowLeft':
-          setCurrentIndex(prev => prev > 0 ? prev - 1 : prev);
+          setCurrentIndex(prev => {
+            if (prev > 0) return prev - 1;
+            showFeedback("First Image");
+            return prev;
+          });
           break;
         case 'ArrowRight':
-          setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : prev);
+          setCurrentIndex(prev => {
+            if (prev < imagesArray.length - 1) return prev + 1;
+            showFeedback("Last Image");
+            return prev;
+          });
           break;
         case '+':
         case '=':
@@ -477,9 +485,17 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         const dir = swipeOffset > 0 ? -1 : 1;
 
         // Prevent Loop (Stop at edges)
-        if ((dir === 1 && currentIndex >= imagesArray.length - 1) ||
-          (dir === -1 && currentIndex <= 0)) {
-          // Snap back logic
+        // Prevent Loop (Stop at edges) with Feedback
+        if (dir === 1 && currentIndex >= imagesArray.length - 1) {
+          showFeedback("Last Image");
+          setIsAnimatingSwipe(true);
+          setSwipeOffset(0);
+          setTimeout(() => setIsAnimatingSwipe(false), 300);
+          touchStartRef.current = null;
+          return;
+        }
+        if (dir === -1 && currentIndex <= 0) {
+          showFeedback("First Image");
           setIsAnimatingSwipe(true);
           setSwipeOffset(0);
           setTimeout(() => setIsAnimatingSwipe(false), 300);

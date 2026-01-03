@@ -696,32 +696,27 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         setPosition(prev => getClampedPosition(prev.x + dx / scale, prev.y + dy / scale, scale));
 
         lastDragRef.current = { x: touch.clientX, y: touch.clientY };
-      } else if (speedTimeoutRef.current && !isSpeedingRef.current) {
-        const touch = e.touches[0];
+      } else if (gestureRef.current.type) {
+        // Active Gesture Control
+        e.preventDefault();
+        hasMovedRef.current = true;
+        ignoreClickRef.current = true;
 
-        // Check for active gesture control first
-        if (gestureRef.current.type) {
-          e.preventDefault();
-          hasMovedRef.current = true; // Prevent click
-          ignoreClickRef.current = true;
+        const deltaY = gestureRef.current.startY - touch.clientY; // Up is positive
+        const sensitivity = 0.005;
+        const change = deltaY * sensitivity;
 
-          const deltaY = gestureRef.current.startY - touch.clientY; // Up is positive
-          // Sensitivity: 200px = full range (0-1 typically)
-          const sensitivity = 0.005; // Change per pixel
-          const change = deltaY * sensitivity;
-
-          if (gestureRef.current.type === 'volume') {
-            const newVal = Math.min(Math.max(gestureRef.current.startVal + change, 0), 1);
-            setVolume(newVal);
-            showFeedback(`Volume: ${Math.round(newVal * 100)}%`);
-          } else if (gestureRef.current.type === 'brightness') {
-            const newVal = Math.min(Math.max(gestureRef.current.startVal + change, 0.2), 2.0);
-            setBrightness(newVal);
-            showFeedback(`Intensity: ${Math.round(newVal * 100)}%`);
-          }
-          return;
+        if (gestureRef.current.type === 'volume') {
+          const newVal = Math.min(Math.max(gestureRef.current.startVal + change, 0), 1);
+          setVolume(newVal);
+          showFeedback(`Volume: ${Math.round(newVal * 100)}%`);
+        } else if (gestureRef.current.type === 'brightness') {
+          const newVal = Math.min(Math.max(gestureRef.current.startVal + change, 0.2), 2.0);
+          setBrightness(newVal);
+          showFeedback(`Intensity: ${Math.round(newVal * 100)}%`);
         }
-
+      } else if (speedTimeoutRef.current && !isSpeedingRef.current) {
+        // Detection Logic
         const dx = touch.clientX - touchStartRef.current.x;
         const dy = touch.clientY - touchStartRef.current.y;
         const dist = Math.abs(dx) + Math.abs(dy);
