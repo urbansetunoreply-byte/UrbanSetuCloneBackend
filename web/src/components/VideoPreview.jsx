@@ -85,23 +85,29 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       // Don't trigger if typing in an input (though unlikey here)
       if (e.target.tagName === 'INPUT') return;
 
-      switch (e.key) {
+      switch (e.key.toLowerCase()) {
         case ' ': // Space - Play/Pause
+        case 'k':
           e.preventDefault();
           togglePlay();
           break;
+        case 'm': // Mute
+          setVolume(v => v === 0 ? 1 : 0);
+          break;
         case 'ArrowRight': // Forward 5s or Next video
+        case 'l': // +10s
           if (scale === 1 && videos.length > 1 && e.ctrlKey) {
             setCurrentIndex(prev => prev < videos.length - 1 ? prev + 1 : 0);
           } else if (videoRef.current) {
-            videoRef.current.currentTime += 5;
+            videoRef.current.currentTime += (e.key === 'l' ? 10 : 5);
           }
           break;
         case 'ArrowLeft': // Rewind 5s or Prev video
+        case 'j': // -10s
           if (scale === 1 && videos.length > 1 && e.ctrlKey) {
             setCurrentIndex(prev => prev > 0 ? prev - 1 : videos.length - 1);
           } else if (videoRef.current) {
-            videoRef.current.currentTime -= 5;
+            videoRef.current.currentTime -= (e.key === 'j' ? 10 : 5);
           }
           break;
         case 'ArrowUp': // Volume Up or Pan Up
@@ -131,7 +137,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         case 'f': // Fullscreen
           toggleFullscreen();
           break;
-        case 'Escape':
+        case 'escape':
           onClose();
           break;
       }
@@ -390,7 +396,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
       {/* Video Viewport */}
       <div
-        className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black"
+        className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black group"
         onMouseDown={handleMouseDown}
       >
         {isLoading && (
@@ -425,10 +431,6 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           onPlaying={() => setIsLoading(false)}
           onError={handleVideoError}
           onTimeUpdate={handleTimeUpdate}
-          onClick={(e) => {
-            e.stopPropagation(); // Stop propagation to background
-            if (!isDragging) togglePlay(e);
-          }}
           onEnded={() => { setIsPlaying(false); setShowControls(true); }}
           style={{
             maxWidth: '100%',
@@ -438,6 +440,24 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           }}
           draggable={false}
         />
+
+        {/* Central Play/Pause Button Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePlay(e);
+            }}
+            className={`pointer-events-auto transform transition-all duration-300 bg-black/60 backdrop-blur-sm p-6 rounded-full text-white hover:scale-110 shadow-2xl ${!isPlaying ? 'opacity-100 scale-100' : 'opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100'
+              }`}
+          >
+            {isPlaying ? (
+              <FaPause className="text-4xl" />
+            ) : (
+              <FaPlay className="text-4xl pl-2" />
+            )}
+          </button>
+        </div>
 
         {/* Zoom Indicator Toast */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none transition-opacity duration-300 ${zoomMessage ? 'opacity-100' : 'opacity-0'}`}>
