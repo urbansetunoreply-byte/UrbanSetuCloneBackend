@@ -42,6 +42,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [zoomMessage, setZoomMessage] = useState(null);
   const zoomTimeoutRef = useRef(null);
+  const [seekFeedback, setSeekFeedback] = useState(null); // 'forward' | 'rewind' | null
+  const lastTapRef = useRef(0);
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -168,6 +170,38 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       if (zoomTimeoutRef.current) clearTimeout(zoomTimeoutRef.current);
     };
   }, []);
+
+  // Double Tap Seek Logic
+  const handleSeek = (seconds) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime += seconds;
+      setSeekFeedback(seconds > 0 ? 'forward' : 'rewind');
+      setTimeout(() => setSeekFeedback(null), 800);
+    }
+  };
+
+  const handleVideoAreaClick = (e) => {
+    // Detect Double Tap
+    const now = Date.now();
+    const timeDiff = now - lastTapRef.current;
+
+    if (timeDiff < 300 && timeDiff > 0) {
+      // It's a double tap!
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const width = rect.width;
+
+      if (x > width * 0.65) {
+        // Right side (last 35%) -> Forward 10s
+        handleSeek(10);
+      } else if (x < width * 0.35) {
+        // Left side (first 35%) -> Rewind 10s
+        handleSeek(-10);
+      }
+    }
+
+    lastTapRef.current = now;
+  };
 
   // Activity Monitor (Auto-hide controls)
   useEffect(() => {
@@ -398,6 +432,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       <div
         className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black group"
         onMouseDown={handleMouseDown}
+        onClick={handleVideoAreaClick}
       >
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
@@ -440,6 +475,20 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           }}
           draggable={false}
         />
+
+        {/* Seek Feedback Overlays */}
+        {seekFeedback === 'rewind' && (
+          <div className="absolute left-10 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center justify-center text-white bg-black/50 p-6 rounded-full animate-ping-once backdrop-blur-sm">
+            <FaUndo className="text-3xl mb-1" />
+            <span className="font-bold text-sm">-10s</span>
+          </div>
+        )}
+        {seekFeedback === 'forward' && (
+          <div className="absolute right-10 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center justify-center text-white bg-black/50 p-6 rounded-full animate-ping-once backdrop-blur-sm">
+            <FaUndo className="text-3xl mb-1 transform scale-x-[-1]" />
+            <span className="font-bold text-sm">+10s</span>
+          </div>
+        )}
 
         {/* Central Play/Pause Button Overlay */}
         <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
