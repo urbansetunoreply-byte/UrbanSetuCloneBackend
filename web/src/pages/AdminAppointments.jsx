@@ -6,6 +6,7 @@ import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import { getThemeColors, getDarkModeContainerClass, getDarkModeInputClass, getDarkModeTextClass, getDarkModeSecondaryTextClass, getDarkModeBorderClass, getDarkModeHoverClass } from '../utils/chatTheme';
 import ImagePreview from '../components/ImagePreview';
+import VideoMessageBubble from '../components/VideoMessageBubble';
 
 import LinkPreview from '../components/LinkPreview';
 import { EmojiButton } from '../components/EmojiPicker';
@@ -8016,35 +8017,20 @@ function AdminAppointmentRow({
                                       )}
                                       {/* Video Message */}
                                       {c && c.videoUrl && (
-                                        <div className="mb-2 relative group max-w-full inline-block">
-                                          <div
-                                            className="relative rounded-lg overflow-hidden bg-black cursor-pointer shadow-md hover:shadow-lg transition-all"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              const videoUrls = (localComments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
-                                              const startIndex = Math.max(0, videoUrls.indexOf(c.videoUrl));
-                                              window.dispatchEvent(new CustomEvent('open-media-preview', {
-                                                detail: {
-                                                  videos: videoUrls,
-                                                  index: startIndex
-                                                }
-                                              }));
-                                            }}
-                                          >
-                                            {/* Use video tag as thumbnail, no controls */}
-                                            <video
-                                              src={c.videoUrl}
-                                              className="max-w-full max-h-64 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
-                                              preload="metadata"
-                                            />
-                                            {/* Play Overlay */}
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
-                                              <div className="bg-black/60 rounded-full p-3 backdrop-blur-sm transform group-hover:scale-110 transition-transform">
-                                                <FaPlay className="text-white text-xl ml-1" />
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
+                                        <VideoMessageBubble
+                                          videoUrl={c.videoUrl}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const videoUrls = (localComments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
+                                            const startIndex = Math.max(0, videoUrls.indexOf(c.videoUrl));
+                                            window.dispatchEvent(new CustomEvent('open-media-preview', {
+                                              detail: {
+                                                videos: videoUrls,
+                                                index: startIndex
+                                              }
+                                            }));
+                                          }}
+                                        />
                                       )}
                                       {/* Audio Message */}
                                       {c && c.audioUrl && (

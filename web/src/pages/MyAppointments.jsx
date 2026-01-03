@@ -19,6 +19,7 @@ import ChatSettingsModal from '../components/ChatSettingsModal';
 import { useChatSettings } from '../hooks/useChatSettings';
 import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
+import VideoMessageBubble from '../components/VideoMessageBubble';
 import LinkPreview from '../components/LinkPreview';
 import UserAvatar from '../components/UserAvatar';
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
@@ -8499,33 +8500,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                         )}
                                         {/* Video Message */}
                                         {c.videoUrl && (
-                                          <div className="mb-2 relative group max-w-full inline-block">
-                                            <div
-                                              className="relative rounded-lg overflow-hidden bg-black cursor-pointer shadow-md hover:shadow-lg transition-all"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                const videoUrls = (comments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
-                                                const startIndex = Math.max(0, videoUrls.indexOf(c.videoUrl));
-                                                window.dispatchEvent(new CustomEvent('open-media-preview', {
-                                                  detail: { videos: videoUrls, index: startIndex }
-                                                }));
-                                              }}
-                                            >
-                                              <video
-                                                src={c.videoUrl}
-                                                className="max-w-full max-h-64 object-contain opacity-80 group-hover:opacity-60 transition-opacity"
-                                                preload="metadata"
-                                              />
-                                              <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="bg-white/30 backdrop-blur-sm p-3 rounded-full shadow-lg group-hover:scale-110 transition-transform">
-                                                  <FaPlay className="text-white text-xl drop-shadow-md ml-1" />
-                                                </div>
-                                              </div>
-                                              <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded backdrop-blur-sm">
-                                                Video
-                                              </div>
-                                            </div>
-                                          </div>
+                                          <VideoMessageBubble
+                                            videoUrl={c.videoUrl}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const videoUrls = (comments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
+                                              const startIndex = Math.max(0, videoUrls.indexOf(c.videoUrl));
+                                              window.dispatchEvent(new CustomEvent('open-media-preview', {
+                                                detail: { videos: videoUrls, index: startIndex }
+                                              }));
+                                            }}
+                                          />
                                         )}
                                         {/* Audio Message */}
                                         {c.audioUrl && (
