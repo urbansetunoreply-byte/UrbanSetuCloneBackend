@@ -4,13 +4,13 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // https://vite.dev/config/
 export default defineConfig({
-  server:{
-      proxy:{
-        '/api':{
-          target:"http://localhost:3000",
-          secure:false,
-        },
+  server: {
+    proxy: {
+      '/api': {
+        target: "http://localhost:3000",
+        secure: false,
       },
+    },
   },
   plugins: [
     react(),
@@ -38,6 +38,7 @@ export default defineConfig({
     },
   },
   build: {
+    sourcemap: false,
     commonjsOptions: {
       transformMixedEsModules: true,
     },
