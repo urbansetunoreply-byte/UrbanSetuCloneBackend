@@ -1014,7 +1014,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       <div className={`absolute left-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'brightness' ? 'opacity-100' : 'opacity-0'}`}>
         <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${Math.min(Math.max((brightness - 0.2) / 1.8, 0), 1) * 100}%` }} />
         <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
-          <FaSun className="text-gray-800 drop-shadow-md text-xl mix-blend-difference text-white" />
+          <FaSun className="text-blue-500 drop-shadow-md text-xl" />
         </div>
       </div>
 
@@ -1022,7 +1022,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       <div className={`absolute right-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'volume' ? 'opacity-100' : 'opacity-0'}`}>
         <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${volume * 100}%` }} />
         <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
-          {volume === 0 ? <FaVolumeMute className="text-gray-800 drop-shadow-md text-xl mix-blend-difference text-white" /> : <FaVolumeUp className="text-gray-800 drop-shadow-md text-xl mix-blend-difference text-white" />}
+          {volume === 0 ? <FaVolumeMute className="text-blue-500 drop-shadow-md text-xl" /> : <FaVolumeUp className="text-blue-500 drop-shadow-md text-xl" />}
         </div>
       </div>
 
