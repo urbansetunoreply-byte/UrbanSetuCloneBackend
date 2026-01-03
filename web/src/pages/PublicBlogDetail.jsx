@@ -331,7 +331,12 @@ const PublicBlogDetail = () => {
                             onClick={() => handleImageClick(index)}
                           />
                         ) : (
-                          <video src={item.url} className="w-full h-full object-contain" controls />
+                          <div className="relative w-full h-full flex items-center justify-center cursor-pointer group" onClick={() => { setSelectedVideoIndex(item.vIndex); setShowVideoPreview(true); }}>
+                            <video src={item.url} className="w-full h-full object-contain bg-black" muted playsInline />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                              <Play className="w-16 h-16 text-white opacity-80 group-hover:opacity-100 transition-all drop-shadow-lg fill-white/20" />
+                            </div>
+                          </div>
                         )}
 
                         {/* Media Type Badge */}
