@@ -419,6 +419,9 @@ export default function AdminUpdates() {
                                     <th className="px-6 py-4 font-semibold text-sm">Category</th>
                                     <th className="px-6 py-4 font-semibold text-sm">Version</th>
                                     <th className="px-6 py-4 font-semibold text-sm">Release Date</th>
+                                    {currentUser?.role === 'rootadmin' && (
+                                        <th className="px-6 py-4 font-semibold text-sm">Publisher</th>
+                                    )}
                                     <th className="px-6 py-4 font-semibold text-sm">Status</th>
                                     <th className="px-6 py-4 font-semibold text-sm text-right">Actions</th>
                                 </tr>
@@ -445,6 +448,14 @@ export default function AdminUpdates() {
                                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                                             {new Date(update.releaseDate).toLocaleDateString()}
                                         </td>
+                                        {currentUser?.role === 'rootadmin' && (
+                                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-gray-900 dark:text-white capitalize">{update.author?.username || 'Unknown'}</span>
+                                                    <span className="text-xs text-gray-500 capitalize">{update.author?.role}</span>
+                                                </div>
+                                            </td>
+                                        )}
                                         <td className="px-6 py-4">
                                             {update.isActive ? (
                                                 <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs font-medium bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full w-fit">

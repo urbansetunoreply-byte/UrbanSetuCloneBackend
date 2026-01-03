@@ -97,7 +97,8 @@ router.get('/', verifyToken, async (req, res, next) => {
         }
 
         const updates = await PlatformUpdate.find()
-            .sort({ releaseDate: -1 });
+            .sort({ releaseDate: -1 })
+            .populate('author', 'username email role');
 
         res.status(200).json({ success: true, data: updates });
     } catch (error) {
