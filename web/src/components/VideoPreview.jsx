@@ -295,9 +295,11 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     if (!document.fullscreenElement) {
       containerRef.current?.requestFullscreen();
       setIsFullscreen(true);
+      showFeedback("Fullscreen");
     } else {
       document.exitFullscreen();
       setIsFullscreen(false);
+      showFeedback("Exit Fullscreen");
     }
   };
 
@@ -305,6 +307,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     e.stopPropagation();
     const url = videos[currentIndex];
     const filename = `video-${currentIndex + 1}.mp4`;
+
+    showFeedback("Downloading...");
 
     try {
       const response = await fetch(url);
@@ -317,9 +321,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
-      toast.success("Download started");
     } catch (err) {
-      // Fallback for CORS or other issues
+      // Fallback
       const link = document.createElement('a');
       link.href = url;
       link.download = filename;
@@ -327,7 +330,6 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast.info("Opened video for download");
     }
   };
 
@@ -373,7 +375,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     const speeds = [0.5, 1, 1.5, 2];
     const nextIdx = (speeds.indexOf(playbackRate) + 1) % speeds.length;
     setPlaybackRate(speeds[nextIdx]);
-    toast.info(`Playback speed: ${speeds[nextIdx]}x`, { autoClose: 1000 });
+    showFeedback(`${speeds[nextIdx]}x Speed`);
   };
 
   // Drag Logic
