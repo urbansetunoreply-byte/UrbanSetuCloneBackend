@@ -81,6 +81,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const hasMovedRef = useRef(false);
   const ignoreClickRef = useRef(false);
   const isTouchRef = useRef(false);
+  const lastDragRef = useRef({ x: 0, y: 0 });
   const pinchStartDistRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
@@ -370,10 +371,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     ignoreClickRef.current = false;
     if (scale > 1) {
       setIsDragging(true);
-      setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y
-      });
+      lastDragRef.current = { x: e.clientX, y: e.clientY };
     }
   };
 
@@ -392,10 +390,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     // Single touch pan
     if (scale > 1 && e.touches.length === 1) {
       setIsDragging(true);
-      setDragStart({
-        x: e.touches[0].clientX - position.x,
-        y: e.touches[0].clientY - position.y
-      });
+      lastDragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     }
     // Pinch to zoom
     else if (e.touches.length === 2) {
@@ -413,10 +408,16 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     // Single touch pan
     if (isDragging && scale > 1 && e.touches.length === 1) {
       e.preventDefault();
-      setPosition({
-        x: e.touches[0].clientX - dragStart.x,
-        y: e.touches[0].clientY - dragStart.y
-      });
+      const touch = e.touches[0];
+      const dx = touch.clientX - lastDragRef.current.x;
+      const dy = touch.clientY - lastDragRef.current.y;
+
+      setPosition(prev => ({
+        x: prev.x + dx / scale,
+        y: prev.y + dy / scale
+      }));
+
+      lastDragRef.current = { x: touch.clientX, y: touch.clientY };
     }
     // Pinch to zoom
     else if (e.touches.length === 2 && pinchStartDistRef.current) {
@@ -649,10 +650,16 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     if (isDragging && scale > 1) {
       e.preventDefault();
       hasMovedRef.current = true;
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
+
+      const dx = e.clientX - lastDragRef.current.x;
+      const dy = e.clientY - lastDragRef.current.y;
+
+      setPosition(prev => ({
+        x: prev.x + dx / scale,
+        y: prev.y + dy / scale
+      }));
+
+      lastDragRef.current = { x: e.clientX, y: e.clientY };
     }
 
     // Toggle controls on mouse move (if not touch)

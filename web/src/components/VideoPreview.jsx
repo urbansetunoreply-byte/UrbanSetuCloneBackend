@@ -62,6 +62,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const hasMovedRef = useRef(false);
   const pinchStartDistRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
+  const lastDragRef = useRef({ x: 0, y: 0 });
 
   // Initialize
   useEffect(() => {
@@ -511,10 +512,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     if (scale > 1) {
       e.preventDefault();
       setIsDragging(true);
-      setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y
-      });
+      lastDragRef.current = { x: e.clientX, y: e.clientY };
     } else {
       // Speed Logic (Long Press)
       originalSpeedRef.current = playbackRate;
@@ -535,10 +533,15 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     if (isDragging && scale > 1) {
       hasMovedRef.current = true;
       e.preventDefault();
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
+      const dx = e.clientX - lastDragRef.current.x;
+      const dy = e.clientY - lastDragRef.current.y;
+
+      setPosition(prev => ({
+        x: prev.x + dx / scale,
+        y: prev.y + dy / scale
+      }));
+
+      lastDragRef.current = { x: e.clientX, y: e.clientY };
     }
   };
 
@@ -580,7 +583,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       const touch = e.touches[0];
       if (scale > 1) {
         setIsDragging(true);
-        setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
+        lastDragRef.current = { x: touch.clientX, y: touch.clientY };
       } else {
         touchStartRef.current = { time: Date.now(), x: touch.clientX, y: touch.clientY };
         originalSpeedRef.current = playbackRate;
@@ -616,7 +619,15 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       if (isDragging && scale > 1) {
         hasMovedRef.current = true;
         e.preventDefault();
-        setPosition({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y });
+        const dx = touch.clientX - lastDragRef.current.x;
+        const dy = touch.clientY - lastDragRef.current.y;
+
+        setPosition(prev => ({
+          x: prev.x + dx / scale,
+          y: prev.y + dy / scale
+        }));
+
+        lastDragRef.current = { x: touch.clientX, y: touch.clientY };
       } else if (speedTimeoutRef.current && !isSpeedingRef.current) {
         const dist = Math.abs(touch.clientX - touchStartRef.current.x) + Math.abs(touch.clientY - touchStartRef.current.y);
         if (dist > 10) {
