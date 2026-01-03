@@ -413,10 +413,18 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     e.stopPropagation();
     if (isMuted) {
       setVolume(1);
-      showFeedback("Unmuted");
+      showFeedback(
+        <div className="flex items-center gap-3">
+          <FaVolumeUp /> <span>Unmuted</span>
+        </div>
+      );
     } else {
       setVolume(0);
-      showFeedback("Muted");
+      showFeedback(
+        <div className="flex items-center gap-3">
+          <FaVolumeMute /> <span>Muted</span>
+        </div>
+      );
     }
   };
 
@@ -709,11 +717,21 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         if (gestureRef.current.type === 'volume') {
           const newVal = Math.min(Math.max(gestureRef.current.startVal + change, 0), 1);
           setVolume(newVal);
-          showFeedback(`Volume: ${Math.round(newVal * 100)}%`);
+          showFeedback(
+            <div className="flex items-center gap-3">
+              {newVal === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
+              <span>Volume: {Math.round(newVal * 100)}%</span>
+            </div>
+          );
         } else if (gestureRef.current.type === 'brightness') {
           const newVal = Math.min(Math.max(gestureRef.current.startVal + change, 0.2), 2.0);
           setBrightness(newVal);
-          showFeedback(`Intensity: ${Math.round(newVal * 100)}%`);
+          showFeedback(
+            <div className="flex items-center gap-3">
+              <FaSun />
+              <span>Brightness: {Math.round(newVal * 100)}%</span>
+            </div>
+          );
         }
       } else if (speedTimeoutRef.current && !isSpeedingRef.current) {
         // Detection Logic
