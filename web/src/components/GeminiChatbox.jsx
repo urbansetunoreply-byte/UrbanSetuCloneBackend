@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH, FaShareAlt, FaBan } from 'react-icons/fa';
 import EqualizerButton from './EqualizerButton';
 import ShareChatModal from './ShareChatModal';
+import VideoPreview from './VideoPreview';
+import { FaPlay } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 // import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { isMobileDevice } from '../utils/mobileUtils';
@@ -84,6 +86,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(forceModalOpen);
+    const [previewVideo, setPreviewVideo] = useState(null);
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -5085,18 +5088,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 {message.videoUrl && (
                                                     <div className="mb-2">
                                                         <div className="relative">
-                                                            <video
-                                                                src={message.videoUrl}
-                                                                className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                                                                controls
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    if (e.target.requestFullscreen) {
-                                                                        e.target.requestFullscreen();
-                                                                    }
-                                                                }}
-                                                            />
+                                                            <div className="rounded-lg border cursor-pointer hover:opacity-90 transition-opacity overflow-hidden relative group" onClick={() => setPreviewVideo(message.videoUrl)}>
+                                                                <video
+                                                                    src={message.videoUrl}
+                                                                    className="max-w-full max-h-64 object-cover"
+                                                                    muted
+                                                                    playsInline
+                                                                    preload="metadata"
+                                                                />
+                                                                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                                                                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                                        <FaPlay className="text-white text-xl ml-1" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                             <button
                                                                 className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 p-1 rounded-full shadow-md transition-colors"
                                                                 onClick={async (e) => {
@@ -8909,6 +8914,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     </div>
                 )
             }
+            <VideoPreview
+                isOpen={!!previewVideo}
+                onClose={() => setPreviewVideo(null)}
+                videos={previewVideo ? [previewVideo] : []}
+            />
         </>
     );
 };

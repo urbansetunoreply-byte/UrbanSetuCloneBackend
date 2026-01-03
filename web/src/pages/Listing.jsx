@@ -12,6 +12,7 @@ import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
 import ImagePreview from "../components/ImagePreview.jsx";
 import VideoPreview from "../components/VideoPreview.jsx";
+import { FaPlay } from "react-icons/fa";
 import EMICalculator from "../components/EMICalculator.jsx";
 import SocialSharePanel from "../components/SocialSharePanel.jsx";
 import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
@@ -78,6 +79,7 @@ export default function Listing() {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [showDronePreview, setShowDronePreview] = useState(false);
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [faqs, setFaqs] = useState([]);
   const [relatedBlogs, setRelatedBlogs] = useState([]);
@@ -2214,7 +2216,12 @@ export default function Listing() {
                 {listing.droneVideoUrl && (
                   <div className="border rounded-lg p-3 bg-white">
                     <h4 className="font-semibold text-gray-800 mb-2">Drone View</h4>
-                    <video src={listing.droneVideoUrl} className="w-full h-64 rounded" controls />
+                    <div className="relative w-full h-64 rounded bg-black group cursor-pointer overflow-hidden" onClick={() => setShowDronePreview(true)}>
+                      <video src={listing.droneVideoUrl} className="w-full h-full object-cover opacity-80" muted playsInline />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                        <FaPlay className="text-white text-4xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all drop-shadow-lg" />
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -3631,6 +3638,16 @@ export default function Listing() {
           onClose={() => setShowVideoPreview(false)}
           videos={listing.videoUrls}
           initialIndex={selectedVideoIndex}
+        />
+      )}
+
+      {/* Drone Video Preview Modal */}
+      {listing && listing.droneVideoUrl && (
+        <VideoPreview
+          isOpen={showDronePreview}
+          onClose={() => setShowDronePreview(false)}
+          videos={[listing.droneVideoUrl]}
+          initialIndex={0}
         />
       )}
 
