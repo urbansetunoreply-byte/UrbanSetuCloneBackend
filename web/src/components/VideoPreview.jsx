@@ -32,6 +32,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
   // Transform States
   const [scale, setScale] = useState(1);
@@ -72,6 +73,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setPlaybackRate(1);
       setShowControls(true);
       setShowSettings(false);
+      setShowCloseConfirm(false);
     } else {
       document.body.style.overflow = '';
       setIsPlaying(false);
@@ -152,7 +154,11 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           toggleFullscreen();
           break;
         case 'escape':
-          onClose();
+          if (videoRef.current && !videoRef.current.paused) {
+            videoRef.current.pause();
+            setIsPlaying(false);
+          }
+          setShowCloseConfirm(true);
           break;
       }
       setShowControls(true);
@@ -401,6 +407,26 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     showFeedback(`${speeds[nextIdx]}x Speed`);
   };
 
+  const handleCloseRequest = (e) => {
+    e?.stopPropagation();
+    if (videoRef.current && !videoRef.current.paused) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+    setShowCloseConfirm(true);
+  };
+
+  const confirmClose = (e) => {
+    e?.stopPropagation();
+    setShowCloseConfirm(false);
+    onClose();
+  };
+
+  const cancelClose = (e) => {
+    e?.stopPropagation();
+    setShowCloseConfirm(false);
+  };
+
   // Drag & Speed Logic
   const handleMouseDown = (e) => {
     if (scale > 1) {
@@ -520,7 +546,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     >
       {/* Top Controls (Close, Title?) */}
       <button
-        onClick={onClose}
+        onClick={handleCloseRequest}
         className={`absolute top-4 right-4 text-white hover:text-red-400 z-50 bg-black/50 backdrop-blur rounded-full p-3 transition-all duration-300 hover:bg-black/80 hover:scale-110 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
           }`}
       >
@@ -710,6 +736,36 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           </div>
         </div>
       </div>
+
+      {/* Close Confirmation Modal */}
+      {showCloseConfirm && (
+        <div
+          className="absolute inset-0 z-[10001] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn"
+          onClick={cancelClose}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-sm w-full mx-4 transform scale-100 transition-all border border-gray-200 dark:border-gray-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Close Video?</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to close the video player?</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelClose}
+                className="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors font-medium border border-gray-300 dark:border-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmClose}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium shadow-lg shadow-red-500/30"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
