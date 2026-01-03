@@ -82,6 +82,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const ignoreClickRef = useRef(false);
   const isTouchRef = useRef(false);
   const lastDragRef = useRef({ x: 0, y: 0 });
+  const lastTapRef = useRef(0);
   const pinchStartDistRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
@@ -440,12 +441,40 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     }
   };
 
-  const handleTouchEnd = () => {
-    if ((isDragging || pinchStartDistRef.current) && hasMovedRef.current) {
+  const handleTouchEnd = (e) => {
+    const moved = hasMovedRef.current;
+
+    if ((isDragging || pinchStartDistRef.current) && moved) {
       ignoreClickRef.current = true;
     }
     setIsDragging(false);
     pinchStartDistRef.current = null;
+
+    // Double tap logic (only if not moved/dragged)
+    if (!moved) {
+      const now = Date.now();
+      const timeDiff = now - lastTapRef.current;
+
+      if (timeDiff < 300 && timeDiff > 0) {
+        // Double Tap Detected
+        ignoreClickRef.current = true; // Prevent the click handler (control toggle)
+
+        if (scale > 1) {
+          // Double tap to Zoom Out
+          setScale(1);
+          setPosition({ x: 0, y: 0 });
+          showFeedback("100%");
+        } else {
+          // Double tap to Zoom In
+          setScale(2.5);
+          showFeedback("250%");
+          setShowControls(false); // Hide controls for better view
+        }
+        lastTapRef.current = 0;
+      } else {
+        lastTapRef.current = now;
+      }
+    }
   };
 
   const handleDownload = async () => {
