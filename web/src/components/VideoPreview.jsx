@@ -24,6 +24,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex || 0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [loadedProgress, setLoadedProgress] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(1);
 
@@ -75,7 +76,9 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       // Reset states
       setIsLoading(true);
       setIsPlaying(true);
+
       setProgress(0);
+      setLoadedProgress(0);
       setScale(1);
       setRotation(0);
       setPosition({ x: 0, y: 0 });
@@ -372,6 +375,35 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       const current = videoRef.current.currentTime;
       const total = videoRef.current.duration || 1;
       setProgress((current / total) * 100);
+
+      // Update Buffer
+      if (videoRef.current.buffered.length > 0) {
+        // Find the buffered range that covers the current time
+        for (let i = 0; i < videoRef.current.buffered.length; i++) {
+          if (videoRef.current.buffered.start(i) <= current && videoRef.current.buffered.end(i) >= current) {
+            setLoadedProgress((videoRef.current.buffered.end(i) / total) * 100);
+            break;
+          }
+        }
+      }
+    }
+  };
+
+  const handleProgress = () => {
+    if (videoRef.current && videoRef.current.duration) {
+      const vid = videoRef.current;
+      const total = vid.duration;
+      const current = vid.currentTime;
+
+      // Update Buffer on download progress
+      if (vid.buffered.length > 0) {
+        for (let i = 0; i < vid.buffered.length; i++) {
+          if (vid.buffered.start(i) <= current && vid.buffered.end(i) >= current) {
+            setLoadedProgress((vid.buffered.end(i) / total) * 100);
+            break;
+          }
+        }
+      }
     }
   };
 
@@ -822,7 +854,9 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           onCanPlay={() => setIsLoading(false)}
           onPlaying={() => setIsLoading(false)}
           onError={handleVideoError}
+
           onTimeUpdate={handleTimeUpdate}
+          onProgress={handleProgress}
           onEnded={() => { setIsPlaying(false); setShowControls(true); }}
           style={{
             maxWidth: '100%',
@@ -896,12 +930,18 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
               }
             }}
           >
+            {/* Buffer Bar */}
             <div
-              className="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all"
+              className="absolute top-0 left-0 h-full bg-white/40 rounded-full transition-all duration-300"
+              style={{ width: `${loadedProgress}%` }}
+            />
+            {/* Playback Progress */}
+            <div
+              className="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all relative z-10"
               style={{ width: `${progress}%` }}
             />
             <div
-              className="absolute top-1/2 -translate-y-1/2 h-3 w-3 bg-white rounded-full shadow opacity-0 group-hover/slider:opacity-100 transition-opacity"
+              className="absolute top-1/2 -translate-y-1/2 h-3 w-3 bg-white rounded-full shadow opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
               style={{ left: `${progress}%` }}
             />
           </div>
