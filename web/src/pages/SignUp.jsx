@@ -4,6 +4,7 @@ import { FaEye, FaEyeSlash, FaCheck, FaTimes, FaEdit } from "react-icons/fa";
 import Oauth from "../components/Oauth";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import RecaptchaWidget from "../components/RecaptchaWidget";
+import { toast } from 'react-toastify';
 import { useSelector } from "react-redux";
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
@@ -142,13 +143,47 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     };
   }, [resendTimer]);
 
-  // Extract referral code on mount
+  // Handle 'ref' parameter for referrals and 'redirect' for context messages
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+
+    // 1. Referral Logic
     const ref = params.get('ref') || localStorage.getItem('urbansetu_ref');
     if (ref) {
       setReferredBy(ref);
       console.log("Referral detected:", ref);
+
+      // Show referral bonus toast only if 'ref' is presently in URL
+      if (params.get('ref') && !toast.isActive('referral-bonus')) {
+        toast.success("Create an account to claim your referral bonus!", {
+          toastId: 'referral-bonus'
+        });
+      }
+    }
+
+    // 2. Context Toast Logic (redirect)
+    const redirect = params.get('redirect');
+    if (redirect) {
+      const actionMessages = {
+        like: "Please create an account to like this content",
+        dislike: "Please create an account to react",
+        comment: "Please create an account to comment",
+        reply: "Please create an account to reply",
+        report: "Please create an account to report content",
+        chat: "Please create an account to start a chat",
+        book: "Please create an account to book an appointment",
+        review: "Please create an account to leave a review",
+        rate: "Please create an account to rate",
+        access: "Please create an account to access this page",
+        save: "Please create an account to save this item",
+        vote: "Please create an account to vote"
+      };
+
+      let message = actionMessages[redirect] || "Please create an account to access this page";
+
+      if (!toast.isActive(`signup-redirect-${redirect}`)) {
+        toast.info(message, { toastId: `signup-redirect-${redirect}` });
+      }
     }
   }, [location]);
 
