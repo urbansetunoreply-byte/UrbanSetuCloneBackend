@@ -200,10 +200,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           onClose();
           break;
         case 'ArrowLeft':
-          setCurrentIndex(prev => prev > 0 ? prev - 1 : imagesArray.length - 1);
+          setCurrentIndex(prev => prev > 0 ? prev - 1 : prev);
           break;
         case 'ArrowRight':
-          setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : 0);
+          setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : prev);
           break;
         case '+':
         case '=':
@@ -475,6 +475,18 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         // >0 (Right) -> Prev (-1)
         // <0 (Left) -> Next (1)
         const dir = swipeOffset > 0 ? -1 : 1;
+
+        // Prevent Loop (Stop at edges)
+        if ((dir === 1 && currentIndex >= imagesArray.length - 1) ||
+          (dir === -1 && currentIndex <= 0)) {
+          // Snap back logic
+          setIsAnimatingSwipe(true);
+          setSwipeOffset(0);
+          setTimeout(() => setIsAnimatingSwipe(false), 300);
+          touchStartRef.current = null;
+          return;
+        }
+
         changeImage(dir);
         touchStartRef.current = null;
         return;
@@ -848,24 +860,28 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       {/* Navigation Arrows */}
       {imagesArray.length > 1 && (
         <>
-          <button
-            onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : imagesArray.length - 1)}
-            className={`absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 hidden md:block ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
-              }`}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={() => setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : 0)}
-            className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 hidden md:block ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
-              }`}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          {currentIndex > 0 && (
+            <button
+              onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : prev)}
+              className={`absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 hidden md:block ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+                }`}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+          {currentIndex < imagesArray.length - 1 && (
+            <button
+              onClick={() => setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : prev)}
+              className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 hidden md:block ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
+                }`}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
         </>
       )}
 
