@@ -13418,6 +13418,12 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* Dispute Reporting Modal */}
       <ConnectedDisputeModal />
 
+      <VideoPreview
+        isOpen={showVideoPreview}
+        onClose={() => setShowVideoPreview(false)}
+        videos={previewVideos}
+        initialIndex={previewVideoIndex}
+      />
       {/* Global Contact Support */}
     </div>
   );

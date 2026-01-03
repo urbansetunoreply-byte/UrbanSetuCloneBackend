@@ -8023,38 +8023,30 @@ function AdminAppointmentRow({
                                       )}
                                       {/* Video Message */}
                                       {c && c.videoUrl && (
-                                        <div className="mb-2">
-                                          <video
-                                            src={c && c.videoUrl ? c.videoUrl : ''}
-                                            className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                                            controls
+                                        <div className="mb-2 relative group max-w-full inline-block">
+                                          <div
+                                            className="relative rounded-lg overflow-hidden bg-black cursor-pointer shadow-md hover:shadow-lg transition-all"
                                             onClick={(e) => {
-                                              e.preventDefault();
                                               e.stopPropagation();
-                                              if (e.target.requestFullscreen) {
-                                                e.target.requestFullscreen();
-                                              } else if (e.target.webkitRequestFullscreen) {
-                                                e.target.webkitRequestFullscreen();
-                                              } else if (e.target.msRequestFullscreen) {
-                                                e.target.msRequestFullscreen();
-                                              }
+                                              const videoUrls = (localComments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
+                                              const startIndex = Math.max(0, videoUrls.indexOf(c.videoUrl));
+                                              setPreviewVideos(videoUrls);
+                                              setPreviewVideoIndex(startIndex);
+                                              setShowVideoPreview(true);
                                             }}
-                                          />
-                                          <div className={`mt-1 text-xs ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
-                                            <button
-                                              className={`${isMe ? 'text-white hover:text-blue-100' : 'text-blue-600 dark:text-blue-400 hover:underline'}`}
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                const a = document.createElement('a');
-                                                a.href = c && c.videoUrl ? c.videoUrl : '';
-                                                a.download = `video-${c._id || Date.now()}`;
-                                                a.target = '_blank';
-                                                document.body.appendChild(a);
-                                                a.click();
-                                                a.remove();
-                                                toast.success('Video download started');
-                                              }}
-                                            >Download</button>
+                                          >
+                                            {/* Use video tag as thumbnail, no controls */}
+                                            <video
+                                              src={c.videoUrl}
+                                              className="max-w-full max-h-64 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                                              preload="metadata"
+                                            />
+                                            {/* Play Overlay */}
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
+                                              <div className="bg-black/60 rounded-full p-3 backdrop-blur-sm transform group-hover:scale-110 transition-transform">
+                                                <FaPlay className="text-white text-xl ml-1" />
+                                              </div>
+                                            </div>
                                           </div>
                                         </div>
                                       )}
