@@ -78,6 +78,9 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const slideshowRef = useRef(null);
   const settingsRef = useRef(null);
   const feedbackTimeoutRef = useRef(null);
+  const hasMovedRef = useRef(false);
+  const pinchStartDistRef = useRef(null);
+  const pinchStartScaleRef = useRef(1);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
 
   const showFeedback = (msg) => {
@@ -381,6 +384,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   };
 
   const handleTouchStart = (e) => {
+    // Single touch pan
     if (scale > 1 && e.touches.length === 1) {
       setIsDragging(true);
       setDragStart({
@@ -388,9 +392,20 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         y: e.touches[0].clientY - position.y
       });
     }
+    // Pinch to zoom
+    else if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      pinchStartDistRef.current = dist;
+      pinchStartScaleRef.current = scale;
+      setIsDragging(false);
+    }
   };
 
   const handleTouchMove = (e) => {
+    // Single touch pan
     if (isDragging && scale > 1 && e.touches.length === 1) {
       e.preventDefault();
       setPosition({
@@ -398,10 +413,24 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         y: e.touches[0].clientY - dragStart.y
       });
     }
+    // Pinch to zoom
+    else if (e.touches.length === 2 && pinchStartDistRef.current) {
+      e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const ratio = dist / pinchStartDistRef.current;
+      const newScale = Math.min(Math.max(pinchStartScaleRef.current * ratio, 0.1), 8);
+
+      setScale(newScale);
+      showFeedback(`${Math.round(newScale * 100)}%`);
+    }
   };
 
   const handleTouchEnd = () => {
     setIsDragging(false);
+    pinchStartDistRef.current = null;
   };
 
   const handleDownload = async () => {

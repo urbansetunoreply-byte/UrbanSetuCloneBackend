@@ -60,6 +60,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const touchStartRef = useRef({ time: 0, x: 0, y: 0 });
   const wasPlayingRef = useRef(false);
   const hasMovedRef = useRef(false);
+  const pinchStartDistRef = useRef(null);
+  const pinchStartScaleRef = useRef(1);
 
   // Initialize
   useEffect(() => {
@@ -564,7 +566,17 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     hasMovedRef.current = false;
     ignoreClickRef.current = false;
     if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
-    if (e.touches.length === 1) {
+
+    if (e.touches.length === 2) {
+      // Pinch Zoom Start
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      pinchStartDistRef.current = dist;
+      pinchStartScaleRef.current = scale;
+      setIsDragging(false); // Disable drag during pinch
+    } else if (e.touches.length === 1) {
       const touch = e.touches[0];
       if (scale > 1) {
         setIsDragging(true);
@@ -583,7 +595,23 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   };
 
   const handleTouchMove = (e) => {
-    if (e.touches.length === 1) {
+    if (e.touches.length === 2 && pinchStartDistRef.current) {
+      // Pinch Zoom Move
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const ratio = dist / pinchStartDistRef.current;
+      const newScale = Math.min(Math.max(pinchStartScaleRef.current * ratio, 1), 5); // Limit scale 1x-5x
+
+      setScale(newScale);
+      showFeedback(`${Math.round(newScale * 100)}%`);
+
+      if (Math.abs(newScale - pinchStartScaleRef.current) > 0.1) {
+        hasMovedRef.current = true; // Consider pinch as movement
+        ignoreClickRef.current = true;
+      }
+    } else if (e.touches.length === 1) {
       const touch = e.touches[0];
       if (isDragging && scale > 1) {
         hasMovedRef.current = true;
@@ -600,13 +628,16 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   };
 
   const handleTouchEnd = () => {
+    // Reset Pinch
+    pinchStartDistRef.current = null;
+
     if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
     if (isSpeedingRef.current) {
       setPlaybackRate(originalSpeedRef.current);
       isSpeedingRef.current = false;
       showFeedback(`${originalSpeedRef.current}x Speed`);
     }
-    if (isDragging && hasMovedRef.current) {
+    if ((isDragging || pinchStartDistRef.current) && hasMovedRef.current) {
       ignoreClickRef.current = true;
     }
     setIsDragging(false);
