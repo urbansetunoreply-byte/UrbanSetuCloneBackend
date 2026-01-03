@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { createPortal } from 'react-dom';
-import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory, FaCircle, FaVolumeUp, FaVolumeMute, FaEye, FaEyeSlash, FaExpand, FaCompress, FaPowerOff, FaCog, FaFileAlt } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory, FaCircle, FaVolumeUp, FaVolumeMute, FaEye, FaEyeSlash, FaExpand, FaCompress, FaPowerOff, FaCog, FaFileAlt, FaPlay } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import { getThemeColors, getDarkModeContainerClass, getDarkModeInputClass, getDarkModeTextClass, getDarkModeSecondaryTextClass, getDarkModeBorderClass, getDarkModeHoverClass } from '../utils/chatTheme';
 import ImagePreview from '../components/ImagePreview';
+import VideoPreview from '../components/VideoPreview';
 import LinkPreview from '../components/LinkPreview';
 import { EmojiButton } from '../components/EmojiPicker';
 import { useSelector, useDispatch } from "react-redux";
@@ -40,6 +41,11 @@ export default function AdminAppointments() {
   const navigate = useNavigate();
   const { signout } = useSignout();
   const { playMessageReceived } = useSoundEffects();
+
+  // Video Preview State
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [previewVideos, setPreviewVideos] = useState([]);
+  const [previewVideoIndex, setPreviewVideoIndex] = useState(0);
 
   // Handle navigation state when coming from direct chat link
   const location = useLocation();
@@ -1765,6 +1771,12 @@ export default function AdminAppointments() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 py-10 px-2 md:px-8 transition-colors duration-300">
       <SeasonalEffects className="z-[9999]" />
+      <VideoPreview
+        isOpen={showVideoPreview}
+        onClose={() => setShowVideoPreview(false)}
+        videos={previewVideos}
+        initialIndex={previewVideoIndex}
+      />
       <div className="max-w-7xl mx-auto mb-4 flex justify-end">
         <a href="/admin/payments" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 7a2 2 0 012-2h16a2 2 0 012 2v3H2V7z" /><path d="M2 12h20v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5zm4 3a1 1 0 100 2h6a1 1 0 100-2H6z" /></svg>
@@ -10534,23 +10546,31 @@ function AdminAppointmentRow({
                                 )}
                                 {/* Video Message */}
                                 {message.videoUrl && (
-                                  <div className="mb-2">
-                                    <video
-                                      src={message.videoUrl}
-                                      className="max-w-full max-h-64 rounded-lg border dark:border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
-                                      controls
+                                  <div className="mb-2 relative group max-w-full inline-block">
+                                    <div
+                                      className="relative rounded-lg overflow-hidden bg-black cursor-pointer shadow-md hover:shadow-lg transition-all"
                                       onClick={(e) => {
-                                        e.preventDefault();
                                         e.stopPropagation();
-                                        if (e.target.requestFullscreen) {
-                                          e.target.requestFullscreen();
-                                        } else if (e.target.webkitRequestFullscreen) {
-                                          e.target.webkitRequestFullscreen();
-                                        } else if (e.target.msRequestFullscreen) {
-                                          e.target.msRequestFullscreen();
-                                        }
+                                        const videoUrls = (localComments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
+                                        const startIndex = Math.max(0, videoUrls.indexOf(message.videoUrl));
+                                        setPreviewVideos(videoUrls);
+                                        setPreviewVideoIndex(startIndex);
+                                        setShowVideoPreview(true);
                                       }}
-                                    />
+                                    >
+                                      {/* Use video tag as thumbnail, no controls */}
+                                      <video
+                                        src={message.videoUrl}
+                                        className="max-w-full max-h-64 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                                        preload="metadata"
+                                      />
+                                      {/* Play Overlay */}
+                                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
+                                        <div className="bg-black/60 rounded-full p-3 backdrop-blur-sm transform group-hover:scale-110 transition-transform">
+                                          <FaPlay className="text-white text-xl ml-1" />
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
                                 )}
                                 {/* Document Message */}
@@ -10613,20 +10633,31 @@ function AdminAppointmentRow({
                                     {/* Show preserved video if exists */}
                                     {message.videoUrl && (
                                       <div className="mb-2">
-                                        <video
-                                          src={message.videoUrl}
-                                          className="max-w-full max-h-64 rounded-lg border dark:border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
-                                          controls
+                                        <div
+                                          className="relative rounded-lg overflow-hidden bg-black cursor-pointer shadow-md hover:shadow-lg transition-all"
                                           onClick={(e) => {
-                                            e.preventDefault();
                                             e.stopPropagation();
-                                            if (e.target.requestFullscreen) {
-                                              e.target.requestFullscreen();
-                                            } else if (e.target.webkitRequestFullscreen) {
-                                              e.target.webkitRequestFullscreen();
-                                            }
+                                            // Handle preserved videos - include them in preview
+                                            const videoUrls = (localComments || []).filter(msg => !!msg.videoUrl).map(msg => msg.videoUrl);
+                                            const startIndex = Math.max(0, videoUrls.indexOf(message.videoUrl));
+                                            setPreviewVideos(videoUrls);
+                                            setPreviewVideoIndex(startIndex);
+                                            setShowVideoPreview(true);
                                           }}
-                                        />
+                                        >
+                                          {/* Use video tag as thumbnail, no controls */}
+                                          <video
+                                            src={message.videoUrl}
+                                            className="max-w-full max-h-64 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                                            preload="metadata"
+                                          />
+                                          {/* Play Overlay */}
+                                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
+                                            <div className="bg-black/60 rounded-full p-3 backdrop-blur-sm transform group-hover:scale-110 transition-transform">
+                                              <FaPlay className="text-white text-xl ml-1" />
+                                            </div>
+                                          </div>
+                                        </div>
                                         <div className="mt-1 text-xs text-gray-600 dark:text-gray-400 italic">
                                           Preserved video from deleted message
                                         </div>

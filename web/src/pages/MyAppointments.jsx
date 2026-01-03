@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { FaArchive, FaBan, FaCalendar, FaCalendarAlt, FaCheck, FaCheckDouble, FaCheckSquare, FaCircle, FaCheckCircle, FaCog, FaCommentDots, FaCopy, FaCreditCard, FaDownload, FaEllipsisV, FaEnvelope, FaExclamationTriangle, FaFileContract, FaFileAlt, FaFlag, FaHandshake, FaHistory, FaInfoCircle, FaLightbulb, FaMoneyBillWave, FaPaperPlane, FaPen, FaPhone, FaRegStar, FaSearch, FaSpinner, FaStar, FaSync, FaThumbtack, FaTimes, FaTrash, FaUndo, FaUserShield, FaVideo, FaWallet } from 'react-icons/fa';
+import { FaArchive, FaBan, FaCalendar, FaCalendarAlt, FaCheck, FaCheckDouble, FaCheckSquare, FaCircle, FaCheckCircle, FaCog, FaCommentDots, FaCopy, FaCreditCard, FaDownload, FaEllipsisV, FaEnvelope, FaExclamationTriangle, FaFileContract, FaFileAlt, FaFlag, FaHandshake, FaHistory, FaInfoCircle, FaLightbulb, FaMoneyBillWave, FaPaperPlane, FaPen, FaPhone, FaRegStar, FaSearch, FaSpinner, FaStar, FaSync, FaThumbtack, FaTimes, FaTrash, FaUndo, FaUserShield, FaVideo, FaWallet, FaPlay } from 'react-icons/fa';
 import { EmojiButton } from '../components/EmojiPicker';
 import CustomEmojiPicker from '../components/EmojiPicker';
 import { useSoundEffects, SoundControl } from '../components/SoundEffects';
@@ -18,6 +18,7 @@ import CallHistoryModal from '../components/CallHistoryModal';
 import ChatSettingsModal from '../components/ChatSettingsModal';
 import { useChatSettings } from '../hooks/useChatSettings';
 import ImagePreview from '../components/ImagePreview';
+import VideoPreview from '../components/VideoPreview';
 import LinkPreview from '../components/LinkPreview';
 import UserAvatar from '../components/UserAvatar';
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
@@ -62,6 +63,11 @@ export default function MyAppointments() {
   usePageTitle("My Appointments - Bookings");
 
   const { currentUser } = useSelector((state) => state.user);
+
+  // Video Preview State
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [previewVideos, setPreviewVideos] = useState([]);
+  const [previewVideoIndex, setPreviewVideoIndex] = useState(0);
 
   // Function to handle phone number clicks
   const handlePhoneClick = (phoneNumber) => {
@@ -12025,6 +12031,36 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                   </span>
                                 ) : (
                                   <>
+                                    {/* Video Message */}
+                                    {message.videoUrl && (
+                                      <div className="mb-2 relative group max-w-full inline-block">
+                                        <div
+                                          className="relative rounded-lg overflow-hidden bg-black cursor-pointer shadow-md hover:shadow-lg transition-all"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const videoUrls = (comments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
+                                            const startIndex = Math.max(0, videoUrls.indexOf(message.videoUrl));
+                                            setPreviewVideos(videoUrls);
+                                            setPreviewVideoIndex(startIndex);
+                                            setShowVideoPreview(true);
+                                          }}
+                                        >
+                                          {/* Use video tag as thumbnail, no controls */}
+                                          <video
+                                            src={message.videoUrl}
+                                            className="max-w-full max-h-64 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                                            preload="metadata"
+                                          />
+                                          {/* Play Overlay */}
+                                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
+                                            <div className="bg-black/60 rounded-full p-3 backdrop-blur-sm transform group-hover:scale-110 transition-transform">
+                                              <FaPlay className="text-white text-xl ml-1" />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+
                                     {/* Image Message - Only show for non-deleted messages */}
                                     {message.imageUrl && (
                                       <div className="mb-2">
@@ -12421,6 +12457,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
           addedFrom: 'chat',
           chatType: 'appointment'
         }}
+      />
+
+      {/* Video Preview Modal */}
+      <VideoPreview
+        isOpen={showVideoPreview}
+        onClose={() => setShowVideoPreview(false)}
+        videos={previewVideos}
+        initialIndex={previewVideoIndex}
       />
 
     </>
