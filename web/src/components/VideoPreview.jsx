@@ -16,7 +16,8 @@ import {
   FaDownload,
   FaCog,
   FaTachometerAlt,
-  FaSpinner
+  FaSpinner,
+  FaSun
 } from 'react-icons/fa';
 
 const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
@@ -67,6 +68,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const pinchStartScaleRef = useRef(1);
   const lastDragRef = useRef({ x: 0, y: 0 });
   const gestureRef = useRef({ type: null, startY: 0, startVal: 0 });
+  const [activeGesture, setActiveGesture] = useState(null);
 
   // Initialize
   useEffect(() => {
@@ -734,18 +736,21 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           // Check if Vertical Swipe (Gesture Start)
           if (Math.abs(dy) > Math.abs(dx) * 1.5) { // Vertical dominant
             gestureRef.current.startY = touch.clientY;
-            const isRightSide = touch.clientX > window.innerWidth / 2;
+            const width = window.innerWidth;
+            const x = touch.clientX;
 
-            if (isRightSide) {
-              gestureRef.current.type = 'volume';
-              gestureRef.current.startVal = volume;
-            } else {
-              gestureRef.current.type = 'intensity'; // Brightness
-              gestureRef.current.startVal = brightness;
+            let type = null;
+            if (x > width * 0.7) type = 'volume';    // Right 30%
+            else if (x < width * 0.3) type = 'intensity'; // Left 30%
+
+            if (type) {
+              gestureRef.current.type = type;
+              gestureRef.current.startVal = type === 'volume' ? volume : brightness;
+              setActiveGesture(type);
+
+              hasMovedRef.current = true;
+              ignoreClickRef.current = true;
             }
-
-            hasMovedRef.current = true;
-            ignoreClickRef.current = true;
           }
         }
       }
@@ -766,6 +771,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       ignoreClickRef.current = true;
     }
     setIsDragging(false);
+    setActiveGesture(null);
     setTimeout(() => { isTouchRef.current = false; }, 500);
   };
 
@@ -987,6 +993,23 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Gesture Indicators */}
+      {/* Brightness (Left) */}
+      <div className={`absolute left-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'intensity' ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${Math.min(Math.max((brightness - 0.2) / 1.8, 0), 1) * 100}%` }} />
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
+          <FaSun className="text-gray-800 drop-shadow-md text-xl mix-blend-difference text-white" />
+        </div>
+      </div>
+
+      {/* Volume (Right) */}
+      <div className={`absolute right-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'volume' ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${volume * 100}%` }} />
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
+          {volume === 0 ? <FaVolumeMute className="text-gray-800 drop-shadow-md text-xl mix-blend-difference text-white" /> : <FaVolumeUp className="text-gray-800 drop-shadow-md text-xl mix-blend-difference text-white" />}
         </div>
       </div>
 
