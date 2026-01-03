@@ -154,6 +154,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           toggleFullscreen();
           break;
         case 'escape':
+          // If in fullscreen, let browser exit (or we force exit) but DO NOT show modal
+          if (document.fullscreenElement) {
+            return;
+          }
           if (videoRef.current && !videoRef.current.paused) {
             videoRef.current.pause();
             setIsPlaying(false);
@@ -175,6 +179,15 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setIsMuted(volume === 0);
     }
   }, [volume]);
+
+  // Fullscreen Sync
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // Feedback Toast Helper
   const showFeedback = (msg) => {
@@ -409,6 +422,14 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
   const handleCloseRequest = (e) => {
     e?.stopPropagation();
+
+    // If in fullscreen, exit fullscreen first
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(err => console.warn(err));
+      // Listener will update state
+      return;
+    }
+
     if (videoRef.current && !videoRef.current.paused) {
       videoRef.current.pause();
       setIsPlaying(false);
