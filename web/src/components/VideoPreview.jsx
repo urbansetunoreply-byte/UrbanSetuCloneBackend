@@ -68,6 +68,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const pinchStartScaleRef = useRef(1);
   const lastDragRef = useRef({ x: 0, y: 0 });
   const gestureRef = useRef({ type: null, startY: 0, startVal: 0 });
+  const gestureTimeoutRef = useRef(null);
   const [activeGesture, setActiveGesture] = useState(null);
 
   // Initialize
@@ -636,6 +637,54 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     setIsDragging(false);
   };
 
+  // Desktop Wheel Logic (Volume/Brightness)
+  const handleWheel = (e) => {
+    if (!isOpen) return;
+
+    const width = window.innerWidth;
+    const x = e.clientX;
+    const delta = e.deltaY;
+
+    // Debounce active gesture clear
+    const clearGesture = () => {
+      if (gestureTimeoutRef.current) clearTimeout(gestureTimeoutRef.current);
+      gestureTimeoutRef.current = setTimeout(() => setActiveGesture(null), 1000);
+    };
+
+    // Left 30% - Brightness
+    if (x < width * 0.3) {
+      const step = 0.1;
+      const direction = delta > 0 ? -1 : 1; // Scroll Down (positive) -> Decrease
+      const newVal = Math.min(Math.max(brightness + (direction * step), 0.2), 2.0);
+
+      setBrightness(newVal);
+      setActiveGesture('brightness');
+      showFeedback(
+        <div className="flex items-center gap-3">
+          <FaSun />
+          <span>Brightness: {Math.round(newVal * 100)}%</span>
+        </div>
+      );
+      clearGesture();
+    }
+    // Right 30% - Volume
+    else if (x > width * 0.7) {
+      const step = 0.05;
+      const direction = delta > 0 ? -1 : 1;
+      const newVal = Math.min(Math.max(volume + (direction * step), 0), 1);
+
+      setVolume(newVal);
+      setActiveGesture('volume');
+      showFeedback(
+        <div className="flex items-center gap-3">
+          {newVal === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
+          <span>Volume: {Math.round(newVal * 100)}%</span>
+        </div>
+      );
+      clearGesture();
+    }
+  };
+
   // Touch Logic
   const handleTouchStart = (e) => {
     isTouchRef.current = true;
@@ -806,6 +855,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onWheel={handleWheel}
     >
       {/* Top Controls (Close, Title?) */}
       <button
