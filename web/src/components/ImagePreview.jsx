@@ -443,15 +443,16 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
   const handleTouchEnd = (e) => {
     const moved = hasMovedRef.current;
+    const wasPinching = !!pinchStartDistRef.current;
 
-    if ((isDragging || pinchStartDistRef.current) && moved) {
+    if ((isDragging || wasPinching) && moved) {
       ignoreClickRef.current = true;
     }
     setIsDragging(false);
     pinchStartDistRef.current = null;
 
-    // Double tap logic (only if not moved/dragged)
-    if (!moved) {
+    // Double tap logic (only if not moved/dragged AND not pinching)
+    if (!moved && !wasPinching) {
       const now = Date.now();
       const timeDiff = now - lastTapRef.current;
 
