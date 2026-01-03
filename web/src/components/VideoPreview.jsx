@@ -67,6 +67,11 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     return () => {
       document.body.style.overflow = '';
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.removeAttribute('src');
+        videoRef.current.load();
+      }
     };
   }, [isOpen, initialIndex]);
 
@@ -375,11 +380,20 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           </div>
         )}
 
+        {/* Big Play Button Overlay */}
+        {!isPlaying && !isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+            <div className="bg-black/40 backdrop-blur-sm p-6 rounded-full shadow-lg">
+              <FaPlay className="text-white text-4xl ml-1 opacity-80" />
+            </div>
+          </div>
+        )}
+
         <video
           ref={videoRef}
           key={currentIndex}
           src={videos[currentIndex]}
-          className={`max-w-full max-h-full object-contain transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
+          className={`w-auto h-auto max-w-full max-h-full shadow-xl transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
           playsInline
           autoPlay
           onLoadStart={() => setIsLoading(true)}
@@ -389,7 +403,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           onError={handleVideoError}
           onTimeUpdate={handleTimeUpdate}
           onClick={(e) => {
-            e.stopPropagation();
+            e.stopPropagation(); // Stop propagation to background
             if (!isDragging) togglePlay(e);
           }}
           onEnded={() => { setIsPlaying(false); setShowControls(true); }}
