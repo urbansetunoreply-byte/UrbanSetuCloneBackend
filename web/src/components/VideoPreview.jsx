@@ -741,7 +741,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
             let type = null;
             if (x > width * 0.7) type = 'volume';    // Right 30%
-            else if (x < width * 0.3) type = 'intensity'; // Left 30%
+            else if (x < width * 0.3) type = 'brightness'; // Left 30%
 
             if (type) {
               gestureRef.current.type = type;
@@ -998,7 +998,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
       {/* Mobile Gesture Indicators */}
       {/* Brightness (Left) */}
-      <div className={`absolute left-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'intensity' ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`absolute left-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'brightness' ? 'opacity-100' : 'opacity-0'}`}>
         <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${Math.min(Math.max((brightness - 0.2) / 1.8, 0), 1) * 100}%` }} />
         <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
           <FaSun className="text-gray-800 drop-shadow-md text-xl mix-blend-difference text-white" />
