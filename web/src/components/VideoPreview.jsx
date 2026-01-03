@@ -227,31 +227,39 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     lastTapRef.current = now;
   };
 
-  // Activity Monitor (Auto-hide controls)
+  // Activity Monitor (User Input)
   useEffect(() => {
     if (!isOpen) return;
-    const resetControls = () => {
+
+    const handleActivity = () => {
       setShowControls(true);
-      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
-      if (isPlaying && !showSettings && !isDragging) {
-        controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 2500);
-      }
     };
 
-    // Listeners
-    window.addEventListener('mousemove', resetControls);
-    window.addEventListener('click', resetControls);
-    window.addEventListener('keydown', resetControls);
-
-    resetControls();
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
 
     return () => {
-      window.removeEventListener('mousemove', resetControls);
-      window.removeEventListener('click', resetControls);
-      window.removeEventListener('keydown', resetControls);
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+    };
+  }, [isOpen]);
+
+  // Auto-Hide Controls Logic
+  useEffect(() => {
+    if (showControls && isPlaying && !showSettings && !isDragging) {
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 2500);
+    } else {
+      // If paused or dragging, clear timeout (keep controls visible)
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    }
+
+    return () => {
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     };
-  }, [isOpen, isPlaying, showSettings, isDragging]);
+  }, [showControls, isPlaying, showSettings, isDragging]);
 
   // Playback effect
   useEffect(() => {
