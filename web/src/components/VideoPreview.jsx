@@ -59,6 +59,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const isTouchRef = useRef(false);
   const touchStartRef = useRef({ time: 0, x: 0, y: 0 });
   const wasPlayingRef = useRef(false);
+  const hasMovedRef = useRef(false);
 
   // Initialize
   useEffect(() => {
@@ -251,7 +252,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       // Potential Single Tap - Toggle Controls
       if (singleClickTimeoutRef.current) clearTimeout(singleClickTimeoutRef.current);
       singleClickTimeoutRef.current = setTimeout(() => {
-        if (!isDragging && scale === 1) setShowControls(prev => !prev);
+        // Toggle controls even if zoomed, as long as it wasn't a drag (handled by ignoreClickRef)
+        setShowControls(prev => !prev);
       }, 300);
     }
 
@@ -502,6 +504,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
   // Drag & Speed Logic
   const handleMouseDown = (e) => {
+    hasMovedRef.current = false;
+    ignoreClickRef.current = false;
     if (scale > 1) {
       e.preventDefault();
       setIsDragging(true);
@@ -527,6 +531,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     }
 
     if (isDragging && scale > 1) {
+      hasMovedRef.current = true;
       e.preventDefault();
       setPosition({
         x: e.clientX - dragStart.x,
@@ -546,12 +551,18 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       showFeedback(`${originalSpeedRef.current}x Speed`); // Optional confirmation
     }
 
+    if (isDragging && hasMovedRef.current) {
+      ignoreClickRef.current = true;
+    }
+
     setIsDragging(false);
   };
 
   // Touch Logic
   const handleTouchStart = (e) => {
     isTouchRef.current = true;
+    hasMovedRef.current = false;
+    ignoreClickRef.current = false;
     if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
     if (e.touches.length === 1) {
       const touch = e.touches[0];
@@ -575,6 +586,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     if (e.touches.length === 1) {
       const touch = e.touches[0];
       if (isDragging && scale > 1) {
+        hasMovedRef.current = true;
         e.preventDefault();
         setPosition({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y });
       } else if (speedTimeoutRef.current && !isSpeedingRef.current) {
@@ -593,6 +605,9 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setPlaybackRate(originalSpeedRef.current);
       isSpeedingRef.current = false;
       showFeedback(`${originalSpeedRef.current}x Speed`);
+    }
+    if (isDragging && hasMovedRef.current) {
+      ignoreClickRef.current = true;
     }
     setIsDragging(false);
     setTimeout(() => { isTouchRef.current = false; }, 500);
