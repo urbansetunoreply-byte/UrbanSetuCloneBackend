@@ -33,6 +33,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [autoScale, setAutoScale] = useState(1);
 
   // Transform States
   const [scale, setScale] = useState(1);
@@ -303,6 +304,47 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       }
     }
   }, [isPlaying, currentIndex, playbackRate]);
+
+  // Auto-fit logic for rotation
+  useEffect(() => {
+    const calculateAutoScale = () => {
+      if (!containerRef.current || !videoRef.current) return;
+      const vid = videoRef.current;
+      const cont = containerRef.current;
+
+      // Only adjust for 90/270 degrees
+      if (rotation % 180 === 0) {
+        setAutoScale(1);
+        return;
+      }
+
+      const vw = vid.videoWidth;
+      const vh = vid.videoHeight;
+      if (!vw || !vh) return;
+
+      const cw = cont.clientWidth;
+      const ch = cont.clientHeight;
+
+      // 1. Determine rendered size at 0 rotation (object-contain logic)
+      const scale0 = Math.min(cw / vw, ch / vh);
+      const rw = vw * scale0; // rendered width
+      const rh = vh * scale0; // rendered height
+
+      // 2. We are rotated 90deg, so VisualWidth = rh, VisualHeight = rw
+      // We need: VisualWidth <= cw  AND  VisualHeight <= ch
+      // i.e., rh * s <= cw  AND  rw * s <= ch
+
+      const sWidth = cw / rh;
+      const sHeight = ch / rw;
+
+      const s = Math.min(sWidth, sHeight, 1); // Never scale up beyond 1 (which means "fit")
+      setAutoScale(s);
+    };
+
+    calculateAutoScale();
+    window.addEventListener('resize', calculateAutoScale);
+    return () => window.removeEventListener('resize', calculateAutoScale);
+  }, [rotation, currentIndex, isLoading]); // Recalculate on rotation, video change, or load completion
 
   if (!isOpen || !videos || videos.length === 0) return null;
 
@@ -646,7 +688,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           style={{
             maxWidth: '100%',
             maxHeight: '100%',
-            transform: `scale(${scale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
+            transform: `scale(${scale * autoScale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
             transition: isDragging ? 'none' : 'transform 0.2s ease-out'
           }}
           draggable={false}
