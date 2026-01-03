@@ -64,10 +64,12 @@ export default function MyAppointments() {
 
   const { currentUser } = useSelector((state) => state.user);
 
-  // Video Preview State
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [previewVideos, setPreviewVideos] = useState([]);
-  const [previewVideoIndex, setPreviewVideoIndex] = useState(0);
+  // Video Preview State (Refactored to object to fix scope issues)
+  const [mediaPreviewState, setMediaPreviewState] = useState({
+    isOpen: false,
+    videos: [],
+    index: 0
+  });
 
   // Function to handle phone number clicks
   const handlePhoneClick = (phoneNumber) => {
@@ -11581,10 +11583,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
       {/* Video Preview Modal - moved here for scope safety */}
       <VideoPreview
-        isOpen={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
-        videos={previewVideos}
-        initialIndex={previewVideoIndex}
+        isOpen={mediaPreviewState.isOpen}
+        onClose={() => setMediaPreviewState(prev => ({ ...prev, isOpen: false }))}
+        videos={mediaPreviewState.videos}
+        initialIndex={mediaPreviewState.index}
       />
 
       {/* Report Chat Modal */}
@@ -12048,11 +12050,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                             e.stopPropagation();
                                             const videoUrls = (comments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
                                             const startIndex = Math.max(0, videoUrls.indexOf(message.videoUrl));
-                                            setPreviewVideos(videoUrls);
-                                            setPreviewVideoIndex(startIndex);
-                                            setPreviewVideos(videoUrls);
-                                            setPreviewVideoIndex(startIndex);
-                                            setIsPreviewOpen(true);
+                                            setMediaPreviewState({
+                                              isOpen: true,
+                                              videos: videoUrls,
+                                              index: startIndex
+                                            });
                                           }}
                                         >
                                           {/* Use video tag as thumbnail, no controls */}
