@@ -79,6 +79,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const settingsRef = useRef(null);
   const feedbackTimeoutRef = useRef(null);
   const hasMovedRef = useRef(false);
+  const ignoreClickRef = useRef(false);
   const pinchStartDistRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
@@ -339,8 +340,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
   const handleZoomOut = () => {
     setScale(prev => {
-      const newScale = Math.max(prev / 1.2, 0.1);
+      let newScale = Math.max(prev / 1.2, 1);
+      if (newScale < 1.1) newScale = 1; // Snap to 1
       showFeedback(`${Math.round(newScale * 100)}%`);
+      if (newScale <= 1) setPosition({ x: 0, y: 0 });
       return newScale;
     });
   };
@@ -361,6 +364,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   };
 
   const handleMouseDown = (e) => {
+    hasMovedRef.current = false;
+    ignoreClickRef.current = false;
     if (scale > 1) {
       setIsDragging(true);
       setDragStart({
@@ -372,6 +377,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
   const handleMouseMove = (e) => {
     if (isDragging && scale > 1) {
+      hasMovedRef.current = true;
       setPosition({
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y
@@ -380,10 +386,15 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   };
 
   const handleMouseUp = () => {
+    if (isDragging && hasMovedRef.current) {
+      ignoreClickRef.current = true;
+    }
     setIsDragging(false);
   };
 
   const handleTouchStart = (e) => {
+    hasMovedRef.current = false;
+    ignoreClickRef.current = false;
     // Single touch pan
     if (scale > 1 && e.touches.length === 1) {
       setIsDragging(true);
@@ -421,14 +432,21 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         e.touches[0].clientY - e.touches[1].clientY
       );
       const ratio = dist / pinchStartDistRef.current;
-      const newScale = Math.min(Math.max(pinchStartScaleRef.current * ratio, 0.1), 8);
+      const newScale = Math.min(Math.max(pinchStartScaleRef.current * ratio, 1), 8); // Min 1
 
       setScale(newScale);
       showFeedback(`${Math.round(newScale * 100)}%`);
+
+      if (Math.abs(newScale - pinchStartScaleRef.current) > 0.1) {
+        hasMovedRef.current = true; // Pinch is also movement
+      }
     }
   };
 
   const handleTouchEnd = () => {
+    if ((isDragging || pinchStartDistRef.current) && hasMovedRef.current) {
+      ignoreClickRef.current = true;
+    }
     setIsDragging(false);
     pinchStartDistRef.current = null;
   };
@@ -614,6 +632,11 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
   const handleImageClick = (e) => {
     e.stopPropagation();
+    if (ignoreClickRef.current) {
+      ignoreClickRef.current = false;
+      return;
+    }
+    setShowControls(prev => !prev);
   };
 
   if (!isOpen || !imagesArray || imagesArray.length === 0) return null;
@@ -690,6 +713,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onClick={handleImageClick}
           onLoad={handleImageLoad}
           onError={handleImageError}
           draggable={false}
