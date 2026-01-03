@@ -15,7 +15,8 @@ import {
   FaUndo,
   FaDownload,
   FaCog,
-  FaTachometerAlt
+  FaTachometerAlt,
+  FaSpinner
 } from 'react-icons/fa';
 
 const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
@@ -38,6 +39,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isLoading, setIsLoading] = useState(true);
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -49,6 +51,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setCurrentIndex(initialIndex || 0);
       document.body.style.overflow = 'hidden';
       // Reset states
+      setIsLoading(true);
       setIsPlaying(true);
       setProgress(0);
       setScale(1);
@@ -359,18 +362,36 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       <div
         className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black"
         onClick={(e) => {
-          if (!isDragging) togglePlay(e);
+          // Close on background click if not dragging
+          if (!isDragging && scale === 1) onClose();
         }}
         onMouseDown={handleMouseDown}
       >
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+            <div className="bg-black/40 backdrop-blur-sm p-4 rounded-full">
+              <FaSpinner className="text-white animate-spin text-4xl" />
+            </div>
+          </div>
+        )}
+
         <video
           ref={videoRef}
           key={currentIndex}
           src={videos[currentIndex]}
           className={`max-w-full max-h-full object-contain transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
           playsInline
+          autoPlay
+          onLoadStart={() => setIsLoading(true)}
+          onWaiting={() => setIsLoading(true)}
+          onCanPlay={() => setIsLoading(false)}
+          onPlaying={() => setIsLoading(false)}
           onError={handleVideoError}
           onTimeUpdate={handleTimeUpdate}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isDragging) togglePlay(e);
+          }}
           onEnded={() => { setIsPlaying(false); setShowControls(true); }}
           style={{
             transform: `scale(${scale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
