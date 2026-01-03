@@ -638,6 +638,11 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setScale(newScale);
       showFeedback(`${Math.round(newScale * 100)}%`);
 
+      // Auto-reset position if zoomed out to near 1x
+      if (newScale <= 1.1) {
+        setPosition({ x: 0, y: 0 });
+      }
+
       if (Math.abs(newScale - pinchStartScaleRef.current) > 0.1) {
         hasMovedRef.current = true; // Consider pinch as movement
         ignoreClickRef.current = true;
