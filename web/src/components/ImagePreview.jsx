@@ -71,8 +71,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const [controlsTimeout, setControlsTimeout] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showSocialShare, setShowSocialShare] = useState(false);
+  const [autoScale, setAutoScale] = useState(1);
 
   const imageRef = useRef(null);
+  const containerRef = useRef(null);
   const slideshowRef = useRef(null);
   const settingsRef = useRef(null);
   const feedbackTimeoutRef = useRef(null);
@@ -284,6 +286,45 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       }
     };
   }, [isOpen, isFullscreen]);
+
+  // Auto-fit logic for rotation (Same as VideoPreview)
+  useEffect(() => {
+    const calculateAutoScale = () => {
+      if (!containerRef.current || !imageRef.current) return;
+      const img = imageRef.current;
+      const cont = containerRef.current;
+
+      // Only adjust for 90/270 degrees
+      if (rotation % 180 === 0) {
+        setAutoScale(1);
+        return;
+      }
+
+      const vw = img.naturalWidth;
+      const vh = img.naturalHeight;
+      if (!vw || !vh) return;
+
+      // Account for padding
+      const style = window.getComputedStyle(cont);
+      const cw = cont.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const ch = cont.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+
+      const scale0 = Math.min(cw / vw, ch / vh);
+      const rw = vw * scale0;
+      const rh = vh * scale0;
+
+      // We need: VisualWidth(rh) * s <= cw  AND  VisualHeight(rw) * s <= ch
+      const sWidth = cw / rh;
+      const sHeight = ch / rw;
+
+      const s = Math.min(sWidth, sHeight, 1);
+      setAutoScale(s);
+    };
+
+    calculateAutoScale();
+    window.addEventListener('resize', calculateAutoScale);
+    return () => window.removeEventListener('resize', calculateAutoScale);
+  }, [rotation, currentIndex, imageLoading]); // Recalculate on rotation, image change, or load completion
 
   const handleZoomIn = () => {
     setScale(prev => {
@@ -590,7 +631,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       )}
 
       {/* Image Container */}
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden p-4">
+      <div ref={containerRef} className="relative w-full h-full flex items-center justify-center overflow-hidden p-4">
         {imageLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
@@ -613,7 +654,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           className={`max-w-full max-h-full object-contain cursor-move transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'
             }`}
           style={{
-            transform: `scale(${scale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
+            transform: `scale(${scale * autoScale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
             transition: isDragging ? 'none' : 'transform 0.2s ease-out'
           }}
           onMouseDown={handleMouseDown}
