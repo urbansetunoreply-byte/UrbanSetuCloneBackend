@@ -26,7 +26,9 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [progress, setProgress] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(1);
+
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [brightness, setBrightness] = useState(1);
 
   // View States
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -63,6 +65,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const pinchStartDistRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
   const lastDragRef = useRef({ x: 0, y: 0 });
+  const gestureRef = useRef({ type: null, startY: 0, startVal: 0 });
 
   // Initialize
   useEffect(() => {
@@ -596,6 +599,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     isTouchRef.current = true;
     hasMovedRef.current = false;
     ignoreClickRef.current = false;
+    gestureRef.current = { type: null, startY: 0, startVal: 0 };
     if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
 
     if (e.touches.length === 2) {
@@ -659,10 +663,58 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
         lastDragRef.current = { x: touch.clientX, y: touch.clientY };
       } else if (speedTimeoutRef.current && !isSpeedingRef.current) {
-        const dist = Math.abs(touch.clientX - touchStartRef.current.x) + Math.abs(touch.clientY - touchStartRef.current.y);
+        const touch = e.touches[0];
+
+        // Check for active gesture control first
+        if (gestureRef.current.type) {
+          e.preventDefault();
+          hasMovedRef.current = true; // Prevent click
+          ignoreClickRef.current = true;
+
+          const deltaY = gestureRef.current.startY - touch.clientY; // Up is positive
+          // Sensitivity: 200px = full range (0-1 typically)
+          const sensitivity = 0.005; // Change per pixel
+          const change = deltaY * sensitivity;
+
+          if (gestureRef.current.type === 'volume') {
+            const newVal = Math.min(Math.max(gestureRef.current.startVal + change, 0), 1);
+            setVolume(newVal);
+            showFeedback(`Volume: ${Math.round(newVal * 100)}%`);
+          } else if (gestureRef.current.type === 'brightness') {
+            const newVal = Math.min(Math.max(gestureRef.current.startVal + change, 0.2), 2.0);
+            setBrightness(newVal);
+            showFeedback(`Intensity: ${Math.round(newVal * 100)}%`);
+          }
+          return;
+        }
+
+        const dx = touch.clientX - touchStartRef.current.x;
+        const dy = touch.clientY - touchStartRef.current.y;
+        const dist = Math.abs(dx) + Math.abs(dy);
+
         if (dist > 10) {
-          clearTimeout(speedTimeoutRef.current);
-          speedTimeoutRef.current = null;
+          // Movement detected - Cancel Speed Timeout
+          if (speedTimeoutRef.current) {
+            clearTimeout(speedTimeoutRef.current);
+            speedTimeoutRef.current = null;
+          }
+
+          // Check if Vertical Swipe (Gesture Start)
+          if (Math.abs(dy) > Math.abs(dx) * 1.5) { // Vertical dominant
+            gestureRef.current.startY = touch.clientY;
+            const isRightSide = touch.clientX > window.innerWidth / 2;
+
+            if (isRightSide) {
+              gestureRef.current.type = 'volume';
+              gestureRef.current.startVal = volume;
+            } else {
+              gestureRef.current.type = 'intensity'; // Brightness
+              gestureRef.current.startVal = brightness;
+            }
+
+            hasMovedRef.current = true;
+            ignoreClickRef.current = true;
+          }
         }
       }
     }
@@ -776,6 +828,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
             maxWidth: '100%',
             maxHeight: '100%',
             transform: `scale(${scale * autoScale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
+            filter: `brightness(${brightness})`,
             transition: isDragging ? 'none' : 'transform 0.2s ease-out'
           }}
           draggable={false}
