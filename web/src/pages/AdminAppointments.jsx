@@ -6,7 +6,7 @@ import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import { getThemeColors, getDarkModeContainerClass, getDarkModeInputClass, getDarkModeTextClass, getDarkModeSecondaryTextClass, getDarkModeBorderClass, getDarkModeHoverClass } from '../utils/chatTheme';
 import ImagePreview from '../components/ImagePreview';
-import VideoPreview from '../components/VideoPreview';
+
 import LinkPreview from '../components/LinkPreview';
 import { EmojiButton } from '../components/EmojiPicker';
 import { useSelector, useDispatch } from "react-redux";
@@ -43,9 +43,7 @@ export default function AdminAppointments() {
   const { playMessageReceived } = useSoundEffects();
 
   // Video Preview State
-  const [showVideoPreview, setShowVideoPreview] = useState(false);
-  const [previewVideos, setPreviewVideos] = useState([]);
-  const [previewVideoIndex, setPreviewVideoIndex] = useState(0);
+
 
   // Handle navigation state when coming from direct chat link
   const location = useLocation();
@@ -8030,9 +8028,12 @@ function AdminAppointmentRow({
                                               e.stopPropagation();
                                               const videoUrls = (localComments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
                                               const startIndex = Math.max(0, videoUrls.indexOf(c.videoUrl));
-                                              setPreviewVideos(videoUrls);
-                                              setPreviewVideoIndex(startIndex);
-                                              setShowVideoPreview(true);
+                                              window.dispatchEvent(new CustomEvent('open-media-preview', {
+                                                detail: {
+                                                  videos: videoUrls,
+                                                  index: startIndex
+                                                }
+                                              }));
                                             }}
                                           >
                                             {/* Use video tag as thumbnail, no controls */}
@@ -10545,9 +10546,12 @@ function AdminAppointmentRow({
                                         e.stopPropagation();
                                         const videoUrls = (localComments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
                                         const startIndex = Math.max(0, videoUrls.indexOf(message.videoUrl));
-                                        setPreviewVideos(videoUrls);
-                                        setPreviewVideoIndex(startIndex);
-                                        setShowVideoPreview(true);
+                                        window.dispatchEvent(new CustomEvent('open-media-preview', {
+                                          detail: {
+                                            videos: videoUrls,
+                                            index: startIndex
+                                          }
+                                        }));
                                       }}
                                     >
                                       {/* Use video tag as thumbnail, no controls */}
@@ -10632,9 +10636,12 @@ function AdminAppointmentRow({
                                             // Handle preserved videos - include them in preview
                                             const videoUrls = (localComments || []).filter(msg => !!msg.videoUrl).map(msg => msg.videoUrl);
                                             const startIndex = Math.max(0, videoUrls.indexOf(message.videoUrl));
-                                            setPreviewVideos(videoUrls);
-                                            setPreviewVideoIndex(startIndex);
-                                            setShowVideoPreview(true);
+                                            window.dispatchEvent(new CustomEvent('open-media-preview', {
+                                              detail: {
+                                                videos: videoUrls,
+                                                index: startIndex
+                                              }
+                                            }));
                                           }}
                                         >
                                           {/* Use video tag as thumbnail, no controls */}
