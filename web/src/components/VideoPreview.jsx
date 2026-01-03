@@ -36,10 +36,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   // Transform States
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [videoDims, setVideoDims] = useState(null);
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -57,6 +57,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setScale(1);
       setRotation(0);
       setPosition({ x: 0, y: 0 });
+      setVideoDims(null); // Reset dims
       setPlaybackRate(1);
       setShowControls(true);
       setShowSettings(false);
@@ -148,29 +149,53 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     }
   }, [volume]);
 
+  // Calculate Video Dimensions
+  const updateVideoDims = () => {
+    if (videoRef.current && videoRef.current.videoWidth) {
+      const vw = videoRef.current.videoWidth;
+      const vh = videoRef.current.videoHeight;
+      const sw = window.innerWidth;
+      const sh = window.innerHeight;
+
+      const scaleFactor = Math.min(sw / vw, sh / vh);
+
+      setVideoDims({
+        width: vw * scaleFactor,
+        height: vh * scaleFactor
+      });
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('resize', updateVideoDims);
+    return () => window.removeEventListener('resize', updateVideoDims);
+  }, []);
+
   // Activity Monitor (Auto-hide controls)
   useEffect(() => {
     if (!isOpen) return;
     const resetControls = () => {
       setShowControls(true);
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
-      if (isPlaying && !showSettings) {
-        controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 3000);
+      if (isPlaying && !showSettings && !isDragging) {
+        controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 2500);
       }
     };
 
     // Listeners
     window.addEventListener('mousemove', resetControls);
     window.addEventListener('click', resetControls);
+    window.addEventListener('keydown', resetControls);
 
     resetControls();
 
     return () => {
       window.removeEventListener('mousemove', resetControls);
       window.removeEventListener('click', resetControls);
+      window.removeEventListener('keydown', resetControls);
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     };
-  }, [isOpen, isPlaying, showSettings]);
+  }, [isOpen, isPlaying, showSettings, isDragging]);
 
   // Playback effect
   useEffect(() => {
@@ -393,9 +418,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           ref={videoRef}
           key={currentIndex}
           src={videos[currentIndex]}
-          className={`w-auto h-auto max-w-full max-h-full shadow-xl transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
+          className={`shadow-xl transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
           playsInline
           autoPlay
+          onLoadedMetadata={updateVideoDims}
           onLoadStart={() => setIsLoading(true)}
           onWaiting={() => setIsLoading(true)}
           onCanPlay={() => setIsLoading(false)}
@@ -408,6 +434,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           }}
           onEnded={() => { setIsPlaying(false); setShowControls(true); }}
           style={{
+            width: videoDims ? videoDims.width : 'auto',
+            height: videoDims ? videoDims.height : 'auto',
+            maxWidth: '100%',
+            maxHeight: '100%',
             transform: `scale(${scale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
             transition: isDragging ? 'none' : 'transform 0.2s ease-out'
           }}
@@ -418,7 +448,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       {/* Bottom Controls Bar */}
       <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 to-transparent px-4 pb-4 pt-10 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
         }`}>
-        <div className="max-w-4xl mx-auto space-y-3">
+        <div className="w-full space-y-3">
           {/* Progress Bar */}
           <div
             className="w-full h-1.5 bg-white/30 rounded-full cursor-pointer relative group/slider"
