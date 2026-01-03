@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { signInFailure, signInStart, signInSuccess } from "../redux/user/userSlice.js";
 import Oauth from "../components/Oauth.jsx";
 import RecaptchaWidget from "../components/RecaptchaWidget";
+import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 import { reconnectSocket } from "../utils/socket";
@@ -87,6 +88,33 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             navigate('/sign-in', { replace: true });
         }
     }, [location.search, navigate]);
+
+    // Check for 'ref' parameter to show context toast
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const refParam = searchParams.get('ref');
+
+        if (refParam) {
+            const actionMessages = {
+                like: "Please sign in to like this content",
+                dislike: "Please sign in to react",
+                comment: "Please sign in to comment",
+                reply: "Please sign in to reply",
+                report: "Please sign in to report content",
+                chat: "Please sign in to start a chat",
+                book: "Please sign in to book an appointment",
+                review: "Please sign in to leave a review",
+                rate: "Please sign in to rate",
+                access: "Please sign in to access this page",
+                save: "Please sign in to save this item"
+            };
+            const message = actionMessages[refParam] || "Please sign in to continue";
+            // Check if toast is already active to prevent duplicates
+            if (!toast.isActive(`signin-ref-${refParam}`)) {
+                toast.info(message, { toastId: `signin-ref-${refParam}` });
+            }
+        }
+    }, [location.search]);
 
     // Sync state with URL parameters
     useEffect(() => {
