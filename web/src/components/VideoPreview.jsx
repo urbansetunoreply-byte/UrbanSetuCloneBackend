@@ -95,7 +95,11 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           togglePlay();
           break;
         case 'm': // Mute
-          setVolume(v => v === 0 ? 1 : 0);
+          setVolume(v => {
+            const newV = v === 0 ? 1 : 0;
+            showFeedback(newV === 0 ? "Muted" : "Unmuted");
+            return newV;
+          });
           break;
         case 'ArrowRight': // Forward 10s or Next video
         case 'l': // +10s
@@ -279,10 +283,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     e.stopPropagation();
     if (isMuted) {
       setVolume(1);
-      setIsMuted(false);
+      showFeedback("Unmuted");
     } else {
       setVolume(0);
-      setIsMuted(true);
+      showFeedback("Muted");
     }
   };
 
@@ -564,7 +568,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           <div className="flex items-center justify-between text-white">
             <div className="flex items-center gap-4">
               <button onClick={togglePlay} className="hover:text-blue-400 transition-transform active:scale-95">
-                {isPlaying ? <FaPause size={20} /> : <FaPlay size={20} />}
+                {isPlaying && !isLoading ? <FaPause size={20} /> : <FaPlay size={20} />}
               </button>
 
               <div className="flex items-center gap-2 group/vol relative">
