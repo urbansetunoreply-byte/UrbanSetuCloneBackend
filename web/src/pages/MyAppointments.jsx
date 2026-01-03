@@ -65,7 +65,7 @@ export default function MyAppointments() {
   const { currentUser } = useSelector((state) => state.user);
 
   // Video Preview State
-  const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [isVideoPreviewOpen, setIsVideoPreviewOpen] = useState(false);
   const [previewVideos, setPreviewVideos] = useState([]);
   const [previewVideoIndex, setPreviewVideoIndex] = useState(0);
 
@@ -12042,7 +12042,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                             const startIndex = Math.max(0, videoUrls.indexOf(message.videoUrl));
                                             setPreviewVideos(videoUrls);
                                             setPreviewVideoIndex(startIndex);
-                                            setShowVideoPreview(true);
+                                            setIsVideoPreviewOpen(true);
                                           }}
                                         >
                                           {/* Use video tag as thumbnail, no controls */}
@@ -12461,8 +12461,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
       {/* Video Preview Modal */}
       <VideoPreview
-        isOpen={showVideoPreview}
-        onClose={() => setShowVideoPreview(false)}
+        isOpen={isVideoPreviewOpen}
+        onClose={() => setIsVideoPreviewOpen(false)}
         videos={previewVideos}
         initialIndex={previewVideoIndex}
       />
@@ -13418,12 +13418,6 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* Dispute Reporting Modal */}
       <ConnectedDisputeModal />
 
-      <VideoPreview
-        isOpen={showVideoPreview}
-        onClose={() => setShowVideoPreview(false)}
-        videos={previewVideos}
-        initialIndex={previewVideoIndex}
-      />
       {/* Global Contact Support */}
     </div>
   );
