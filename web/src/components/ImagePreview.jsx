@@ -454,6 +454,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     // Mobile Swipe Tracking (Scale 1)
     else if (scale === 1 && touchStartRef.current && e.touches.length === 1) {
       const dx = e.touches[0].clientX - touchStartRef.current.x;
+      if (Math.abs(dx) > 10) hasMovedRef.current = true;
       setSwipeOffset(dx);
     }
   };
@@ -462,7 +463,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     const moved = hasMovedRef.current;
     const wasPinching = !!pinchStartDistRef.current;
 
-    if ((isDragging || wasPinching) && moved) {
+    if ((isDragging || wasPinching || scale === 1) && moved) {
       ignoreClickRef.current = true;
     }
     setIsDragging(false);
@@ -470,11 +471,13 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
     // Swipe Navigation (only if scale 1, not pinched, not moved as drag)
     if (scale === 1 && !wasPinching && touchStartRef.current) {
-      if (Math.abs(swipeOffset) > 75) {
+      if (Math.abs(swipeOffset) > 30) {
         // >0 (Right) -> Prev (-1)
         // <0 (Left) -> Next (1)
         const dir = swipeOffset > 0 ? -1 : 1;
         changeImage(dir);
+        touchStartRef.current = null;
+        return;
       } else {
         // Snap back
         if (swipeOffset !== 0) {
