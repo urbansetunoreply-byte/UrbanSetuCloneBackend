@@ -58,32 +58,7 @@ const formatTimeDisplay = (timeValue = '') => {
   return `${displayHour}:${minuteStr.padStart(2, '0')} ${period}`;
 };
 
-// Helper component to handle video preview globally within this file
-// Resolves scope issues where local state wasn't visible in deep render tree
-const MediaPreviewGlobal = () => {
-  const [state, setState] = useState({ isOpen: false, videos: [], index: 0 });
 
-  useEffect(() => {
-    const handleOpen = (e) => {
-      const { videos, index } = e.detail;
-      setState({ isOpen: true, videos, index });
-    };
-
-    window.addEventListener('open-media-preview', handleOpen);
-    return () => window.removeEventListener('open-media-preview', handleOpen);
-  }, []);
-
-  if (!state.isOpen) return null;
-
-  return (
-    <VideoPreview
-      isOpen={state.isOpen}
-      onClose={() => setState(prev => ({ ...prev, isOpen: false }))}
-      videos={state.videos}
-      initialIndex={state.index}
-    />
-  );
-};
 
 export default function MyAppointments() {
   // Set page title
@@ -11593,8 +11568,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
         ), document.body)
       }
 
-      {/* Video Preview Modal - Scope Safe Global Component */}
-      <MediaPreviewGlobal />
+
 
       {/* Report Chat Modal */}
       {
