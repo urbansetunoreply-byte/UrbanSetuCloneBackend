@@ -18,6 +18,7 @@ import CallHistoryModal from '../components/CallHistoryModal';
 import ChatSettingsModal from '../components/ChatSettingsModal';
 import { useChatSettings } from '../hooks/useChatSettings';
 import ImagePreview from '../components/ImagePreview';
+import VideoMessageBubble from '../components/VideoMessageBubble.jsx';
 import LinkPreview from '../components/LinkPreview';
 import UserAvatar from '../components/UserAvatar';
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
