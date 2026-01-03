@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSeasonalTheme } from '../hooks/useSeasonalTheme';
 
-const SeasonalEffects = () => {
+const SeasonalEffects = ({ className }) => {
     const theme = useSeasonalTheme();
     const [particles, setParticles] = useState([]);
 
@@ -33,7 +33,7 @@ const SeasonalEffects = () => {
     if (!theme || !theme.effect || theme.effect === 'none') return null;
 
     return (
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div className={`fixed inset-0 pointer-events-none overflow-hidden ${className || 'z-0'}`} aria-hidden="true">
             <style>
                 {`
           @keyframes seasonal-fall {

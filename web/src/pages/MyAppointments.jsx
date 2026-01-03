@@ -32,6 +32,7 @@ import { saleModalStore } from '../utils/saleModalStore';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 import MyAppointmentsSkeleton from '../components/skeletons/MyAppointmentsSkeleton';
+import SeasonalEffects from '../components/SeasonalEffects';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -283,6 +284,11 @@ export default function MyAppointments() {
   }, [currentUser]);
 
   // Separate useEffect for pagination and filtering
+  useEffect(() => {
+    // Reset page to 1 whenever filters change
+    setCurrentPage(1);
+  }, [search, statusFilter, roleFilter, startDate, endDate]);
+
   useEffect(() => {
     // Apply filters
     let filteredAppts = (allAppointments || []).filter((appt) => {
@@ -1212,6 +1218,7 @@ export default function MyAppointments() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-slate-900 py-10 px-2 md:px-8">
+      <SeasonalEffects className="z-[9999]" />
       {/* Chat Settings Modal */}
       <ChatSettingsModal
         isOpen={showChatSettings}
