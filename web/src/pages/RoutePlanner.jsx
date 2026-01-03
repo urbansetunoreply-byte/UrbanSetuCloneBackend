@@ -76,7 +76,13 @@ export default function RoutePlanner() {
     { id: 'driving-traffic', name: 'Traffic', icon: FaTrafficLight, color: '#F59E0B' }
   ];
 
-  const addStop = () => setStops(s => [...s, { address: '', coordinates: null }]);
+  const addStop = () => {
+    if (stops.length >= 10) {
+      toast.warning('Maximum of 10 stops allowed.');
+      return;
+    }
+    setStops(s => [...s, { address: '', coordinates: null }]);
+  };
   const removeStop = (i) => setStops(s => s.filter((_, idx) => idx !== i));
   const updateStop = (i, value, coordinates = null) => {
     setStops(s => s.map((st, idx) =>
@@ -1013,7 +1019,11 @@ export default function RoutePlanner() {
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <FaMapMarkerAlt className="text-red-500" /> Stops ({stops.length})
               </h3>
-              <button onClick={addStop} className="text-xs font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded transition-colors">
+              <button
+                onClick={addStop}
+                disabled={stops.length >= 10}
+                className={`text-xs font-medium flex items-center gap-1 px-2 py-1 rounded transition-colors ${stops.length >= 10 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-50 text-blue-600 hover:text-blue-800'}`}
+              >
                 <FaPlus /> Add Stop
               </button>
             </div>
