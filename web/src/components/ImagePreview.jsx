@@ -412,10 +412,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       const dx = touch.clientX - lastDragRef.current.x;
       const dy = touch.clientY - lastDragRef.current.y;
 
-      setPosition(prev => ({
-        x: prev.x + dx / scale,
-        y: prev.y + dy / scale
-      }));
+      setPosition(prev => getClampedPosition(prev.x + dx / scale, prev.y + dy / scale, scale));
 
       lastDragRef.current = { x: touch.clientX, y: touch.clientY };
     }
@@ -645,6 +642,67 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     setShowControls(prev => !prev);
   };
 
+
+
+  const getClampedPosition = (x, y, currentScale) => {
+    if (!containerRef.current || !imageRef.current) return { x, y };
+
+    const cont = containerRef.current;
+    const img = imageRef.current;
+
+    // Get dimensions considering rotation
+    const isRotated = rotation % 180 !== 0;
+
+    // Natural dimensions
+    const nw = img.naturalWidth || 0;
+    const nh = img.naturalHeight || 0;
+
+    // Container dimensions (with padding)
+    const style = window.getComputedStyle(cont);
+    const cw = cont.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    const ch = cont.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+
+    if (!nw || !nh) return { x, y };
+
+    // Effective content dimensions (if rotated, swap w/h for calculation)
+    // Note: The logic in calculateAutoScale uses the original img dims to determine scale factor
+    // But for visual bounding box, we care about the rotated visual size.
+
+    // 1. Calculate the 'fit' scale (scale0) - this is what makes it fit initially
+    // Since we use object-contain logic:
+    // If Rotated: We fit nh into cw, nw into ch ? 
+    // In calculateAutoScale (lines 296+), we did exactly that logic to find AutoScale.
+
+    // Let's rely on the fact that `rw` (Rendered Width at Scale 1) is simply:
+    // VisualWidth = nw * scale * autoScale (if 0deg)
+    // VisualWidth = nh * scale * autoScale (if 90deg)
+
+    // Calculate visual dimensions
+    const totalScale = currentScale * autoScale;
+    const visualW = (isRotated ? nh : nw) * (Math.min(cw / (isRotated ? nh : nw), ch / (isRotated ? nw : nh))) * currentScale;
+    const visualH = (isRotated ? nw : nh) * (Math.min(cw / (isRotated ? nh : nw), ch / (isRotated ? nw : nh))) * currentScale;
+
+    // Wait, the above logic for visualW/H is slightly duplicating calculating scale0. 
+    // Let's simplify: 
+    // The image *rendered* dimension is derived from 'object-contain'. 
+    // At scale=1, it fits perfectly in one dimension.
+
+    // Let's calculate proper bounds
+
+    // True rendered dimensions at scale=1 (before zoom)
+    const scale0 = Math.min(cw / (isRotated ? nh : nw), ch / (isRotated ? nw : nh));
+    const rw = (isRotated ? nh : nw) * scale0 * currentScale;
+    const rh = (isRotated ? nw : nh) * scale0 * currentScale;
+
+    const maxX = Math.max(0, (rw - cw) / 2);
+    const maxY = Math.max(0, (rh - ch) / 2);
+
+    return {
+      x: Math.min(Math.max(x, -maxX), maxX),
+      y: Math.min(Math.max(y, -maxY), maxY)
+    };
+  };
+
   const handleWrapperMouseMove = (e) => {
     // Mouse Dragging Logic
     if (isDragging && scale > 1) {
@@ -654,10 +712,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       const dx = e.clientX - lastDragRef.current.x;
       const dy = e.clientY - lastDragRef.current.y;
 
-      setPosition(prev => ({
-        x: prev.x + dx / scale,
-        y: prev.y + dy / scale
-      }));
+      setPosition(prev => getClampedPosition(prev.x + dx / scale, prev.y + dy / scale, scale));
 
       lastDragRef.current = { x: e.clientX, y: e.clientY };
     }

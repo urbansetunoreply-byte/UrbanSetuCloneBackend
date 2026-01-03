@@ -524,6 +524,37 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     }
   };
 
+  const getClampedPosition = (x, y, currentScale) => {
+    if (!containerRef.current || !videoRef.current) return { x, y };
+
+    const cont = containerRef.current;
+    const vid = videoRef.current;
+    const isRotated = rotation % 180 !== 0;
+
+    const vw = vid.videoWidth || 0;
+    const vh = vid.videoHeight || 0;
+
+    if (!vw || !vh) return { x, y };
+
+    const cw = cont.clientWidth;
+    const ch = cont.clientHeight;
+
+    // True rendered dimensions at scale=1
+    const scale0 = Math.min(cw / (isRotated ? vh : vw), ch / (isRotated ? vw : vh));
+
+    // Check if image is smaller than container even at scale 1 (centered)
+    const rw = (isRotated ? vh : vw) * scale0 * currentScale;
+    const rh = (isRotated ? vw : vh) * scale0 * currentScale;
+
+    const maxX = Math.max(0, (rw - cw) / 2);
+    const maxY = Math.max(0, (rh - ch) / 2);
+
+    return {
+      x: Math.min(Math.max(x, -maxX), maxX),
+      y: Math.min(Math.max(y, -maxY), maxY)
+    };
+  };
+
   const handleMouseMove = (e) => {
     // Activity Monitor (Desktop)
     if (!justClickedRef.current && !isTouchRef.current) {
@@ -536,10 +567,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       const dx = e.clientX - lastDragRef.current.x;
       const dy = e.clientY - lastDragRef.current.y;
 
-      setPosition(prev => ({
-        x: prev.x + dx / scale,
-        y: prev.y + dy / scale
-      }));
+      setPosition(prev => getClampedPosition(prev.x + dx / scale, prev.y + dy / scale, scale));
 
       lastDragRef.current = { x: e.clientX, y: e.clientY };
     }
@@ -622,10 +650,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         const dx = touch.clientX - lastDragRef.current.x;
         const dy = touch.clientY - lastDragRef.current.y;
 
-        setPosition(prev => ({
-          x: prev.x + dx / scale,
-          y: prev.y + dy / scale
-        }));
+        setPosition(prev => getClampedPosition(prev.x + dx / scale, prev.y + dy / scale, scale));
 
         lastDragRef.current = { x: touch.clientX, y: touch.clientY };
       } else if (speedTimeoutRef.current && !isSpeedingRef.current) {
