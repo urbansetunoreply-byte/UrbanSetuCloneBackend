@@ -65,7 +65,7 @@ export default function MyAppointments() {
   const { currentUser } = useSelector((state) => state.user);
 
   // Video Preview State
-  const [isVideoPreviewOpen, setIsVideoPreviewOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewVideos, setPreviewVideos] = useState([]);
   const [previewVideoIndex, setPreviewVideoIndex] = useState(0);
 
@@ -11579,6 +11579,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
         ), document.body)
       }
 
+      {/* Video Preview Modal - moved here for scope safety */}
+      <VideoPreview
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        videos={previewVideos}
+        initialIndex={previewVideoIndex}
+      />
+
       {/* Report Chat Modal */}
       {
         showReportChatModal && createPortal((
@@ -12042,7 +12050,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                             const startIndex = Math.max(0, videoUrls.indexOf(message.videoUrl));
                                             setPreviewVideos(videoUrls);
                                             setPreviewVideoIndex(startIndex);
-                                            setIsVideoPreviewOpen(true);
+                                            setPreviewVideos(videoUrls);
+                                            setPreviewVideoIndex(startIndex);
+                                            setIsPreviewOpen(true);
                                           }}
                                         >
                                           {/* Use video tag as thumbnail, no controls */}
@@ -12459,13 +12469,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
         }}
       />
 
-      {/* Video Preview Modal */}
-      <VideoPreview
-        isOpen={isVideoPreviewOpen}
-        onClose={() => setIsVideoPreviewOpen(false)}
-        videos={previewVideos}
-        initialIndex={previewVideoIndex}
-      />
+
 
     </>
   );
