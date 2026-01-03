@@ -58,18 +58,40 @@ const formatTimeDisplay = (timeValue = '') => {
   return `${displayHour}:${minuteStr.padStart(2, '0')} ${period}`;
 };
 
+// Helper component to handle video preview globally within this file
+// Resolves scope issues where local state wasn't visible in deep render tree
+const MediaPreviewGlobal = () => {
+  const [state, setState] = useState({ isOpen: false, videos: [], index: 0 });
+
+  useEffect(() => {
+    const handleOpen = (e) => {
+      const { videos, index } = e.detail;
+      setState({ isOpen: true, videos, index });
+    };
+
+    window.addEventListener('open-media-preview', handleOpen);
+    return () => window.removeEventListener('open-media-preview', handleOpen);
+  }, []);
+
+  if (!state.isOpen) return null;
+
+  return (
+    <VideoPreview
+      isOpen={state.isOpen}
+      onClose={() => setState(prev => ({ ...prev, isOpen: false }))}
+      videos={state.videos}
+      initialIndex={state.index}
+    />
+  );
+};
+
 export default function MyAppointments() {
   // Set page title
   usePageTitle("My Appointments - Bookings");
 
   const { currentUser } = useSelector((state) => state.user);
 
-  // Video Preview State (Refactored to object to fix scope issues)
-  const [mediaPreviewState, setMediaPreviewState] = useState({
-    isOpen: false,
-    videos: [],
-    index: 0
-  });
+
 
   // Function to handle phone number clicks
   const handlePhoneClick = (phoneNumber) => {
@@ -11581,13 +11603,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
         ), document.body)
       }
 
-      {/* Video Preview Modal - moved here for scope safety */}
-      <VideoPreview
-        isOpen={mediaPreviewState.isOpen}
-        onClose={() => setMediaPreviewState(prev => ({ ...prev, isOpen: false }))}
-        videos={mediaPreviewState.videos}
-        initialIndex={mediaPreviewState.index}
-      />
+      {/* Video Preview Modal - Scope Safe Global Component */}
+      <MediaPreviewGlobal />
 
       {/* Report Chat Modal */}
       {
@@ -12050,11 +12067,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                             e.stopPropagation();
                                             const videoUrls = (comments || []).filter(msg => !!msg.videoUrl && !msg.deleted).map(msg => msg.videoUrl);
                                             const startIndex = Math.max(0, videoUrls.indexOf(message.videoUrl));
-                                            setMediaPreviewState({
-                                              isOpen: true,
-                                              videos: videoUrls,
-                                              index: startIndex
-                                            });
+                                            window.dispatchEvent(new CustomEvent('open-media-preview', {
+                                              detail: { videos: videoUrls, index: startIndex }
+                                            }));
                                           }}
                                         >
                                           {/* Use video tag as thumbnail, no controls */}
