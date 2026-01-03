@@ -53,6 +53,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const originalSpeedRef = useRef(1);
   const isSpeedingRef = useRef(false);
   const ignoreClickRef = useRef(false);
+  const justClickedRef = useRef(false);
 
   // Initialize
   useEffect(() => {
@@ -197,6 +198,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       return;
     }
 
+    // Block mousemove activity detection for a short while (prevents emulated mousemove from reopening controls)
+    justClickedRef.current = true;
+    setTimeout(() => justClickedRef.current = false, 500);
+
     // Detect Double Tap
     const now = Date.now();
     const timeDiff = now - lastTapRef.current;
@@ -227,7 +232,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     lastTapRef.current = now;
   };
 
-  // Activity Monitor (User Input)
+  // Activity Monitor (User Input - Keydown Only)
   useEffect(() => {
     if (!isOpen) return;
 
@@ -235,11 +240,9 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setShowControls(true);
     };
 
-    window.addEventListener('mousemove', handleActivity);
     window.addEventListener('keydown', handleActivity);
 
     return () => {
-      window.removeEventListener('mousemove', handleActivity);
       window.removeEventListener('keydown', handleActivity);
     };
   }, [isOpen]);
@@ -417,6 +420,11 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   };
 
   const handleMouseMove = (e) => {
+    // Activity Monitor (Desktop)
+    if (!justClickedRef.current) {
+      setShowControls(true);
+    }
+
     if (isDragging && scale > 1) {
       e.preventDefault();
       setPosition({
