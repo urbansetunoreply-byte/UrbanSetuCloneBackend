@@ -80,6 +80,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const feedbackTimeoutRef = useRef(null);
   const hasMovedRef = useRef(false);
   const ignoreClickRef = useRef(false);
+  const isTouchRef = useRef(false);
   const pinchStartDistRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
@@ -240,7 +241,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     };
 
     const handleMouseMove = () => {
-      if (!showControls) setShowControls(true);
+      // Activity Monitor (Desktop)
+      if (!showControls && !isTouchRef.current) setShowControls(true);
     };
 
     const handleClickOutside = (e) => {
@@ -630,13 +632,27 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     setImageError(true);
   };
 
-  const handleImageClick = (e) => {
-    e.stopPropagation();
+  const handleContainerClick = (e) => {
+    // Check if we should ignore click (due to drag/pinch)
     if (ignoreClickRef.current) {
       ignoreClickRef.current = false;
       return;
     }
+
+    // Don't toggle if clicking buttons/controls
+    if (e.target.closest('button') || e.target.closest('input') || e.target.closest('[data-panel]')) {
+      return;
+    }
+
     setShowControls(prev => !prev);
+  };
+
+  const handleWrapperMouseMove = () => {
+    if (!isTouchRef.current && !showControls) setShowControls(true);
+  };
+
+  const handleWrapperTouchStart = () => {
+    isTouchRef.current = true;
   };
 
   if (!isOpen || !imagesArray || imagesArray.length === 0) return null;
@@ -645,9 +661,11 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     <div
       className={`fixed inset-0 bg-black bg-opacity-95 z-[9999] flex items-center justify-center transition-all duration-300 select-none touch-none ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
         }`}
-      onMouseMove={handleMouseMove}
+      onMouseMove={handleWrapperMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchStartCapture={handleWrapperTouchStart}
+      onClick={handleContainerClick}
     >
       {/* Close Button */}
       <button
@@ -713,7 +731,6 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onClick={handleImageClick}
           onLoad={handleImageLoad}
           onError={handleImageError}
           draggable={false}
