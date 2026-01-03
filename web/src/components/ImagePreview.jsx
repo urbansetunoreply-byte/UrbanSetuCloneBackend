@@ -643,7 +643,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
   return (
     <div
-      className={`fixed inset-0 bg-black bg-opacity-95 z-[9999] flex items-center justify-center transition-all duration-300 ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+      className={`fixed inset-0 bg-black bg-opacity-95 z-[9999] flex items-center justify-center transition-all duration-300 select-none touch-none ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
         }`}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
