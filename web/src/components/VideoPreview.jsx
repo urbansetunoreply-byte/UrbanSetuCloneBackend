@@ -40,7 +40,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(true);
-  const [videoDims, setVideoDims] = useState(null);
+  const [zoomMessage, setZoomMessage] = useState(null);
+  const zoomTimeoutRef = useRef(null);
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -58,7 +59,6 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setScale(1);
       setRotation(0);
       setPosition({ x: 0, y: 0 });
-      setVideoDims(null); // Reset dims
       setPlaybackRate(1);
       setShowControls(true);
       setShowSettings(false);
@@ -150,26 +150,17 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     }
   }, [volume]);
 
-  // Calculate Video Dimensions
-  const updateVideoDims = () => {
-    if (videoRef.current && videoRef.current.videoWidth) {
-      const vw = videoRef.current.videoWidth;
-      const vh = videoRef.current.videoHeight;
-      const sw = window.innerWidth;
-      const sh = window.innerHeight;
-
-      const scaleFactor = Math.min(sw / vw, sh / vh);
-
-      setVideoDims({
-        width: vw * scaleFactor,
-        height: vh * scaleFactor
-      });
-    }
+  // Zoom Interaction Helper
+  const showZoomToast = (newScale) => {
+    setZoomMessage(`${Math.round(newScale * 100)}%`);
+    if (zoomTimeoutRef.current) clearTimeout(zoomTimeoutRef.current);
+    zoomTimeoutRef.current = setTimeout(() => setZoomMessage(null), 1500);
   };
 
   useEffect(() => {
-    window.addEventListener('resize', updateVideoDims);
-    return () => window.removeEventListener('resize', updateVideoDims);
+    return () => {
+      if (zoomTimeoutRef.current) clearTimeout(zoomTimeoutRef.current);
+    };
   }, []);
 
   // Activity Monitor (Auto-hide controls)
@@ -286,16 +277,23 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     }
   };
 
-  // Zoom & Pan Handlers
   const handleZoomIn = (e) => {
     e?.stopPropagation();
-    setScale(s => Math.min(s * 1.5, 5)); // Max 5x zoom
+    const newScale = Math.min(scale * 1.5, 5);
+    setScale(newScale);
+    showZoomToast(newScale);
   };
 
   const handleZoomOut = (e) => {
     e?.stopPropagation();
-    setScale(s => Math.max(s / 1.5, 1)); // Min 1x
-    if (scale <= 1.5) setPosition({ x: 0, y: 0 }); // Reset pos if zoomed out
+    let newScale = Math.max(scale / 1.5, 1);
+    // Snap to 1 if close
+    if (newScale < 1.1) newScale = 1;
+
+    setScale(newScale);
+    showZoomToast(newScale);
+
+    if (newScale <= 1.5) setPosition({ x: 0, y: 0 }); // Reset pos if zoomed out
   };
 
   const handleRotate = (e) => {
@@ -309,6 +307,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     setRotation(0);
     setPosition({ x: 0, y: 0 });
     setPlaybackRate(1);
+    showZoomToast(1);
   };
 
   const toggleSpeed = (e) => {
@@ -415,11 +414,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           ref={videoRef}
           key={currentIndex}
           src={videos[currentIndex]}
-          className={`shadow-xl transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
+          className={`w-full h-full object-contain transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
           playsInline
           preload="auto"
           autoPlay
-          onLoadedMetadata={updateVideoDims}
           onLoadStart={() => setIsLoading(true)}
           onWaiting={() => setIsLoading(true)}
           onLoadedData={() => setIsLoading(false)}
@@ -433,8 +431,6 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           }}
           onEnded={() => { setIsPlaying(false); setShowControls(true); }}
           style={{
-            width: videoDims ? videoDims.width : 'auto',
-            height: videoDims ? videoDims.height : 'auto',
             maxWidth: '100%',
             maxHeight: '100%',
             transform: `scale(${scale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
@@ -442,6 +438,13 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           }}
           draggable={false}
         />
+
+        {/* Zoom Indicator Toast */}
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none transition-opacity duration-300 ${zoomMessage ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="bg-black/70 backdrop-blur-md text-white text-3xl font-bold px-6 py-4 rounded-xl shadow-2xl">
+            {zoomMessage}
+          </div>
+        </div>
       </div>
 
       {/* Bottom Controls Bar */}
