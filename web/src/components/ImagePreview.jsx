@@ -640,8 +640,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <button
           onClick={toggleSlideshow}
           className={`p-2 rounded-lg transition-all duration-200 ${isSlideshow
-              ? 'text-red-400 hover:text-red-300 bg-red-400 bg-opacity-20'
-              : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
+            ? 'text-red-400 hover:text-red-300 bg-red-400 bg-opacity-20'
+            : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
             }`}
           title="Toggle Slideshow (S)"
         >
@@ -650,8 +650,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <button
           onClick={handleToggleFavorite}
           className={`p-2 rounded-lg transition-all duration-200 ${isCurrentImageFavorited
-              ? 'text-red-400 hover:text-red-300'
-              : 'text-white hover:text-red-300 hover:bg-white hover:bg-opacity-20'
+            ? 'text-red-400 hover:text-red-300'
+            : 'text-white hover:text-red-300 hover:bg-white hover:bg-opacity-20'
             }`}
           title="Toggle Favorite"
         >
@@ -661,8 +661,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           onClick={handleDownload}
           disabled={isDownloading}
           className={`text-white p-2 rounded-lg transition-all duration-200 ${isDownloading
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
+            ? 'opacity-50 cursor-not-allowed'
+            : 'hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
             }`}
           title={isDownloading ? "Downloading..." : "Download Image"}
           aria-label={isDownloading ? "Downloading image" : "Download image"}
@@ -683,8 +683,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <button
           onClick={() => setShowInfo(prev => !prev)}
           className={`p-2 rounded-lg transition-all duration-200 ${showInfo
-              ? 'text-blue-400 bg-blue-400 bg-opacity-20'
-              : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
+            ? 'text-blue-400 bg-blue-400 bg-opacity-20'
+            : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
             }`}
           title="Image Info (I)"
         >
@@ -693,8 +693,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <button
           onClick={() => setShowSettings(prev => !prev)}
           className={`p-2 rounded-lg transition-all duration-200 ${showSettings
-              ? 'text-yellow-400 bg-yellow-400 bg-opacity-20'
-              : 'text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20'
+            ? 'text-yellow-400 bg-yellow-400 bg-opacity-20'
+            : 'text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20'
             }`}
           title="Settings"
         >
@@ -730,8 +730,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <button
           onClick={toggleSlideshow}
           className={`p-1.5 rounded-lg transition-all duration-200 ${isSlideshow
-              ? 'text-red-400 hover:text-red-300 bg-red-400 bg-opacity-20'
-              : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
+            ? 'text-red-400 hover:text-red-300 bg-red-400 bg-opacity-20'
+            : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
             }`}
           title="Slideshow"
         >
@@ -740,8 +740,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <button
           onClick={handleToggleFavorite}
           className={`p-1.5 rounded-lg transition-all duration-200 ${isCurrentImageFavorited
-              ? 'text-red-400 hover:text-red-300'
-              : 'text-white hover:text-red-300 hover:bg-white hover:bg-opacity-20'
+            ? 'text-red-400 hover:text-red-300'
+            : 'text-white hover:text-red-300 hover:bg-white hover:bg-opacity-20'
             }`}
           title="Favorite"
         >
@@ -751,8 +751,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           onClick={handleDownload}
           disabled={isDownloading}
           className={`text-white p-1.5 rounded-lg transition-all duration-200 ${isDownloading
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
+            ? 'opacity-50 cursor-not-allowed'
+            : 'hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
             }`}
           title={isDownloading ? "Downloading..." : "Download Image"}
           aria-label={isDownloading ? "Downloading image" : "Download image"}
@@ -766,8 +766,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <button
           onClick={() => setShowSettings(prev => !prev)}
           className={`p-1.5 rounded-lg transition-all duration-200 ${showSettings
-              ? 'text-yellow-400 bg-yellow-400 bg-opacity-20'
-              : 'text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20'
+            ? 'text-yellow-400 bg-yellow-400 bg-opacity-20'
+            : 'text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20'
             }`}
           title="More"
         >
@@ -807,13 +807,27 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
                 <span className="text-sm text-gray-300">{slideshowSpeed}ms</span>
               </div>
             )}
+
+            {/* Keyboard Shortcuts List */}
+            <div className="hidden md:block pt-3 border-t border-gray-600">
+              <div className="text-sm font-semibold text-gray-300 mb-2">Shortcuts</div>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-gray-400">
+                <span>←/→ : Next/Prev</span>
+                <span>+/- : Zoom</span>
+                <span>F : Fullscreen</span>
+                <span>S : Slideshow</span>
+                <span>I : Info</span>
+                <span>H : Hide UI</span>
+                <span>Esc : Close</span>
+              </div>
+            </div>
             {/* Desktop-only options */}
             <div className="hidden md:block space-y-2 pt-2 border-t border-gray-600">
               <button
                 onClick={() => setShowInfo(prev => !prev)}
                 className={`w-full text-left p-2 rounded-lg transition-all duration-200 ${showInfo
-                    ? 'text-blue-400 bg-blue-400 bg-opacity-20'
-                    : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
+                  ? 'text-blue-400 bg-blue-400 bg-opacity-20'
+                  : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
                   }`}
               >
                 <div className="flex items-center gap-2">
@@ -854,8 +868,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
               <button
                 onClick={() => setShowInfo(prev => !prev)}
                 className={`w-full text-left p-2 rounded-lg transition-all duration-200 ${showInfo
-                    ? 'text-blue-400 bg-blue-400 bg-opacity-20'
-                    : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
+                  ? 'text-blue-400 bg-blue-400 bg-opacity-20'
+                  : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
                   }`}
               >
                 <div className="flex items-center gap-2">
@@ -940,19 +954,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <span className="font-medium">{Math.round(scale * 100)}%</span>
       </div>
 
-      {/* Enhanced Instructions */}
-      <div className={`absolute bottom-20 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-70 backdrop-blur-sm rounded-xl px-6 py-4 text-sm max-w-md transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}>
-        <div className="text-center space-y-1">
-          <div className="hidden sm:block font-medium">Keyboard Shortcuts</div>
-          <div className="hidden sm:block text-gray-300">Mouse wheel or +/- to zoom • Drag to pan</div>
-          <div className="hidden sm:block text-gray-300">Arrow keys to navigate • F for fullscreen</div>
-          <div className="hidden sm:block text-gray-300">S for slideshow • I for info • H to hide controls</div>
-          <div className="sm:hidden font-medium">Touch Controls</div>
-          <div className="sm:hidden text-gray-300">Tap to zoom • Swipe to navigate • Pinch to zoom</div>
-          <div className="sm:hidden text-gray-300">Use close icon to exit</div>
-        </div>
-      </div>
+
 
       {/* Slideshow Indicator */}
       {isSlideshow && (
