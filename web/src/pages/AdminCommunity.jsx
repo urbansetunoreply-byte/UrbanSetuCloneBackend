@@ -40,7 +40,7 @@ export default function AdminCommunity() {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('All');
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // Modal State
     const [confirmModal, setConfirmModal] = useState({
@@ -119,9 +119,7 @@ export default function AdminCommunity() {
     useEffect(() => {
         const loadData = async () => {
             // Only show full skeleton on initial load or tab change, not during search
-            if (!searchTerm) {
-                setLoading(true);
-            }
+            // If searching, we still want to fetch, but maybe not hide everything behind a skeleton
             try {
                 // If searching, we still want to fetch, but maybe not hide everything behind a skeleton
                 await Promise.all([fetchPosts(), fetchStats()]);
