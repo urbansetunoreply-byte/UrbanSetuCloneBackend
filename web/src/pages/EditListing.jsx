@@ -90,6 +90,7 @@ export default function EditListing() {
   const location = useLocation();
   const [consent, setConsent] = useState(false);
   const [locationState, setLocationState] = useState({ state: "", district: "", city: "", cities: [] });
+  const [previewVideo, setPreviewVideo] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
 
   // Get the previous path for redirection
