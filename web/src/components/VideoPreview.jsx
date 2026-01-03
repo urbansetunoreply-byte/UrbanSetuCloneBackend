@@ -7,6 +7,7 @@ import {
   FaPlay,
   FaPause,
   FaVolumeUp,
+  FaVolumeDown,
   FaVolumeMute,
   FaExpand,
   FaCompress,
@@ -363,6 +364,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   if (!isOpen || !videos || videos.length === 0) return null;
 
   // Handlers
+  const getVolumeIcon = (vol, props = {}) => {
+    if (vol === 0) return <FaVolumeMute {...props} />;
+    if (vol < 0.5) return <FaVolumeDown {...props} />;
+    return <FaVolumeUp {...props} />;
+  };
+
   const handleVideoError = () => {
     toast.error("Unable to play video.");
     setIsPlaying(false);
@@ -416,14 +423,14 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setVolume(1);
       showFeedback(
         <div className="flex items-center gap-3">
-          <FaVolumeUp /> <span>Unmuted</span>
+          {getVolumeIcon(1)} <span>Unmuted</span>
         </div>
       );
     } else {
       setVolume(0);
       showFeedback(
         <div className="flex items-center gap-3">
-          <FaVolumeMute /> <span>Muted</span>
+          {getVolumeIcon(0)} <span>Muted</span>
         </div>
       );
     }
@@ -677,7 +684,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setActiveGesture('volume');
       showFeedback(
         <div className="flex items-center gap-3">
-          {newVal === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
+          {getVolumeIcon(newVal)}
           <span>Volume: {Math.round(newVal * 100)}%</span>
         </div>
       );
@@ -768,7 +775,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           setVolume(newVal);
           showFeedback(
             <div className="flex items-center gap-3">
-              {newVal === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
+              {getVolumeIcon(newVal)}
               <span>Volume: {Math.round(newVal * 100)}%</span>
             </div>
           );
@@ -1072,7 +1079,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       <div className={`absolute right-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'volume' ? 'opacity-100' : 'opacity-0'}`}>
         <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${volume * 100}%` }} />
         <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
-          {volume === 0 ? <FaVolumeMute className="text-blue-500 drop-shadow-md text-xl" /> : <FaVolumeUp className="text-blue-500 drop-shadow-md text-xl" />}
+          {getVolumeIcon(volume, { className: "text-blue-500 drop-shadow-md text-xl" })}
         </div>
       </div>
 
