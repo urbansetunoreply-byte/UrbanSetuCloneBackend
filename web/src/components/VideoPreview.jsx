@@ -54,6 +54,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const isSpeedingRef = useRef(false);
   const ignoreClickRef = useRef(false);
   const justClickedRef = useRef(false);
+  const isTouchRef = useRef(false);
+  const touchStartRef = useRef({ time: 0, x: 0, y: 0 });
 
   // Initialize
   useEffect(() => {
@@ -421,7 +423,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
   const handleMouseMove = (e) => {
     // Activity Monitor (Desktop)
-    if (!justClickedRef.current) {
+    if (!justClickedRef.current && !isTouchRef.current) {
       setShowControls(true);
     }
 
@@ -448,6 +450,55 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     setIsDragging(false);
   };
 
+  // Touch Logic
+  const handleTouchStart = (e) => {
+    isTouchRef.current = true;
+    if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      if (scale > 1) {
+        setIsDragging(true);
+        setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
+      } else {
+        touchStartRef.current = { time: Date.now(), x: touch.clientX, y: touch.clientY };
+        originalSpeedRef.current = playbackRate;
+        speedTimeoutRef.current = setTimeout(() => {
+          isSpeedingRef.current = true;
+          setPlaybackRate(2.0);
+          showFeedback("2x Speed");
+          ignoreClickRef.current = true;
+        }, 500);
+      }
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      if (isDragging && scale > 1) {
+        e.preventDefault();
+        setPosition({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y });
+      } else if (speedTimeoutRef.current && !isSpeedingRef.current) {
+        const dist = Math.abs(touch.clientX - touchStartRef.current.x) + Math.abs(touch.clientY - touchStartRef.current.y);
+        if (dist > 10) {
+          clearTimeout(speedTimeoutRef.current);
+          speedTimeoutRef.current = null;
+        }
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
+    if (isSpeedingRef.current) {
+      setPlaybackRate(originalSpeedRef.current);
+      isSpeedingRef.current = false;
+      showFeedback(`${originalSpeedRef.current}x Speed`);
+    }
+    setIsDragging(false);
+    setTimeout(() => { isTouchRef.current = false; }, 500);
+  };
+
   const formatTime = (seconds) => {
     if (!seconds) return "0:00";
     const mins = Math.floor(seconds / 60);
@@ -458,10 +509,14 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 bg-black z-[9999] flex items-center justify-center select-none"
+      className="fixed inset-0 bg-black z-[9999] flex items-center justify-center select-none touch-none"
+      onContextMenu={(e) => e.preventDefault()}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Top Controls (Close, Title?) */}
       <button
