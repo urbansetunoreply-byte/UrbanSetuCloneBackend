@@ -516,10 +516,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
               togglePlay(e);
             }}
             className={`pointer-events-auto transform transition-all duration-300 bg-black/60 backdrop-blur-sm p-6 rounded-full text-white hover:scale-110 shadow-2xl ${
-              // Show if paused/loading OR (playing AND controls visible)
-              (!isPlaying || isLoading || showControls)
-                ? 'opacity-100 scale-100'
-                : 'opacity-0 scale-90 pointer-events-none' // Hide and disable pointer events
+              // Show if (paused AND NOT loaded) OR (playing AND controls visible AND NOT loading)
+              // Actually, simply: Hide if loading. Show if Paused. Show if Playing & Controls Visible.
+              (isLoading) ? 'opacity-0 scale-90 pointer-events-none' :
+                (!isPlaying || showControls)
+                  ? 'opacity-100 scale-100'
+                  : 'opacity-0 scale-90 pointer-events-none'
               }`}
           >
             {isPlaying && !isLoading ? (
