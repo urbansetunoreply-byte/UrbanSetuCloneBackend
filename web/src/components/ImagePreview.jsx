@@ -87,7 +87,12 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const lastTapRef = useRef(0);
   const pinchStartDistRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
+
   const [feedbackMessage, setFeedbackMessage] = useState(null);
+
+  // Swipe Transition State
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isAnimatingSwipe, setIsAnimatingSwipe] = useState(false);
 
   const showFeedback = (msg) => {
     setFeedbackMessage(msg);
@@ -446,6 +451,11 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         hasMovedRef.current = true; // Pinch is also movement
       }
     }
+    // Mobile Swipe Tracking (Scale 1)
+    else if (scale === 1 && touchStartRef.current && e.touches.length === 1) {
+      const dx = e.touches[0].clientX - touchStartRef.current.x;
+      setSwipeOffset(dx);
+    }
   };
 
   const handleTouchEnd = (e) => {
@@ -460,20 +470,22 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
     // Swipe Navigation (only if scale 1, not pinched, not moved as drag)
     if (scale === 1 && !wasPinching && touchStartRef.current) {
-      const touch = e.changedTouches[0];
-      const dx = touch.clientX - touchStartRef.current.x;
-      const dy = touch.clientY - touchStartRef.current.y;
-
-      if (Math.abs(dx) > 50 && Math.abs(dy) < 50) {
-        // Horizontal Swipe detected
-        if (dx > 0) {
-          // Swipe Right -> Prev
-          setCurrentIndex(prev => prev > 0 ? prev - 1 : imagesArray.length - 1);
-        } else {
-          // Swipe Left -> Next
-          setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : 0);
+      if (Math.abs(swipeOffset) > 75) {
+        // >0 (Right) -> Prev (-1)
+        // <0 (Left) -> Next (1)
+        const dir = swipeOffset > 0 ? -1 : 1;
+        changeImage(dir);
+      } else {
+        // Snap back
+        if (swipeOffset !== 0) {
+          setIsAnimatingSwipe(true);
+          setSwipeOffset(0);
+          setTimeout(() => setIsAnimatingSwipe(false), 300);
         }
       }
+    } else {
+      // Reset if not a valid swipe start
+      setSwipeOffset(0);
     }
 
     touchStartRef.current = null;
@@ -701,6 +713,33 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
 
 
+  const changeImage = (dir) => { // dir: 1 (Next), -1 (Prev)
+    setIsAnimatingSwipe(true);
+    const screenW = window.innerWidth;
+    const exitTo = dir === 1 ? -screenW : screenW;
+
+    setSwipeOffset(exitTo); // Animate out
+
+    setTimeout(() => {
+      setCurrentIndex(prev => {
+        if (dir === 1) return prev < imagesArray.length - 1 ? prev + 1 : 0;
+        return prev > 0 ? prev - 1 : imagesArray.length - 1;
+      });
+
+      // Prep Entry
+      setIsAnimatingSwipe(false);
+      setSwipeOffset(dir === 1 ? screenW : -screenW);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimatingSwipe(true);
+          setSwipeOffset(0);
+          setTimeout(() => setIsAnimatingSwipe(false), 300);
+        });
+      });
+    }, 300);
+  };
+
   const getClampedPosition = (x, y, currentScale) => {
     if (!containerRef.current || !imageRef.current) return { x, y };
 
@@ -851,8 +890,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           className={`max-w-full max-h-full object-contain cursor-move transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'
             }`}
           style={{
-            transform: `scale(${scale * autoScale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
-            transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+            transform: `scale(${scale * autoScale}) rotate(${rotation}deg) translate(${position.x + swipeOffset}px, ${position.y}px)`,
+            transition: (isDragging || (Math.abs(swipeOffset) > 0 && !isAnimatingSwipe)) ? 'none' : 'transform 0.3s ease-out'
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
