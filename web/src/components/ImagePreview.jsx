@@ -82,6 +82,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const ignoreClickRef = useRef(false);
   const isTouchRef = useRef(false);
   const lastDragRef = useRef({ x: 0, y: 0 });
+
+  const touchStartRef = useRef(null);
   const lastTapRef = useRef(0);
   const pinchStartDistRef = useRef(null);
   const pinchStartScaleRef = useRef(1);
@@ -393,8 +395,13 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       setIsDragging(true);
       lastDragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     }
+    // Record start for Swipe (if scale 1)
+    else if (scale === 1 && e.touches.length === 1) {
+      touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+
     // Pinch to zoom
-    else if (e.touches.length === 2) {
+    if (e.touches.length === 2) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
@@ -450,6 +457,26 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     }
     setIsDragging(false);
     pinchStartDistRef.current = null;
+
+    // Swipe Navigation (only if scale 1, not pinched, not moved as drag)
+    if (scale === 1 && !wasPinching && touchStartRef.current) {
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartRef.current.x;
+      const dy = touch.clientY - touchStartRef.current.y;
+
+      if (Math.abs(dx) > 50 && Math.abs(dy) < 50) {
+        // Horizontal Swipe detected
+        if (dx > 0) {
+          // Swipe Right -> Prev
+          setCurrentIndex(prev => prev > 0 ? prev - 1 : imagesArray.length - 1);
+        } else {
+          // Swipe Left -> Next
+          setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : 0);
+        }
+      }
+    }
+
+    touchStartRef.current = null;
 
     // Double tap logic (only if not moved/dragged AND not pinching)
     if (!moved && !wasPinching) {
@@ -781,7 +808,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <>
           <button
             onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : imagesArray.length - 1)}
-            className={`absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+            className={`absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 hidden md:block ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
               }`}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -790,7 +817,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           </button>
           <button
             onClick={() => setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : 0)}
-            className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 hidden md:block ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
               }`}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
