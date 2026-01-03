@@ -48,6 +48,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
+  const singleClickTimeoutRef = useRef(null);
 
   // Initialize
   useEffect(() => {
@@ -96,20 +97,20 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         case 'm': // Mute
           setVolume(v => v === 0 ? 1 : 0);
           break;
-        case 'ArrowRight': // Forward 5s or Next video
+        case 'ArrowRight': // Forward 10s or Next video
         case 'l': // +10s
           if (scale === 1 && videos.length > 1 && e.ctrlKey) {
             setCurrentIndex(prev => prev < videos.length - 1 ? prev + 1 : 0);
           } else if (videoRef.current) {
-            videoRef.current.currentTime += (e.key === 'l' ? 10 : 5);
+            videoRef.current.currentTime += 10;
           }
           break;
-        case 'ArrowLeft': // Rewind 5s or Prev video
+        case 'ArrowLeft': // Rewind 10s or Prev video
         case 'j': // -10s
           if (scale === 1 && videos.length > 1 && e.ctrlKey) {
             setCurrentIndex(prev => prev > 0 ? prev - 1 : videos.length - 1);
           } else if (videoRef.current) {
-            videoRef.current.currentTime -= (e.key === 'j' ? 10 : 5);
+            videoRef.current.currentTime -= 10;
           }
           break;
         case 'ArrowUp': // Volume Up or Pan Up
@@ -158,9 +159,9 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     }
   }, [volume]);
 
-  // Zoom Interaction Helper
-  const showZoomToast = (newScale) => {
-    setZoomMessage(`${Math.round(newScale * 100)}%`);
+  // Feedback Toast Helper
+  const showFeedback = (msg) => {
+    setZoomMessage(msg);
     if (zoomTimeoutRef.current) clearTimeout(zoomTimeoutRef.current);
     zoomTimeoutRef.current = setTimeout(() => setZoomMessage(null), 1500);
   };
@@ -168,6 +169,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   useEffect(() => {
     return () => {
       if (zoomTimeoutRef.current) clearTimeout(zoomTimeoutRef.current);
+      if (singleClickTimeoutRef.current) clearTimeout(singleClickTimeoutRef.current);
     };
   }, []);
 
@@ -187,6 +189,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
     if (timeDiff < 300 && timeDiff > 0) {
       // It's a double tap!
+      if (singleClickTimeoutRef.current) clearTimeout(singleClickTimeoutRef.current);
+
       const rect = e.currentTarget.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const width = rect.width;
@@ -198,6 +202,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         // Left side (first 35%) -> Rewind 10s
         handleSeek(-10);
       }
+    } else {
+      // Potential Single Tap - Toggle Controls
+      if (singleClickTimeoutRef.current) clearTimeout(singleClickTimeoutRef.current);
+      singleClickTimeoutRef.current = setTimeout(() => {
+        if (!isDragging && scale === 1) setShowControls(prev => !prev);
+      }, 300);
     }
 
     lastTapRef.current = now;
@@ -321,7 +331,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     e?.stopPropagation();
     const newScale = Math.min(scale * 1.5, 5);
     setScale(newScale);
-    showZoomToast(newScale);
+    showFeedback(`${Math.round(newScale * 100)}%`);
   };
 
   const handleZoomOut = (e) => {
@@ -331,14 +341,18 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     if (newScale < 1.1) newScale = 1;
 
     setScale(newScale);
-    showZoomToast(newScale);
+    showFeedback(`${Math.round(newScale * 100)}%`);
 
     if (newScale <= 1.5) setPosition({ x: 0, y: 0 }); // Reset pos if zoomed out
   };
 
   const handleRotate = (e) => {
     e?.stopPropagation();
-    setRotation(r => r + 90);
+    setRotation(r => {
+      const newR = r + 90;
+      showFeedback(`${newR}°`);
+      return newR;
+    });
   };
 
   const handleReset = (e) => {
@@ -347,7 +361,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     setRotation(0);
     setPosition({ x: 0, y: 0 });
     setPlaybackRate(1);
-    showZoomToast(1);
+    showFeedback("Reset");
   };
 
   const toggleSpeed = (e) => {
@@ -497,10 +511,14 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
               e.stopPropagation();
               togglePlay(e);
             }}
-            className={`pointer-events-auto transform transition-all duration-300 bg-black/60 backdrop-blur-sm p-6 rounded-full text-white hover:scale-110 shadow-2xl ${!isPlaying ? 'opacity-100 scale-100' : 'opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100'
+            className={`pointer-events-auto transform transition-all duration-300 bg-black/60 backdrop-blur-sm p-6 rounded-full text-white hover:scale-110 shadow-2xl ${
+              // Show if paused/loading OR (playing AND controls visible)
+              (!isPlaying || isLoading || showControls)
+                ? 'opacity-100 scale-100'
+                : 'opacity-0 scale-90 pointer-events-none' // Hide and disable pointer events
               }`}
           >
-            {isPlaying ? (
+            {isPlaying && !isLoading ? (
               <FaPause className="text-4xl" />
             ) : (
               <FaPlay className="text-4xl pl-2" />
