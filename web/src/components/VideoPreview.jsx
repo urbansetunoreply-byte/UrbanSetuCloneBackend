@@ -392,10 +392,6 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       {/* Video Viewport */}
       <div
         className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black"
-        onClick={(e) => {
-          // Close on background click if not dragging
-          if (!isDragging && scale === 1) onClose();
-        }}
         onMouseDown={handleMouseDown}
       >
         {isLoading && (
