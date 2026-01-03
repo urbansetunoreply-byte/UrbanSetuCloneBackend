@@ -439,6 +439,11 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       setScale(newScale);
       showFeedback(`${Math.round(newScale * 100)}%`);
 
+      // Auto-reset position if zoomed out to near 1x
+      if (newScale <= 1.1) {
+        setPosition({ x: 0, y: 0 });
+      }
+
       if (Math.abs(newScale - pinchStartScaleRef.current) > 0.1) {
         hasMovedRef.current = true; // Pinch is also movement
       }
