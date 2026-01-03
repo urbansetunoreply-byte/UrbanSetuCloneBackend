@@ -75,6 +75,14 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const imageRef = useRef(null);
   const slideshowRef = useRef(null);
   const settingsRef = useRef(null);
+  const feedbackTimeoutRef = useRef(null);
+  const [feedbackMessage, setFeedbackMessage] = useState(null);
+
+  const showFeedback = (msg) => {
+    setFeedbackMessage(msg);
+    if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
+    feedbackTimeoutRef.current = setTimeout(() => setFeedbackMessage(null), 1500);
+  };
 
   // Use image favorites context
   const { isFavorite, toggleFavorite } = useImageFavorites();
@@ -108,6 +116,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
     try {
       await toggleFavorite(currentImageUrl, imageMetadata);
+      showFeedback(isCurrentImageFavorited ? "Removed from Favorites" : "Added to Favorites");
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
     }
@@ -277,21 +286,34 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   }, [isOpen, isFullscreen]);
 
   const handleZoomIn = () => {
-    setScale(prev => Math.min(prev * 1.2, 8));
+    setScale(prev => {
+      const newScale = Math.min(prev * 1.2, 8);
+      showFeedback(`${Math.round(newScale * 100)}%`);
+      return newScale;
+    });
   };
 
   const handleZoomOut = () => {
-    setScale(prev => Math.max(prev / 1.2, 0.1));
+    setScale(prev => {
+      const newScale = Math.max(prev / 1.2, 0.1);
+      showFeedback(`${Math.round(newScale * 100)}%`);
+      return newScale;
+    });
   };
 
   const handleReset = () => {
     setScale(1);
     setRotation(0);
     setPosition({ x: 0, y: 0 });
+    showFeedback("Reset");
   };
 
   const handleRotate = () => {
-    setRotation(prev => prev + 90);
+    setRotation(prev => {
+      const newRot = prev + 90;
+      showFeedback(`${newRot}°`);
+      return newRot;
+    });
   };
 
   const handleMouseDown = (e) => {
@@ -490,14 +512,20 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     if (isFullscreen) {
       document.exitFullscreen?.();
       setIsFullscreen(false);
+      showFeedback("Exit Fullscreen");
     } else {
       document.documentElement.requestFullscreen?.();
       setIsFullscreen(true);
+      showFeedback("Fullscreen");
     }
   };
 
   const toggleSlideshow = () => {
-    setIsSlideshow(prev => !prev);
+    setIsSlideshow(prev => {
+      const newState = !prev;
+      showFeedback(newState ? "Slideshow Started" : "Slideshow Stopped");
+      return newState;
+    });
   };
 
   const handleShare = () => {
@@ -948,10 +976,11 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         </div>
       )}
 
-      {/* Zoom Level Indicator */}
-      <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-70 backdrop-blur-sm rounded-lg px-3 py-2 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-        }`}>
-        <span className="font-medium">{Math.round(scale * 100)}%</span>
+      {/* Central Feedback Toast (Like VideoPreview) */}
+      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none transition-opacity duration-300 ${feedbackMessage ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="bg-black/70 backdrop-blur-md text-white text-3xl font-bold px-6 py-4 rounded-xl shadow-2xl whitespace-nowrap">
+          {feedbackMessage}
+        </div>
       </div>
 
 
