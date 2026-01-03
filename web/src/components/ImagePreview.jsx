@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  FaTimes, 
-  FaSearchPlus, 
-  FaSearchMinus, 
-  FaUndo, 
-  FaDownload, 
-  FaExpand, 
-  FaCompress, 
-  FaPlay, 
-  FaPause, 
-  FaInfo, 
-  FaShare, 
-  FaHeart, 
+import {
+  FaTimes,
+  FaSearchPlus,
+  FaSearchMinus,
+  FaUndo,
+  FaDownload,
+  FaExpand,
+  FaCompress,
+  FaPlay,
+  FaPause,
+  FaInfo,
+  FaShare,
+  FaHeart,
   FaRegHeart,
   FaCog,
   FaEye,
@@ -37,7 +37,7 @@ const showToast = (message, type = 'info') => {
       // Fallback to console and basic alert for development
       const logLevel = type === 'error' ? 'error' : type === 'warning' ? 'warn' : 'info';
       console[logLevel](`ImagePreview: ${message}`);
-      
+
       // Show alert for errors and warnings in development
       if (type === 'error') {
         alert(`Error: ${message}`);
@@ -71,7 +71,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   const [controlsTimeout, setControlsTimeout] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showSocialShare, setShowSocialShare] = useState(false);
-  
+
   const imageRef = useRef(null);
   const slideshowRef = useRef(null);
   const settingsRef = useRef(null);
@@ -81,7 +81,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
   // Ensure images is an array and handle undefined/null
   const imagesArray = Array.isArray(images) ? images : (images ? [images] : []);
-  
+
   // Ensure currentIndex is within bounds
   const safeIndex = Math.max(0, Math.min(currentIndex || 0, imagesArray.length - 1));
   const currentImageUrl = imagesArray[safeIndex] || imagesArray[0] || null;
@@ -166,10 +166,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isOpen) return;
-      
+
       // Show controls on any interaction
       if (!showControls) setShowControls(true);
-      
+
       switch (e.key) {
         case 'Escape':
           onClose();
@@ -214,9 +214,9 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     const handleWheel = (e) => {
       if (!isOpen) return;
       e.preventDefault();
-      
+
       if (!showControls) setShowControls(true);
-      
+
       if (e.deltaY < 0) {
         handleZoomIn();
       } else {
@@ -234,7 +234,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       if (showSettings && settingsRef.current && !settingsRef.current.contains(e.target) && !isSettingsButton) {
         setShowSettings(false);
       }
-      
+
       // Check if click is on info button or inside info panel
       const isInfoButton = e.target.closest('button[title="Image Info (I)"]');
       const isInfoButtonInSettings = e.target.closest('button') && e.target.closest('button').textContent?.includes('Image Info');
@@ -247,14 +247,14 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
     document.addEventListener('wheel', handleWheel, { passive: false });
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('click', handleClickOutside);
-    
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('wheel', handleWheel);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('click', handleClickOutside);
     };
-      }, [isOpen, imagesArray.length, onClose, showControls, showSettings, showInfo]);
+  }, [isOpen, imagesArray.length, onClose, showControls, showSettings, showInfo]);
 
   useEffect(() => {
     if (isOpen) {
@@ -343,48 +343,48 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
   const handleDownload = async () => {
     if (isDownloading) return;
-    
+
     setIsDownloading(true);
     const imageUrl = imagesArray[safeIndex] || imagesArray[0];
-    
+
     // Validate image URL first
     if (!imageUrl || typeof imageUrl !== 'string') {
       showToast('Error: Invalid image URL. Cannot download image.', 'error');
       setIsDownloading(false);
       return;
     }
-    
+
     try {
       // Extract filename from URL or generate one
       const urlParts = imageUrl.split('/');
       const originalFilename = urlParts[urlParts.length - 1];
       let filename = originalFilename;
-      
+
       // If filename doesn't have an extension or is just a hash, generate a proper name
       if (!filename.includes('.') || filename.length < 5) {
         // Try to determine file extension from URL or default to jpg
         const extension = imageUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/i)?.[1] || 'jpg';
         filename = `property-image-${currentIndex + 1}.${extension}`;
       }
-      
+
       // Try to fetch the image to handle CORS and get proper blob
       try {
         const response = await fetch(imageUrl, {
           mode: 'cors',
           cache: 'no-cache'
         });
-        
+
         if (response.ok) {
           try {
             const blob = await response.blob();
-            
+
             // Validate blob
             if (!blob || blob.size === 0) {
               throw new Error('Downloaded image is empty or corrupted');
             }
-            
+
             const blobUrl = window.URL.createObjectURL(blob);
-            
+
             const link = document.createElement('a');
             link.href = blobUrl;
             link.download = filename;
@@ -392,14 +392,14 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             // Clean up blob URL
             setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
-            
+
             // Show success feedback
             showToast(`Image "${filename}" downloaded successfully!`, 'success');
             return; // Exit early on success
-            
+
           } catch (blobError) {
             console.error('Blob processing error:', blobError);
             throw new Error(`Failed to process image data: ${blobError.message}`);
@@ -424,7 +424,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         }
       } catch (fetchError) {
         console.warn('Fetch failed, trying direct download:', fetchError);
-        
+
         // Show specific error for fetch failure
         if (fetchError.name === 'TypeError' && fetchError.message.includes('Failed to fetch')) {
           showToast('Network error: Unable to fetch image. Trying alternative download method...', 'warning');
@@ -433,7 +433,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         } else {
           showToast(`Fetch error: ${fetchError.message}. Trying alternative download method...`, 'warning');
         }
-        
+
         // Fallback to direct link download for CORS issues
         try {
           const link = document.createElement('a');
@@ -445,11 +445,11 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          
+
           // Show info message for direct download attempt
           showToast('Alternative download initiated. If it doesn\'t start automatically, please try right-clicking the image and selecting "Save image as..."', 'info');
           return; // Exit early on fallback attempt
-          
+
         } catch (directDownloadError) {
           console.error('Direct download failed:', directDownloadError);
           throw new Error(`Direct download failed: ${directDownloadError.message}`);
@@ -457,14 +457,14 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       }
     } catch (error) {
       console.error('Download process failed:', error);
-      
+
       // Show error notification for the main download process failure
       showToast(`Download failed: ${error.message}. Attempting to open image in new tab...`, 'error');
-      
+
       // Final fallback - open image in new tab
       try {
         const newWindow = window.open(imageUrl, '_blank', 'noopener,noreferrer');
-        
+
         if (newWindow) {
           showToast('Image opened in new tab. You can right-click to save it manually.', 'info');
         } else {
@@ -473,7 +473,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         }
       } catch (openError) {
         console.error('Failed to open image in new tab:', openError);
-        
+
         // Final error - all methods failed
         if (openError.message.includes('Pop-up blocked')) {
           showToast('Error: Pop-up blocked. Please allow pop-ups for this site or right-click the image and select "Save image as..."', 'error');
@@ -521,10 +521,9 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
   if (!isOpen || !imagesArray || imagesArray.length === 0) return null;
 
   return (
-    <div 
-      className={`fixed inset-0 bg-black bg-opacity-95 z-[9999] flex items-center justify-center transition-all duration-300 ${
-        isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-      }`}
+    <div
+      className={`fixed inset-0 bg-black bg-opacity-95 z-[9999] flex items-center justify-center transition-all duration-300 ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        }`}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -532,9 +531,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       {/* Close Button */}
       <button
         onClick={onClose}
-        className={`absolute top-4 right-4 text-white hover:text-red-400 z-10 bg-black bg-opacity-70 rounded-full p-3 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${
-          showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-        }`}
+        className={`absolute top-4 right-4 text-white hover:text-red-400 z-10 bg-black bg-opacity-70 rounded-full p-3 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+          }`}
       >
         <FaTimes size={20} />
       </button>
@@ -544,9 +542,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <>
           <button
             onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : imagesArray.length - 1)}
-            className={`absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${
-              showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
-            }`}
+            className={`absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+              }`}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -554,9 +551,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           </button>
           <button
             onClick={() => setCurrentIndex(prev => prev < imagesArray.length - 1 ? prev + 1 : 0)}
-            className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${
-              showControls ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
-            }`}
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-blue-300 z-10 bg-black bg-opacity-70 rounded-full p-4 transition-all duration-300 hover:bg-opacity-90 hover:scale-110 ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
+              }`}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -566,13 +562,13 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       )}
 
       {/* Image Container */}
-      <div className="relative max-w-full max-h-full overflow-hidden">
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden p-4">
         {imageLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
           </div>
         )}
-        
+
         {imageError && (
           <div className="absolute inset-0 flex items-center justify-center text-white">
             <div className="text-center">
@@ -586,9 +582,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
           ref={imageRef}
           src={currentImageUrl}
           alt={`Property image ${currentIndex + 1}`}
-          className={`max-w-full max-h-full object-contain cursor-move transition-opacity duration-300 ${
-            imageLoading ? 'opacity-0' : 'opacity-100'
-          }`}
+          className={`max-w-full max-h-full object-contain cursor-move transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'
+            }`}
           style={{
             transform: `scale(${scale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
             transition: isDragging ? 'none' : 'transform 0.2s ease-out'
@@ -604,9 +599,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       </div>
 
       {/* Enhanced Controls - Desktop */}
-      <div className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 hidden md:flex items-center gap-2 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-3 transition-all duration-300 ${
-        showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-      }`}>
+      <div className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 hidden md:flex items-center gap-2 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-3 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
         <button
           onClick={handleZoomIn}
           className="text-white hover:text-blue-300 p-2 rounded-lg hover:bg-white hover:bg-opacity-20 transition-all duration-200"
@@ -645,22 +639,20 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         </button>
         <button
           onClick={toggleSlideshow}
-          className={`p-2 rounded-lg transition-all duration-200 ${
-            isSlideshow 
-              ? 'text-red-400 hover:text-red-300 bg-red-400 bg-opacity-20' 
+          className={`p-2 rounded-lg transition-all duration-200 ${isSlideshow
+              ? 'text-red-400 hover:text-red-300 bg-red-400 bg-opacity-20'
               : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
-          }`}
+            }`}
           title="Toggle Slideshow (S)"
         >
           {isSlideshow ? <FaPause size={16} /> : <FaPlay size={16} />}
         </button>
         <button
           onClick={handleToggleFavorite}
-          className={`p-2 rounded-lg transition-all duration-200 ${
-            isCurrentImageFavorited 
-              ? 'text-red-400 hover:text-red-300' 
+          className={`p-2 rounded-lg transition-all duration-200 ${isCurrentImageFavorited
+              ? 'text-red-400 hover:text-red-300'
               : 'text-white hover:text-red-300 hover:bg-white hover:bg-opacity-20'
-          }`}
+            }`}
           title="Toggle Favorite"
         >
           {isCurrentImageFavorited ? <FaHeart size={16} /> : <FaRegHeart size={16} />}
@@ -668,11 +660,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <button
           onClick={handleDownload}
           disabled={isDownloading}
-          className={`text-white p-2 rounded-lg transition-all duration-200 ${
-            isDownloading 
-              ? 'opacity-50 cursor-not-allowed' 
+          className={`text-white p-2 rounded-lg transition-all duration-200 ${isDownloading
+              ? 'opacity-50 cursor-not-allowed'
               : 'hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
-          }`}
+            }`}
           title={isDownloading ? "Downloading..." : "Download Image"}
           aria-label={isDownloading ? "Downloading image" : "Download image"}
         >
@@ -691,22 +682,20 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         </button>
         <button
           onClick={() => setShowInfo(prev => !prev)}
-          className={`p-2 rounded-lg transition-all duration-200 ${
-            showInfo 
-              ? 'text-blue-400 bg-blue-400 bg-opacity-20' 
+          className={`p-2 rounded-lg transition-all duration-200 ${showInfo
+              ? 'text-blue-400 bg-blue-400 bg-opacity-20'
               : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
-          }`}
+            }`}
           title="Image Info (I)"
         >
           <FaInfo size={16} />
         </button>
         <button
           onClick={() => setShowSettings(prev => !prev)}
-          className={`p-2 rounded-lg transition-all duration-200 ${
-            showSettings 
-              ? 'text-yellow-400 bg-yellow-400 bg-opacity-20' 
+          className={`p-2 rounded-lg transition-all duration-200 ${showSettings
+              ? 'text-yellow-400 bg-yellow-400 bg-opacity-20'
               : 'text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20'
-          }`}
+            }`}
           title="Settings"
         >
           <FaCog size={16} />
@@ -714,9 +703,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       </div>
 
       {/* Mobile Controls - Compact */}
-      <div className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 md:hidden flex items-center gap-1 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-2 transition-all duration-300 ${
-        showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-      }`}>
+      <div className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 md:hidden flex items-center gap-1 bg-black bg-opacity-80 backdrop-blur-sm rounded-xl p-2 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
         <button
           onClick={handleZoomIn}
           className="text-white hover:text-blue-300 p-1.5 rounded-lg hover:bg-white hover:bg-opacity-20 transition-all duration-200"
@@ -741,22 +729,20 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <div className="w-px h-4 bg-white bg-opacity-30"></div>
         <button
           onClick={toggleSlideshow}
-          className={`p-1.5 rounded-lg transition-all duration-200 ${
-            isSlideshow 
-              ? 'text-red-400 hover:text-red-300 bg-red-400 bg-opacity-20' 
+          className={`p-1.5 rounded-lg transition-all duration-200 ${isSlideshow
+              ? 'text-red-400 hover:text-red-300 bg-red-400 bg-opacity-20'
               : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
-          }`}
+            }`}
           title="Slideshow"
         >
           {isSlideshow ? <FaPause size={14} /> : <FaPlay size={14} />}
         </button>
         <button
           onClick={handleToggleFavorite}
-          className={`p-1.5 rounded-lg transition-all duration-200 ${
-            isCurrentImageFavorited 
-              ? 'text-red-400 hover:text-red-300' 
+          className={`p-1.5 rounded-lg transition-all duration-200 ${isCurrentImageFavorited
+              ? 'text-red-400 hover:text-red-300'
               : 'text-white hover:text-red-300 hover:bg-white hover:bg-opacity-20'
-          }`}
+            }`}
           title="Favorite"
         >
           {isCurrentImageFavorited ? <FaHeart size={14} /> : <FaRegHeart size={14} />}
@@ -764,11 +750,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         <button
           onClick={handleDownload}
           disabled={isDownloading}
-          className={`text-white p-1.5 rounded-lg transition-all duration-200 ${
-            isDownloading 
-              ? 'opacity-50 cursor-not-allowed' 
+          className={`text-white p-1.5 rounded-lg transition-all duration-200 ${isDownloading
+              ? 'opacity-50 cursor-not-allowed'
               : 'hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
-          }`}
+            }`}
           title={isDownloading ? "Downloading..." : "Download Image"}
           aria-label={isDownloading ? "Downloading image" : "Download image"}
         >
@@ -780,11 +765,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
         </button>
         <button
           onClick={() => setShowSettings(prev => !prev)}
-          className={`p-1.5 rounded-lg transition-all duration-200 ${
-            showSettings 
-              ? 'text-yellow-400 bg-yellow-400 bg-opacity-20' 
+          className={`p-1.5 rounded-lg transition-all duration-200 ${showSettings
+              ? 'text-yellow-400 bg-yellow-400 bg-opacity-20'
               : 'text-white hover:text-yellow-300 hover:bg-white hover:bg-opacity-20'
-          }`}
+            }`}
           title="More"
         >
           <FaCog size={14} />
@@ -793,7 +777,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
       {/* Settings Panel */}
       {showSettings && (
-        <div 
+        <div
           ref={settingsRef}
           className="absolute top-20 right-4 md:right-4 left-4 md:left-auto bg-black bg-opacity-90 backdrop-blur-sm rounded-xl p-4 text-white min-w-64 max-w-xs md:max-w-none transition-all duration-300"
         >
@@ -827,11 +811,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
             <div className="hidden md:block space-y-2 pt-2 border-t border-gray-600">
               <button
                 onClick={() => setShowInfo(prev => !prev)}
-                className={`w-full text-left p-2 rounded-lg transition-all duration-200 ${
-                  showInfo 
-                    ? 'text-blue-400 bg-blue-400 bg-opacity-20' 
+                className={`w-full text-left p-2 rounded-lg transition-all duration-200 ${showInfo
+                    ? 'text-blue-400 bg-blue-400 bg-opacity-20'
                     : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <FaInfo size={14} />
@@ -870,11 +853,10 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
             <div className="md:hidden space-y-2 pt-2 border-t border-gray-600">
               <button
                 onClick={() => setShowInfo(prev => !prev)}
-                className={`w-full text-left p-2 rounded-lg transition-all duration-200 ${
-                  showInfo 
-                    ? 'text-blue-400 bg-blue-400 bg-opacity-20' 
+                className={`w-full text-left p-2 rounded-lg transition-all duration-200 ${showInfo
+                    ? 'text-blue-400 bg-blue-400 bg-opacity-20'
                     : 'text-white hover:text-blue-300 hover:bg-white hover:bg-opacity-20'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <FaInfo size={14} />
@@ -915,7 +897,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
       {/* Image Info Panel */}
       {showInfo && (
-        <div 
+        <div
           data-info-panel
           className="absolute top-20 left-4 md:left-4 right-4 md:right-auto bg-black bg-opacity-90 backdrop-blur-sm rounded-xl p-4 text-white min-w-64 max-w-xs md:max-w-none transition-all duration-300"
         >
@@ -945,25 +927,22 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
       {/* Image Counter */}
       {imagesArray.length > 1 && (
-        <div className={`absolute top-4 left-4 text-white bg-black bg-opacity-70 backdrop-blur-sm rounded-lg px-3 py-2 transition-all duration-300 ${
-          showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-        }`}>
+        <div className={`absolute top-4 left-4 text-white bg-black bg-opacity-70 backdrop-blur-sm rounded-lg px-3 py-2 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+          }`}>
           <span className="font-medium">{currentIndex + 1}</span>
           <span className="text-gray-300"> / {imagesArray.length}</span>
         </div>
       )}
 
       {/* Zoom Level Indicator */}
-      <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-70 backdrop-blur-sm rounded-lg px-3 py-2 transition-all duration-300 ${
-        showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-      }`}>
+      <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-70 backdrop-blur-sm rounded-lg px-3 py-2 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+        }`}>
         <span className="font-medium">{Math.round(scale * 100)}%</span>
       </div>
 
       {/* Enhanced Instructions */}
-      <div className={`absolute bottom-20 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-70 backdrop-blur-sm rounded-xl px-6 py-4 text-sm max-w-md transition-all duration-300 ${
-        showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-      }`}>
+      <div className={`absolute bottom-20 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-70 backdrop-blur-sm rounded-xl px-6 py-4 text-sm max-w-md transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
         <div className="text-center space-y-1">
           <div className="hidden sm:block font-medium">Keyboard Shortcuts</div>
           <div className="hidden sm:block text-gray-300">Mouse wheel or +/- to zoom • Drag to pan</div>
