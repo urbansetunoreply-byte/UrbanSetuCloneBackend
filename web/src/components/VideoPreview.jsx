@@ -66,6 +66,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const miniDragStartRef = useRef({ x: 0, y: 0 }); // Mouse/Touch start
   const miniStartPosRef = useRef({ x: 0, y: 0 }); // Element Left/Top start
   const [isOverTrash, setIsOverTrash] = useState(false); // New state for Trash Hover
+  const [isTrashClosing, setIsTrashClosing] = useState(false); // State to delay close for animation
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -987,9 +988,14 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const handleMiniMouseUp = () => {
     isMiniDraggingRef.current = false;
     if (isOverTrash) {
-      // Trigger Direct Close (Bypass Confirmation)
-      setIsOverTrash(false);
-      onClose(); // Directly close the player
+      // Trigger Direct Close with Animation Delay
+      setIsOverTrash(false); // Start lid closing
+      setIsTrashClosing(true); // Keep bin visible
+
+      setTimeout(() => {
+        onClose(); // Close player after animation
+        setIsTrashClosing(false);
+      }, 350); // 350ms delay for 300ms transition
     }
   };
 
@@ -1281,8 +1287,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         </div>
       )}
 
-      {/* Trash Drop Zone (Only visible when dragging mini player) */}
-      {isMiniMode && isMiniDraggingRef.current && (
+      {/* Trash Drop Zone (Only visible when dragging mini player OR closing) */}
+      {isMiniMode && (isMiniDraggingRef.current || isTrashClosing) && (
         <div
           className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100000] flex flex-col items-center justify-center transition-all duration-300 ${isOverTrash ? 'scale-125 opacity-100' : 'scale-100 opacity-70'}`}
         >
