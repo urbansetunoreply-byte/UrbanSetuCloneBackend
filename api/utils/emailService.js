@@ -10894,6 +10894,9 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
               <li>SetuCoins history and gamification stats</li>
               <li>Rental contracts and loan applications</li>
               <li>Gemini chat history and prompt counts</li>
+              <li>Call history logs (Audio/Video)</li>
+              <li>Community discussions and blog comments</li>
+              <li>Saved routes and investment calculations</li>
               <li>Account statistics and counts</li>
             </ul>
             

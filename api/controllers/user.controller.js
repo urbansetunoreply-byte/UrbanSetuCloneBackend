@@ -24,6 +24,11 @@ import RentalLoan from "../models/rentalLoan.model.js";
 import RentalRating from "../models/rentalRating.model.js";
 import ChatHistory from "../models/chatHistory.model.js";
 import CoinTransaction from "../models/coinTransaction.model.js";
+import CallHistory from "../models/callHistory.model.js";
+import ForumPost from "../models/forumPost.model.js";
+import Blog from "../models/blog.model.js";
+import Route from "../models/Route.js";
+import CalculationHistory from "../models/calculationHistory.model.js";
 
 // EXPORT_CACHE_EXPIRY remains relevant for setting the expiration Date object, 
 // though Mongo TTL handles the actual deletion.
@@ -616,19 +621,25 @@ export const exportData = async (req, res, next) => {
             return next(errorHandler(401, "Invalid password"));
         }
 
-        // Collect all user data
+        // Phase 1: Collect independent user data
         const [
             wishlistItems,
             watchlistItems,
             appointments,
             userListings,
-            reviews,
+            reviewsWritten,
             payments,
             rentalContracts,
             rentalLoans,
             rentalRatings,
             coinTransactions,
-            geminiSessions
+            geminiSessions,
+            callHistoryLogs,
+            forumPosts,
+            savedRoutes,
+            calculationHistoryItems,
+            blogCommentsAgg,
+            referralCount
         ] = await Promise.all([
             Wishlist.find({ userId }).populate('listingId').lean(),
             PropertyWatchlist.find({ userId }).populate('listingId').lean(),
@@ -640,15 +651,32 @@ export const exportData = async (req, res, next) => {
             RentalLoan.find({ userId }).populate('contractId').lean().catch(() => []),
             RentalRating.find({ $or: [{ reviewerId: userId }, { targetUser: userId }] }).lean().catch(() => []),
             CoinTransaction.find({ userId }).lean().catch(() => []),
-            ChatHistory.find({ userId }).lean().catch(() => [])
+            ChatHistory.find({ userId }).lean().catch(() => []),
+            CallHistory.find({ $or: [{ callerId: userId }, { receiverId: userId }] }).lean().catch(() => []),
+            ForumPost.find({ author: userId }).lean().catch(() => []),
+            Route.find({ userId }).lean().catch(() => []),
+            CalculationHistory.find({ userId }).lean().catch(() => []),
+            Blog.aggregate([
+                { $unwind: "$comments" },
+                { $match: { "comments.user": user._id } },
+                { $project: { _id: 1, title: 1, comment: "$comments" } }
+            ]).catch(() => []),
+            User.countDocuments({ "gamification.referredBy": userId }).catch(() => 0)
         ]);
+
+        // Phase 2: Collect data dependent on Phase 1 (e.g., reviews on user's listings)
+        const userListingIds = userListings.map(l => l._id);
+        const reviewsReceived = await Review.find({ listingId: { $in: userListingIds } })
+            .populate('listingId', 'name')
+            .lean()
+            .catch(() => []);
 
         // Get counts
         const wishlistCount = wishlistItems.length;
         const watchlistCount = watchlistItems.length;
         const appointmentsCount = appointments.length;
         const listingsCount = userListings.length;
-        const reviewsCount = reviews.length;
+        const reviewsCount = reviewsWritten.length;
         const paymentsCount = payments.length;
 
         // Calculate Gemini Prompts
@@ -677,6 +705,7 @@ export const exportData = async (req, res, next) => {
                 setuCoinsBalance: user.gamification?.setuCoinsBalance || 0,
                 totalCoinsEarned: user.gamification?.totalCoinsEarned || 0,
                 currentStreak: user.gamification?.currentStreak || 0,
+                referralsCount: referralCount,
                 transactions: coinTransactions.map(tx => ({
                     amount: tx.amount,
                     type: tx.type,
@@ -689,11 +718,17 @@ export const exportData = async (req, res, next) => {
                 watchlistCount,
                 appointmentsCount,
                 listingsCount,
-                reviewsCount,
+                reviewsWrittenCount: reviewsCount,
+                reviewsReceivedCount: reviewsReceived.length,
                 paymentsCount,
                 geminiPromptsCount,
                 rentalContractsCount: rentalContracts.length,
-                rentalLoansCount: rentalLoans.length
+                rentalLoansCount: rentalLoans.length,
+                forumPostsCount: forumPosts.length,
+                savedRoutesCount: savedRoutes.length,
+                calculationsCount: calculationHistoryItems.length,
+                blogCommentsCount: blogCommentsAgg.length,
+                totalCalls: callHistoryLogs.length
             },
             wishlist: wishlistItems.map(item => ({
                 listingId: item.listingId?._id || item.listingId,
@@ -728,9 +763,16 @@ export const exportData = async (req, res, next) => {
                 createdAt: listing.createdAt,
                 updatedAt: listing.updatedAt
             })),
-            reviews: reviews.map(review => ({
+            reviewsWritten: reviewsWritten.map(review => ({
                 reviewId: review._id,
                 listingId: review.listingId?._id || review.listingId,
+                listingTitle: review.listingId?.name || 'N/A',
+                starRating: review.starRating,
+                comment: review.comment,
+                createdAt: review.createdAt
+            })),
+            reviewsReceived: reviewsReceived.map(review => ({
+                reviewId: review._id,
                 listingTitle: review.listingId?.name || 'N/A',
                 starRating: review.starRating,
                 comment: review.comment,
@@ -771,8 +813,41 @@ export const exportData = async (req, res, next) => {
                     lastActivity: s.lastActivity
                 }))
             },
+            callHistory: callHistoryLogs.map(call => ({
+                type: call.callType,
+                status: call.status,
+                duration: call.duration,
+                startedAt: call.startTime,
+                role: call.callerId?.toString() === userId ? 'Caller' : 'Receiver'
+            })),
+            communityDiscussions: forumPosts.map(post => ({
+                postId: post._id,
+                title: post.title,
+                category: post.category,
+                likes: post.likes ? post.likes.length : 0,
+                createdAt: post.createdAt
+            })),
+            blogComments: blogCommentsAgg.map(item => ({
+                blogId: item._id,
+                blogTitle: item.title,
+                comment: item.comment?.content,
+                commentedAt: item.comment?.createdAt
+            })),
+            savedRoutes: savedRoutes.map(route => ({
+                routeId: route._id,
+                name: route.name,
+                distance: route.route?.distance,
+                stopsCount: route.stops ? route.stops.length : 0,
+                createdAt: route.createdAt
+            })),
+            investmentCalculations: calculationHistoryItems.map(calc => ({
+                type: calc.type, // e.g., 'roi', 'loan'
+                inputs: calc.inputs, // Assuming it stores input params
+                result: calc.result,
+                createdAt: calc.createdAt
+            })),
             exportDate: new Date().toISOString(),
-            exportVersion: "1.1"
+            exportVersion: "1.2"
         };
 
         // Convert to JSON string

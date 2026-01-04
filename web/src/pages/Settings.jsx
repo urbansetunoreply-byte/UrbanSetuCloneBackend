@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner, FaBullhorn, FaDesktop, FaLocationArrow } from "react-icons/fa";
+import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner, FaBullhorn, FaDesktop, FaLocationArrow, FaChartLine, FaComments, FaMapMarkedAlt } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -2153,7 +2153,10 @@ export default function Settings() {
                     { icon: FaUsers, text: "Reviews & Ratings (Tenant/Landlord)", color: "text-orange-500" },
                     { icon: FaTools, text: "Listings & Property Details", color: "text-green-500" },
                     { icon: FaDownload, text: "Wishlist & Watchlist Items", color: "text-teal-500" },
-                    { icon: FaVideo, text: "Appointment & Call History", color: "text-pink-500" },
+                    { icon: FaVideo, text: "Appointment & Call History Logs", color: "text-pink-500" },
+                    { icon: FaComments, text: "Community Discussions & Blog Comments", color: "text-cyan-500" },
+                    { icon: FaMapMarkedAlt, text: "Saved Routes & Planner Data", color: "text-blue-600" },
+                    { icon: FaChartLine, text: "Investment Tools Calculations", color: "text-emerald-500" },
                     { icon: FaDatabase, text: "Payment Records", color: "text-gray-500" }
                   ].map((item, index) => (
                     <li key={index} className="flex items-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
