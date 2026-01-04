@@ -243,21 +243,30 @@ const BlogEditModal = ({
                       <span className="text-sm font-bold text-gray-500 dark:text-gray-400">Upload Featured Image</span>
                     </label>
                   ) : (
-                    <div className="relative group overflow-hidden rounded-2xl shadow-xl aspect-video bg-gray-200 dark:bg-gray-800">
+                    <div
+                      className="relative group overflow-hidden rounded-2xl shadow-xl aspect-video bg-gray-200 dark:bg-gray-800 cursor-pointer"
+                      onClick={() => setPreviewImage(formData.thumbnail)}
+                    >
                       <img
                         src={formData.thumbnail}
                         alt="Thumbnail preview"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
-                        onClick={() => setPreviewImage(formData.thumbnail)}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <label htmlFor="thumbnail-upload" className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 cursor-pointer transition-colors">
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                        <label
+                          htmlFor="thumbnail-upload"
+                          className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 cursor-pointer transition-colors pointer-events-auto"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <FaCloudUploadAlt className="text-xl" />
                         </label>
                         <button
                           type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, thumbnail: '' }))}
-                          className="p-3 bg-red-500/80 backdrop-blur-md rounded-full text-white hover:bg-red-600 ml-3 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFormData(prev => ({ ...prev, thumbnail: '' }));
+                          }}
+                          className="p-3 bg-red-500/80 backdrop-blur-md rounded-full text-white hover:bg-red-600 ml-3 transition-colors pointer-events-auto"
                         >
                           <FaTimes className="text-xl" />
                         </button>
