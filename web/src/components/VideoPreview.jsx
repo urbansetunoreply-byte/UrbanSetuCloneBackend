@@ -1287,7 +1287,29 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100000] flex flex-col items-center justify-center transition-all duration-300 ${isOverTrash ? 'scale-125 opacity-100' : 'scale-100 opacity-70'}`}
         >
           <div className={`p-4 rounded-full transition-colors duration-300 ${isOverTrash ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(220,38,38,0.7)]' : 'bg-black/60 text-white/70 border-2 border-dashed border-white/30'}`}>
-            <FaTrashAlt size={32} className={isOverTrash ? 'animate-bounce' : ''} />
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="overflow-visible"
+            >
+              {/* Lid Group - Pivots open when over trash */}
+              <g
+                className={`transition-transform duration-300 ease-out origin-[21px_6px] ${isOverTrash ? '-rotate-45' : 'rotate-0'}`}
+              >
+                <path d="M3 6h18" />{/* Lid Line */}
+                <path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />{/* Handle */}
+              </g>
+              {/* Bin Body */}
+              <path d="M19 6v14c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V6" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+            </svg>
           </div>
           <span className={`mt-2 font-bold text-sm bg-black/50 px-2 py-1 rounded backdrop-blur ${isOverTrash ? 'text-red-500' : 'text-white/70'}`}>
             Drag here to close
