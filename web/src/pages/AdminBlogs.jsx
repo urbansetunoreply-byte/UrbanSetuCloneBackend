@@ -7,6 +7,7 @@ import {
   CheckCircle, RefreshCw
 } from 'lucide-react';
 import BlogEditModal from '../components/BlogEditModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const AdminBlogs = () => {
@@ -25,6 +26,10 @@ const AdminBlogs = () => {
   const [filterStatus, setFilterStatus] = useState('all'); // all, published, draft
   const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
+
+  // Delete Confirmation State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [blogToDelete, setBlogToDelete] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -216,20 +221,26 @@ const AdminBlogs = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this blog?')) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/blogs/${id}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
+  const handleDelete = (id) => {
+    setBlogToDelete(id);
+    setShowDeleteModal(true);
+  };
 
-        if (response.ok) {
-          fetchBlogs();
-        }
-      } catch (error) {
-        console.error('Error deleting blog:', error);
+  const confirmDelete = async () => {
+    if (!blogToDelete) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${blogToDelete}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        fetchBlogs();
+        setShowDeleteModal(false);
+        setBlogToDelete(null);
       }
+    } catch (error) {
+      console.error('Error deleting blog:', error);
     }
   };
 
@@ -590,6 +601,19 @@ const AdminBlogs = () => {
         propertySearch={propertySearch}
         setPropertySearch={setPropertySearch}
         isEdit={!!editingBlog}
+      />
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setBlogToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Delete Blog"
+        message="Are you sure you want to delete this blog? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
       />
     </div>
   );
