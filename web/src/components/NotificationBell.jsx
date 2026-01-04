@@ -22,7 +22,8 @@ export default function NotificationBell({ mobile = false }) {
   const [selectedUser, setSelectedUser] = useState('');
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
-  const [sendingNotification, setSendingNotification] = useState(false);
+  const [sendingUserNotification, setSendingUserNotification] = useState(false);
+  const [sendingAllNotification, setSendingAllNotification] = useState(false);
   const [fetchingUsers, setFetchingUsers] = useState(false);
   const [userSearch, setUserSearch] = useState('');
 
@@ -171,7 +172,7 @@ export default function NotificationBell({ mobile = false }) {
       return;
     }
 
-    setSendingNotification(true);
+    setSendingUserNotification(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/notifications/admin/send`, {
         method: 'POST',
@@ -204,7 +205,7 @@ export default function NotificationBell({ mobile = false }) {
       console.error('Error sending notification:', error);
       toast.error('Failed to send notification');
     } finally {
-      setSendingNotification(false);
+      setSendingUserNotification(false);
     }
   };
 
@@ -217,7 +218,7 @@ export default function NotificationBell({ mobile = false }) {
       return;
     }
 
-    setSendingNotification(true);
+    setSendingAllNotification(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/notifications/admin/send-all`, {
         method: 'POST',
@@ -248,7 +249,7 @@ export default function NotificationBell({ mobile = false }) {
       console.error('Error sending notification:', error);
       toast.error('Failed to send notification');
     } finally {
-      setSendingNotification(false);
+      setSendingAllNotification(false);
     }
   };
 
@@ -898,10 +899,10 @@ export default function NotificationBell({ mobile = false }) {
                           </div>
                           <button
                             type="submit"
-                            disabled={sendingNotification || !allUsersTitle.trim() || !allUsersMessage.trim()}
+                            disabled={sendingAllNotification || !allUsersTitle.trim() || !allUsersMessage.trim()}
                             className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
-                            {sendingNotification ? (
+                            {sendingAllNotification ? (
                               <>
                                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                                 Sending...
@@ -1074,10 +1075,10 @@ export default function NotificationBell({ mobile = false }) {
                           </div>
                           <button
                             type="submit"
-                            disabled={sendingNotification || !selectedUser || !title.trim() || !message.trim()}
+                            disabled={sendingUserNotification || !selectedUser || !title.trim() || !message.trim()}
                             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
-                            {sendingNotification ? (
+                            {sendingUserNotification ? (
                               <>
                                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                                 Sending...
@@ -1348,10 +1349,10 @@ export default function NotificationBell({ mobile = false }) {
                           </div>
                           <button
                             type="submit"
-                            disabled={sendingNotification || !allUsersTitle.trim() || !allUsersMessage.trim()}
+                            disabled={sendingAllNotification || !allUsersTitle.trim() || !allUsersMessage.trim()}
                             className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-green-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
-                            {sendingNotification ? (
+                            {sendingAllNotification ? (
                               <>
                                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                                 Sending...
@@ -1458,10 +1459,10 @@ export default function NotificationBell({ mobile = false }) {
                           </div>
                           <button
                             type="submit"
-                            disabled={sendingNotification || !selectedUser || !title.trim() || !message.trim()}
+                            disabled={sendingUserNotification || !selectedUser || !title.trim() || !message.trim()}
                             className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
-                            {sendingNotification ? (
+                            {sendingUserNotification ? (
                               <>
                                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                                 Sending...
