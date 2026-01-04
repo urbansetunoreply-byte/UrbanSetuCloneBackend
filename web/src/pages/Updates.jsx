@@ -168,63 +168,103 @@ const Updates = () => {
                                 {/* Content Card */}
                                 <div className="flex-1 md:flex-none md:w-[calc(50%-2.5rem)] bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900/50 transition-all duration-300 group-hover:-translate-y-1">
 
+                                    {/* Action Header */}
                                     <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(update.category)}`}>
-                                            {update.category.charAt(0).toUpperCase() + update.category.slice(1)}
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getCategoryColor(update.category)}`}>
+                                            {update.category.replace('_', ' ')}
                                         </span>
-                                        <time className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                                            <Calendar className="w-3.5 h-3.5" />
-                                            {new Date(update.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                        </time>
+                                        <div className="flex items-center gap-3">
+                                            <time className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded-md border border-gray-100 dark:border-gray-700">
+                                                <Calendar className="w-3.5 h-3.5" />
+                                                {new Date(update.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </time>
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(`${update.title} - v${update.version}\n${window.location.href}`);
+                                                    // You might want to add a toast here if available, or just a visual feedback
+                                                }}
+                                                className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                title="Copy Link"
+                                            >
+                                                <Filter className="w-3.5 h-3.5 rotate-45" /> {/* Using Filter as placeholder for Link/Share if Link icon not imported, ideally import Share2 or Link */}
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors break-words">
+                                    {/* Hero Media for New Features */}
+                                    {update.category === 'new_feature' && update.imageUrls?.length > 0 && (
+                                        <div className="-mx-6 -mt-0 mb-6 border-b border-gray-100 dark:border-gray-700">
+                                            <img
+                                                src={update.imageUrls[0]}
+                                                alt={update.title}
+                                                className="w-full h-48 sm:h-64 object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                                                onClick={() => setPreviewImage(update.imageUrls[0])}
+                                            />
+                                        </div>
+                                    )}
+
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors break-words">
                                         {update.title}
                                     </h3>
 
-                                    <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
-                                        <span className="font-mono text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-600 text-xs">
+                                    <div className="flex flex-wrap items-center gap-2 mb-5 text-sm">
+                                        <span className="font-mono text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2.5 py-1 rounded-md border border-gray-200 dark:border-gray-600 text-xs font-semibold">
                                             v{update.version}
                                         </span>
                                         {update.tags?.map((tag, i) => (
-                                            <span key={i} className="text-gray-500 dark:text-gray-400 flex items-center gap-1 bg-gray-50/50 dark:bg-gray-700/30 px-2 py-0.5 rounded-full border border-gray-100/50 dark:border-gray-600/50">
+                                            <span key={i} className="text-gray-500 dark:text-gray-400 flex items-center gap-1 bg-gray-50/50 dark:bg-gray-700/30 px-2.5 py-1 rounded-full border border-gray-100/50 dark:border-gray-600/50 text-xs">
                                                 <Tag className="w-3 h-3" /> {tag}
                                             </span>
                                         ))}
                                     </div>
 
-                                    <div className="prose prose-blue dark:prose-invert prose-sm text-gray-600 dark:text-gray-300 mb-4 whitespace-pre-wrap break-words">
-                                        {update.description}
+                                    <div className="prose prose-blue dark:prose-invert prose-sm text-gray-600 dark:text-gray-300 mb-6 max-w-none">
+                                        {(() => {
+                                            // Simple markdown-like parser for the description
+                                            const lines = update.description.split('\n');
+                                            return lines.map((line, i) => {
+                                                const trimmed = line.trim();
+                                                if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
+                                                    return (
+                                                        <div key={i} className="flex items-start gap-2 mb-1.5 pl-1">
+                                                            <span className="text-blue-500 mt-1.5">•</span>
+                                                            <span className="flex-1">{trimmed.substring(1).trim()}</span>
+                                                        </div>
+                                                    );
+                                                }
+                                                if (trimmed === '') return <div key={i} className="h-2" />;
+                                                return <p key={i} className="mb-2 leading-relaxed">{line}</p>;
+                                            });
+                                        })()}
                                     </div>
 
-                                    {/* Media Gallery */}
-                                    <div className="space-y-4 mt-4">
-                                        {/* Images */}
-                                        {(update.imageUrls?.length > 0 ? update.imageUrls : (update.imageUrl ? [update.imageUrl] : [])).map((url, i) => (
-                                            <div key={`img-${i}`} className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm group/image relative cursor-pointer" onClick={() => setPreviewImage(url)}>
-                                                <img
-                                                    src={url}
-                                                    alt={`${update.title} ${i + 1}`}
-                                                    className="w-full h-auto object-cover transform hover:scale-[1.02] transition-transform duration-500"
-                                                />
-                                            </div>
-                                        ))}
+                                    {/* Remaining Media Gallery (excluding hero if new_feature) */}
+                                    <div className="grid grid-cols-2 gap-3 mb-4">
+                                        {(update.imageUrls?.length > 0 ? update.imageUrls : (update.imageUrl ? [update.imageUrl] : []))
+                                            .slice(update.category === 'new_feature' ? 1 : 0) // Skip first if featured
+                                            .map((url, i) => (
+                                                <div key={`img-${i}`} className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm group/image relative cursor-pointer aspect-video" onClick={() => setPreviewImage(url)}>
+                                                    <img
+                                                        src={url}
+                                                        alt={`${update.title} ${i + 1}`}
+                                                        className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                                                    />
+                                                </div>
+                                            ))}
 
                                         {/* Videos */}
                                         {(update.videoUrls?.length > 0 ? update.videoUrls : (update.videoUrl ? [update.videoUrl] : [])).map((url, i) => (
-                                            <div key={`vid-${i}`} className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm bg-black">
-                                                <div className="relative group/video cursor-pointer" onClick={() => setPreviewVideo(url)}>
-                                                    <video
-                                                        src={url}
-                                                        className="w-full h-auto"
-                                                        muted
-                                                        playsInline
-                                                        preload="metadata"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/30 group-hover/video:bg-black/40 transition-colors flex items-center justify-center">
-                                                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover/video:scale-110 transition-transform">
-                                                            <Play className="w-6 h-6 text-white fill-white" />
-                                                        </div>
+                                            <div key={`vid-${i}`} className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm bg-black aspect-video relative group/video cursor-pointer" onClick={() => setPreviewVideo(url)}>
+                                                <video
+                                                    src={url}
+                                                    className="w-full h-full object-cover opacity-80 group-hover/video:opacity-100 transition-opacity"
+                                                    muted
+                                                    playsInline
+                                                    preload="metadata" // Changed to metadata for performance
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover/video:scale-110 transition-transform">
+                                                        <Play className="w-5 h-5 text-white fill-white" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -233,15 +273,15 @@ const Updates = () => {
 
                                     {/* Action Link */}
                                     {update.actionUrl && (
-                                        <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                        <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">
                                             <a
                                                 href={update.actionUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold group/link transition-colors"
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md shadow-blue-200 dark:shadow-none hover:shadow-lg"
                                             >
-                                                Explore it here
-                                                <ArrowRight className="w-4 h-4 transform group-hover/link:translate-x-1 transition-transform" />
+                                                Try it out
+                                                <ArrowRight className="w-4 h-4" />
                                             </a>
                                         </div>
                                     )}
