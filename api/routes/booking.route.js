@@ -720,15 +720,17 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
               messagePreview: (messagePreview || '').toString().substring(0, 140),
               messageType: type || 'text'
             };
-            await sendNewMessageNotificationEmail(recipientUser.email, messageDetails);
-            console.log(`📧 New message notification email sent to: ${recipientUser.email}`);
+            // Send email asynchronously without blocking the response
+            sendNewMessageNotificationEmail(recipientUser.email, messageDetails)
+              .then(() => console.log(`📧 New message notification email sent to: ${recipientUser.email}`))
+              .catch(err => console.error('Error sending background email notification:', err));
           } else {
             console.log('📧 Email suppressed (online or cooldown or not first unread). Recipient:', recipientUser.email);
           }
         }
       } catch (emailError) {
-        console.error('Error processing new message notification email:', emailError);
-        // Don't fail the request if email fails
+        // Log critical errors in setup (not sending) but don't block
+        console.error('Error processing new message notification email setup:', emailError);
       }
 
       // Only mark as delivered if the intended recipient is online
