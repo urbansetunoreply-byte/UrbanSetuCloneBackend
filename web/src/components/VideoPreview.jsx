@@ -995,7 +995,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setTimeout(() => {
         onClose(); // Close player after animation
         setIsTrashClosing(false);
-      }, 350); // 350ms delay for 300ms transition
+      }, 600); // 600ms delay for transition
     }
   };
 
