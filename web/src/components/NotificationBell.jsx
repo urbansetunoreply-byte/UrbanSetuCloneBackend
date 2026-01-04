@@ -751,8 +751,8 @@ export default function NotificationBell({ mobile = false }) {
                               <div
                                 key={notification._id}
                                 className={`notification-card p-4 rounded-2xl border transition-all duration-300 animate-fadeInNotification ${!notification.isRead
-                                  ? 'bg-white dark:bg-gray-800 border-blue-100 dark:border-blue-900/30 shadow-sm ring-1 ring-blue-50 dark:ring-blue-900/20'
-                                  : 'bg-white/60 dark:bg-gray-800/40 border-gray-100 dark:border-gray-700/50 grayscale-[0.3]'
+                                  ? 'bg-white dark:bg-gray-800 border-blue-100 dark:border-blue-900/30 shadow-sm ring-1 ring-blue-50 dark:ring-blue-900/20 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                  : 'bg-white/60 dark:bg-gray-800/40 border-gray-100 dark:border-gray-700/50 grayscale-[0.3] hover:bg-gray-100/60 dark:hover:bg-gray-800/60'
                                   }`}
                                 style={{ animationDelay: `${index * 0.05}s` }}
                               >
@@ -1206,8 +1206,8 @@ export default function NotificationBell({ mobile = false }) {
                               <div
                                 key={n._id}
                                 className={`notification-card group p-3.5 rounded-2xl border transition-all cursor-default ${!n.isRead
-                                  ? 'bg-white dark:bg-gray-800 border-blue-50 dark:border-blue-900/30 shadow-sm'
-                                  : 'bg-white/40 dark:bg-gray-800/40 border-transparent opacity-60 grayscale-[0.5]'
+                                  ? 'bg-white dark:bg-gray-800 border-blue-50 dark:border-blue-900/30 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700'
+                                  : 'bg-white/40 dark:bg-gray-800/40 border-transparent opacity-60 grayscale-[0.5] hover:bg-gray-50/50 dark:hover:bg-gray-800/60'
                                   }`}
                                 style={{ animationDelay: `${i * 0.05}s` }}
                               >
@@ -1531,10 +1531,6 @@ export default function NotificationBell({ mobile = false }) {
 
         .notification-card:hover {
           transform: translateX(4px);
-          background: rgba(243, 244, 246, 0.8);
-        }
-        :global(.dark) .notification-card:hover {
-          background: rgba(31, 41, 55, 0.8);
         }
 
         .notification-scroll-area-mobile {
