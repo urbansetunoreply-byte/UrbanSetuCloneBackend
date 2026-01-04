@@ -18,23 +18,23 @@ const handleViewCount = async (blogId, req) => {
     try {
         const user = req.user;
         const isAdmin = user && (user.role === 'admin' || user.role === 'rootadmin');
-        
+
         // Skip view counting for admins
         if (isAdmin) {
             console.log(`Admin view ignored for blog ${blogId}`);
             return { shouldIncrement: false, reason: 'admin_view' };
         }
-        
+
         const now = new Date();
         const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        
+
         if (user) {
             // Logged-in user: check for existing view
             const existingView = await BlogView.findOne({
                 blogId,
                 userId: user.id
             });
-            
+
             if (!existingView) {
                 // First time viewing this blog
                 await BlogView.create({
@@ -55,12 +55,12 @@ const handleViewCount = async (blogId, req) => {
         } else {
             // Public user: use fingerprint
             const fingerprint = generateFingerprint(req);
-            
+
             const existingView = await BlogView.findOne({
                 blogId,
                 fingerprint
             });
-            
+
             if (!existingView) {
                 // First time viewing this blog from this device/browser
                 await BlogView.create({
@@ -106,20 +106,20 @@ const cleanupOldViews = async () => {
 // Get blogs with filtering
 export const getBlogs = async (req, res, next) => {
     try {
-        const { 
-            propertyId, 
-            category, 
-            tag, 
-            search, 
+        const {
+            propertyId,
+            category,
+            tag,
+            search,
             published,
-            page = 1, 
-            limit = 10 
+            page = 1,
+            limit = 10
         } = req.query;
-        
+
         // Build query
         const query = {};
-        
-        
+
+
         if (published === 'true') {
             query.published = true;
         } else if (published === 'false') {
@@ -130,7 +130,7 @@ export const getBlogs = async (req, res, next) => {
             // Default to published only if no published parameter is provided
             query.published = true;
         }
-        
+
         if (propertyId) {
             if (propertyId === 'null') {
                 // Filter for global blogs (no propertyId or propertyId is null)
@@ -146,22 +146,22 @@ export const getBlogs = async (req, res, next) => {
                 query.propertyId = propertyId;
             }
         }
-        
+
         if (category) {
             query.category = category;
         }
-        
+
         if (tag) {
             query.tags = { $in: [tag] };
         }
-        
+
         if (search) {
             query.$text = { $search: search };
         }
-        
+
         // Calculate pagination
         const skip = (parseInt(page) - 1) * parseInt(limit);
-        
+
 
         // Get blogs with pagination
         const blogs = await Blog.find(query)
@@ -171,10 +171,10 @@ export const getBlogs = async (req, res, next) => {
             .skip(skip)
             .limit(parseInt(limit));
 
-        
+
         // Get total count for pagination
         const total = await Blog.countDocuments(query);
-        
+
         // Transform author names for admin/rootadmin users
         const transformedBlogs = blogs.map(blog => {
             const blogObj = blog.toObject();
@@ -183,7 +183,7 @@ export const getBlogs = async (req, res, next) => {
             }
             return blogObj;
         });
-        
+
         res.status(200).json({
             success: true,
             data: transformedBlogs,
@@ -203,12 +203,12 @@ export const getBlogs = async (req, res, next) => {
 export const getBlog = async (req, res, next) => {
     try {
         const { id } = req.params;
-        
+
         let blog = null;
-        
+
         // Check if id is a valid ObjectId (24 hex characters)
         const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
-        
+
         if (isValidObjectId) {
             // Try to find by ID first
             blog = await Blog.findById(id)
@@ -216,7 +216,7 @@ export const getBlog = async (req, res, next) => {
                 .populate('author', 'username role')
                 .populate('comments.user', 'username role');
         }
-        
+
         if (!blog) {
             // Try to find by slug
             blog = await Blog.findOne({ slug: id })
@@ -224,14 +224,14 @@ export const getBlog = async (req, res, next) => {
                 .populate('author', 'username role')
                 .populate('comments.user', 'username role');
         }
-        
+
         if (!blog) {
             return res.status(404).json({
                 success: false,
                 message: 'Blog not found'
             });
         }
-        
+
         // Only show published blogs to non-admin users
         if (!blog.published && req.user?.role !== 'admin') {
             return res.status(404).json({
@@ -239,10 +239,10 @@ export const getBlog = async (req, res, next) => {
                 message: 'Blog not found'
             });
         }
-        
+
         // Handle view counting with role-based logic
         const viewResult = await handleViewCount(blog._id, req);
-        
+
         if (viewResult.shouldIncrement) {
             blog.views += 1;
             await blog.save();
@@ -250,13 +250,13 @@ export const getBlog = async (req, res, next) => {
         } else {
             console.log(`View not incremented for blog ${blog._id}: ${viewResult.reason}`);
         }
-        
+
         // Transform author and comment user names for admin/rootadmin users
         const blogObj = blog.toObject();
         if (blogObj.author && (blogObj.author.role === 'admin' || blogObj.author.role === 'rootadmin')) {
             blogObj.author.username = 'UrbanSetuBlogManagement';
         }
-        
+
         // Transform comment user names for admin/rootadmin users
         if (blogObj.comments) {
             blogObj.comments = blogObj.comments.map(comment => {
@@ -266,7 +266,7 @@ export const getBlog = async (req, res, next) => {
                 return comment;
             });
         }
-        
+
         res.status(200).json({
             success: true,
             data: blogObj
@@ -279,20 +279,20 @@ export const getBlog = async (req, res, next) => {
 // Create blog (Admin only)
 export const createBlog = async (req, res, next) => {
     try {
-        const { 
-            title, 
-            content, 
-            excerpt, 
-            thumbnail, 
+        const {
+            title,
+            content,
+            excerpt,
+            thumbnail,
             imageUrls,
             videoUrls,
-            propertyId, 
-            tags, 
-            category, 
-            published 
+            propertyId,
+            tags,
+            category,
+            published
         } = req.body;
         const author = req.user.id;
-        
+
         // Validate required fields
         if (!title || !content) {
             return res.status(400).json({
@@ -300,7 +300,7 @@ export const createBlog = async (req, res, next) => {
                 message: 'Title and content are required'
             });
         }
-        
+
         // Validate property exists if propertyId provided
         if (propertyId) {
             const property = await Listing.findById(propertyId);
@@ -311,7 +311,7 @@ export const createBlog = async (req, res, next) => {
                 });
             }
         }
-        
+
         const blogData = {
             title,
             content,
@@ -326,15 +326,15 @@ export const createBlog = async (req, res, next) => {
             published: published || false,
             publishedAt: published ? new Date() : null
         };
-        
+
         const blog = await Blog.create(blogData);
-        
+
         // Populate the created blog
         await blog.populate([
             { path: 'propertyId', select: 'name city state' },
             { path: 'author', select: 'username' }
         ]);
-        
+
         res.status(201).json({
             success: true,
             message: 'Blog created successfully',
@@ -349,19 +349,19 @@ export const createBlog = async (req, res, next) => {
 export const updateBlog = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { 
-            title, 
-            content, 
-            excerpt, 
-            thumbnail, 
+        const {
+            title,
+            content,
+            excerpt,
+            thumbnail,
             imageUrls,
             videoUrls,
-            propertyId, 
-            tags, 
-            category, 
-            published 
+            propertyId,
+            tags,
+            category,
+            published
         } = req.body;
-        
+
         const blog = await Blog.findById(id);
         if (!blog) {
             return res.status(404).json({
@@ -369,7 +369,7 @@ export const updateBlog = async (req, res, next) => {
                 message: 'Blog not found'
             });
         }
-        
+
         // Validate property exists if propertyId provided
         if (propertyId) {
             const property = await Listing.findById(propertyId);
@@ -380,7 +380,7 @@ export const updateBlog = async (req, res, next) => {
                 });
             }
         }
-        
+
         // Update fields
         if (title) blog.title = title;
         if (content) blog.content = content;
@@ -399,15 +399,15 @@ export const updateBlog = async (req, res, next) => {
                 blog.publishedAt = new Date();
             }
         }
-        
+
         await blog.save();
-        
+
         // Populate the updated blog
         await blog.populate([
             { path: 'propertyId', select: 'name city state' },
             { path: 'author', select: 'username' }
         ]);
-        
+
         res.status(200).json({
             success: true,
             message: 'Blog updated successfully',
@@ -422,7 +422,7 @@ export const updateBlog = async (req, res, next) => {
 export const deleteBlog = async (req, res, next) => {
     try {
         const { id } = req.params;
-        
+
         const blog = await Blog.findById(id);
         if (!blog) {
             return res.status(404).json({
@@ -430,9 +430,9 @@ export const deleteBlog = async (req, res, next) => {
                 message: 'Blog not found'
             });
         }
-        
+
         await Blog.findByIdAndDelete(id);
-        
+
         res.status(200).json({
             success: true,
             message: 'Blog deleted successfully'
@@ -447,9 +447,9 @@ export const checkUserLike = async (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
-        
+
         const existingLike = await BlogLike.findOne({ userId, blogId: id });
-        
+
         res.status(200).json({
             success: true,
             data: {
@@ -466,7 +466,7 @@ export const likeBlog = async (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
-        
+
         const blog = await Blog.findById(id);
         if (!blog) {
             return res.status(404).json({
@@ -474,16 +474,16 @@ export const likeBlog = async (req, res, next) => {
                 message: 'Blog not found'
             });
         }
-        
+
         // Check if user has already liked this blog
         const existingLike = await BlogLike.findOne({ userId, blogId: id });
-        
+
         if (existingLike) {
             // Unlike: Remove the like and decrement count
             await BlogLike.deleteOne({ userId, blogId: id });
             blog.likes = Math.max(0, blog.likes - 1);
             await blog.save();
-            
+
             res.status(200).json({
                 success: true,
                 message: 'Blog unliked',
@@ -497,7 +497,7 @@ export const likeBlog = async (req, res, next) => {
             await BlogLike.create({ userId, blogId: id });
             blog.likes += 1;
             await blog.save();
-            
+
             res.status(200).json({
                 success: true,
                 message: 'Blog liked',
@@ -518,14 +518,14 @@ export const addComment = async (req, res, next) => {
         const { id } = req.params;
         const { content } = req.body;
         const userId = req.user.id;
-        
+
         if (!content) {
             return res.status(400).json({
                 success: false,
                 message: 'Comment content is required'
             });
         }
-        
+
         const blog = await Blog.findById(id);
         if (!blog) {
             return res.status(404).json({
@@ -545,12 +545,12 @@ export const addComment = async (req, res, next) => {
 
         // Check comment limits for regular users (not admins)
         if (user.role !== 'admin' && user.role !== 'rootadmin') {
-            const userCommentsOnBlog = blog.comments.filter(comment => 
+            const userCommentsOnBlog = blog.comments.filter(comment =>
                 comment.user.toString() === userId.toString()
             ).length;
-            
+
             const maxCommentsPerBlog = 5; // Limit to 5 comments per blog for regular users
-            
+
             if (userCommentsOnBlog >= maxCommentsPerBlog) {
                 return res.status(429).json({
                     success: false,
@@ -558,25 +558,25 @@ export const addComment = async (req, res, next) => {
                 });
             }
         }
-        
+
         const newComment = {
             user: userId,
             content,
             isApproved: false // Comments need approval
         };
-        
+
         blog.comments.push(newComment);
         await blog.save();
-        
+
         // Populate the comment
         await blog.populate('comments.user', 'username role');
-        
+
         // Transform the comment user name for admin/rootadmin users
         const commentData = blog.comments[blog.comments.length - 1].toObject();
         if (commentData.user && (commentData.user.role === 'admin' || commentData.user.role === 'rootadmin')) {
             commentData.user.username = 'UrbanSetuBlogManagement';
         }
-        
+
         res.status(201).json({
             success: true,
             message: 'Comment added successfully (pending approval)',
@@ -587,15 +587,121 @@ export const addComment = async (req, res, next) => {
     }
 };
 
+// Delete comment
+export const deleteComment = async (req, res, next) => {
+    try {
+        const { id, commentId } = req.params;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        const blog = await Blog.findById(id);
+        if (!blog) {
+            return res.status(404).json({
+                success: false,
+                message: 'Blog not found'
+            });
+        }
+
+        const commentIndex = blog.comments.findIndex(c => c._id.toString() === commentId);
+        if (commentIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: 'Comment not found'
+            });
+        }
+
+        const comment = blog.comments[commentIndex];
+
+        // Authorization check: Admin can delete any, user can only delete own
+        if (userRole !== 'admin' && userRole !== 'rootadmin' && comment.user.toString() !== userId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to delete this comment'
+            });
+        }
+
+        // Remove comment
+        blog.comments.splice(commentIndex, 1);
+        await blog.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Comment deleted successfully'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Update comment
+export const updateComment = async (req, res, next) => {
+    try {
+        const { id, commentId } = req.params;
+        const { content } = req.body;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        if (!content) {
+            return res.status(400).json({
+                success: false,
+                message: 'Content is required'
+            });
+        }
+
+        const blog = await Blog.findById(id);
+        if (!blog) {
+            return res.status(404).json({
+                success: false,
+                message: 'Blog not found'
+            });
+        }
+
+        const comment = blog.comments.id(commentId);
+        if (!comment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Comment not found'
+            });
+        }
+
+        // Authorization check: User can only update own
+        if (userRole !== 'admin' && userRole !== 'rootadmin' && comment.user.toString() !== userId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to update this comment'
+            });
+        }
+
+        comment.content = content;
+        await blog.save();
+
+        // Populate and return updated comment
+        await blog.populate('comments.user', 'username role');
+        const updatedComment = blog.comments.id(commentId).toObject();
+
+        if (updatedComment.user && (updatedComment.user.role === 'admin' || updatedComment.user.role === 'rootadmin')) {
+            updatedComment.user.username = 'UrbanSetuBlogManagement';
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Comment updated successfully',
+            data: updatedComment
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Get blog categories
 export const getBlogCategories = async (req, res, next) => {
     try {
         const categories = await Blog.distinct('category', { published: true });
-        
+
         // If no categories exist, provide default ones
         const defaultCategories = [
             'Real Estate Tips',
-            'Market Updates', 
+            'Market Updates',
             'Investment Guide',
             'Home Buying',
             'Home Selling',
@@ -605,11 +711,11 @@ export const getBlogCategories = async (req, res, next) => {
             'Rent',
             'Investment'
         ];
-        
+
         // Always return all default categories, plus any additional categories from existing blogs
         const allCategories = [...new Set([...defaultCategories, ...categories])];
         const finalCategories = allCategories;
-        
+
         res.status(200).json({
             success: true,
             data: finalCategories
@@ -623,7 +729,7 @@ export const getBlogCategories = async (req, res, next) => {
 export const getBlogTags = async (req, res, next) => {
     try {
         const tags = await Blog.distinct('tags', { published: true });
-        
+
         res.status(200).json({
             success: true,
             data: tags

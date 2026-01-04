@@ -7,8 +7,9 @@ import { Navigation } from 'swiper/modules';
 import { toast } from 'react-toastify';
 import {
   Calendar, User, Eye, Heart, Tag, ArrowLeft, Share2, MessageSquare,
-  Home, Maximize2, X, ThumbsUp, Send, Clock, Play, Image as ImageIcon
+  Home, Maximize2, X, ThumbsUp, Send, Clock, Play, Image as ImageIcon, Trash, Edit, Check
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
 import BlogDetailSkeleton from '../components/skeletons/BlogDetailSkeleton';
@@ -35,6 +36,10 @@ const PublicBlogDetail = () => {
   const [showVideoPreview, setShowVideoPreview] = useState(false);
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const textareaRef = useRef(null);
+
+  const { currentUser } = useSelector((state) => state.user);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editContent, setEditContent] = useState('');
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
@@ -198,6 +203,58 @@ const PublicBlogDetail = () => {
       }
     } catch (error) {
       console.error('Error adding comment:', error);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm("Delete this comment?")) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        setComments(prev => prev.filter(c => c._id !== commentId));
+        toast.success("Comment deleted");
+      } else {
+        toast.error("Failed to delete comment");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error deleting comment");
+    }
+  };
+
+  const startEditing = (comment) => {
+    setEditingCommentId(comment._id);
+    setEditContent(comment.content);
+  };
+
+  const cancelEditing = () => {
+    setEditingCommentId(null);
+    setEditContent('');
+  };
+
+  const handleUpdateComment = async (commentId) => {
+    if (!editContent.trim()) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ content: editContent })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setComments(prev => prev.map(c => c._id === commentId ? data.data : c)); // Update with returned data
+        setEditingCommentId(null);
+        toast.success("Comment updated");
+      } else {
+        toast.error("Failed to update comment");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error updating comment");
     }
   };
 
@@ -466,20 +523,51 @@ const PublicBlogDetail = () => {
                 ) : (
                   comments.map((comment, index) => {
                     const isAdmin = comment.user?.username === 'UrbanSetuBlogManagement';
+                    const isOwner = currentUser && (comment.user?._id === currentUser._id || comment.user === currentUser._id); // Check ID match
+
                     return (
-                      <div key={index} className={`flex gap-4 ${isAdmin ? 'bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800' : ''}`}>
+                      <div key={index} className={`flex gap-4 group ${isAdmin ? 'bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800' : ''}`}>
                         <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white shadow-sm transition-colors ${isAdmin ? 'bg-blue-600' : 'bg-gray-400'}`}>
                           {comment.user?.username?.[0]?.toUpperCase() || 'A'}
                         </div>
                         <div className="flex-grow">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`font-bold text-sm transition-colors ${isAdmin ? 'text-blue-700 dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}>
-                              {isAdmin ? 'UrbanSetu Team' : comment.user?.username || 'Anonymous'}
-                            </span>
-                            {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
-                            <span className="text-xs text-gray-400 dark:text-gray-500">• {new Date(comment.createdAt).toLocaleDateString()}</span>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className={`font-bold text-sm transition-colors ${isAdmin ? 'text-blue-700 dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}>
+                                {isAdmin ? 'UrbanSetu Team' : comment.user?.username || 'Anonymous'}
+                              </span>
+                              {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
+                              <span className="text-xs text-gray-400 dark:text-gray-500">• {new Date(comment.createdAt).toLocaleDateString()}</span>
+                            </div>
+
+                            {isOwner && editingCommentId !== comment._id && (
+                              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => startEditing(comment)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" title="Edit">
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button onClick={() => handleDeleteComment(comment._id)} className="text-gray-400 hover:text-red-500 transition-colors p-1" title="Delete">
+                                  <Trash className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            )}
                           </div>
-                          <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm transition-colors">{comment.content}</p>
+
+                          {editingCommentId === comment._id ? (
+                            <div className="mt-2">
+                              <textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                className="w-full p-2 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                rows={2}
+                              />
+                              <div className="flex gap-2 mt-2 justify-end">
+                                <button onClick={cancelEditing} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"><X className="w-4 h-4" /></button>
+                                <button onClick={() => handleUpdateComment(comment._id)} className="p-1 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded"><Check className="w-4 h-4" /></button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm transition-colors whitespace-pre-wrap">{comment.content}</p>
+                          )}
                         </div>
                       </div>
                     )

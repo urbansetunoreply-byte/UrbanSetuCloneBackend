@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaImage, FaVideo, FaTags, FaPencilAlt, FaPlus, FaCloudUploadAlt, FaPlay } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import ImagePreview from './ImagePreview';
 import VideoPreview from './VideoPreview';
 
@@ -27,11 +28,11 @@ const BlogEditModal = ({
     // Validate file sizes
     for (const file of files) {
       if (type === 'image' && file.size > 10 * 1024 * 1024) {
-        alert(`Image ${file.name} exceeds 10MB limit.`);
+        toast.error(`Image ${file.name} exceeds 10MB limit.`);
         return;
       }
       if (type === 'video' && file.size > 100 * 1024 * 1024) {
-        alert(`Video ${file.name} exceeds 100MB limit.`);
+        toast.error(`Video ${file.name} exceeds 100MB limit.`);
         return;
       }
     }
@@ -72,7 +73,7 @@ const BlogEditModal = ({
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload files. Please try again.');
+      toast.error('Failed to upload files. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -114,7 +115,7 @@ const BlogEditModal = ({
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      alert('Thumbnail image size must be less than 10MB');
+      toast.error('Thumbnail image size must be less than 10MB');
       return;
     }
 
@@ -137,7 +138,7 @@ const BlogEditModal = ({
       setFormData(prev => ({ ...prev, thumbnail: data.imageUrl }));
     } catch (error) {
       console.error('Thumbnail upload error:', error);
-      alert('Failed to upload thumbnail. Please try again.');
+      toast.error('Failed to upload thumbnail. Please try again.');
     } finally {
       setUploading(false);
     }

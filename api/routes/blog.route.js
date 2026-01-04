@@ -1,13 +1,15 @@
 import express from 'express';
-import { 
-    getBlogs, 
-    getBlog, 
-    createBlog, 
-    updateBlog, 
-    deleteBlog, 
-    likeBlog, 
+import {
+    getBlogs,
+    getBlog,
+    createBlog,
+    updateBlog,
+    deleteBlog,
+    likeBlog,
     checkUserLike,
     addComment,
+    deleteComment,
+    updateComment,
     getBlogCategories,
     getBlogTags
 } from '../controllers/blog.controller.js';
@@ -25,6 +27,8 @@ router.get('/:id', getBlog); // GET /api/blogs/:id (by ID or slug)
 router.get('/:id/like-status', verifyToken, checkUserLike); // GET /api/blogs/:id/like-status
 router.post('/:id/like', verifyToken, likeBlog); // POST /api/blogs/:id/like
 router.post('/:id/comment', verifyToken, addComment); // POST /api/blogs/:id/comment
+router.delete('/:id/comment/:commentId', verifyToken, deleteComment); // DELETE /api/blogs/:id/comment/:commentId
+router.put('/:id/comment/:commentId', verifyToken, updateComment); // PUT /api/blogs/:id/comment/:commentId
 
 // Admin routes (protected)
 router.post('/', verifyToken, createBlog); // POST /api/blogs

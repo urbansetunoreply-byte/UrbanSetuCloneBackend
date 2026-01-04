@@ -199,6 +199,26 @@ const AdminBlogDetail = () => {
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm("Are you sure you want to delete this comment?")) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setComments(prev => prev.filter(c => c._id !== commentId));
+      } else {
+        console.error("Failed to delete comment");
+        alert("Failed to delete comment");
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
+
   const handleDelete = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
@@ -613,17 +633,26 @@ const AdminBlogDetail = () => {
                     comments.map((comment, index) => {
                       const isAdmin = comment.user?.username === 'UrbanSetuBlogManagement' || comment.user?.role === 'admin';
                       return (
-                        <div key={index} className={`flex gap-4 ${isAdmin ? 'bg-blue-50/50 dark:bg-blue-900/20 p-6 rounded-2xl border border-blue-100 dark:border-blue-800' : 'p-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent'}`}>
+                        <div key={index} className={`flex gap-4 group ${isAdmin ? 'bg-blue-50/50 dark:bg-blue-900/20 p-6 rounded-2xl border border-blue-100 dark:border-blue-800' : 'p-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent'}`}>
                           <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white shadow-sm ${isAdmin ? 'bg-blue-600' : 'bg-gray-400'}`}>
                             {comment.user?.username?.[0]?.toUpperCase() || 'A'}
                           </div>
                           <div className="flex-grow">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className={`font-bold text-sm ${isAdmin ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'}`}>
-                                {isAdmin ? 'UrbanSetu Team' : comment.user?.username || 'Anonymous'}
-                              </span>
-                              {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
-                              <span className="text-xs text-gray-400">• {new Date(comment.createdAt).toLocaleDateString()}</span>
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <span className={`font-bold text-sm ${isAdmin ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'}`}>
+                                  {isAdmin ? 'UrbanSetu Team' : comment.user?.username || 'Anonymous'}
+                                </span>
+                                {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
+                                <span className="text-xs text-gray-400">• {new Date(comment.createdAt).toLocaleDateString()}</span>
+                              </div>
+                              <button
+                                onClick={() => handleDeleteComment(comment._id)}
+                                className="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                title="Delete Comment"
+                              >
+                                <Trash className="w-4 h-4" />
+                              </button>
                             </div>
                             <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">{comment.content}</p>
                           </div>
