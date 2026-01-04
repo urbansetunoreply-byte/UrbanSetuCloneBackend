@@ -84,9 +84,11 @@ export const createPost = async (req, res, next) => {
 
 export const getPosts = async (req, res, next) => {
     try {
-        const { city, neighborhood, category, sort, limit = 10, skip = 0 } = req.query;
+        const { city, neighborhood, category, sort, limit = 10, skip = 0, userId } = req.query;
 
         let query = {};
+
+        if (userId) query.author = userId;
 
         if (city) query['location.city'] = { $regex: city, $options: 'i' };
         if (neighborhood) query['location.neighborhood'] = { $regex: neighborhood, $options: 'i' };

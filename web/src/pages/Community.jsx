@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt, FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch, FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaLeaf, FaCamera, FaTrash, FaCheckCircle, FaExclamationTriangle, FaCalendar, FaTimesCircle, FaEdit, FaSmile } from 'react-icons/fa';
+import { FaUsers, FaUser, FaMapMarkerAlt, FaBullhorn, FaShieldAlt, FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch, FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaLeaf, FaCamera, FaTrash, FaCheckCircle, FaExclamationTriangle, FaCalendar, FaTimesCircle, FaEdit, FaSmile } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
 import CommunitySkeleton from '../components/skeletons/CommunitySkeleton';
@@ -36,6 +36,7 @@ export default function Community() {
 
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showMyPosts, setShowMyPosts] = useState(false);
 
     // Modal State
     const [confirmModal, setConfirmModal] = useState({
@@ -124,13 +125,14 @@ export default function Community() {
             }
         };
         loadData();
-    }, [activeTab, searchTerm]);
+    }, [activeTab, searchTerm, showMyPosts]);
 
     const fetchPosts = async () => {
         try {
             const params = new URLSearchParams();
             if (activeTab !== 'All') params.append('category', activeTab);
             if (searchTerm) params.append('searchTerm', searchTerm);
+            if (showMyPosts && currentUser) params.append('userId', currentUser._id);
             // Auto-filter by user's location if available (optional enhancement)
 
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${params.toString()}`);
@@ -1044,6 +1046,17 @@ export default function Community() {
                                 </div>
                             )}
                         </div>
+                        {currentUser && (
+                            <button
+                                onClick={() => setShowMyPosts(!showMyPosts)}
+                                className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-colors shadow-md whitespace-nowrap w-full sm:w-auto border ${showMyPosts
+                                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    }`}
+                            >
+                                <FaUser /> Your Discussions
+                            </button>
+                        )}
                         <button
                             onClick={() => {
                                 if (!currentUser) return toast.info("Please sign in to post");
