@@ -8,7 +8,7 @@ import {
     FaShieldAlt, FaDownload, FaCalendarAlt, FaBuilding, FaMagic,
     FaFire, FaStamp, FaHandshake, FaTimes, FaCloud,
     FaComments, FaTools, FaCalculator, FaPenNib, FaTruck,
-    FaRobot, FaSearchPlus, FaBell
+    FaRobot, FaSearchPlus, FaBell, FaMapMarkerAlt
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import html2canvas from 'html2canvas';
@@ -258,6 +258,15 @@ const YearInReview = ({ isAdmin = false }) => {
             subtitle: "Building a reputation that opens doors.",
             icon: <FaShieldAlt className="text-8xl text-blue-500 mb-6" />,
             color: "from-blue-950 via-[#000a1a] to-blue-950",
+        },
+        pathfinder: {
+            title: "Urban Navigator",
+            content: `You planned ${data?.stats?.routesSaved || 0} smart routes using our Navigator.`,
+            subtitle: data?.stats?.routeDistance > 0
+                ? `Covering ${data?.stats?.routeDistance}km across ${data?.stats?.routeStops} waypoints!`
+                : "Finding the fastest path to your dream property.",
+            icon: <FaMapMarkerAlt className="text-8xl text-rose-500 mb-6" />,
+            color: "from-rose-950 via-[#1a0005] to-rose-950",
         },
         architect: {
             title: "Financial Architect",

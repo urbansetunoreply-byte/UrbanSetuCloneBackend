@@ -23,6 +23,8 @@ import RentalRating from "../models/rentalRating.model.js";
 import ChatHistory from "../models/chatHistory.model.js";
 import SavedSearch from "../models/savedSearch.model.js";
 import Notification from "../models/notification.model.js";
+import Route from "../models/Route.js";
+
 import cloudinary from 'cloudinary';
 
 // Configure Cloudinary for base64 uploads
@@ -343,10 +345,33 @@ export const getUserYearInReview = async (req, res, next) => {
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
+        const routesAgg = await Route.aggregate([
+            {
+                $match: {
+                    userId: userObjectId,
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    count: { $sum: 1 },
+                    totalStops: { $sum: { $size: "$stops" } },
+                    totalDistance: { $sum: "$route.distance" }
+                }
+            }
+        ]);
+
+        const routesSaved = routesAgg.length > 0 ? routesAgg[0].count : 0;
+        const totalRouteStops = routesAgg.length > 0 ? routesAgg[0].totalStops : 0;
+        const totalRouteDistance = routesAgg.length > 0 ? Math.round(routesAgg[0].totalDistance / 1000) : 0;
+
         const totalInteractions = viewsCount + bookingsCount + wishlistCount + watchlistCount +
             reviewsCount + rentalsCount + favoriteCount + serviceCount +
             moversCount + forumPostsCount + forumEngagementCount + blogCommentsCount + calculationsCount + referralsCount +
-            loansCount + rentalRatingsCount + totalMessages + totalSearches + (coinsEarned > 0 ? 1 : 0);
+            loansCount + rentalRatingsCount + totalMessages + totalSearches + (coinsEarned > 0 ? 1 : 0) + routesSaved;
+
+        // ... (Property Mogul code follows)
 
         // NEW: Property Mogul Stats (Owner/Seller side)
         const userListingsCount = await Listing.countDocuments({
@@ -434,7 +459,10 @@ export const getUserYearInReview = async (req, res, next) => {
             totalInteractions: totalInteractions + reviewRepliesCount + helpfulVotesGiven + userListingsCount + userSales + userLandlordContracts,
             listingsCreated: userListingsCount,
             listingsSold: userSales,
-            listingsRented: userLandlordContracts
+            listingsRented: userLandlordContracts,
+            routesSaved,
+            routeStops: totalRouteStops,
+            routeDistance: totalRouteDistance
         };
 
         const personality = getPersonality(stats);
