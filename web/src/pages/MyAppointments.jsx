@@ -5985,11 +5985,28 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     function handleCommentRead(data) {
       if (data.appointmentId === appt._id) {
         setComments(prev =>
-          prev.map(c =>
-            !c.readBy?.includes(data.userId)
-              ? { ...c, status: "read", readBy: [...(c.readBy || []), data.userId], readAt: new Date() }
-              : c
-          )
+          prev.map(c => {
+            // Only update if this user hasn't marked it read yet
+            if (!c.readBy?.includes(data.userId)) {
+              const newReadBy = [...(c.readBy || []), data.userId];
+
+              // Determine if this read event should flip the status to 'read'
+              // It should only happen if the reader is the partner (Buyer/Seller), NOT Admin
+              // We check if the data.userId matches either buyer or seller ID from the appointment prop
+              // Note: appt.buyerId/sellerId might be objects or strings, handle both safely
+              const buyerId = appt.buyerId?._id || appt.buyerId;
+              const sellerId = appt.sellerId?._id || appt.sellerId;
+
+              // If reader is a participant, we mark status as read
+              const isParticipant = data.userId === buyerId || data.userId === sellerId;
+
+              // Should we update status? Only if it's a participant reading it
+              const newStatus = isParticipant ? "read" : c.status;
+
+              return { ...c, readBy: newReadBy, status: newStatus, ...(isParticipant ? { readAt: new Date() } : {}) };
+            }
+            return c;
+          })
         );
       }
     }

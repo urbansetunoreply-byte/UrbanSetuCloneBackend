@@ -2346,8 +2346,13 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
           const readByStrings = comment.readBy.map(id => id ? id.toString() : '');
           if (!readByStrings.includes(userIdStr)) {
             comment.readBy.push(userId);
-            comment.status = "read";
-            comment.readAt = new Date();
+
+            // Only mark as "read" status if the reader is a participant (Buyer/Seller)
+            // Admins spectating should NOT trigger the blue ticks
+            if (userIdStr === buyerIdStr || userIdStr === sellerIdStr) {
+              comment.status = "read";
+              comment.readAt = new Date();
+            }
             updated = true;
           }
         } catch (commentError) {
@@ -2417,8 +2422,12 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
                   const readByStrings = comment.readBy.map(id => id ? id.toString() : '');
                   if (!readByStrings.includes(userIdStr)) {
                     comment.readBy.push(userId);
-                    comment.status = "read";
-                    comment.readAt = new Date();
+
+                    // Only mark as "read" status if the reader is a participant (Buyer/Seller)
+                    if (userIdStr === buyerIdStr || userIdStr === sellerIdStr) {
+                      comment.status = "read";
+                      comment.readAt = new Date();
+                    }
                     freshUpdated = true;
                   }
                 } catch (commentError) {
