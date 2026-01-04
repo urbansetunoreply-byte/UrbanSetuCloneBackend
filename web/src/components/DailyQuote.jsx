@@ -7,7 +7,7 @@ const quotes = [
     { text: "McDonald's is actually one of the world's largest real estate companies, not just a burger chain.", author: "Real Estate Fact" },
     { text: "The White House in Washington D.C. has 132 rooms, 35 bathrooms, and 6 levels.", author: "Property Trivia" },
     { text: "The term 'mortgage' comes from Old French words meaning 'death pledge'.", author: "Historical Fact" },
-    { text: "Using a real estate agent to sell a home can increase the sale price by up to 22%.", author: "Market Insight" },
+    { text: "Listing properties on digital platforms increases visibility by over 500% compared to traditional methods.", author: "Digital Market Insight" },
     { text: "The Burj Khalifa in Dubai is so tall that you can watch the sunset from the base, then take the elevator to the top to watch it again.", author: "Architectural Wonder" },
     { text: "Staged homes sell 73% faster than non-staged homes on average.", author: "Selling Tip" },
     { text: "The most expensive private home in the world is Antilia in Mumbai, valued at over $2 billion.", author: "Luxury Real Estate" },
