@@ -15199,8 +15199,11 @@ export const sendPostLockedEmail = async (email, username, postTitle, postId) =>
             </p>
             
             <div style="text-align: center; margin-top: 20px;">
-              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+              <a href="${clientBaseUrl}/community-guidelines" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; margin-right: 10px;">
                 View Community Rules
+              </a>
+              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #f3f4f6; color: #4b5563; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; border: 1px solid #d1d5db;">
+                Go to Community
               </a>
             </div>
           </div>
@@ -15253,8 +15256,11 @@ export const sendPostEditedEmail = async (email, username, postTitle, postId) =>
             </p>
             
             <div style="text-align: center; margin-top: 20px;">
-              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+              <a href="${clientBaseUrl}/community-guidelines" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; margin-right: 10px;">
                 View Community Rules
+              </a>
+              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #f3f4f6; color: #4b5563; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; border: 1px solid #d1d5db;">
+                Go to Community
               </a>
             </div>
           </div>
@@ -15307,8 +15313,11 @@ export const sendPostDeletedEmail = async (email, username, postTitle) => {
             </p>
             
             <div style="text-align: center; margin-top: 20px;">
-              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+              <a href="${clientBaseUrl}/community-guidelines" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; margin-right: 10px;">
                 Review Community Guidelines
+              </a>
+              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #f3f4f6; color: #4b5563; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; border: 1px solid #d1d5db;">
+                Go to Community
               </a>
             </div>
           </div>
@@ -15330,6 +15339,63 @@ export const sendPostDeletedEmail = async (email, username, postTitle) => {
       createErrorResponse(new Error(result.error), 'post_deleted');
   } catch (error) {
     return createErrorResponse(error, 'post_deleted');
+  }
+};
+
+// Send Post Unlocked Email
+export const sendPostUnlockedEmail = async (email, username, postTitle, postId) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Discussion Unlocked - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Community Moderation Alert</p>
+          </div>
+          
+          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10b981;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Your Discussion Has Been Unlocked</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Hello ${username},
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Good news! Your discussion thread <strong>"${postTitle}"</strong> has been unlocked by a community moderator.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              This means discussions can resume, and new comments or replies can now be added to the thread.
+            </p>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; margin-right: 10px;">
+                View Discussion
+              </a>
+              <a href="${clientBaseUrl}/community-guidelines" style="display: inline-block; background-color: #ecfdf5; color: #065f46; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; border: 1px solid #10b981;">
+                Community Guidelines
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'post_unlocked') :
+      createErrorResponse(new Error(result.error), 'post_unlocked');
+  } catch (error) {
+    return createErrorResponse(error, 'post_unlocked');
   }
 };
 

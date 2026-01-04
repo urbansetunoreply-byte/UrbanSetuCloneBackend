@@ -1,7 +1,7 @@
 ﻿import ForumPost from '../models/forumPost.model.js';
 import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
-import { sendCommunityPostConfirmationEmail, sendCommunityReportAcknowledgementEmail, sendPostLockedEmail, sendPostDeletedEmail, sendPostEditedEmail } from '../utils/emailService.js';
+import { sendCommunityPostConfirmationEmail, sendCommunityReportAcknowledgementEmail, sendPostLockedEmail, sendPostDeletedEmail, sendPostEditedEmail, sendPostUnlockedEmail } from '../utils/emailService.js';
 
 const maskUser = (user) => {
     if (user && (user.profileVisibility === 'private' || user.profileVisibility === 'friends')) {
@@ -619,10 +619,13 @@ export const lockPost = async (req, res, next) => {
         await post.populate('author', 'username avatar email type isVerified');
         req.app.get('io').emit('forum:postUpdated', post);
 
-        // Send email if post is locked
+        // Send email notification based on lock status
         if (post.isLocked) {
             sendPostLockedEmail(post.author.email, post.author.username, post.title, post._id)
                 .catch(err => console.error("Failed to send post locked email:", err));
+        } else {
+            sendPostUnlockedEmail(post.author.email, post.author.username, post.title, post._id)
+                .catch(err => console.error("Failed to send post unlocked email:", err));
         }
 
         res.status(200).json(post);
