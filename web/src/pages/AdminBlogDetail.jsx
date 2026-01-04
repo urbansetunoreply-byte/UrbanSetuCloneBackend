@@ -9,10 +9,12 @@ import {
   Home, Maximize2, X, AlertTriangle, Edit, Trash, Play, Image as ImageIcon,
   CheckCircle, Clock, Send
 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import BlogEditModal from '../components/BlogEditModal';
 import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
 import BlogDetailSkeleton from '../components/skeletons/BlogDetailSkeleton';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -30,9 +32,15 @@ const AdminBlogDetail = () => {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+    isDestructive: false,
+    confirmText: 'Confirm'
+  });
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showVideoPreview, setShowVideoPreview] = useState(false);
@@ -143,11 +151,11 @@ const AdminBlogDetail = () => {
         setBlog(prev => ({ ...prev, likes: data.data.likes }));
       } else {
         const errorData = await response.json();
-        alert(errorData.message || 'Error updating like');
+        toast.error(errorData.message || 'Error updating like');
       }
     } catch (error) {
       console.error('Error liking blog:', error);
-      alert('Error updating like');
+      toast.error('Error updating like');
     } finally {
       setLikeLoading(false);
     }
@@ -189,9 +197,9 @@ const AdminBlogDetail = () => {
       } else {
         const errorData = await response.json();
         if (response.status === 401) {
-          alert('Please log in to comment');
+          toast.info('Please log in to comment');
         } else {
-          alert(errorData.message || 'Error adding comment');
+          toast.error(errorData.message || 'Error adding comment');
         }
       }
     } catch (error) {
@@ -199,46 +207,72 @@ const AdminBlogDetail = () => {
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
-    if (!window.confirm("Are you sure you want to delete this comment?")) return;
+  const handleDeleteComment = (commentId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Comment',
+      message: 'Are you sure you want to delete this comment?',
+      confirmText: 'Delete',
+      isDestructive: true,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        setComments(prev => prev.filter(c => c._id !== commentId));
-      } else {
-        console.error("Failed to delete comment");
-        alert("Failed to delete comment");
+          if (response.ok) {
+            setComments(prev => prev.filter(c => c._id !== commentId));
+            toast.success("Comment deleted");
+          } else {
+            toast.error("Failed to delete comment");
+          }
+        } catch (error) {
+          console.error("Error deleting comment:", error);
+          toast.error("Error deleting comment");
+        }
       }
-    } catch (error) {
-      console.error("Error deleting comment:", error);
-    }
+    });
   };
 
-  const handleDelete = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
+  const handleDelete = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Blog Post?',
+      message: `Are you sure you want to delete "${blog.title}"? This action is permanent and cannot be undone.`,
+      confirmText: 'Yes, Delete',
+      isDestructive: true,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
 
-      if (response.ok) {
-        navigate('/admin/blogs');
-      } else {
-        alert('Error deleting blog');
+          if (response.ok) {
+            toast.success('Blog deleted successfully');
+            navigate('/admin/blogs');
+          } else {
+            toast.error('Error deleting blog');
+          }
+        } catch (error) {
+          console.error('Error deleting blog:', error);
+          toast.error('Error deleting blog');
+        }
       }
-    } catch (error) {
-      console.error('Error deleting blog:', error);
-    }
+    });
   };
 
   const handleTogglePublish = async () => {
     if (blog.published) {
-      setShowUnpublishConfirm(true);
+      setConfirmModal({
+        isOpen: true,
+        title: 'Unpublish Blog?',
+        message: `This will hide "${blog.title}" from the public. You can publish it again later.`,
+        confirmText: 'Unpublish',
+        isDestructive: false,
+        onConfirm: () => updatePublishStatus(false)
+      });
     } else {
       await updatePublishStatus(!blog.published);
     }
@@ -257,12 +291,13 @@ const AdminBlogDetail = () => {
 
       if (response.ok) {
         setBlog(prev => ({ ...prev, published: newStatus }));
-        setShowUnpublishConfirm(false);
+        toast.info(`Blog ${newStatus ? 'published' : 'unpublished'}`);
       } else {
-        alert('Error updating blog status');
+        toast.error('Error updating blog status');
       }
     } catch (error) {
       console.error('Error updating blog:', error);
+      toast.error('Error updating blog status');
     }
   };
 
@@ -301,13 +336,13 @@ const AdminBlogDetail = () => {
         const data = await response.json();
         setBlog(data.data);
         setShowEditModal(false);
-        alert('Blog updated successfully!');
+        toast.success('Blog updated successfully!');
       } else {
-        alert('Error updating blog');
+        toast.error('Error updating blog');
       }
     } catch (error) {
       console.error('Error updating blog:', error);
-      alert('Error updating blog');
+      toast.error('Error updating blog');
     }
   };
 
@@ -351,7 +386,7 @@ const AdminBlogDetail = () => {
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
+      toast.success('Link copied to clipboard!');
     }
   };
 
@@ -554,7 +589,7 @@ const AdminBlogDetail = () => {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowDeleteConfirm(true)}
+                  onClick={handleDelete}
                   className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Delete Blog"
                 >
                   <Trash className="w-5 h-5" />
@@ -751,65 +786,16 @@ const AdminBlogDetail = () => {
         </div>
       </div>
 
-      {/* Confirm Modal for Delete */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl transform scale-100 transition-all">
-            <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6">
-              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Delete Blog Post?</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-center mb-8 text-sm leading-relaxed">
-              Are you sure you want to delete <strong>"{blog.title}"</strong>? This action is permanent and cannot be undone.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200 dark:shadow-none"
-              >
-                Yes, Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirm Modal for Unpublish */}
-      {showUnpublishConfirm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl transform scale-100 transition-all">
-            <div className="mx-auto w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mb-6">
-              <Eye className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Unpublish Blog?</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-center mb-8 text-sm leading-relaxed">
-              This will hide <strong>"{blog.title}"</strong> from the public. You can publish it again later.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowUnpublishConfirm(false)}
-                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  updatePublishStatus(false);
-                }}
-                className="flex-1 px-4 py-3 bg-yellow-600 text-white rounded-xl font-bold hover:bg-yellow-700 transition-colors shadow-lg shadow-yellow-200 dark:shadow-none"
-              >
-                Unpublish
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        confirmText={confirmModal.confirmText}
+        isDestructive={confirmModal.isDestructive}
+      />
 
       {/* Image Preview Modal */}
       {blog && ((blog.thumbnail) || (blog.imageUrls && blog.imageUrls.length > 0)) && (

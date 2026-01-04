@@ -13,6 +13,7 @@ import { useSelector } from 'react-redux';
 import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
 import BlogDetailSkeleton from '../components/skeletons/BlogDetailSkeleton';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -40,6 +41,14 @@ const PublicBlogDetail = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editContent, setEditContent] = useState('');
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+    isDestructive: false,
+    confirmText: 'Confirm'
+  });
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
@@ -206,23 +215,31 @@ const PublicBlogDetail = () => {
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
-    if (!window.confirm("Delete this comment?")) return;
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      if (res.ok) {
-        setComments(prev => prev.filter(c => c._id !== commentId));
-        toast.success("Comment deleted");
-      } else {
-        toast.error("Failed to delete comment");
+  const handleDeleteComment = (commentId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Comment',
+      message: 'Are you sure you want to delete this comment? This action cannot be undone.',
+      confirmText: 'Delete',
+      isDestructive: true,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+          if (res.ok) {
+            setComments(prev => prev.filter(c => c._id !== commentId));
+            toast.success("Comment deleted");
+          } else {
+            toast.error("Failed to delete comment");
+          }
+        } catch (error) {
+          console.error(error);
+          toast.error("Error deleting comment");
+        }
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("Error deleting comment");
-    }
+    });
   };
 
   const startEditing = (comment) => {
@@ -680,6 +697,17 @@ const PublicBlogDetail = () => {
           initialIndex={selectedVideoIndex}
         />
       )}
+
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        confirmText={confirmModal.confirmText}
+        isDestructive={confirmModal.isDestructive}
+      />
     </div>
   );
 };
