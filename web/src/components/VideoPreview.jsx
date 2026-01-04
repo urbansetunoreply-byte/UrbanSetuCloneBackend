@@ -963,14 +963,17 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     // Trash Zone: Approx Bottom 100px, Center 100px width
     // Simple logic: If mouse is in bottom 15% and middle 20% width?
     // Or better: define trash zone rect.
-    const trashY = windowHeight - 100;
-    const trashXMin = (windowWidth / 2) - 60;
-    const trashXMax = (windowWidth / 2) + 60;
 
     const mouseX = e.clientX;
     const mouseY = e.clientY;
 
-    if (mouseY > trashY && mouseX > trashXMin && mouseX < trashXMax) {
+    // Expand Trash Zone Detection
+    // Detect earlier (higher up) to make it feel responsive
+    const trashYThreshold = windowHeight - 150; // Activate when within 150px of bottom
+    const trashXMin = (windowWidth / 2) - 80; // Widen target area
+    const trashXMax = (windowWidth / 2) + 80;
+
+    if (mouseY > trashYThreshold && mouseX > trashXMin && mouseX < trashXMax) {
       if (!isOverTrash) {
         setIsOverTrash(true);
         // Haptic feedback if available (navigator.vibrate)
@@ -984,9 +987,9 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const handleMiniMouseUp = () => {
     isMiniDraggingRef.current = false;
     if (isOverTrash) {
-      // Trigger Close Request
+      // Trigger Direct Close (Bypass Confirmation)
       setIsOverTrash(false);
-      handleCloseRequest(); // This opens the confirmation modal
+      onClose(); // Directly close the player
     }
   };
 
