@@ -12,8 +12,10 @@ import {
     Tag,
     Search,
     ArrowRight,
-    Filter
+    Filter,
+    Link as LinkIcon
 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 import UpdatesSkeleton from '../components/skeletons/UpdatesSkeleton';
 
@@ -178,16 +180,18 @@ const Updates = () => {
                                                 <Calendar className="w-3.5 h-3.5" />
                                                 {new Date(update.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                             </time>
-                                            <button
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(`${update.title} - v${update.version}\n${window.location.href}`);
-                                                    // You might want to add a toast here if available, or just a visual feedback
-                                                }}
-                                                className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                title="Copy Link"
-                                            >
-                                                <Filter className="w-3.5 h-3.5 rotate-45" /> {/* Using Filter as placeholder for Link/Share if Link icon not imported, ideally import Share2 or Link */}
-                                            </button>
+                                            {update.actionUrl && (
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(update.actionUrl);
+                                                        toast.success('Link copied to clipboard!');
+                                                    }}
+                                                    className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                    title="Copy Link"
+                                                >
+                                                    <LinkIcon className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
