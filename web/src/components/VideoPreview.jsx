@@ -56,6 +56,15 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [seekFeedback, setSeekFeedback] = useState(null); // 'forward' | 'rewind' | null
   const lastTapRef = useRef(0);
 
+  // Mini Mode States
+  const [miniPosition, setMiniPosition] = useState({ x: 20, y: 20 }); // Position from bottom-right (initially) is handled via CSS, but for dragging we might need absolute coords. Let's stick to fixed positioning.
+  // Actually, for dragging, "fixed" with top/left is easier.
+  // Let's toggle: when entering mini mode, set initial Top/Left based on window size.
+  const [miniSize, setMiniSize] = useState({ width: 320, height: 192 }); // Default 16:9
+  const isMiniDraggingRef = useRef(false);
+  const miniDragStartRef = useRef({ x: 0, y: 0 }); // Mouse/Touch start
+  const miniStartPosRef = useRef({ x: 0, y: 0 }); // Element Left/Top start
+
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
@@ -94,10 +103,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setShowControls(true);
       setShowSettings(false);
       setShowCloseConfirm(false);
+      setShowCloseConfirm(false);
     } else {
       document.body.style.overflow = '';
       setIsPlaying(false);
       setIsMiniMode(false); // Reset mini mode on close
+      setMiniSize({ width: 320, height: 192 }); // Reset size
     }
     return () => {
       document.body.style.overflow = '';
@@ -394,13 +405,22 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
   const toggleMiniMode = (e) => {
     e?.stopPropagation();
-    setIsMiniMode(prev => !prev);
-    // Reset Zoom/Rotate when going mini
-    if (!isMiniMode) {
-      setScale(1);
-      setRotation(0);
-      setPosition({ x: 0, y: 0 });
-    }
+    setIsMiniMode(prev => {
+      const next = !prev;
+      if (next) {
+        // Entering Mini Mode - Set Initial Position (Bottom-Right)
+        if (typeof window !== 'undefined') {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          setMiniPosition({ x: w - 340, y: h - 220 }); // simple default
+          setMiniSize({ width: 320, height: 192 });
+        }
+        setScale(1); // Reset internal video zoom
+        setRotation(0);
+        setPosition({ x: 0, y: 0 }); // internal pan
+      }
+      return next;
+    });
   };
 
   const handleTimeUpdate = () => {
@@ -723,6 +743,21 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     gestureRef.current = { type: null, startY: 0, startVal: 0 };
     if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
 
+    if (isMiniMode) {
+      if (e.touches.length === 1) {
+        handleMiniMouseDown(e.touches[0]);
+      } else if (e.touches.length === 2) {
+        // Mini Mode Resize (Pinch)
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        pinchStartDistRef.current = dist;
+        pinchStartScaleRef.current = miniSize.width; // Store current Width as "scale"
+      }
+      return;
+    }
+
     if (e.touches.length === 2) {
       // Pinch Zoom Start
       const dist = Math.hypot(
@@ -751,6 +786,25 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   };
 
   const handleTouchMove = (e) => {
+    if (isMiniMode) {
+      if (e.touches.length === 2 && pinchStartDistRef.current) {
+        // Resize Mini Player
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const ratio = dist / pinchStartDistRef.current;
+        const newWidth = Math.max(150, Math.min(window.innerWidth - 20, pinchStartScaleRef.current * ratio));
+        // Maintain Aspect Ratio 16:9
+        const newHeight = newWidth * (9 / 16);
+        setMiniSize({ width: newWidth, height: newHeight });
+        e.preventDefault(); // Prevent scrolling while resizing
+      } else if (e.touches.length === 1 && isMiniDraggingRef.current) {
+        handleMiniMouseMove(e.touches[0]);
+      }
+      return;
+    }
+
     if (e.touches.length === 2 && pinchStartDistRef.current) {
       // Pinch Zoom Move
       const dist = Math.hypot(
@@ -852,6 +906,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const handleTouchEnd = () => {
     // Reset Pinch
     pinchStartDistRef.current = null;
+    if (isMiniMode) {
+      handleMiniMouseUp();
+      return;
+    }
 
     if (speedTimeoutRef.current) clearTimeout(speedTimeoutRef.current);
     if (isSpeedingRef.current) {
@@ -874,17 +932,54 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  // Mini Player Drag Handlers
+  const handleMiniMouseDown = (e) => {
+    isMiniDraggingRef.current = true;
+    miniDragStartRef.current = { x: e.clientX, y: e.clientY };
+    miniStartPosRef.current = { ...miniPosition };
+  };
+
+  const handleMiniMouseMove = (e) => {
+    if (!isMiniDraggingRef.current) return;
+    const dx = e.clientX - miniDragStartRef.current.x;
+    const dy = e.clientY - miniDragStartRef.current.y;
+
+    setMiniPosition({
+      x: miniStartPosRef.current.x + dx,
+      y: miniStartPosRef.current.y + dy
+    });
+  };
+
+  const handleMiniMouseUp = () => {
+    isMiniDraggingRef.current = false;
+  };
+
   const content = ( // Wrapped the JSX in a variable
     <div
       ref={containerRef}
+      style={isMiniMode
+        ? {
+          position: 'fixed',
+          left: `${miniPosition.x}px`,
+          top: `${miniPosition.y}px`,
+          width: `${miniSize.width}px`,
+          height: `${miniSize.height}px`,
+          zIndex: 99999,
+          cursor: isMiniDraggingRef.current ? 'grabbing' : 'grab' // Indicate draggable
+        }
+        : {}
+      }
       className={`${isMiniMode
-        ? 'fixed bottom-4 right-4 w-80 h-48 z-[99999] rounded-xl shadow-2xl border border-gray-700 overflow-hidden bg-black'
+        ? 'rounded-xl shadow-2xl border border-gray-700 overflow-hidden bg-black'
         : 'fixed inset-0 bg-black z-[9999] flex items-center justify-center select-none touch-none'
-        } transition-all duration-300`}
+        } transition-shadow duration-300`}
       onContextMenu={(e) => e.preventDefault()}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      // Unified Mouse/Touch Handlers attached to container for global capture in Fullscreen, 
+      // but conditionally logic inside them handles specific modes.
+      onMouseMove={isMiniMode ? handleMiniMouseMove : handleMouseMove}
+      onMouseUp={isMiniMode ? handleMiniMouseUp : handleMouseUp}
+      onMouseDown={isMiniMode ? handleMiniMouseDown : undefined} // Only needed for Mini Mouse Drag
+      onMouseLeave={isMiniMode ? handleMiniMouseUp : handleMouseUp}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -897,12 +992,34 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
             onClick={toggleMiniMode}
             className="mb-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full p-2 text-white transition-all transform hover:scale-110 shadow-lg"
             title="Restore to Fullscreen"
+            // Prevent drag when clicking button
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
           >
             <FaWindowRestore size={20} />
           </button>
           <div className="flex gap-2">
-            <button onClick={togglePlay} className="bg-white/10 hover:bg-white/20 p-2 rounded-full text-white"><FaPlay size={10} /></button>
-            <button onClick={handleCloseRequest} className="bg-red-500/80 hover:bg-red-600 p-2 rounded-full text-white"><FaTimes size={10} /></button>
+            <button
+              onClick={togglePlay}
+              className="bg-white/10 hover:bg-white/20 p-2 rounded-full text-white"
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            >
+              {/* Dynamically Show Play or Pause Icon */}
+              {isPlaying && !isLoading
+                ? <FaPause size={10} />
+                : <FaPlay size={10} />
+              }
+            </button>
+
+            <button
+              onClick={handleCloseRequest}
+              className="bg-red-500/80 hover:bg-red-600 p-2 rounded-full text-white"
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            >
+              <FaTimes size={10} />
+            </button>
           </div>
         </div>
       )}
@@ -1090,21 +1207,23 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
               </div>
 
               <div className="flex items-center gap-2 sm:gap-4">
-                {/* Zoom Controls */}
-                <div className="flex items-center bg-white/10 rounded-lg px-2 py-1 gap-2">
+                {/* Mini Mode Toggle - Moved here for better mobile access (left of download) */}
+                <button onClick={toggleMiniMode} title="Picture in Picture" className="hover:text-blue-400">
+                  <FaClone size={18} />
+                </button>
+
+                {/* Zoom Controls (Hidden on very small screens to save space?) */}
+                <div className="hidden sm:flex items-center bg-white/10 rounded-lg px-2 py-1 gap-2">
                   <button onClick={handleZoomIn} title="Zoom In" className="hover:text-blue-400 text-sm"><FaSearchPlus /></button>
                   <button onClick={handleZoomOut} title="Zoom Out" className="hover:text-blue-400 text-sm"><FaSearchMinus /></button>
                   <button onClick={handleRotate} title="Rotate" className="hover:text-blue-400 text-sm"><FaUndo /></button>
                   <button onClick={handleReset} title="Reset" className="hover:text-blue-400 text-xs font-bold px-1">1x</button>
                 </div>
 
-                <button onClick={toggleSpeed} title="Playback Speed" className="hover:text-blue-400 flex items-center gap-1 text-sm font-medium min-w-[3em]">
+                <button onClick={toggleSpeed} title="Playback Speed" className="hover:text-blue-400 hidden sm:flex items-center gap-1 text-sm font-medium min-w-[3em]">
                   <FaTachometerAlt size={14} /> {playbackRate}x
                 </button>
 
-                <button onClick={toggleMiniMode} title="Picture in Picture" className="hover:text-blue-400">
-                  <FaClone size={18} />
-                </button>
 
                 <button onClick={handleDownload} title="Download" className="hover:text-blue-400">
                   <FaDownload size={18} />
