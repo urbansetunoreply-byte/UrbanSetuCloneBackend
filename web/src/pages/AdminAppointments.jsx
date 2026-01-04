@@ -3820,11 +3820,7 @@ function AdminAppointmentRow({
     if (showChatModal) {
       setUnreadNewMessages(0);
       // Mark messages as read when chat is opened
-      axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`, {}, {
-        withCredentials: true
-      }).catch(err => {
-        console.error('Error marking messages as read:', err);
-      });
+      markMessagesAsRead(true);
 
       // Sync starred messages when chat opens
       if (starredMessages.length > 0) {
@@ -4405,7 +4401,16 @@ function AdminAppointmentRow({
   // Mark messages as read when user can see them
   const markingReadRef = React.useRef(false);
 
-  const markMessagesAsRead = React.useCallback(async () => {
+  const markMessagesAsRead = React.useCallback(async (force = false) => {
+    if (!appt?._id) return;
+
+    // Check if we are close to bottom (generous 150px threshold)
+    if (!force && chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      const isCloseToBottom = scrollHeight - scrollTop - clientHeight < 150;
+      if (!isCloseToBottom) return;
+    }
+
     if (markingReadRef.current) return; // Prevent concurrent requests
 
     const unreadMessages = localComments.filter(c =>
@@ -4433,7 +4438,7 @@ function AdminAppointmentRow({
           )
         );
 
-        // Emit socket event for real-time updates to other party
+        // Emit socket event for real-time updates to other party - perform in parallel
         unreadMessages.forEach(msg => {
           socket.emit('messageRead', {
             appointmentId: appt._id,
@@ -4457,12 +4462,21 @@ function AdminAppointmentRow({
       setIsAtBottom(atBottom);
 
       // Clear unread count and mark messages as read when user reaches bottom
-      if (atBottom && unreadNewMessages > 0) {
-        setUnreadNewMessages(0);
-        markMessagesAsRead();
+      if (atBottom) {
+        // Check if there are actually unread messages irrespective of unreadNewMessages counter
+        const hasUnread = localComments.some(c =>
+          !c.readBy?.includes(currentUser._id) && c.senderEmail !== currentUser.email
+        );
+
+        if (hasUnread) {
+          setUnreadNewMessages(0);
+          markMessagesAsRead();
+        } else if (unreadNewMessages > 0) {
+          setUnreadNewMessages(0);
+        }
       }
     }
-  }, [unreadNewMessages, markMessagesAsRead]);
+  }, [unreadNewMessages, markMessagesAsRead, localComments, currentUser._id]);
 
   // Add scroll event listener for chat container
   React.useEffect(() => {
@@ -4532,32 +4546,37 @@ function AdminAppointmentRow({
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      markMessagesAsRead(true);
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [showChatModal]);
+  }, [showChatModal, appt._id, markMessagesAsRead]);
 
   // Note: Toast notifications for new messages removed for admin interface
   // Admins don't need popup notifications as they manage messages proactively
 
   // Chat clearing and message removal events (keeping only these, parent handles commentUpdate)
   React.useEffect(() => {
-    function handleChatClearedForUser({ appointmentId, clearedAt }) {
+    function handleChatClearedForUser({ appointmentId, clearedAt, userId }) {
       if (appointmentId !== appt._id) return;
-      setLocalComments([]);
-      setUnreadNewMessages(0);
-      // Close reactions bar when chat is cleared
-      setShowReactionsBar(false);
-      setReactionsMessageId(null);
+      // Only clear if WE (admin) cleared it
+      if (userId === currentUser._id) {
+        setLocalComments([]);
+        setUnreadNewMessages(0);
+        setShowReactionsBar(false);
+        setReactionsMessageId(null);
+      }
     }
 
-    function handleCommentRemovedForUser({ appointmentId, commentId }) {
+    function handleCommentRemovedForUser({ appointmentId, commentId, userId }) {
       if (appointmentId !== appt._id) return;
-      setLocalComments(prev => prev.filter(c => c._id !== commentId));
-      // Close reactions bar when comment is removed
-      setShowReactionsBar(false);
-      setReactionsMessageId(null);
+      // Only remove if WE (admin) removed it for ourselves
+      if (userId === currentUser._id) {
+        setLocalComments(prev => prev.filter(c => c._id !== commentId));
+        setShowReactionsBar(false);
+        setReactionsMessageId(null);
+      }
     }
 
     socket.on('chatClearedForUser', handleChatClearedForUser);

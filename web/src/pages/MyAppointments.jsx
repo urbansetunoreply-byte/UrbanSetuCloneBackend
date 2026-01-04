@@ -5629,17 +5629,21 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     }
   }, [showReactionsEmojiPicker]);
 
-  // Mark messages as read when user can actually see them at the bottom of chat
+  // Mark messages as read when user can see them
   const markingReadRef = useRef(false);
 
-  const markVisibleMessagesAsRead = useCallback(async () => {
-    if (!chatContainerRef.current || markingReadRef.current || !appt?._id) return;
+  const markVisibleMessagesAsRead = useCallback(async (force = false) => {
+    if (!appt?._id) return;
 
-    // Only mark messages as read when user is at the bottom of chat AND has manually scrolled
-    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-    const isAtBottom = scrollHeight - scrollTop - clientHeight < 10; // 10px threshold
+    // If not forced (meaning it's a scroll event), check if we are close to bottom
+    // We use a generous threshold (150px) to ensure we capture reads even if not at absolute bottom
+    if (!force && chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      const isCloseToBottom = scrollHeight - scrollTop - clientHeight < 150;
+      if (!isCloseToBottom) return;
+    }
 
-    if (!isAtBottom) return; // Don't mark as read if not at bottom
+    if (markingReadRef.current) return; // Prevent concurrent requests
 
     const unreadMessages = comments.filter(c =>
       !c.readBy?.includes(currentUser._id) &&
@@ -5647,7 +5651,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     );
 
     if (unreadMessages.length > 0) {
-      markingReadRef.current = true; // Prevent concurrent requests
+      markingReadRef.current = true;
       try {
         // Mark messages as read in backend
         const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`,
@@ -5661,30 +5665,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
         setComments(prev =>
           prev.map(c =>
             unreadMessages.some(unread => unread._id === c._id)
-              ? { ...c, readBy: [...(c.readBy || []), currentUser._id], status: 'read' }
+              ? { ...c, readBy: [...(c.readBy || []), currentUser._id], status: 'read' } // Keep optimistic update
               : c
           )
         );
 
-        // Emit socket event for real-time updates to sender (user1)
+        // Emit socket event for real-time updates to other party - perform in parallel
+        // We use a Promise.all to ensure all emits happen but we don't await them strictly for UI responsiveness
         unreadMessages.forEach(msg => {
           socket.emit('messageRead', {
             appointmentId: appt._id,
             messageId: msg._id,
-            userId: currentUser._id,
-            readBy: currentUser._id
+            userId: currentUser._id
           });
         });
-
-        // Update unreadNewMessages to reflect the actual unread count
-        setUnreadNewMessages(prev => Math.max(0, prev - unreadMessages.length));
       } catch (error) {
-        // Only log error if it's not a 500 server error (which might be temporary)
-        if (error.response?.status !== 500) {
-          console.error('Error marking messages as read:', error);
-        } else {
-          console.warn('Server error marking messages as read (will retry later):', error.response?.status);
-        }
+        console.error('Error marking messages as read:', error);
       } finally {
         markingReadRef.current = false; // Reset the flag
       }
@@ -5923,24 +5919,30 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     }
 
     // New: clear chat and remove-for-me events
-    function handleChatClearedForUser({ appointmentId, clearedAt }) {
+    function handleChatClearedForUser({ appointmentId, clearedAt, userId }) {
       if (appointmentId !== appt._id) return;
-      try {
-        const clearTimeKey = `chatClearTime_${appt._id}`;
-        const localMs = Number(localStorage.getItem(clearTimeKey)) || 0;
-        const serverMs = clearedAt ? new Date(clearedAt).getTime() : 0;
-        const effective = Math.max(localMs, serverMs);
-        localStorage.setItem(clearTimeKey, String(effective));
-      } catch { }
-      setComments([]);
-      setCallHistory([]); // Also clear call history bubbles when chat is cleared
-      setUnreadNewMessages(0);
+      // Only handle if this event is for the current user
+      if (userId === currentUser._id) {
+        try {
+          const clearTimeKey = `chatClearTime_${appt._id}`;
+          const localMs = Number(localStorage.getItem(clearTimeKey)) || 0;
+          const serverMs = clearedAt ? new Date(clearedAt).getTime() : 0;
+          const effective = Math.max(localMs, serverMs);
+          localStorage.setItem(clearTimeKey, String(effective));
+        } catch { }
+        setComments([]);
+        setCallHistory([]); // Also clear call history bubbles when chat is cleared
+        setUnreadNewMessages(0);
+      }
     }
-    function handleCommentRemovedForUser({ appointmentId, commentId }) {
+    function handleCommentRemovedForUser({ appointmentId, commentId, userId }) {
       if (appointmentId !== appt._id) return;
-      setComments(prev => prev.filter(c => c._id !== commentId));
-      // Also record locally to keep UI consistent
-      addLocallyRemovedId(appt._id, commentId);
+      // Only handle if this event is for the current user
+      if (userId === currentUser._id) {
+        setComments(prev => prev.filter(c => c._id !== commentId));
+        // Also record locally to keep UI consistent
+        addLocallyRemovedId(appt._id, commentId);
+      }
     }
 
     socket.on('commentUpdate', handleCommentUpdate);
@@ -5968,19 +5970,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
   // Mark all comments as read when chat modal opens and fetch latest if needed
   useEffect(() => {
     if (showChatModal && appt?._id) {
-      // Mark comments as read immediately
-      axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`, {}, {
-        withCredentials: true
-      }).catch(error => {
-        // Only log error if it's not a 500 server error (which might be temporary)
-        if (error.response?.status !== 500) {
-          console.warn('Error marking comments as read on modal open:', error);
-        } else {
-          console.warn('Server error marking comments as read on modal open (will retry later):', error.response?.status);
-        }
-      });
+      // Use the centralized function to mark messages as read and emit socket events
+      // We pass true to force the read mark regardless of scroll position
+      markVisibleMessagesAsRead(true);
     }
-  }, [showChatModal, appt._id]);
+  }, [showChatModal, appt?._id, markVisibleMessagesAsRead]);
 
   // Listen for commentDelivered and commentRead events
   useEffect(() => {
