@@ -475,7 +475,7 @@ const BlogEditModal = ({
       {previewImage && (
         <ImagePreview
           isOpen={!!previewImage}
-          imageUrl={previewImage}
+          images={[previewImage]}
           onClose={() => setPreviewImage(null)}
         />
       )}
