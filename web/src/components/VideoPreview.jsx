@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import {
   FaTimes,
@@ -851,7 +852,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  return (
+  const content = ( // Wrapped the JSX in a variable
     <div
       ref={containerRef}
       className="fixed inset-0 bg-black z-[9999] flex items-center justify-center select-none touch-none"
@@ -1114,6 +1115,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       )}
     </div>
   );
+
+  return createPortal(content, document.body);
 };
 
 export default VideoPreview;

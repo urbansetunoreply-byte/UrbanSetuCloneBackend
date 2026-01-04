@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FaTimes,
   FaSearchPlus,
@@ -854,7 +855,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
   if (!isOpen || !imagesArray || imagesArray.length === 0) return null;
 
-  return (
+  const content = (
     <div
       className={`fixed inset-0 bg-black bg-opacity-95 z-[9999] flex items-center justify-center transition-all duration-300 select-none touch-none ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
         }`}
@@ -1317,6 +1318,8 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
       />
     </div>
   );
+
+  return createPortal(content, document.body);
 };
 
 export default ImagePreview;

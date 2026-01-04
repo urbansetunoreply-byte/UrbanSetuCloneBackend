@@ -530,31 +530,25 @@ export default function AdminServices() {
 
       {/* Checklist Modal */}
       {showChecklistModal && selectedChecklist && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full relative">
-              <ChecklistModal
-                contract={{
-                  _id: selectedChecklist.contractId?._id || selectedChecklist.contractId,
-                  contractId: selectedChecklist.contractId?.contractId,
-                  listingId: selectedChecklist.listingId,
-                  tenantId: selectedChecklist.tenantId,
-                  landlordId: selectedChecklist.landlordId,
-                  lockedRentAmount: selectedChecklist.contractId?.lockedRentAmount
-                }}
-                checklist={selectedChecklist}
-                checklistType={checklistType}
-                onClose={() => {
-                  setShowChecklistModal(false);
-                  setSelectedChecklist(null);
-                }}
-                onUpdate={() => {
-                  fetchChecklists();
-                }}
-              />
-            </div>
-          </div>
-        </div>
+        <ChecklistModal
+          contract={{
+            _id: selectedChecklist.contractId?._id || selectedChecklist.contractId,
+            contractId: selectedChecklist.contractId?.contractId,
+            listingId: selectedChecklist.listingId,
+            tenantId: selectedChecklist.tenantId,
+            landlordId: selectedChecklist.landlordId,
+            lockedRentAmount: selectedChecklist.contractId?.lockedRentAmount
+          }}
+          checklist={selectedChecklist}
+          checklistType={checklistType}
+          onClose={() => {
+            setShowChecklistModal(false);
+            setSelectedChecklist(null);
+          }}
+          onUpdate={() => {
+            fetchChecklists();
+          }}
+        />
       )}
       {/* Confirmation Modal */}
       {confirmationModal.open && (
