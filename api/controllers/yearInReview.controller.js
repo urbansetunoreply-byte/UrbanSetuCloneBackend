@@ -24,6 +24,7 @@ import ChatHistory from "../models/chatHistory.model.js";
 import SavedSearch from "../models/savedSearch.model.js";
 import Notification from "../models/notification.model.js";
 import Route from "../models/Route.js";
+import CallHistory from "../models/callHistory.model.js";
 
 import cloudinary from 'cloudinary';
 
@@ -414,6 +415,35 @@ export const getUserYearInReview = async (req, res, next) => {
             badgeIssuedAt: { $gte: startDate, $lte: endDate }
         });
 
+        // NEW: Call History Stats (Audio/Video)
+        const callsAgg = await CallHistory.aggregate([
+            {
+                $match: {
+                    $or: [{ callerId: userObjectId }, { receiverId: userObjectId }],
+                    status: { $in: ['accepted', 'ended'] }, // Only count successful calls
+                    startTime: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalCalls: { $sum: 1 },
+                    totalDuration: { $sum: "$duration" }, // in seconds
+                    audioCalls: {
+                        $sum: { $cond: [{ $eq: ["$callType", "audio"] }, 1, 0] }
+                    },
+                    videoCalls: {
+                        $sum: { $cond: [{ $eq: ["$callType", "video"] }, 1, 0] }
+                    }
+                }
+            }
+        ]);
+
+        const totalCalls = callsAgg.length > 0 ? callsAgg[0].totalCalls : 0;
+        const totalCallDuration = callsAgg.length > 0 ? Math.round(callsAgg[0].totalDuration / 60) : 0; // Convert to minutes
+        const audioCallsCount = callsAgg.length > 0 ? callsAgg[0].audioCalls : 0;
+        const videoCallsCount = callsAgg.length > 0 ? callsAgg[0].videoCalls : 0;
+
         // NEW: Review Engagement
         const reviewRepliesCount = await ReviewReply.countDocuments({
             userId: userId,
@@ -464,14 +494,18 @@ export const getUserYearInReview = async (req, res, next) => {
             notifications: totalNotifs,
             peakMonth,
             topType: explorationAgg[0]?.topType[0]?._id || null,
-            totalInteractions: totalInteractions + reviewRepliesCount + helpfulVotesGiven + userListingsCount + userSales + userLandlordContracts + userVerifications,
+            totalInteractions: totalInteractions + reviewRepliesCount + helpfulVotesGiven + userListingsCount + userSales + userLandlordContracts + userVerifications + totalCalls,
             listingsCreated: userListingsCount,
             listingsSold: userSales,
             listingsRented: userLandlordContracts,
             verificationsEarned: userVerifications,
             routesSaved,
             routeStops: totalRouteStops,
-            routeDistance: totalRouteDistance
+            routeDistance: totalRouteDistance,
+            totalCalls,
+            callDuration: totalCallDuration,
+            audioCalls: audioCallsCount,
+            videoCalls: videoCallsCount
         };
 
         const personality = getPersonality(stats);

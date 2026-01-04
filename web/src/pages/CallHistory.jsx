@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { FaPhone, FaVideo, FaClock, FaCheckCircle, FaTimesCircle, FaTrash, FaSearch, FaCalendarAlt, FaFilter, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../config/api';
@@ -201,15 +202,24 @@ const CallHistory = () => {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Call History</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">Manage and view your past audio and video calls</p>
           </div>
-          {allCalls.length > 0 && (
-            <button
-              onClick={() => setShowDeleteAllModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-800 transition-all shadow-sm font-medium"
+          <div className="flex gap-3">
+            <Link
+              to="/user/my-appointments"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-800 transition-all shadow-sm font-medium"
             >
-              <FaTrash size={14} />
-              <span>Clear History</span>
-            </button>
-          )}
+              <FaCalendarAlt size={14} />
+              <span>Go to My Appointments</span>
+            </Link>
+            {allCalls.length > 0 && (
+              <button
+                onClick={() => setShowDeleteAllModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-800 transition-all shadow-sm font-medium"
+              >
+                <FaTrash size={14} />
+                <span>Clear History</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Filters & Search */}

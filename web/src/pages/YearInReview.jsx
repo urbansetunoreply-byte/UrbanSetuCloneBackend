@@ -8,7 +8,7 @@ import {
     FaShieldAlt, FaDownload, FaCalendarAlt, FaBuilding, FaMagic,
     FaFire, FaStamp, FaHandshake, FaTimes, FaCloud,
     FaComments, FaTools, FaCalculator, FaPenNib, FaTruck,
-    FaRobot, FaSearchPlus, FaBell, FaMapMarkerAlt
+    FaRobot, FaSearchPlus, FaBell, FaMapMarkerAlt, FaPhone
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import html2canvas from 'html2canvas';
@@ -260,6 +260,15 @@ const YearInReview = ({ isAdmin = false }) => {
                 : "Building a reputation that opens doors.",
             icon: <FaShieldAlt className="text-8xl text-blue-500 mb-6" />,
             color: "from-blue-950 via-[#000a1a] to-blue-950",
+        },
+        communication: {
+            title: "Communication Hub",
+            content: `You connected via ${data?.stats?.totalCalls || 0} calls for ${data?.stats?.callDuration || 0} minutes.`,
+            subtitle: (data?.stats?.videoCalls > 0)
+                ? `Including ${data?.stats?.videoCalls} video calls and ${data?.stats?.audioCalls} audio calls!`
+                : "Making meaningful connections, one call at a time.",
+            icon: <FaPhone className="text-8xl text-emerald-500 mb-6" />,
+            color: "from-emerald-950 via-[#001a0f] to-emerald-950",
         },
         pathfinder: {
             title: "Urban Navigator",

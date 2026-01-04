@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { FaPhone, FaVideo, FaClock, FaCheckCircle, FaTimesCircle, FaFilter, FaSearch, FaCalendarAlt, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { API_BASE_URL } from '../config/api';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -148,9 +149,18 @@ const AdminCallHistory = () => {
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6 md:p-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Admin Call History</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Monitor system-wide call logs and statistics</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Admin Call History</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Monitor system-wide call logs and statistics</p>
+          </div>
+          <Link
+            to="/admin/appointments"
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-800 transition-all shadow-sm font-medium"
+          >
+            <FaCalendarAlt size={14} />
+            <span>Go to Appointments</span>
+          </Link>
         </div>
 
         {/* Statistics */}
