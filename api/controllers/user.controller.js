@@ -725,7 +725,7 @@ export const exportData = async (req, res, next) => {
             }
         });
 
-        // Prepare comprehensive user data conditionally
+        // Prepare base user data
         const userData = {
             accountInfo: {
                 username: user.username,
@@ -738,24 +738,32 @@ export const exportData = async (req, res, next) => {
                 updatedAt: user.updatedAt,
                 profilePicture: user.profilePicture
             },
-            statistics: {
-                wishlistCount,
-                watchlistCount,
-                appointmentsCount,
-                listingsCount,
-                reviewsWrittenCount: reviewsCount,
-                reviewsReceivedCount: reviewsReceived.length,
-                paymentsCount,
-                geminiPromptsCount,
-                rentalContractsCount: rentalContracts.length,
-                rentalLoansCount: rentalLoans.length,
-                forumPostsCount: forumPosts.length,
-                savedRoutesCount: savedRoutes.length,
-                calculationsCount: calculationHistoryItems.length,
-                blogCommentsCount: blogCommentsAgg.length,
-                totalCalls: callHistoryLogs.length
-            }
+            statistics: {}
         };
+
+        // Populate statistics only for selected modules
+        if (modulesToFetch.includes('wishlist')) userData.statistics.wishlistCount = wishlistCount;
+        if (modulesToFetch.includes('watchlist')) userData.statistics.watchlistCount = watchlistCount;
+        if (modulesToFetch.includes('appointments')) userData.statistics.appointmentsCount = appointmentsCount;
+        if (modulesToFetch.includes('listings')) userData.statistics.listingsCount = listingsCount;
+        if (modulesToFetch.includes('reviews')) {
+            userData.statistics.reviewsWrittenCount = reviewsCount;
+            userData.statistics.reviewsReceivedCount = reviewsReceived.length;
+        }
+        if (modulesToFetch.includes('payments')) userData.statistics.paymentsCount = paymentsCount;
+        if (modulesToFetch.includes('gemini')) userData.statistics.geminiPromptsCount = geminiPromptsCount;
+        if (modulesToFetch.includes('rentalContracts')) userData.statistics.rentalContractsCount = rentalContracts.length;
+        if (modulesToFetch.includes('rentalLoans')) userData.statistics.rentalLoansCount = rentalLoans.length;
+        if (modulesToFetch.includes('community')) userData.statistics.forumPostsCount = forumPosts.length;
+        if (modulesToFetch.includes('routes')) userData.statistics.savedRoutesCount = savedRoutes.length;
+        if (modulesToFetch.includes('investments')) userData.statistics.calculationsCount = calculationHistoryItems.length;
+        if (modulesToFetch.includes('blogComments')) userData.statistics.blogCommentsCount = blogCommentsAgg.length;
+        if (modulesToFetch.includes('calls')) userData.statistics.totalCalls = callHistoryLogs.length;
+
+        // Remove statistics object if it remains empty
+        if (Object.keys(userData.statistics).length === 0) {
+            delete userData.statistics;
+        }
 
         // Add Gamification data if selected
         if (modulesToFetch.includes('gamification')) {
