@@ -4,6 +4,7 @@ import User from '../models/user.model.js';
 import BlogLike from '../models/blogLike.model.js';
 import BlogView from '../models/blogView.model.js';
 import crypto from 'crypto';
+import { sendCommentEditedEmail, sendCommentDeletedEmail } from '../utils/emailService.js';
 
 // Helper function to generate fingerprint for public users
 const generateFingerprint = (req) => {
@@ -620,6 +621,22 @@ export const deleteComment = async (req, res, next) => {
             });
         }
 
+        // Send email if admin deletes another user's comment
+        if ((userRole === 'admin' || userRole === 'rootadmin') && comment.user.toString() !== userId) {
+            // We need to populate the user to get email
+            await blog.populate('comments.user');
+            const populatedComment = blog.comments[commentIndex];
+            if (populatedComment.user && populatedComment.user.email) {
+                sendCommentDeletedEmail(
+                    populatedComment.user.email,
+                    populatedComment.user.username,
+                    blog.title,
+                    blog._id,
+                    comment.content
+                ).catch(err => console.error("Failed to send comment deleted email:", err));
+            }
+        }
+
         // Remove comment
         blog.comments.splice(commentIndex, 1);
         await blog.save();
@@ -665,11 +682,33 @@ export const updateComment = async (req, res, next) => {
         }
 
         // Authorization check: User can only update own
+        // Note: The original requirement only allowed checking own. User request implies admin can now edit too?
+        // "if admin deletes or edits the other users blog comment".
+        // The current code I see in view_file (lines 667-673) says:
+        // if (userRole !== 'admin' && userRole !== 'rootadmin' && comment.user.toString() !== userId)
+        // So admin CAN already edit (logicwise). The restriction comment "// Authorization check: User can only update own" was slightly misleading or just old.
+        // The code allows admin or rootadmin or owner.
+
         if (userRole !== 'admin' && userRole !== 'rootadmin' && comment.user.toString() !== userId) {
             return res.status(403).json({
                 success: false,
                 message: 'Not authorized to update this comment'
             });
+        }
+
+        // Send email if admin edits another user's comment
+        if ((userRole === 'admin' || userRole === 'rootadmin') && comment.user.toString() !== userId) {
+            await blog.populate('comments.user');
+            const populatedComment = blog.comments.id(commentId);
+            if (populatedComment.user && populatedComment.user.email) {
+                sendCommentEditedEmail(
+                    populatedComment.user.email,
+                    populatedComment.user.username,
+                    blog.title,
+                    blog._id,
+                    content // New content
+                ).catch(err => console.error("Failed to send comment edited email:", err));
+            }
         }
 
         comment.content = content;

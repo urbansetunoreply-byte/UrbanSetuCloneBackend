@@ -15399,3 +15399,130 @@ export const sendPostUnlockedEmail = async (email, username, postTitle, postId) 
   }
 };
 
+// Send Blog Comment Edited Email
+export const sendCommentEditedEmail = async (email, username, blogTitle, blogId, commentContent) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Comment Edited - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Community Moderation Alert</p>
+          </div>
+          
+          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Your Comment Has Been Edited</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Hello ${username},
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              A community moderator has edited your comment on the blog <strong>"${blogTitle}"</strong>.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              <strong>Original Content:</strong><br/>
+              <em style="color: #6b7280;">"${commentContent}"</em>
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Edits are typically made to ensure content aligns with our community guidelines while preserving the discussion.
+            </p>
+            <p style="color: #9ca3af; margin: 0 0 15px 0; font-size: 12px;">
+              Action taken on: ${new Date().toLocaleString()}
+            </p>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <a href="${clientBaseUrl}/blog/${blogId}" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; margin-right: 10px;">
+                View Blog
+              </a>
+              <a href="${clientBaseUrl}/community-guidelines" style="display: inline-block; background-color: #f3f4f6; color: #4b5563; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; border: 1px solid #d1d5db;">
+                Community Guidelines
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'comment_edited') :
+      createErrorResponse(new Error(result.error), 'comment_edited');
+  } catch (error) {
+    return createErrorResponse(error, 'comment_edited');
+  }
+};
+
+// Send Blog Comment Deleted Email
+export const sendCommentDeletedEmail = async (email, username, blogTitle, blogId, commentContent) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Comment Removed - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Community Moderation Alert</p>
+          </div>
+          
+          <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Your Comment Has Been Removed</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Hello ${username},
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              We are writing to inform you that your comment on the blog <strong>"${blogTitle}"</strong> has been removed by a community moderator.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              <strong>Removed Content:</strong><br/>
+              <em style="color: #6b7280;">"${commentContent}"</em>
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              This action was taken because the content was found to be in violation of our community standards.
+            </p>
+            <p style="color: #9ca3af; margin: 0 0 15px 0; font-size: 12px;">
+              Action taken on: ${new Date().toLocaleString()}
+            </p>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <a href="${clientBaseUrl}/community-guidelines" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; margin-right: 10px;">
+                Community Guidelines
+              </a>
+              <a href="${clientBaseUrl}/blog/${blogId}" style="display: inline-block; background-color: #f3f4f6; color: #4b5563; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; border: 1px solid #d1d5db;">
+                View Blog
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'comment_deleted') :
+      createErrorResponse(new Error(result.error), 'comment_deleted');
+  } catch (error) {
+    return createErrorResponse(error, 'comment_deleted');
+  }
+};
