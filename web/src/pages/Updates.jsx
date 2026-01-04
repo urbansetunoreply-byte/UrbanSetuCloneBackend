@@ -27,22 +27,28 @@ const Updates = () => {
     usePageTitle("Platform Updates - What's New");
     const [updates, setUpdates] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all');
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [previewVideo, setPreviewVideo] = useState(null);
-    const [previewImage, setPreviewImage] = useState(null);
+    const [search, setSearch] = useState('');
+
+    // Reset page when search changes
+    useEffect(() => {
+        setPage(1);
+    }, [search]);
 
     useEffect(() => {
-        fetchUpdates();
-    }, [filter, page]);
+        // Debounce fetch for search
+        const timeoutId = setTimeout(() => {
+            fetchUpdates();
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [filter, page, search]);
 
     const fetchUpdates = async () => {
         try {
             const query = new URLSearchParams({
                 page: page,
                 limit: 10,
-                ...(filter !== 'all' && { category: filter })
+                ...(filter !== 'all' && { category: filter }),
+                ...(search.trim() && { search: search.trim() })
             });
 
             const res = await fetch(`${API_BASE_URL}/api/updates/public?${query}`);
@@ -120,6 +126,33 @@ const Updates = () => {
                     >
                         Stay up to date with the latest features, improvements, and bug fixes. We're constantly working to make your experience better.
                     </motion.p>
+                </div>
+            </div>
+
+            {/* Search Section */}
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                    </div>
+                    <input
+                        type="text"
+                        className="block w-full pl-11 pr-10 py-3.5 border-2 border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 hover:shadow-md transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                        placeholder="Search updates by title, version, or keywords..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                    {search && (
+                        <button
+                            onClick={() => setSearch('')}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                        >
+                            <span className="sr-only">Clear search</span>
+                            <div className="bg-gray-200 dark:bg-gray-700 rounded-full p-1 hover:bg-gray-300 dark:hover:bg-gray-600">
+                                <Filter className="h-3 w-3 rotate-45" /> {/* Using Filter rotated as X since XCircle wasn't imported */}
+                            </div>
+                        </button>
+                    )}
                 </div>
             </div>
 
