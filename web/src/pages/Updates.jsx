@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import VideoPreview from '../components/VideoPreview';
+import ImagePreview from '../components/ImagePreview';
 import {
     Play,
     Rocket,
@@ -28,6 +29,7 @@ const Updates = () => {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [previewVideo, setPreviewVideo] = useState(null);
+    const [previewImage, setPreviewImage] = useState(null);
 
     useEffect(() => {
         fetchUpdates();
@@ -199,7 +201,7 @@ const Updates = () => {
                                     <div className="space-y-4 mt-4">
                                         {/* Images */}
                                         {(update.imageUrls?.length > 0 ? update.imageUrls : (update.imageUrl ? [update.imageUrl] : [])).map((url, i) => (
-                                            <div key={`img-${i}`} className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm group/image relative">
+                                            <div key={`img-${i}`} className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm group/image relative cursor-pointer" onClick={() => setPreviewImage(url)}>
                                                 <img
                                                     src={url}
                                                     alt={`${update.title} ${i + 1}`}
@@ -279,6 +281,13 @@ const Updates = () => {
                 onClose={() => setPreviewVideo(null)}
                 videos={previewVideo ? [previewVideo] : []}
             />
+            {previewImage && (
+                <ImagePreview
+                    isOpen={!!previewImage}
+                    images={[previewImage]}
+                    onClose={() => setPreviewImage(null)}
+                />
+            )}
         </div>
     );
 };

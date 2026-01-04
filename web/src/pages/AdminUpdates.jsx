@@ -193,8 +193,8 @@ export default function AdminUpdates() {
                 setImageErrors(prev => ({ ...prev, [index]: 'Please select an image file' }));
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                setImageErrors(prev => ({ ...prev, [index]: 'Image size must be less than 5MB' }));
+            if (file.size > 10 * 1024 * 1024) {
+                setImageErrors(prev => ({ ...prev, [index]: 'Image size must be less than 10MB' }));
                 return;
             }
             setUploadingImages(prev => ({ ...prev, [index]: true }));
@@ -204,8 +204,8 @@ export default function AdminUpdates() {
                 setVideoErrors(prev => ({ ...prev, [index]: 'Please select a video file' }));
                 return;
             }
-            if (file.size > 10 * 1024 * 1024) {
-                setVideoErrors(prev => ({ ...prev, [index]: 'Video size must be less than 10MB' }));
+            if (file.size > 100 * 1024 * 1024) {
+                setVideoErrors(prev => ({ ...prev, [index]: 'Video size must be less than 100MB' }));
                 return;
             }
             setUploadingVideos(prev => ({ ...prev, [index]: true }));
@@ -593,7 +593,7 @@ export default function AdminUpdates() {
                                 <div className="space-y-4 mb-6">
                                     <div className="flex items-center justify-between">
                                         <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Property Images</label>
-                                        <p className="text-gray-600 dark:text-gray-400 text-xs">Supported: JPG, PNG, GIF, WebP (max 5MB)</p>
+                                        <p className="text-gray-600 dark:text-gray-400 text-xs">Supported: JPG, PNG, GIF, WebP (max 10MB)</p>
                                     </div>
 
                                     <div className="space-y-3">
@@ -665,7 +665,7 @@ export default function AdminUpdates() {
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Videos</label>
-                                        <p className="text-gray-600 dark:text-gray-400 text-xs">Supported: MP4, WebM (max 10MB)</p>
+                                        <p className="text-gray-600 dark:text-gray-400 text-xs">Supported: MP4, WebM (max 100MB)</p>
                                     </div>
 
                                     <div className="space-y-3">
