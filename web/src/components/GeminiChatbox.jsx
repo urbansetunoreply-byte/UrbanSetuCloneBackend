@@ -151,6 +151,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [selectedHistoryIds, setSelectedHistoryIds] = useState([]);
     const [openHistoryMenuSessionId, setOpenHistoryMenuSessionId] = useState(null);
 
+    // Contact Support Visibility Listener
+    const [isContactSupportOpen, setIsContactSupportOpen] = useState(false);
+    useEffect(() => {
+        const handleContactSupportToggle = (event) => {
+            setIsContactSupportOpen(event.detail.isOpen);
+        };
+        window.addEventListener('contactSupportToggle', handleContactSupportToggle);
+        return () => window.removeEventListener('contactSupportToggle', handleContactSupportToggle);
+    }, []);
+
     // Rate limiting state
     const [rateLimitInfo, setRateLimitInfo] = useState({
         role: currentUser ? (currentUser.role || 'user') : 'public',
@@ -4398,7 +4408,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
     return (
-        <>
+        <div style={{ display: isContactSupportOpen ? 'none' : 'block' }}>
             {/* Enhanced Floating AI Chat Button */}
             <div className="fixed bottom-20 right-6 z-50">
                 <div className="relative">
@@ -8919,7 +8929,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 onClose={() => setPreviewVideo(null)}
                 videos={previewVideo ? [previewVideo] : []}
             />
-        </>
+        </div>
     );
 };
 

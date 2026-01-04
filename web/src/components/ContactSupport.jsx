@@ -40,6 +40,14 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     }
   }, [forceModalOpen]);
 
+  // Dispatch custom event when modal state changes
+  useEffect(() => {
+    const event = new CustomEvent('contactSupportToggle', {
+      detail: { isOpen: isModalOpen }
+    });
+    window.dispatchEvent(event);
+  }, [isModalOpen]);
+
   // Autofill name and email when modal opens and user is logged in
   useEffect(() => {
     if (isModalOpen && currentUser) {
