@@ -226,9 +226,11 @@ const YearInReview = ({ isAdmin = false }) => {
             color: "from-yellow-950 via-[#1a1500] to-yellow-950",
         },
         forum: {
-            title: "Forum Legend",
-            content: `You started ${data?.stats?.forumPosts || 0} discussions in the community!`,
-            subtitle: "Your voice is a beacon for others.",
+            title: "Community Voice",
+            content: `You started ${data?.stats?.forumPosts || 0} discussions and contribued ${data?.stats?.forumEngagement || 0} replies!`,
+            subtitle: data?.stats?.blogComments > 0
+                ? `You also shared ${data?.stats?.blogComments} insights on our blog posts.`
+                : "Your interactions help build a stronger community.",
             icon: <FaComments className="text-8xl text-indigo-400 mb-6" />,
             color: "from-indigo-950 via-[#05001a] to-indigo-950",
         },

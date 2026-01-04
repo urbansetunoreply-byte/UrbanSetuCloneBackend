@@ -259,6 +259,56 @@ export const getUserYearInReview = async (req, res, next) => {
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
+        // NEW: Blog Comment Activity
+        const blogCommentsAgg = await Blog.aggregate([
+            { $unwind: "$comments" },
+            {
+                $match: {
+                    "comments.user": userObjectId,
+                    "comments.createdAt": { $gte: startDate, $lte: endDate }
+                }
+            },
+            { $count: "total" }
+        ]);
+        const blogCommentsCount = blogCommentsAgg.length > 0 ? blogCommentsAgg[0].total : 0;
+
+        // NEW: Forum Engagement (Comments + Replies)
+        const forumActivityAgg = await ForumPost.aggregate([
+            {
+                $project: {
+                    comments: 1
+                }
+            },
+            { $unwind: "$comments" },
+            {
+                $facet: {
+                    "commentsCount": [
+                        {
+                            $match: {
+                                "comments.user": userObjectId,
+                                "comments.createdAt": { $gte: startDate, $lte: endDate }
+                            }
+                        },
+                        { $count: "total" }
+                    ],
+                    "repliesCount": [
+                        { $unwind: "$comments.replies" },
+                        {
+                            $match: {
+                                "comments.replies.user": userObjectId,
+                                "comments.replies.createdAt": { $gte: startDate, $lte: endDate }
+                            }
+                        },
+                        { $count: "total" }
+                    ]
+                }
+            }
+        ]);
+
+        const forumCommentsCount = forumActivityAgg[0].commentsCount[0]?.total || 0;
+        const forumRepliesCount = forumActivityAgg[0].repliesCount[0]?.total || 0;
+        const forumEngagementCount = forumCommentsCount + forumRepliesCount;
+
         const coinsAgg = await CoinTransaction.aggregate([
             {
                 $match: {
@@ -294,7 +344,7 @@ export const getUserYearInReview = async (req, res, next) => {
 
         const totalInteractions = viewsCount + bookingsCount + wishlistCount + watchlistCount +
             reviewsCount + rentalsCount + favoriteCount + serviceCount +
-            moversCount + forumPostsCount + calculationsCount + referralsCount +
+            moversCount + forumPostsCount + forumEngagementCount + blogCommentsCount + calculationsCount + referralsCount +
             loansCount + rentalRatingsCount + totalMessages + totalSearches + (coinsEarned > 0 ? 1 : 0);
 
         const stats = {
@@ -309,7 +359,11 @@ export const getUserYearInReview = async (req, res, next) => {
             coins: coinsEarned,
             serviceRequests: serviceCount,
             moversRequests: moversCount,
+            moversRequests: moversCount,
             forumPosts: forumPostsCount,
+            forumEngagement: forumEngagementCount,
+            blogComments: blogCommentsCount,
+            totalForumActivity: forumPostsCount + forumEngagementCount,
             calculations: calculationsCount,
             referrals: referralsCount,
             loans: loansCount,
