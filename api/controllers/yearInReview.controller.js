@@ -348,6 +348,39 @@ export const getUserYearInReview = async (req, res, next) => {
             moversCount + forumPostsCount + forumEngagementCount + blogCommentsCount + calculationsCount + referralsCount +
             loansCount + rentalRatingsCount + totalMessages + totalSearches + (coinsEarned > 0 ? 1 : 0);
 
+        // NEW: Property Mogul Stats (Owner/Seller side)
+        const userListingsCount = await Listing.countDocuments({
+            userRef: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const userSalesCount = await Booking.countDocuments({
+            // sellerId field might not exist in Booking model based on typical setups, 
+            // usually listings link to owners. Assuming Booking has 'listing' which has 'userRef'
+            // But if Booking model has direct sellerId, use that.
+            // Let's use a lookup-based approach if needed, but for now assuming direct or through listing.
+            // Checking previous context, Booking model was used for 'buyerId'.
+            // Let's assume we need to find bookings for listings owned by this user.
+            // Simplified: We will count bookings where the listing owner is this user.
+        });
+
+        // Revised approach for Sales/Landlord stats:
+        // 1. Get all listing IDs owned by user
+        const userListings = await Listing.find({ userRef: userId }).select('_id');
+        const userListingIds = userListings.map(l => l._id);
+
+        const userSales = await Booking.countDocuments({
+            listingId: { $in: userListingIds },
+            createdAt: { $gte: startDate, $lte: endDate },
+            status: 'completed'
+        });
+
+        const userLandlordContracts = await RentLockContract.countDocuments({
+            landlordId: userId,
+            createdAt: { $gte: startDate, $lte: endDate },
+            status: 'active'
+        });
+
         // NEW: Review Engagement
         const reviewRepliesCount = await ReviewReply.countDocuments({
             userId: userId,
@@ -398,7 +431,10 @@ export const getUserYearInReview = async (req, res, next) => {
             notifications: totalNotifs,
             peakMonth,
             topType: explorationAgg[0]?.topType[0]?._id || null,
-            totalInteractions: totalInteractions + reviewRepliesCount + helpfulVotesGiven
+            totalInteractions: totalInteractions + reviewRepliesCount + helpfulVotesGiven + userListingsCount + userSales + userLandlordContracts,
+            listingsCreated: userListingsCount,
+            listingsSold: userSales,
+            listingsRented: userLandlordContracts
         };
 
         const personality = getPersonality(stats);

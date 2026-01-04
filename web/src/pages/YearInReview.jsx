@@ -211,6 +211,15 @@ const YearInReview = ({ isAdmin = false }) => {
             icon: <FaHandshake className="text-8xl text-emerald-400 mb-6" />,
             color: "from-emerald-950 via-[#001a0a] to-emerald-950",
         },
+        mogul: {
+            title: "Property Mogul",
+            content: `You listed ${data?.stats?.listingsCreated || 0} properties on market.`,
+            subtitle: (data?.stats?.listingsSold > 0 || data?.stats?.listingsRented > 0)
+                ? `Successfully sold ${data?.stats?.listingsSold} and rented out ${data?.stats?.listingsRented} units!`
+                : "Building your real estate empire, one listing at a time.",
+            icon: <FaBuilding className="text-8xl text-indigo-500 mb-6" />,
+            color: "from-indigo-950 via-[#0a001a] to-indigo-950",
+        },
         reviews: {
             title: "Critical Eye",
             content: `You posted ${data?.stats?.reviews || 0} reviews and engaged with ${data?.stats?.reviewReplies || 0} replies.`,
