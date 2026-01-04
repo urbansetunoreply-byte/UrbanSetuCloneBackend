@@ -1122,7 +1122,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                           }`}
                         disabled={replyLikeLoading[reply._id]}
                       >
-                        👎 Dislike {reply.dislikes?.length > 0 && `(${reply.dislikes.length})`}
+                        👎 Dislike {reply.dislikes?.length > 0 && isAdminUser(currentUser) && `(${reply.dislikes.length})`}
                       </button>
                     </div>
                   </div>
