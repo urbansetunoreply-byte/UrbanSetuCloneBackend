@@ -10891,6 +10891,9 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
               <li>Your property listings</li>
               <li>Reviews and ratings</li>
               <li>Payment history</li>
+              <li>SetuCoins history and gamification stats</li>
+              <li>Rental contracts and loan applications</li>
+              <li>Gemini chat history and prompt counts</li>
               <li>Account statistics and counts</li>
             </ul>
             

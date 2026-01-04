@@ -106,6 +106,7 @@ export default function Settings() {
   const [exportPasswordVerifying, setExportPasswordVerifying] = useState(false);
   const [exportPasswordAttempts, setExportPasswordAttempts] = useState(0);
   const [showExportSignoutModal, setShowExportSignoutModal] = useState(false);
+  const [showExportInfoModal, setShowExportInfoModal] = useState(false);
 
   // Account deletion states
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -1359,23 +1360,32 @@ export default function Settings() {
         {/* Data Management */}
         <SettingSection title={t('settings.section_data')} icon={FaDatabase}>
           <div className="space-y-4">
-            <button
-              onClick={handleExportDataClick}
-              disabled={exportingData}
-              className={`w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${animationClasses.slideInUp}`}
-            >
-              {exportingData ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <FaFileDownload className={`w-4 h-4 mr-2`} />
-                  {t('settings.export_data')}
-                </>
-              )}
-            </button>
+            <div className="flex gap-2 w-full">
+              <button
+                onClick={handleExportDataClick}
+                disabled={exportingData}
+                className={`flex-1 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg flex items-center justify-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${animationClasses.slideInUp}`}
+              >
+                {exportingData ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <FaFileDownload className={`w-4 h-4 mr-2`} />
+                    {t('settings.export_data')}
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowExportInfoModal(true)}
+                className={`px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center ${animationClasses.slideInUp}`}
+                title="What's included?"
+              >
+                <FaInfoCircle className="w-5 h-5" />
+              </button>
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">Get a copy of your account data in JSON/text format</p>
           </div>
         </SettingSection>
@@ -2110,6 +2120,62 @@ export default function Settings() {
           </div>
         )
       }
+      {/* Export Info Modal */}
+      {showExportInfoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                  <FaFileDownload className="mr-2 text-green-500" />
+                  What's included?
+                </h3>
+                <button
+                  onClick={() => setShowExportInfoModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="max-h-[60vh] overflow-y-auto mb-6 pr-2 custom-scrollbar">
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  The data export file contains a comprehensive copy of your UrbanSetu data, including:
+                </p>
+
+                <ul className="space-y-3">
+                  {[
+                    { icon: FaUser, text: "Profile Information & Settings", color: "text-blue-500" },
+                    { icon: FaCrown, text: "SetuCoins & Gamification History", color: "text-yellow-500" },
+                    { icon: FaClipboardList, text: "Rental Contracts & Agreements", color: "text-indigo-500" },
+                    { icon: FaHistory, text: "Gemini Chat History & Prompts", color: "text-purple-500" },
+                    { icon: FaShieldAlt, text: "Rental Loans & Applications", color: "text-red-500" },
+                    { icon: FaUsers, text: "Reviews & Ratings (Tenant/Landlord)", color: "text-orange-500" },
+                    { icon: FaTools, text: "Listings & Property Details", color: "text-green-500" },
+                    { icon: FaDownload, text: "Wishlist & Watchlist Items", color: "text-teal-500" },
+                    { icon: FaVideo, text: "Appointment & Call History", color: "text-pink-500" },
+                    { icon: FaDatabase, text: "Payment Records", color: "text-gray-500" }
+                  ].map((item, index) => (
+                    <li key={index} className="flex items-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                      <div className={`p-2 rounded-full bg-white dark:bg-gray-800 shadow-sm mr-3 ${item.color}`}>
+                        <item.icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <button
+                onClick={() => setShowExportInfoModal(false)}
+                className="w-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 py-2.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

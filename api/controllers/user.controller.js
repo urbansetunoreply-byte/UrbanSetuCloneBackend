@@ -19,6 +19,11 @@ import Payment from "../models/payment.model.js";
 import { awardSetuCoins } from "../utils/gamification.js";
 
 import DataExport from "../models/dataExport.model.js";
+import RentLockContract from "../models/rentLockContract.model.js";
+import RentalLoan from "../models/rentalLoan.model.js";
+import RentalRating from "../models/rentalRating.model.js";
+import ChatHistory from "../models/chatHistory.model.js";
+import CoinTransaction from "../models/coinTransaction.model.js";
 
 // EXPORT_CACHE_EXPIRY remains relevant for setting the expiration Date object, 
 // though Mongo TTL handles the actual deletion.
@@ -612,13 +617,30 @@ export const exportData = async (req, res, next) => {
         }
 
         // Collect all user data
-        const [wishlistItems, watchlistItems, appointments, userListings, reviews, payments] = await Promise.all([
+        const [
+            wishlistItems,
+            watchlistItems,
+            appointments,
+            userListings,
+            reviews,
+            payments,
+            rentalContracts,
+            rentalLoans,
+            rentalRatings,
+            coinTransactions,
+            geminiSessions
+        ] = await Promise.all([
             Wishlist.find({ userId }).populate('listingId').lean(),
             PropertyWatchlist.find({ userId }).populate('listingId').lean(),
             Booking.find({ $or: [{ buyerId: userId }, { sellerId: userId }] }).populate('listingId').lean(),
             Listing.find({ userRef: userId }).lean(),
             Review.find({ userId }).populate('listingId').lean(),
-            Payment.find({ userId }).lean().catch(() => [])
+            Payment.find({ userId }).lean().catch(() => []),
+            RentLockContract.find({ $or: [{ tenantId: userId }, { landlordId: userId }] }).populate('listingId').lean().catch(() => []),
+            RentalLoan.find({ userId }).populate('contractId').lean().catch(() => []),
+            RentalRating.find({ $or: [{ reviewerId: userId }, { targetUser: userId }] }).lean().catch(() => []),
+            CoinTransaction.find({ userId }).lean().catch(() => []),
+            ChatHistory.find({ userId }).lean().catch(() => [])
         ]);
 
         // Get counts
@@ -628,6 +650,15 @@ export const exportData = async (req, res, next) => {
         const listingsCount = userListings.length;
         const reviewsCount = reviews.length;
         const paymentsCount = payments.length;
+
+        // Calculate Gemini Prompts
+        let geminiPromptsCount = 0;
+        geminiSessions.forEach(session => {
+            if (session.messages) {
+                // Count only user messages
+                geminiPromptsCount += session.messages.filter(m => m.role === 'user').length;
+            }
+        });
 
         // Prepare comprehensive user data
         const userData = {
@@ -642,13 +673,27 @@ export const exportData = async (req, res, next) => {
                 updatedAt: user.updatedAt,
                 profilePicture: user.profilePicture
             },
+            gamification: {
+                setuCoinsBalance: user.gamification?.setuCoinsBalance || 0,
+                totalCoinsEarned: user.gamification?.totalCoinsEarned || 0,
+                currentStreak: user.gamification?.currentStreak || 0,
+                transactions: coinTransactions.map(tx => ({
+                    amount: tx.amount,
+                    type: tx.type,
+                    description: tx.description,
+                    createdAt: tx.createdAt
+                }))
+            },
             statistics: {
                 wishlistCount,
                 watchlistCount,
                 appointmentsCount,
                 listingsCount,
                 reviewsCount,
-                paymentsCount
+                paymentsCount,
+                geminiPromptsCount,
+                rentalContractsCount: rentalContracts.length,
+                rentalLoansCount: rentalLoans.length
             },
             wishlist: wishlistItems.map(item => ({
                 listingId: item.listingId?._id || item.listingId,
@@ -691,14 +736,43 @@ export const exportData = async (req, res, next) => {
                 comment: review.comment,
                 createdAt: review.createdAt
             })),
+            rentalContracts: rentalContracts.map(contract => ({
+                contractId: contract._id,
+                status: contract.status,
+                rentAmount: contract.rentAmount,
+                startDate: contract.startDate,
+                endDate: contract.endDate,
+                role: contract.tenantId?.toString() === userId ? 'Tenant' : 'Landlord'
+            })),
+            rentalLoans: rentalLoans.map(loan => ({
+                loanId: loan._id,
+                amount: loan.amount,
+                status: loan.status,
+                createdAt: loan.createdAt
+            })),
+            rentalRatings: rentalRatings.map(rating => ({
+                rating: rating.rating,
+                comment: rating.comment,
+                type: rating.type, // tenant or landlord rating
+                createdAt: rating.createdAt
+            })),
             payments: payments.map(payment => ({
                 paymentId: payment._id,
                 amount: payment.amount,
                 status: payment.status,
                 createdAt: payment.createdAt
             })),
+            geminiHistorySummary: {
+                totalSessions: geminiSessions.length,
+                totalPrompts: geminiPromptsCount,
+                sessions: geminiSessions.map(s => ({
+                    sessionId: s.sessionId,
+                    messageCount: s.messages ? s.messages.length : 0,
+                    lastActivity: s.lastActivity
+                }))
+            },
             exportDate: new Date().toISOString(),
-            exportVersion: "1.0"
+            exportVersion: "1.1"
         };
 
         // Convert to JSON string
