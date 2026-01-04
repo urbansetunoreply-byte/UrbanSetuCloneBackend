@@ -30,6 +30,7 @@ export default function NotificationBell({ mobile = false }) {
   const [notificationSearch, setNotificationSearch] = useState('');
   const [notificationFilter, setNotificationFilter] = useState('all'); // 'all', 'unread', 'read'
   const [showFilters, setShowFilters] = useState(false);
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
 
   // Separate state for "Send to All Users" form
   const [allUsersTitle, setAllUsersTitle] = useState('');
@@ -697,13 +698,15 @@ export default function NotificationBell({ mobile = false }) {
                         {/* Quick Actions Row */}
                         <div className="flex items-center justify-between pt-1">
                           <div className="flex items-center gap-4">
-                            <button
-                              onClick={markAllAsRead}
-                              className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1.5"
-                            >
-                              <FaCheck className="w-3 h-3" />
-                              Mark Read
-                            </button>
+                            {unreadCount > 0 && (
+                              <button
+                                onClick={markAllAsRead}
+                                className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1.5"
+                              >
+                                <FaCheck className="w-3 h-3" />
+                                Mark Read
+                              </button>
+                            )}
                             <button
                               onClick={() => fetchNotifications(true)}
                               className="text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors flex items-center gap-1.5"
@@ -713,22 +716,41 @@ export default function NotificationBell({ mobile = false }) {
                             </button>
                           </div>
                           {allNotifications.length > 0 && (
-                            <button
-                              onClick={() => {
-                                fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
-                                  method: 'DELETE',
-                                  credentials: 'include',
-                                }).then(() => {
-                                  setAllNotifications([]);
-                                  setUnreadCount(0);
-                                  toast.success('Inbox cleared');
-                                });
-                              }}
-                              className="text-xs font-bold text-red-500/80 hover:text-red-600 transition-colors flex items-center gap-1.5"
-                            >
-                              <FaTrash className="w-3 h-3" />
-                              Clean
-                            </button>
+                            showClearConfirmation ? (
+                              <div className="flex items-center gap-2 animate-fadeIn">
+                                <span className="text-[10px] font-bold text-gray-500">Confirm?</span>
+                                <button
+                                  onClick={() => {
+                                    fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
+                                      method: 'DELETE',
+                                      credentials: 'include',
+                                    }).then(() => {
+                                      setAllNotifications([]);
+                                      setUnreadCount(0);
+                                      toast.success('Inbox cleared');
+                                      setShowClearConfirmation(false);
+                                    });
+                                  }}
+                                  className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-lg"
+                                >
+                                  Yes
+                                </button>
+                                <button
+                                  onClick={() => setShowClearConfirmation(false)}
+                                  className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-lg"
+                                >
+                                  No
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setShowClearConfirmation(true)}
+                                className="text-xs font-bold text-red-500/80 hover:text-red-600 transition-colors flex items-center gap-1.5"
+                              >
+                                <FaTrash className="w-3 h-3" />
+                                Clean
+                              </button>
+                            )
                           )}
                         </div>
                       </div>
@@ -1166,13 +1188,15 @@ export default function NotificationBell({ mobile = false }) {
                           >
                             <FaFilter className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={markAllAsRead}
-                            className="p-2.5 bg-gray-50 dark:bg-gray-800 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all"
-                            title="Mark all as read"
-                          >
-                            <FaCheck className="w-3.5 h-3.5" />
-                          </button>
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={markAllAsRead}
+                              className="p-2.5 bg-gray-50 dark:bg-gray-800 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all"
+                              title="Mark all as read"
+                            >
+                              <FaCheck className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
 
