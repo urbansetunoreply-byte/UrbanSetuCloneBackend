@@ -1986,6 +1986,14 @@ export default function Settings() {
               <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Select Data to Export</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">Choose the data you want to include in your export file.</p>
 
+              {/* 24-hour restriction notice */}
+              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg flex items-start gap-3">
+                <FaClock className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+                  <span className="font-bold">Important:</span> You can request a data export only once every 24 hours. Ensure you have selected all required data points before proceeding.
+                </p>
+              </div>
+
               <div className="mt-4 flex items-center">
                 <label className="inline-flex items-center cursor-pointer">
                   <input
