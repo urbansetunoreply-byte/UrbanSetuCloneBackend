@@ -405,22 +405,25 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
   const toggleMiniMode = (e) => {
     e?.stopPropagation();
-    setIsMiniMode(prev => {
-      const next = !prev;
-      if (next) {
-        // Entering Mini Mode - Set Initial Position (Bottom-Right)
-        if (typeof window !== 'undefined') {
-          const w = window.innerWidth;
-          const h = window.innerHeight;
-          setMiniPosition({ x: w - 340, y: h - 220 }); // simple default
-          setMiniSize({ width: 320, height: 192 });
-        }
-        setScale(1); // Reset internal video zoom
-        setRotation(0);
-        setPosition({ x: 0, y: 0 }); // internal pan
+    const willBeMini = !isMiniMode;
+
+    if (willBeMini) {
+      // Entering Mini Mode - Set Initial Position (Bottom-Right)
+      if (typeof window !== 'undefined') {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        setMiniPosition({ x: w - 340, y: h - 220 });
+        setMiniSize({ width: 320, height: 192 });
       }
-      return next;
-    });
+      setScale(1);
+      setRotation(0);
+      setPosition({ x: 0, y: 0 });
+      showFeedback("Mini Player");
+    } else {
+      showFeedback("Normal View");
+    }
+
+    setIsMiniMode(willBeMini);
   };
 
   const handleTimeUpdate = () => {
@@ -934,12 +937,14 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
   // Mini Player Drag Handlers
   const handleMiniMouseDown = (e) => {
+    setShowControls(true);
     isMiniDraggingRef.current = true;
     miniDragStartRef.current = { x: e.clientX, y: e.clientY };
     miniStartPosRef.current = { ...miniPosition };
   };
 
   const handleMiniMouseMove = (e) => {
+    setShowControls(true); // Wake up controls on mouse move
     if (!isMiniDraggingRef.current) return;
     const dx = e.clientX - miniDragStartRef.current.x;
     const dy = e.clientY - miniDragStartRef.current.y;
@@ -987,7 +992,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     >
       {/* Mini Mode "Maximize" Overlay */}
       {isMiniMode && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity p-2">
+        <div className={`absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/40 transition-opacity duration-300 p-2 ${showControls ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
           <button
             onClick={toggleMiniMode}
             className="mb-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full p-2 text-white transition-all transform hover:scale-110 shadow-lg"
