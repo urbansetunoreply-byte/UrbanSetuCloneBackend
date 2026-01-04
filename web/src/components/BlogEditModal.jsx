@@ -247,7 +247,8 @@ const BlogEditModal = ({
                       <img
                         src={formData.thumbnail}
                         alt="Thumbnail preview"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
+                        onClick={() => setPreviewImage(formData.thumbnail)}
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <label htmlFor="thumbnail-upload" className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 cursor-pointer transition-colors">
