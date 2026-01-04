@@ -280,7 +280,9 @@ const BlogEditModal = ({
 
               {/* Additional Media */}
               <div className="space-y-4">
-                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">📸 Media Gallery</label>
+                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  📸 Media Gallery <span className="text-[10px] text-gray-500 dark:text-gray-400 font-normal ml-1 normal-case">(Max: 10MB/Img, 100MB/Vid)</span>
+                </label>
                 <div className="flex flex-wrap gap-3">
                   <input
                     type="file"

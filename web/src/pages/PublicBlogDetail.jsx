@@ -558,7 +558,7 @@ const PublicBlogDetail = () => {
                             </div>
 
                             {isOwner && editingCommentId !== comment._id && (
-                              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center gap-2 transition-opacity">
                                 <button onClick={() => startEditing(comment)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" title="Edit">
                                   <Edit className="w-3.5 h-3.5" />
                                 </button>

@@ -683,7 +683,7 @@ const AdminBlogDetail = () => {
                               </div>
                               <button
                                 onClick={() => handleDeleteComment(comment._id)}
-                                className="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                className="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 transition-opacity p-1"
                                 title="Delete Comment"
                               >
                                 <Trash className="w-4 h-4" />
