@@ -1216,11 +1216,15 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
                 <div className="hidden sm:flex items-center bg-white/10 rounded-lg px-2 py-1 gap-2">
                   <button onClick={handleZoomIn} title="Zoom In" className="hover:text-blue-400 text-sm"><FaSearchPlus /></button>
                   <button onClick={handleZoomOut} title="Zoom Out" className="hover:text-blue-400 text-sm"><FaSearchMinus /></button>
-                  <button onClick={handleRotate} title="Rotate" className="hover:text-blue-400 text-sm"><FaUndo /></button>
                   <button onClick={handleReset} title="Reset" className="hover:text-blue-400 text-xs font-bold px-1">1x</button>
                 </div>
 
-                <button onClick={toggleSpeed} title="Playback Speed" className="hover:text-blue-400 hidden sm:flex items-center gap-1 text-sm font-medium min-w-[3em]">
+                {/* Rotate - Always visible */}
+                <button onClick={handleRotate} title="Rotate" className="hover:text-blue-400">
+                  <FaUndo size={18} />
+                </button>
+
+                <button onClick={toggleSpeed} title="Playback Speed" className="hover:text-blue-400 flex items-center gap-1 text-sm font-medium min-w-[3em]">
                   <FaTachometerAlt size={14} /> {playbackRate}x
                 </button>
 
