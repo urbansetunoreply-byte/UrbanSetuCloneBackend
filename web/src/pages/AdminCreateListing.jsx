@@ -1022,7 +1022,7 @@ export default function AdminCreateListing() {
           <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg transition-colors duration-300">
             <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Property Images</h4>
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-              Upload images directly or add image URLs. Supported formats: JPG, PNG, GIF, WebP, SVG (max 5MB each)
+              Upload images directly or add image URLs. Supported formats: JPG, PNG, GIF, WebP, SVG (max 10MB each)
             </p>
             <div className="space-y-3">
               {formData.imageUrls.map((url, index) => (
@@ -1108,7 +1108,7 @@ export default function AdminCreateListing() {
           <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg transition-colors duration-300">
             <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Property Videos</h4>
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-              Upload videos directly or add video URLs. Supported formats: MP4, WebM, OGG, MOV, MKV (max 5MB each)
+              Upload videos directly or add video URLs. Supported formats: MP4, WebM, OGG, MOV, MKV (max 100MB each)
             </p>
             <div className="space-y-3">
               {formData.videoUrls.map((url, index) => (
