@@ -13,12 +13,14 @@ import {
 import { toast } from 'react-toastify';
 import html2canvas from 'html2canvas';
 import SocialSharePanel from '../components/SocialSharePanel';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 const YearInReview = ({ isAdmin = false }) => {
     const { year } = useParams();
     const navigate = useNavigate();
+    usePageTitle(`Year in Review ${year} - UrbanSetu`);
     const { currentUser } = useSelector((state) => state.user);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
