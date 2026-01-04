@@ -18,19 +18,11 @@ import Booking from "../models/booking.model.js";
 import Payment from "../models/payment.model.js";
 import { awardSetuCoins } from "../utils/gamification.js";
 
-// In-memory cache for export data (expires after 24 hours)
-export const exportDataCache = new Map();
-const EXPORT_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+import DataExport from "../models/dataExport.model.js";
 
-// Cleanup expired cache entries periodically
-setInterval(() => {
-    const now = Date.now();
-    for (const [token, data] of exportDataCache.entries()) {
-        if (now > data.expiresAt) {
-            exportDataCache.delete(token);
-        }
-    }
-}, 60 * 60 * 1000); // Cleanup every hour
+// EXPORT_CACHE_EXPIRY remains relevant for setting the expiration Date object, 
+// though Mongo TTL handles the actual deletion.
+const EXPORT_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 export const test = (req, res) => {
     res.send("Hello Api")
@@ -715,10 +707,12 @@ export const exportData = async (req, res, next) => {
 
         // Generate unique token for download links
         const exportToken = crypto.randomBytes(32).toString('hex');
-        const expiresAt = Date.now() + EXPORT_CACHE_EXPIRY;
+        const expiresAt = new Date(Date.now() + EXPORT_CACHE_EXPIRY);
 
-        // Store export data in cache
-        exportDataCache.set(exportToken, {
+        // Store export data in database
+        await DataExport.create({
+            userId: user._id,
+            token: exportToken,
             data: dataStr,
             username: user.username,
             expiresAt: expiresAt
@@ -733,8 +727,8 @@ export const exportData = async (req, res, next) => {
         const emailResult = await sendDataExportEmail(user.email, user.username, jsonDownloadUrl, txtDownloadUrl);
 
         if (!emailResult.success) {
-            // Clean up cache on email failure
-            exportDataCache.delete(exportToken);
+            // Clean up database on email failure
+            await DataExport.deleteOne({ token: exportToken });
             return next(errorHandler(500, "Failed to send export email: " + emailResult.error));
         }
 
@@ -770,6 +764,30 @@ export const searchUsers = async (req, res, next) => {
             .limit(10);
 
         res.status(200).json({ success: true, users });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Download exported data
+export const downloadExportData = async (req, res, next) => {
+    try {
+        const { token, type } = req.params;
+
+        const record = await DataExport.findOne({ token });
+
+        if (!record || new Date() > record.expiresAt) {
+            if (record) await DataExport.deleteOne({ token });
+            return res.status(404).json({ message: "Export link expired or invalid" });
+        }
+
+        const extension = type === 'json' ? 'json' : 'txt';
+        const contentType = type === 'json' ? 'application/json' : 'text/plain';
+
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="urbansetu-data-${record.username}-${Math.floor(Date.now() / 1000)}.${extension}"`);
+        res.send(record.data);
+
     } catch (error) {
         next(error);
     }

@@ -1,5 +1,5 @@
 import express from 'express'
-import { test, updateUser, deleteUser, getUserListings, getUserByEmail, changePassword, getApprovedAdmins, transferDefaultAdminRights, deleteUserAfterTransfer, verifyPassword, getAllUsersForAutocomplete, getUserByEmailForAssignment, checkEmailAvailability, checkMobileAvailability, exportData, exportDataCache, searchUsers } from '../controllers/user.controller.js'
+import { test, updateUser, deleteUser, getUserListings, getUserByEmail, changePassword, getApprovedAdmins, transferDefaultAdminRights, deleteUserAfterTransfer, verifyPassword, getAllUsersForAutocomplete, getUserByEmailForAssignment, checkEmailAvailability, checkMobileAvailability, exportData, searchUsers, downloadExportData } from '../controllers/user.controller.js'
 
 import { verifyToken } from '../utils/verify.js'
 import { dataExportRateLimit } from '../middleware/rateLimiter.js'
@@ -184,42 +184,9 @@ router.get("/check-mobile/:mobile", verifyToken, checkMobileAvailability);
 // Data export route (with rate limiting: 1 export per 24 hours)
 router.post("/export-data", verifyToken, dataExportRateLimit, exportData);
 
-// Data export download routes (no auth required - token-based access)
-router.get("/export-data/:token/json", async (req, res, next) => {
-  try {
-    const { token } = req.params;
-    const cached = exportDataCache.get(token);
-
-    if (!cached || Date.now() > cached.expiresAt) {
-      if (cached) exportDataCache.delete(token);
-      return res.status(404).json({ message: "Export link expired or invalid" });
-    }
-
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="urbansetu-data-${cached.username}-${Date.now()}.json"`);
-    res.send(cached.data);
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get("/export-data/:token/txt", async (req, res, next) => {
-  try {
-    const { token } = req.params;
-    const cached = exportDataCache.get(token);
-
-    if (!cached || Date.now() > cached.expiresAt) {
-      if (cached) exportDataCache.delete(token);
-      return res.status(404).json({ message: "Export link expired or invalid" });
-    }
-
-    res.setHeader('Content-Type', 'text/plain');
-    res.setHeader('Content-Disposition', `attachment; filename="urbansetu-data-${cached.username}-${Date.now()}.txt"`);
-    res.send(cached.data);
-  } catch (error) {
-    next(error);
-  }
-});
+// Data export download route (no auth required - token-based access)
+// Handles both /json and /txt via :type param
+router.get("/export-data/:token/:type", downloadExportData);
 
 // Count users
 router.get('/count', async (req, res) => {
