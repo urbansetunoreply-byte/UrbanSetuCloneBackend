@@ -253,9 +253,11 @@ const YearInReview = ({ isAdmin = false }) => {
             color: "from-amber-950 via-[#1a0a00] to-amber-950",
         },
         trust: {
-            title: "Mutual Trust",
+            title: "Trusted Member",
             content: `You participated in ${data?.stats?.rentalRatings || 0} verified rating exchanges.`,
-            subtitle: "Building a reputation that opens doors.",
+            subtitle: data?.stats?.verificationsEarned > 0
+                ? `And earned ${data?.stats?.verificationsEarned} Verified Property Badges! 🛡️`
+                : "Building a reputation that opens doors.",
             icon: <FaShieldAlt className="text-8xl text-blue-500 mb-6" />,
             color: "from-blue-950 via-[#000a1a] to-blue-950",
         },

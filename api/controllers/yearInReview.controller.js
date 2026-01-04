@@ -406,6 +406,14 @@ export const getUserYearInReview = async (req, res, next) => {
             status: 'active'
         });
 
+        // NEW: User Property Verifications
+        // Since PropertyVerification model typically links to a listing, and we know the user's listings
+        const userVerifications = await PropertyVerification.countDocuments({
+            listingId: { $in: userListingIds }, // Using the list of user listing IDs from Property Mogul step
+            status: 'verified',
+            badgeIssuedAt: { $gte: startDate, $lte: endDate }
+        });
+
         // NEW: Review Engagement
         const reviewRepliesCount = await ReviewReply.countDocuments({
             userId: userId,
@@ -456,10 +464,11 @@ export const getUserYearInReview = async (req, res, next) => {
             notifications: totalNotifs,
             peakMonth,
             topType: explorationAgg[0]?.topType[0]?._id || null,
-            totalInteractions: totalInteractions + reviewRepliesCount + helpfulVotesGiven + userListingsCount + userSales + userLandlordContracts,
+            totalInteractions: totalInteractions + reviewRepliesCount + helpfulVotesGiven + userListingsCount + userSales + userLandlordContracts + userVerifications,
             listingsCreated: userListingsCount,
             listingsSold: userSales,
             listingsRented: userLandlordContracts,
+            verificationsEarned: userVerifications,
             routesSaved,
             routeStops: totalRouteStops,
             routeDistance: totalRouteDistance
