@@ -21,7 +21,8 @@ import {
   FaSpinner,
   FaSun,
   FaClone,
-  FaWindowRestore
+  FaWindowRestore,
+  FaTrashAlt
 } from 'react-icons/fa';
 
 const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
@@ -64,6 +65,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const isMiniDraggingRef = useRef(false);
   const miniDragStartRef = useRef({ x: 0, y: 0 }); // Mouse/Touch start
   const miniStartPosRef = useRef({ x: 0, y: 0 }); // Element Left/Top start
+  const [isOverTrash, setIsOverTrash] = useState(false); // New state for Trash Hover
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -949,14 +951,43 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     const dx = e.clientX - miniDragStartRef.current.x;
     const dy = e.clientY - miniDragStartRef.current.y;
 
-    setMiniPosition({
-      x: miniStartPosRef.current.x + dx,
-      y: miniStartPosRef.current.y + dy
-    });
+    const newX = miniStartPosRef.current.x + dx;
+    const newY = miniStartPosRef.current.y + dy;
+
+    setMiniPosition({ x: newX, y: newY });
+
+    // Check collision with Trash Zone (Bottom Center)
+    const windowHeight = window.innerHeight;
+    const windowWidth = window.innerWidth;
+
+    // Trash Zone: Approx Bottom 100px, Center 100px width
+    // Simple logic: If mouse is in bottom 15% and middle 20% width?
+    // Or better: define trash zone rect.
+    const trashY = windowHeight - 100;
+    const trashXMin = (windowWidth / 2) - 60;
+    const trashXMax = (windowWidth / 2) + 60;
+
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+
+    if (mouseY > trashY && mouseX > trashXMin && mouseX < trashXMax) {
+      if (!isOverTrash) {
+        setIsOverTrash(true);
+        // Haptic feedback if available (navigator.vibrate)
+        if (navigator.vibrate) navigator.vibrate(50);
+      }
+    } else {
+      if (isOverTrash) setIsOverTrash(false);
+    }
   };
 
   const handleMiniMouseUp = () => {
     isMiniDraggingRef.current = false;
+    if (isOverTrash) {
+      // Trigger Close Request
+      setIsOverTrash(false);
+      handleCloseRequest(); // This opens the confirmation modal
+    }
   };
 
   const content = ( // Wrapped the JSX in a variable
@@ -1244,6 +1275,20 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Trash Drop Zone (Only visible when dragging mini player) */}
+      {isMiniMode && isMiniDraggingRef.current && (
+        <div
+          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100000] flex flex-col items-center justify-center transition-all duration-300 ${isOverTrash ? 'scale-125 opacity-100' : 'scale-100 opacity-70'}`}
+        >
+          <div className={`p-4 rounded-full transition-colors duration-300 ${isOverTrash ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(220,38,38,0.7)]' : 'bg-black/60 text-white/70 border-2 border-dashed border-white/30'}`}>
+            <FaTrashAlt size={32} className={isOverTrash ? 'animate-bounce' : ''} />
+          </div>
+          <span className={`mt-2 font-bold text-sm bg-black/50 px-2 py-1 rounded backdrop-blur ${isOverTrash ? 'text-red-500' : 'text-white/70'}`}>
+            Drag here to close
+          </span>
         </div>
       )}
 
