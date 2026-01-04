@@ -28,6 +28,11 @@ const Updates = () => {
     const [updates, setUpdates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [filter, setFilter] = useState('all');
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [previewVideo, setPreviewVideo] = useState(null);
+    const [previewImage, setPreviewImage] = useState(null);
 
     // Reset page when search changes
     useEffect(() => {
