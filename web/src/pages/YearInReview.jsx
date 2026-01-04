@@ -161,7 +161,7 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         streak: {
             title: "Pure Consistency",
-            content: `You used UrbanSetu for ${data?.stats?.activeDays || 0} days this year!`,
+            content: data?.stats?.activeDays > 0 ? `You used UrbanSetu for ${data.stats.activeDays} days this year!` : "Your UrbanSetu journey is just beginning.",
             subtitle: data?.stats?.maxStreak > 1
                 ? `Your longest activity streak was ${data.stats.maxStreak} days.`
                 : "Building a new habit of property exploration!",
@@ -188,7 +188,7 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         views: {
             title: "The Explorer",
-            content: `You unlocked the details of ${data?.stats?.views || 0} homes!`,
+            content: data?.stats?.views > 0 ? `You unlocked the details of ${data.stats.views} homes!` : "The market is vast. Start exploring today!",
             subtitle: data?.topCities?.length > 0
                 ? `Exploring: ${data.topCities.join(', ')}`
                 : "Next year, the world is your oyster.",
@@ -197,14 +197,14 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         heart: {
             title: "Most Loved",
-            content: `Saved ${data?.stats?.wishlist || 0} wishlist favorites.`,
-            subtitle: `You also loved ${data?.stats?.favorites || 0} stunning property photos.`,
+            content: data?.stats?.wishlist > 0 ? `Saved ${data.stats.wishlist} wishlist favorites.` : "No favorites yet? The perfect home is waiting.",
+            subtitle: data?.stats?.favorites > 0 ? `You also loved ${data.stats.favorites} stunning property photos.` : "Start collecting the moments that inspire you.",
             icon: <FaHeart className="text-8xl text-pink-400 mb-6" />,
             color: "from-pink-950 via-[#1a000a] to-pink-950",
         },
         secured: {
             title: "Action Taker",
-            content: `You completed ${data?.stats?.bookings || 0} property bookings!`,
+            content: data?.stats?.bookings > 0 ? `You completed ${data.stats.bookings} property bookings!` : "Your dream property is just a booking away.",
             subtitle: data?.stats?.rentals > 0
                 ? `Plus ${data.stats.rentals} active Rental Contracts secured.`
                 : "Moving closer to your dream home every day.",
@@ -213,7 +213,7 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         mogul: {
             title: "Property Mogul",
-            content: `You listed ${data?.stats?.listingsCreated || 0} properties on market.`,
+            content: data?.stats?.listingsCreated > 0 ? `You listed ${data.stats.listingsCreated} properties on market.` : "Have a property? List it and become a mogul!",
             subtitle: (data?.stats?.listingsSold > 0 || data?.stats?.listingsRented > 0)
                 ? `Successfully sold ${data?.stats?.listingsSold} and rented out ${data?.stats?.listingsRented} units!`
                 : "Building your real estate empire, one listing at a time.",
@@ -222,7 +222,7 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         reviews: {
             title: "Critical Eye",
-            content: `You posted ${data?.stats?.reviews || 0} reviews and engaged with ${data?.stats?.reviewReplies || 0} replies.`,
+            content: (data?.stats?.reviews > 0 || data?.stats?.reviewReplies > 0) ? `You posted ${data?.stats?.reviews || 0} reviews and engaged with ${data?.stats?.reviewReplies || 0} replies.` : "Your community voice is needed. Start reviewing!",
             subtitle: data?.stats?.helpfulVotesReceived > 0
                 ? `Your insights got ${data?.stats?.helpfulVotesReceived} helpful votes from the community!`
                 : "Helping the community make better choices.",
@@ -231,14 +231,14 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         coins: {
             title: "SetuCoins Milestone",
-            content: `You stacked up ${data?.stats?.coins || 0} SetuCoins!`,
+            content: data?.stats?.coins > 0 ? `You stacked up ${data.stats.coins} SetuCoins!` : "Every interaction counts. Start earning SetuCoins.",
             subtitle: "Your engagement is literally paying off.",
             icon: <FaCoins className="text-8xl text-yellow-400 mb-6" />,
             color: "from-yellow-950 via-[#1a1500] to-yellow-950",
         },
         forum: {
             title: "Community Voice",
-            content: `You started ${data?.stats?.forumPosts || 0} discussions and contribued ${data?.stats?.forumEngagement || 0} replies!`,
+            content: (data?.stats?.forumPosts > 0 || data?.stats?.forumEngagement > 0) ? `You started ${data?.stats?.forumPosts || 0} discussions and contribued ${data?.stats?.forumEngagement || 0} replies!` : "Join the conversation in our vibrant forums.",
             subtitle: data?.stats?.blogComments > 0
                 ? `You also shared ${data?.stats?.blogComments} insights on our blog posts.`
                 : "Your interactions help build a stronger community.",
@@ -247,14 +247,14 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         concierge: {
             title: "Home Concierge",
-            content: `Used ${data?.stats?.serviceRequests || 0} UrbanSetu services and planned ${data?.stats?.moversRequests || 0} moves.`,
+            content: ((data?.stats?.serviceRequests || 0) + (data?.stats?.moversRequests || 0)) > 0 ? `Used ${data?.stats?.serviceRequests || 0} UrbanSetu services and planned ${data?.stats?.moversRequests || 0} moves.` : "From moving to maintenance, we're here to help.",
             subtitle: "Making city living effortless.",
             icon: <FaTools className="text-8xl text-amber-400 mb-6" />,
             color: "from-amber-950 via-[#1a0a00] to-amber-950",
         },
         trust: {
             title: "Trusted Member",
-            content: `You participated in ${data?.stats?.rentalRatings || 0} verified rating exchanges.`,
+            content: data?.stats?.rentalRatings > 0 ? `You participated in ${data.stats.rentalRatings} verified rating exchanges.` : "Build your reputation with verified exchanges.",
             subtitle: data?.stats?.verificationsEarned > 0
                 ? `And earned ${data?.stats?.verificationsEarned} Verified Property Badges! 🛡️`
                 : "Building a reputation that opens doors.",
@@ -263,7 +263,7 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         communication: {
             title: "Communication Hub",
-            content: `You connected via ${data?.stats?.totalCalls || 0} calls for ${data?.stats?.callDuration || 0} minutes.`,
+            content: data?.stats?.totalCalls > 0 ? `You connected via ${data.stats.totalCalls} calls for ${data.stats.callDuration} minutes.` : "Connect instantly. Make your first call today.",
             subtitle: (data?.stats?.videoCalls > 0)
                 ? `Including ${data?.stats?.videoCalls} video calls and ${data?.stats?.audioCalls} audio calls!`
                 : "Making meaningful connections, one call at a time.",
@@ -272,7 +272,7 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         pathfinder: {
             title: "Urban Navigator",
-            content: `You planned ${data?.stats?.routesSaved || 0} smart routes using our Navigator.`,
+            content: data?.stats?.routesSaved > 0 ? `You planned ${data.stats.routesSaved} smart routes using our Navigator.` : "Chart your path to the perfect neighborhood.",
             subtitle: data?.stats?.routeDistance > 0
                 ? `Covering ${data?.stats?.routeDistance}km across ${data?.stats?.routeStops} waypoints!`
                 : "Finding the fastest path to your dream property.",
@@ -281,29 +281,29 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         architect: {
             title: "Financial Architect",
-            content: `You performed ${data?.stats?.calculations || 0} smart real estate calculations!`,
+            content: data?.stats?.calculations > 0 ? `You performed ${data.stats.calculations} smart real estate calculations!` : "Plan your financial future with our calculators.",
             subtitle: "Planning your future with precision.",
             icon: <FaCalculator className="text-8xl text-teal-400 mb-6" />,
             color: "from-teal-950 via-[#001a1a] to-teal-950",
         },
         loans: {
             title: "Smart Finance",
-            content: `You secured ${data?.stats?.loans || 0} rental loans to manage your cash flow.`,
+            content: data?.stats?.loans > 0 ? `You secured ${data.stats.loans} rental loans to manage your cash flow.` : "Unlock financial flexibility with Rental Loans.",
             subtitle: "Empowering your move with financial flexibility.",
             icon: <FaCoins className="text-8xl text-green-500 mb-6" />,
             color: "from-green-950 via-[#051a00] to-green-950",
         },
         networker: {
             title: "Community Growth",
-            content: `You introduced ${data?.stats?.referrals || 0} new members to UrbanSetu!`,
+            content: data?.stats?.referrals > 0 ? `You introduced ${data.stats.referrals} new members to UrbanSetu!` : "Invite friends and grow your circle.",
             subtitle: "The community grows stronger through you.",
             icon: <FaUsers className="text-8xl text-pink-400 mb-6" />,
             color: "from-pink-950 via-[#1a000d] to-pink-950",
         },
         digital: {
             title: "Digital Footprint",
-            content: `You asked our AI assistant ${data?.stats?.aiMessages || 0} questions and tracked ${data?.stats?.savedSearches || 0} specific markets.`,
-            subtitle: `Stayed connected with ${data?.stats?.notifications || 0} smart notifications.`,
+            content: (data?.stats?.aiMessages > 0 || data?.stats?.savedSearches > 0) ? `You asked our AI assistant ${data?.stats?.aiMessages || 0} questions and tracked ${data?.stats?.savedSearches || 0} specific markets.` : "Our AI is ready to answer your questions.",
+            subtitle: data?.stats?.notifications > 0 ? `Stayed connected with ${data.stats.notifications} smart notifications.` : "Enable notifications to stay ahead of the market.",
             icon: <FaRobot className="text-8xl text-violet-400 mb-6" />,
             color: "from-violet-950 via-[#0a001a] to-violet-950",
         },
