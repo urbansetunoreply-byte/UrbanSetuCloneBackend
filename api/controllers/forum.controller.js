@@ -1,7 +1,7 @@
 ﻿import ForumPost from '../models/forumPost.model.js';
 import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
-import { sendCommunityPostConfirmationEmail, sendCommunityReportAcknowledgementEmail } from '../utils/emailService.js';
+import { sendCommunityPostConfirmationEmail, sendCommunityReportAcknowledgementEmail, sendPostLockedEmail, sendPostDeletedEmail, sendPostEditedEmail } from '../utils/emailService.js';
 
 const maskUser = (user) => {
     if (user && (user.profileVisibility === 'private' || user.profileVisibility === 'friends')) {
@@ -156,6 +156,16 @@ export const deletePost = async (req, res, next) => {
 
         await ForumPost.findByIdAndDelete(req.params.id);
         req.app.get('io').emit('forum:postDeleted', req.params.id);
+
+        // Send email if deleted by admin (not author)
+        if (req.user.id !== post.author.toString()) {
+            const author = await User.findById(post.author);
+            if (author) {
+                sendPostDeletedEmail(author.email, author.username, post.title)
+                    .catch(err => console.error("Failed to send post deleted email:", err));
+            }
+        }
+
         res.status(200).json('The post has been deleted');
     } catch (error) {
         next(error);
@@ -608,6 +618,13 @@ export const lockPost = async (req, res, next) => {
         await post.save();
         await post.populate('author', 'username avatar email type isVerified');
         req.app.get('io').emit('forum:postUpdated', post);
+
+        // Send email if post is locked
+        if (post.isLocked) {
+            sendPostLockedEmail(post.author.email, post.author.username, post.title, post._id)
+                .catch(err => console.error("Failed to send post locked email:", err));
+        }
+
         res.status(200).json(post);
     } catch (error) {
         next(error);
@@ -764,6 +781,13 @@ export const updatePost = async (req, res, next) => {
         await post.populate('comments.replies.replyToUser', 'username profileVisibility');
 
         req.app.get('io').emit('forum:postUpdated', post);
+
+        // Send email if updated by admin (not author)
+        if (req.user.id !== post.author._id.toString()) {
+            sendPostEditedEmail(post.author.email, post.author.username, post.title, post._id)
+                .catch(err => console.error("Failed to send post edited email:", err));
+        }
+
         res.status(200).json(processPostPrivacy(post));
     } catch (error) {
         next(error);

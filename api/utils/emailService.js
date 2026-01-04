@@ -15170,3 +15170,166 @@ export const sendPropertyRestoredEmail = async (email, { propertyName, propertyI
   }
 };
 
+// Send Post Locked Email
+export const sendPostLockedEmail = async (email, username, postTitle, postId) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Discussion Locked - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Community Moderation Alert</p>
+          </div>
+          
+          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Your Discussion Has Been Locked</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Hello ${username},
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              This is to inform you that your discussion thread <strong>"${postTitle}"</strong> has been locked by a community moderator. 
+              This usually happens when a thread involves heated debates, repetitive content, or requires a cooling-off period.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              While the discussion content remains visible, no further comments or replies can be added at this time.
+            </p>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+                View Community Rules
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'post_locked') :
+      createErrorResponse(new Error(result.error), 'post_locked');
+  } catch (error) {
+    return createErrorResponse(error, 'post_locked');
+  }
+};
+
+// Send Post Edited Email
+export const sendPostEditedEmail = async (email, username, postTitle, postId) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Discussion Edited - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Community Moderation Alert</p>
+          </div>
+          
+          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Your Discussion Has Been Edited</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Hello ${username},
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              We want to let you know that a community moderator has edited your discussion thread <strong>"${postTitle}"</strong>.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Edits are typically made to ensure content aligns with our community guidelines, remove sensitive information, or improve clarity.
+            </p>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+                View Community Rules
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'post_edited') :
+      createErrorResponse(new Error(result.error), 'post_edited');
+  } catch (error) {
+    return createErrorResponse(error, 'post_edited');
+  }
+};
+
+// Send Post Deleted Email
+export const sendPostDeletedEmail = async (email, username, postTitle) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Discussion Removed - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Community Moderation Alert</p>
+          </div>
+          
+          <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Your Discussion Has Been Removed</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Hello ${username},
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              We are writing to inform you that your discussion thread <strong>"${postTitle}"</strong> has been removed by a community moderator.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              This action was taken because the content was found to be in violation of our community standards or terms of service.
+            </p>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <a href="${clientBaseUrl}/community" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+                Review Community Guidelines
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'post_deleted') :
+      createErrorResponse(new Error(result.error), 'post_deleted');
+  } catch (error) {
+    return createErrorResponse(error, 'post_deleted');
+  }
+};
+
