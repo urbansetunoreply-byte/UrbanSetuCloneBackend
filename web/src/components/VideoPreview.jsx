@@ -1300,7 +1300,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
             >
               {/* Lid Group - Pivots open when over trash */}
               <g
-                className={`transition-transform duration-300 ease-out origin-[21px_6px] ${isOverTrash ? '-rotate-45' : 'rotate-0'}`}
+                className={`transition-transform duration-300 ease-out origin-[21px_6px] ${isOverTrash ? 'rotate-45' : 'rotate-0'}`}
               >
                 <path d="M3 6h18" />{/* Lid Line */}
                 <path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />{/* Handle */}
