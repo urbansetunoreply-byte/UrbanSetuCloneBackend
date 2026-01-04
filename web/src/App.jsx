@@ -211,7 +211,7 @@ function normalizeRoute(path, role) {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
   // List of base routes that have public-facing versions
-  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines"];
+  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community"];
 
   // List of base routes that exist for both user and admin but are NOT public
   const parallelBases = [
@@ -754,6 +754,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/cookie-policy" element={currentUser ? <NotFound /> : <CookiePolicy />} />
             <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
             <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
+            <Route path="/community" element={currentUser ? <Navigate to="/user/community" /> : <Community />} />
             <Route path="/community-guidelines" element={currentUser ? <NotFound /> : <CommunityGuidelines />} />
             <Route path="/restore-account/:token" element={<AccountRevocation />} />
             <Route path="/restore-property" element={<RestoreProperty />} />

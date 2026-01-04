@@ -341,7 +341,7 @@ export default function Community() {
     }, [activeTab]);
 
     const handleLike = async (postId) => {
-        if (!currentUser) return navigate('/sign-in');
+        if (!currentUser) return toast.info('Please sign in to like this post');
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/like/${postId}`, {
                 method: 'PUT',
@@ -357,7 +357,7 @@ export default function Community() {
     };
 
     const handleDislike = async (postId) => {
-        if (!currentUser) return navigate('/sign-in');
+        if (!currentUser) return toast.info('Please sign in to dislike this post');
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/dislike/${postId}`, {
                 method: 'PUT',
@@ -373,7 +373,7 @@ export default function Community() {
     };
 
     const handleCommentReaction = async (postId, commentId, reactionType) => {
-        if (!currentUser) return navigate('/sign-in');
+        if (!currentUser) return toast.info('Please sign in to react');
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/${reactionType}`, {
                 method: 'PUT',
@@ -421,7 +421,7 @@ export default function Community() {
     };
 
     const handleReplyReaction = async (postId, commentId, replyId, reactionType) => {
-        if (!currentUser) return navigate('/sign-in');
+        if (!currentUser) return toast.info('Please sign in to react');
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}/${reactionType}`, {
                 method: 'PUT',
@@ -658,7 +658,7 @@ export default function Community() {
 
     const handleCreatePost = async (e) => {
         e.preventDefault();
-        if (!currentUser) return navigate('/sign-in');
+        if (!currentUser) return toast.info('Please sign in to create a post');
 
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/create`, {
@@ -1046,10 +1046,7 @@ export default function Community() {
                         </div>
                         <button
                             onClick={() => {
-                                if (!currentUser) {
-                                    toast.error("Please sign in to post");
-                                    return navigate('/sign-in');
-                                }
+                                if (!currentUser) return toast.info("Please sign in to post");
                                 setShowCreateModal(true);
                             }}
                             className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md whitespace-nowrap w-full sm:w-auto"
@@ -1069,7 +1066,7 @@ export default function Community() {
                                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">No posts found</h3>
                                 <p className="text-gray-500 dark:text-gray-400 mb-6">Be the first to start a conversation in this category!</p>
                                 <button
-                                    onClick={() => setShowCreateModal(true)}
+                                    onClick={() => currentUser ? setShowCreateModal(true) : toast.info("Please sign in to post")}
                                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                                 >
                                     Start Discussion
@@ -1240,7 +1237,7 @@ export default function Community() {
                                             <div className="flex items-center gap-4">
                                                 <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 rounded-full px-1 border border-gray-100 dark:border-gray-700">
                                                     <button
-                                                        onClick={() => handleLike(post._id)}
+                                                        onClick={() => currentUser ? handleLike(post._id) : toast.info('Please sign in to like')}
                                                         className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${currentUser && post.likes?.includes(currentUser._id)
                                                             ? 'text-blue-600 dark:text-blue-400'
                                                             : 'text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
@@ -1252,7 +1249,7 @@ export default function Community() {
                                                     </button>
                                                     <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700"></div>
                                                     <button
-                                                        onClick={() => handleDislike(post._id)}
+                                                        onClick={() => currentUser ? handleDislike(post._id) : toast.info('Please sign in to dislike')}
                                                         className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${currentUser && post.dislikes?.includes(currentUser._id)
                                                             ? 'text-red-500 dark:text-red-400'
                                                             : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'
@@ -1380,6 +1377,7 @@ export default function Community() {
                                                                         <div className="flex items-center gap-4 mt-2">
                                                                             <button
                                                                                 onClick={() => {
+                                                                                    if (!currentUser) return toast.info('Please sign in to reply');
                                                                                     setActiveReplyInput(comment._id);
                                                                                     setReplyingTo({ postId: post._id, commentId: comment._id });
                                                                                 }}
@@ -1389,13 +1387,13 @@ export default function Community() {
                                                                             </button>
                                                                             <div className="flex items-center gap-3">
                                                                                 <button
-                                                                                    onClick={() => handleCommentReaction(post._id, comment._id, 'like')}
+                                                                                    onClick={() => currentUser ? handleCommentReaction(post._id, comment._id, 'like') : toast.info('Please sign in to like')}
                                                                                     className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.likes?.includes(currentUser._id) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400'}`}
                                                                                 >
                                                                                     <FaThumbsUp size={10} /> {comment.likes?.length || 0}
                                                                                 </button>
                                                                                 <button
-                                                                                    onClick={() => handleCommentReaction(post._id, comment._id, 'dislike')}
+                                                                                    onClick={() => currentUser ? handleCommentReaction(post._id, comment._id, 'dislike') : toast.info('Please sign in to dislike')}
                                                                                     className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.dislikes?.includes(currentUser._id) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400'}`}
                                                                                 >
                                                                                     <FaThumbsDown size={10} /> {comment.dislikes?.length || 0}
@@ -1652,6 +1650,7 @@ export default function Community() {
                                                                                                                 </button>
                                                                                                                 <button
                                                                                                                     onClick={() => {
+                                                                                                                        if (!currentUser) return toast.info('Please sign in to reply');
                                                                                                                         setActiveReplyInput(reply._id);
                                                                                                                         if (reply.user) {
                                                                                                                             setReplyingTo({ userId: reply.user._id, username: reply.user.username });
