@@ -161,10 +161,10 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         streak: {
             title: "Pure Consistency",
-            content: data?.stats?.activeDays > 0 ? `You used UrbanSetu for ${data.stats.activeDays} days this year!` : "Your UrbanSetu journey is just beginning.",
+            content: data?.stats?.activeDays > 0 ? `You used UrbanSetu for ${data.stats.activeDays} days this year!` : "You didn't engage in any daily usage streaks this year.",
             subtitle: data?.stats?.maxStreak > 1
                 ? `Your longest activity streak was ${data.stats.maxStreak} days.`
-                : "Building a new habit of property exploration!",
+                : "Consistency wasn't your strong suit this year.",
             icon: <FaFire className="text-8xl text-red-500 mb-6 animate-pulse" />,
             color: "from-red-950 via-[#1a0500] to-red-950",
         },
@@ -188,7 +188,7 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         views: {
             title: "The Explorer",
-            content: data?.stats?.views > 0 ? `You unlocked the details of ${data.stats.views} homes!` : "The market is vast. Start exploring today!",
+            content: data?.stats?.views > 0 ? `You unlocked the details of ${data.stats.views} homes!` : "You didn't view any specific property details this year.",
             subtitle: data?.topCities?.length > 0
                 ? `Exploring: ${data.topCities.join(', ')}`
                 : "Next year, the world is your oyster.",
@@ -197,64 +197,64 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         heart: {
             title: "Most Loved",
-            content: data?.stats?.wishlist > 0 ? `Saved ${data.stats.wishlist} wishlist favorites.` : "No favorites yet? The perfect home is waiting.",
-            subtitle: data?.stats?.favorites > 0 ? `You also loved ${data.stats.favorites} stunning property photos.` : "Start collecting the moments that inspire you.",
+            content: data?.stats?.wishlist > 0 ? `Saved ${data.stats.wishlist} wishlist favorites.` : "You didn't save any properties to your wishlist this year.",
+            subtitle: data?.stats?.favorites > 0 ? `You also loved ${data.stats.favorites} stunning property photos.` : "No favorite photos were marked this year.",
             icon: <FaHeart className="text-8xl text-pink-400 mb-6" />,
             color: "from-pink-950 via-[#1a000a] to-pink-950",
         },
         secured: {
             title: "Action Taker",
-            content: data?.stats?.bookings > 0 ? `You completed ${data.stats.bookings} property bookings!` : "Your dream property is just a booking away.",
+            content: data?.stats?.bookings > 0 ? `You completed ${data.stats.bookings} property bookings!` : "No property bookings were made by you this year.",
             subtitle: data?.stats?.rentals > 0
                 ? `Plus ${data.stats.rentals} active Rental Contracts secured.`
-                : "Moving closer to your dream home every day.",
+                : "And no active rental contracts were found for this period.",
             icon: <FaHandshake className="text-8xl text-emerald-400 mb-6" />,
             color: "from-emerald-950 via-[#001a0a] to-emerald-950",
         },
         mogul: {
             title: "Property Mogul",
-            content: data?.stats?.listingsCreated > 0 ? `You listed ${data.stats.listingsCreated} properties on market.` : "Have a property? List it and become a mogul!",
+            content: data?.stats?.listingsCreated > 0 ? `You listed ${data.stats.listingsCreated} properties on market.` : "You didn't list any properties for sale or rent this year.",
             subtitle: (data?.stats?.listingsSold > 0 || data?.stats?.listingsRented > 0)
                 ? `Successfully sold ${data?.stats?.listingsSold} and rented out ${data?.stats?.listingsRented} units!`
-                : "Building your real estate empire, one listing at a time.",
+                : "Your real estate portfolio remained unchanged.",
             icon: <FaBuilding className="text-8xl text-indigo-500 mb-6" />,
             color: "from-indigo-950 via-[#0a001a] to-indigo-950",
         },
         reviews: {
             title: "Critical Eye",
-            content: (data?.stats?.reviews > 0 || data?.stats?.reviewReplies > 0) ? `You posted ${data?.stats?.reviews || 0} reviews and engaged with ${data?.stats?.reviewReplies || 0} replies.` : "Your community voice is needed. Start reviewing!",
+            content: (data?.stats?.reviews > 0 || data?.stats?.reviewReplies > 0) ? `You posted ${data?.stats?.reviews || 0} reviews and engaged with ${data?.stats?.reviewReplies || 0} replies.` : "You didn't write any reviews or replies this year.",
             subtitle: data?.stats?.helpfulVotesReceived > 0
                 ? `Your insights got ${data?.stats?.helpfulVotesReceived} helpful votes from the community!`
-                : "Helping the community make better choices.",
+                : "No helpful votes were received on your contributions this year.",
             icon: <FaStar className="text-8xl text-orange-400 mb-6" />,
             color: "from-orange-950 via-[#1a0f00] to-orange-950",
         },
         coins: {
             title: "SetuCoins Milestone",
-            content: data?.stats?.coins > 0 ? `You stacked up ${data.stats.coins} SetuCoins!` : "Every interaction counts. Start earning SetuCoins.",
+            content: data?.stats?.coins > 0 ? `You stacked up ${data.stats.coins} SetuCoins!` : "No SetuCoins were earned during this year.",
             subtitle: "Your engagement is literally paying off.",
             icon: <FaCoins className="text-8xl text-yellow-400 mb-6" />,
             color: "from-yellow-950 via-[#1a1500] to-yellow-950",
         },
         forum: {
             title: "Community Voice",
-            content: (data?.stats?.forumPosts > 0 || data?.stats?.forumEngagement > 0) ? `You started ${data?.stats?.forumPosts || 0} discussions and contribued ${data?.stats?.forumEngagement || 0} replies!` : "Join the conversation in our vibrant forums.",
+            content: (data?.stats?.forumPosts > 0 || data?.stats?.forumEngagement > 0) ? `You started ${data?.stats?.forumPosts || 0} discussions and contribued ${data?.stats?.forumEngagement || 0} replies!` : "You didn't start discussions or post replies this year.",
             subtitle: data?.stats?.blogComments > 0
                 ? `You also shared ${data?.stats?.blogComments} insights on our blog posts.`
-                : "Your interactions help build a stronger community.",
+                : "The community didn't hear from you in the blogs this year.",
             icon: <FaComments className="text-8xl text-indigo-400 mb-6" />,
             color: "from-indigo-950 via-[#05001a] to-indigo-950",
         },
         concierge: {
             title: "Home Concierge",
-            content: ((data?.stats?.serviceRequests || 0) + (data?.stats?.moversRequests || 0)) > 0 ? `Used ${data?.stats?.serviceRequests || 0} UrbanSetu services and planned ${data?.stats?.moversRequests || 0} moves.` : "From moving to maintenance, we're here to help.",
+            content: ((data?.stats?.serviceRequests || 0) + (data?.stats?.moversRequests || 0)) > 0 ? `Used ${data?.stats?.serviceRequests || 0} UrbanSetu services and planned ${data?.stats?.moversRequests || 0} moves.` : "You didn't book any movers or service requests this year.",
             subtitle: "Making city living effortless.",
             icon: <FaTools className="text-8xl text-amber-400 mb-6" />,
             color: "from-amber-950 via-[#1a0a00] to-amber-950",
         },
         trust: {
             title: "Trusted Member",
-            content: data?.stats?.rentalRatings > 0 ? `You participated in ${data.stats.rentalRatings} verified rating exchanges.` : "Build your reputation with verified exchanges.",
+            content: data?.stats?.rentalRatings > 0 ? `You participated in ${data.stats.rentalRatings} verified rating exchanges.` : "You didn't participate in verified rating exchanges this year.",
             subtitle: data?.stats?.verificationsEarned > 0
                 ? `And earned ${data?.stats?.verificationsEarned} Verified Property Badges! 🛡️`
                 : "Building a reputation that opens doors.",
@@ -263,7 +263,7 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         communication: {
             title: "Communication Hub",
-            content: data?.stats?.totalCalls > 0 ? `You connected via ${data.stats.totalCalls} calls for ${data.stats.callDuration} minutes.` : "Connect instantly. Make your first call today.",
+            content: data?.stats?.totalCalls > 0 ? `You connected via ${data.stats.totalCalls} calls for ${data.stats.callDuration} minutes.` : "You didn't make or receive any calls on the platform this year.",
             subtitle: (data?.stats?.videoCalls > 0)
                 ? `Including ${data?.stats?.videoCalls} video calls and ${data?.stats?.audioCalls} audio calls!`
                 : "Making meaningful connections, one call at a time.",
@@ -272,7 +272,7 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         pathfinder: {
             title: "Urban Navigator",
-            content: data?.stats?.routesSaved > 0 ? `You planned ${data.stats.routesSaved} smart routes using our Navigator.` : "Chart your path to the perfect neighborhood.",
+            content: data?.stats?.routesSaved > 0 ? `You planned ${data.stats.routesSaved} smart routes using our Navigator.` : "You didn't save any navigation routes this year.",
             subtitle: data?.stats?.routeDistance > 0
                 ? `Covering ${data?.stats?.routeDistance}km across ${data?.stats?.routeStops} waypoints!`
                 : "Finding the fastest path to your dream property.",
@@ -281,29 +281,29 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         architect: {
             title: "Financial Architect",
-            content: data?.stats?.calculations > 0 ? `You performed ${data.stats.calculations} smart real estate calculations!` : "Plan your financial future with our calculators.",
+            content: data?.stats?.calculations > 0 ? `You performed ${data.stats.calculations} smart real estate calculations!` : "You didn't run any financial calculations this year.",
             subtitle: "Planning your future with precision.",
             icon: <FaCalculator className="text-8xl text-teal-400 mb-6" />,
             color: "from-teal-950 via-[#001a1a] to-teal-950",
         },
         loans: {
             title: "Smart Finance",
-            content: data?.stats?.loans > 0 ? `You secured ${data.stats.loans} rental loans to manage your cash flow.` : "Unlock financial flexibility with Rental Loans.",
+            content: data?.stats?.loans > 0 ? `You secured ${data.stats.loans} rental loans to manage your cash flow.` : "You didn't apply for any rental loans this year.",
             subtitle: "Empowering your move with financial flexibility.",
             icon: <FaCoins className="text-8xl text-green-500 mb-6" />,
             color: "from-green-950 via-[#051a00] to-green-950",
         },
         networker: {
             title: "Community Growth",
-            content: data?.stats?.referrals > 0 ? `You introduced ${data.stats.referrals} new members to UrbanSetu!` : "Invite friends and grow your circle.",
+            content: data?.stats?.referrals > 0 ? `You introduced ${data.stats.referrals} new members to UrbanSetu!` : "You didn't refer any new members this year.",
             subtitle: "The community grows stronger through you.",
             icon: <FaUsers className="text-8xl text-pink-400 mb-6" />,
             color: "from-pink-950 via-[#1a000d] to-pink-950",
         },
         digital: {
             title: "Digital Footprint",
-            content: (data?.stats?.aiMessages > 0 || data?.stats?.savedSearches > 0) ? `You asked our AI assistant ${data?.stats?.aiMessages || 0} questions and tracked ${data?.stats?.savedSearches || 0} specific markets.` : "Our AI is ready to answer your questions.",
-            subtitle: data?.stats?.notifications > 0 ? `Stayed connected with ${data.stats.notifications} smart notifications.` : "Enable notifications to stay ahead of the market.",
+            content: (data?.stats?.aiMessages > 0 || data?.stats?.savedSearches > 0) ? `You asked our AI assistant ${data?.stats?.aiMessages || 0} questions and tracked ${data?.stats?.savedSearches || 0} specific markets.` : "You didn't interact with our AI or save searches this year.",
+            subtitle: data?.stats?.notifications > 0 ? `Stayed connected with ${data.stats.notifications} smart notifications.` : "Notifications were quiet for your account.",
             icon: <FaRobot className="text-8xl text-violet-400 mb-6" />,
             color: "from-violet-950 via-[#0a001a] to-violet-950",
         },
