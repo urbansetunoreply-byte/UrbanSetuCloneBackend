@@ -19,7 +19,9 @@ import {
   FaCog,
   FaTachometerAlt,
   FaSpinner,
-  FaSun
+  FaSun,
+  FaClone,
+  FaWindowRestore
 } from 'react-icons/fa';
 
 const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
@@ -30,6 +32,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [loadedProgress, setLoadedProgress] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(1);
+  const [isMiniMode, setIsMiniMode] = useState(false);
 
   const [playbackRate, setPlaybackRate] = useState(1);
   const [brightness, setBrightness] = useState(1);
@@ -77,7 +80,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   useEffect(() => {
     if (isOpen) {
       setCurrentIndex(initialIndex || 0);
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = isMiniMode ? '' : 'hidden'; // Lock only if not in mini mode
       // Reset states
       setIsLoading(true);
       setIsPlaying(true);
@@ -94,6 +97,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     } else {
       document.body.style.overflow = '';
       setIsPlaying(false);
+      setIsMiniMode(false); // Reset mini mode on close
     }
     return () => {
       document.body.style.overflow = '';
@@ -362,6 +366,13 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     return () => window.removeEventListener('resize', calculateAutoScale);
   }, [rotation, currentIndex, isLoading]); // Recalculate on rotation, video change, or load completion
 
+  // Effect to handle overflow updates when isMiniMode changes
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = isMiniMode ? '' : 'hidden';
+    }
+  }, [isMiniMode, isOpen]);
+
   if (!isOpen || !videos || videos.length === 0) return null;
 
   // Handlers
@@ -379,6 +390,17 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const togglePlay = (e) => {
     e?.stopPropagation();
     setIsPlaying(!isPlaying);
+  };
+
+  const toggleMiniMode = (e) => {
+    e?.stopPropagation();
+    setIsMiniMode(prev => !prev);
+    // Reset Zoom/Rotate when going mini
+    if (!isMiniMode) {
+      setScale(1);
+      setRotation(0);
+      setPosition({ x: 0, y: 0 });
+    }
   };
 
   const handleTimeUpdate = () => {
@@ -855,7 +877,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const content = ( // Wrapped the JSX in a variable
     <div
       ref={containerRef}
-      className="fixed inset-0 bg-black z-[9999] flex items-center justify-center select-none touch-none"
+      className={`${isMiniMode
+        ? 'fixed bottom-4 right-4 w-80 h-48 z-[99999] rounded-xl shadow-2xl border border-gray-700 overflow-hidden bg-black'
+        : 'fixed inset-0 bg-black z-[9999] flex items-center justify-center select-none touch-none'
+        } transition-all duration-300`}
       onContextMenu={(e) => e.preventDefault()}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -865,17 +890,36 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       onTouchEnd={handleTouchEnd}
       onWheel={handleWheel}
     >
-      {/* Top Controls (Close, Title?) */}
-      <button
-        onClick={handleCloseRequest}
-        className={`absolute top-4 right-4 text-white hover:text-red-400 z-50 bg-black/50 backdrop-blur rounded-full p-3 transition-all duration-300 hover:bg-black/80 hover:scale-110 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
-          }`}
-      >
-        <FaTimes size={20} />
-      </button>
+      {/* Mini Mode "Maximize" Overlay */}
+      {isMiniMode && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity p-2">
+          <button
+            onClick={toggleMiniMode}
+            className="mb-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full p-2 text-white transition-all transform hover:scale-110 shadow-lg"
+            title="Restore to Fullscreen"
+          >
+            <FaWindowRestore size={20} />
+          </button>
+          <div className="flex gap-2">
+            <button onClick={togglePlay} className="bg-white/10 hover:bg-white/20 p-2 rounded-full text-white"><FaPlay size={10} /></button>
+            <button onClick={handleCloseRequest} className="bg-red-500/80 hover:bg-red-600 p-2 rounded-full text-white"><FaTimes size={10} /></button>
+          </div>
+        </div>
+      )}
 
-      {/* Navigation */}
-      {videos.length > 1 && (
+      {/* Top Controls (Close, Title?) - Only show in Full Mode */}
+      {!isMiniMode && (
+        <button
+          onClick={handleCloseRequest}
+          className={`absolute top-4 right-4 text-white hover:text-red-400 z-50 bg-black/50 backdrop-blur rounded-full p-3 transition-all duration-300 hover:bg-black/80 hover:scale-110 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+            }`}
+        >
+          <FaTimes size={20} />
+        </button>
+      )}
+
+      {/* Navigation - Only in Full Mode */}
+      {!isMiniMode && videos.length > 1 && (
         <>
           <button
             onClick={(e) => { e.stopPropagation(); setCurrentIndex(prev => prev > 0 ? prev - 1 : videos.length - 1); }}
@@ -908,8 +952,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           </div>
         )}
 
-        {/* Big Play Button Overlay */}
-        {!isPlaying && !isLoading && (
+        {/* Big Play Button Overlay - Hide in Mini Mode */}
+        {!isPlaying && !isLoading && !isMiniMode && (
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
             <div className="bg-black/40 backdrop-blur-sm p-6 rounded-full shadow-lg">
               <FaPlay className="text-white text-4xl ml-1 opacity-80" />
@@ -959,29 +1003,31 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           </div>
         )}
 
-        {/* Central Play/Pause Button Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              togglePlay(e);
-            }}
-            className={`pointer-events-auto transform transition-all duration-300 bg-black/60 backdrop-blur-sm p-6 rounded-full text-white hover:scale-110 shadow-2xl ${
-              // Show if (paused AND NOT loaded) OR (playing AND controls visible AND NOT loading)
-              // Actually, simply: Hide if loading. Show if Paused. Show if Playing & Controls Visible.
-              (isLoading) ? 'opacity-0 scale-90 pointer-events-none' :
-                (!isPlaying || showControls)
-                  ? 'opacity-100 scale-100'
-                  : 'opacity-0 scale-90 pointer-events-none'
-              }`}
-          >
-            {isPlaying && !isLoading ? (
-              <FaPause className="text-4xl" />
-            ) : (
-              <FaPlay className="text-4xl pl-2" />
-            )}
-          </button>
-        </div>
+        {/* Central Play/Pause Button Overlay - Hide in Mini Mode */}
+        {!isMiniMode && (
+          <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay(e);
+              }}
+              className={`pointer-events-auto transform transition-all duration-300 bg-black/60 backdrop-blur-sm p-6 rounded-full text-white hover:scale-110 shadow-2xl ${
+                // Show if (paused AND NOT loaded) OR (playing AND controls visible AND NOT loading)
+                // Actually, simply: Hide if loading. Show if Paused. Show if Playing & Controls Visible.
+                (isLoading) ? 'opacity-0 scale-90 pointer-events-none' :
+                  (!isPlaying || showControls)
+                    ? 'opacity-100 scale-100'
+                    : 'opacity-0 scale-90 pointer-events-none'
+                }`}
+            >
+              {isPlaying && !isLoading ? (
+                <FaPause className="text-4xl" />
+              ) : (
+                <FaPlay className="text-4xl pl-2" />
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Zoom Indicator Toast */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none transition-opacity duration-300 ${zoomMessage ? 'opacity-100' : 'opacity-0'}`}>
@@ -991,98 +1037,108 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         </div>
       </div>
 
-      {/* Bottom Controls Bar */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 to-transparent px-4 pb-4 pt-10 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
-        }`}>
-        <div className="w-full space-y-3">
-          {/* Progress Bar */}
-          <div
-            className="w-full h-1.5 bg-white/30 rounded-full cursor-pointer relative group/slider"
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const pos = (e.clientX - rect.left) / rect.width;
-              if (videoRef.current) {
-                videoRef.current.currentTime = pos * videoRef.current.duration;
-                setProgress(pos * 100);
-              }
-            }}
-          >
-            {/* Buffer Bar */}
+      {/* Bottom Controls Bar - Hide in Mini Mode */}
+      {!isMiniMode && (
+        <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 to-transparent px-4 pb-4 pt-10 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
+          }`}>
+          <div className="w-full space-y-3">
+            {/* Progress Bar */}
             <div
-              className="absolute top-0 left-0 h-full bg-white/40 rounded-full transition-all duration-300"
-              style={{ width: `${loadedProgress}%` }}
-            />
-            {/* Playback Progress */}
-            <div
-              className="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all relative z-10"
-              style={{ width: `${progress}%` }}
-            />
-            <div
-              className="absolute top-1/2 -translate-y-1/2 h-3 w-3 bg-white rounded-full shadow opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
-              style={{ left: `${progress}%` }}
-            />
-          </div>
+              className="w-full h-1.5 bg-white/30 rounded-full cursor-pointer relative group/slider"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                if (videoRef.current) {
+                  videoRef.current.currentTime = pos * videoRef.current.duration;
+                  setProgress(pos * 100);
+                }
+              }}
+            >
+              {/* Buffer Bar */}
+              <div
+                className="absolute top-0 left-0 h-full bg-white/40 rounded-full transition-all duration-300"
+                style={{ width: `${loadedProgress}%` }}
+              />
+              {/* Playback Progress */}
+              <div
+                className="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all relative z-10"
+                style={{ width: `${progress}%` }}
+              />
+              <div
+                className="absolute top-1/2 -translate-y-1/2 h-3 w-3 bg-white rounded-full shadow opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+                style={{ left: `${progress}%` }}
+              />
+            </div>
 
-          {/* Controls Row */}
-          <div className="flex items-center justify-between text-white">
-            <div className="flex items-center gap-4">
-              <button onClick={togglePlay} className="hover:text-blue-400 transition-transform active:scale-95">
-                {isPlaying && !isLoading ? <FaPause size={20} /> : <FaPlay size={20} />}
-              </button>
-
-              <div className="flex items-center gap-2 group/vol relative">
-                <button onClick={toggleMute} className="hover:text-blue-400">
-                  {isMuted || volume === 0 ? <FaVolumeMute size={20} /> : <FaVolumeUp size={20} />}
+            {/* Controls Row */}
+            <div className="flex items-center justify-between text-white">
+              <div className="flex items-center gap-4">
+                <button onClick={togglePlay} className="hover:text-blue-400 transition-transform active:scale-95">
+                  {isPlaying && !isLoading ? <FaPause size={20} /> : <FaPlay size={20} />}
                 </button>
-                {/* Hidden volume slider could go here */}
+
+                <div className="flex items-center gap-2 group/vol relative">
+                  <button onClick={toggleMute} className="hover:text-blue-400">
+                    {isMuted || volume === 0 ? <FaVolumeMute size={20} /> : <FaVolumeUp size={20} />}
+                  </button>
+                  {/* Hidden volume slider could go here */}
+                </div>
+
+                <span className="text-xs font-mono opacity-80 select-none">
+                  {formatTime(videoRef.current?.currentTime)} / {formatTime(videoRef.current?.duration)}
+                </span>
               </div>
 
-              <span className="text-xs font-mono opacity-80 select-none">
-                {formatTime(videoRef.current?.currentTime)} / {formatTime(videoRef.current?.duration)}
-              </span>
-            </div>
+              <div className="flex items-center gap-2 sm:gap-4">
+                {/* Zoom Controls */}
+                <div className="flex items-center bg-white/10 rounded-lg px-2 py-1 gap-2">
+                  <button onClick={handleZoomIn} title="Zoom In" className="hover:text-blue-400 text-sm"><FaSearchPlus /></button>
+                  <button onClick={handleZoomOut} title="Zoom Out" className="hover:text-blue-400 text-sm"><FaSearchMinus /></button>
+                  <button onClick={handleRotate} title="Rotate" className="hover:text-blue-400 text-sm"><FaUndo /></button>
+                  <button onClick={handleReset} title="Reset" className="hover:text-blue-400 text-xs font-bold px-1">1x</button>
+                </div>
 
-            <div className="flex items-center gap-2 sm:gap-4">
-              {/* Zoom Controls */}
-              <div className="flex items-center bg-white/10 rounded-lg px-2 py-1 gap-2">
-                <button onClick={handleZoomIn} title="Zoom In" className="hover:text-blue-400 text-sm"><FaSearchPlus /></button>
-                <button onClick={handleZoomOut} title="Zoom Out" className="hover:text-blue-400 text-sm"><FaSearchMinus /></button>
-                <button onClick={handleRotate} title="Rotate" className="hover:text-blue-400 text-sm"><FaUndo /></button>
-                <button onClick={handleReset} title="Reset" className="hover:text-blue-400 text-xs font-bold px-1">1x</button>
+                <button onClick={toggleSpeed} title="Playback Speed" className="hover:text-blue-400 flex items-center gap-1 text-sm font-medium min-w-[3em]">
+                  <FaTachometerAlt size={14} /> {playbackRate}x
+                </button>
+
+                <button onClick={toggleMiniMode} title="Picture in Picture" className="hover:text-blue-400">
+                  <FaClone size={18} />
+                </button>
+
+                <button onClick={handleDownload} title="Download" className="hover:text-blue-400">
+                  <FaDownload size={18} />
+                </button>
+
+                <button onClick={toggleFullscreen} title="Fullscreen" className="hover:text-blue-400">
+                  {isFullscreen ? <FaCompress size={20} /> : <FaExpand size={20} />}
+                </button>
               </div>
-
-              <button onClick={toggleSpeed} title="Playback Speed" className="hover:text-blue-400 flex items-center gap-1 text-sm font-medium min-w-[3em]">
-                <FaTachometerAlt size={14} /> {playbackRate}x
-              </button>
-
-              <button onClick={handleDownload} title="Download" className="hover:text-blue-400">
-                <FaDownload size={18} />
-              </button>
-
-              <button onClick={toggleFullscreen} title="Fullscreen" className="hover:text-blue-400">
-                {isFullscreen ? <FaCompress size={20} /> : <FaExpand size={20} />}
-              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Mobile Gesture Indicators */}
-      {/* Brightness (Left) */}
-      <div className={`absolute left-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'brightness' ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${Math.min(Math.max((brightness - 0.2) / 1.8, 0), 1) * 100}%` }} />
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
-          <FaSun className="text-blue-500 drop-shadow-md text-xl" />
-        </div>
-      </div>
+      {/* Mobile Gesture Indicators - Hide in Mini Mode */}
+      {!isMiniMode && (
+        <>
+          {/* Brightness (Left) */}
+          <div className={`absolute left-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'brightness' ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${Math.min(Math.max((brightness - 0.2) / 1.8, 0), 1) * 100}%` }} />
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
+              <FaSun className="text-blue-500 drop-shadow-md text-xl" />
+            </div>
+          </div>
 
-      {/* Volume (Right) */}
-      <div className={`absolute right-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'volume' ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${volume * 100}%` }} />
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
-          {getVolumeIcon(volume, { className: "text-blue-500 drop-shadow-md text-xl" })}
-        </div>
-      </div>
+          {/* Volume (Right) */}
+          <div className={`absolute right-6 top-1/2 -translate-y-1/2 h-48 w-12 bg-black/60 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col justify-end border border-white/10 transition-opacity duration-300 pointer-events-none z-50 ${activeGesture === 'volume' ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="absolute inset-x-0 bottom-0 bg-white transition-all duration-75" style={{ height: `${volume * 100}%` }} />
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
+              {getVolumeIcon(volume, { className: "text-blue-500 drop-shadow-md text-xl" })}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Close Confirmation Modal */}
       {showCloseConfirm && (
