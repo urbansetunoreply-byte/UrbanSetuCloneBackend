@@ -911,7 +911,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               >
                 <span role="img" aria-label="dislike">👎</span>
                 <span>Dislike</span>
-                {review.dislikeCount > 0 && (
+                {review.dislikeCount > 0 && isAdminUser(currentUser) && (
                   <span className="ml-1">({review.dislikeCount})</span>
                 )}
               </button>

@@ -213,8 +213,10 @@ const YearInReview = ({ isAdmin = false }) => {
         },
         reviews: {
             title: "Critical Eye",
-            content: `You shared your opinion on ${data?.stats?.reviews || 0} properties.`,
-            subtitle: "Helping the community make better choices.",
+            content: `You posted ${data?.stats?.reviews || 0} reviews and engaged with ${data?.stats?.reviewReplies || 0} replies.`,
+            subtitle: data?.stats?.helpfulVotesReceived > 0
+                ? `Your insights got ${data?.stats?.helpfulVotesReceived} helpful votes from the community!`
+                : "Helping the community make better choices.",
             icon: <FaStar className="text-8xl text-orange-400 mb-6" />,
             color: "from-orange-950 via-[#1a0f00] to-orange-950",
         },

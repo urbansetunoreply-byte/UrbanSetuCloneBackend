@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import PropertyView from "../models/propertyView.model.js";
 import Booking from "../models/booking.model.js";
 import Review from "../models/review.model.js";
+import ReviewReply from "../models/reviewReply.model.js";
 import Wishlist from "../models/wishlist.model.js";
 import CoinTransaction from "../models/coinTransaction.model.js";
 import Listing from "../models/listing.model.js";
@@ -347,6 +348,28 @@ export const getUserYearInReview = async (req, res, next) => {
             moversCount + forumPostsCount + forumEngagementCount + blogCommentsCount + calculationsCount + referralsCount +
             loansCount + rentalRatingsCount + totalMessages + totalSearches + (coinsEarned > 0 ? 1 : 0);
 
+        // NEW: Review Engagement
+        const reviewRepliesCount = await ReviewReply.countDocuments({
+            userId: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const helpfulVotesGiven = await Review.countDocuments({
+            "helpfulVotes.userId": userId,
+            "helpfulVotes.votedAt": { $gte: startDate, $lte: endDate }
+        });
+
+        const helpfulVotesReceivedAgg = await Review.aggregate([
+            {
+                $match: {
+                    userId: userObjectId,
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            { $group: { _id: null, total: { $sum: "$helpfulCount" } } }
+        ]);
+        const helpfulVotesReceived = helpfulVotesReceivedAgg.length > 0 ? helpfulVotesReceivedAgg[0].total : 0;
+
         const stats = {
             views: viewsCount,
             activeDays,
@@ -356,9 +379,11 @@ export const getUserYearInReview = async (req, res, next) => {
             wishlist: wishlistCount + watchlistCount,
             favorites: favoriteCount,
             reviews: reviewsCount,
+            reviewReplies: reviewRepliesCount,
+            helpfulVotesGiven,
+            helpfulVotesReceived,
             coins: coinsEarned,
             serviceRequests: serviceCount,
-            moversRequests: moversCount,
             moversRequests: moversCount,
             forumPosts: forumPostsCount,
             forumEngagement: forumEngagementCount,
@@ -373,7 +398,7 @@ export const getUserYearInReview = async (req, res, next) => {
             notifications: totalNotifs,
             peakMonth,
             topType: explorationAgg[0]?.topType[0]?._id || null,
-            totalInteractions
+            totalInteractions: totalInteractions + reviewRepliesCount + helpfulVotesGiven
         };
 
         const personality = getPersonality(stats);
