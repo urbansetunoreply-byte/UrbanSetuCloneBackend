@@ -9,11 +9,21 @@ const router = express.Router();
 // Get all public updates
 router.get('/public', async (req, res, next) => {
     try {
-        const { limit = 10, page = 1, category } = req.query;
+        const { limit = 10, page = 1, category, search } = req.query;
         const query = { isActive: true };
 
         if (category) {
             query.category = category;
+        }
+
+        if (search) {
+            const searchRegex = new RegExp(search, 'i');
+            query.$or = [
+                { title: searchRegex },
+                { version: searchRegex },
+                { description: searchRegex },
+                { tags: { $in: [searchRegex] } }
+            ];
         }
 
         const updates = await PlatformUpdate.find(query)
