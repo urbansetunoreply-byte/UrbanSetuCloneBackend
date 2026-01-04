@@ -4,6 +4,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
+import { toast } from 'react-toastify';
 import {
   Calendar, User, Eye, Heart, Tag, ArrowLeft, Share2, MessageSquare,
   Home, Maximize2, X, ThumbsUp, Send, Clock, Play, Image as ImageIcon
@@ -139,16 +140,16 @@ const PublicBlogDetail = () => {
         setIsLoggedIn(true);
       } else {
         if (response.status === 401) {
-          alert('Please log in to like this blog');
+          toast.info('Please log in to like this blog');
           setIsLoggedIn(false);
         } else {
           const errorData = await response.json();
-          alert(errorData.message || 'Error updating like');
+          toast.error(errorData.message || 'Error updating like');
         }
       }
     } catch (error) {
       console.error('Error liking blog:', error);
-      alert('Error updating like');
+      toast.error('Error updating like');
     } finally {
       setLikeLoading(false);
     }
@@ -190,9 +191,9 @@ const PublicBlogDetail = () => {
       } else {
         const errorData = await response.json();
         if (response.status === 401) {
-          alert('Please log in to comment');
+          toast.info('Please log in to comment');
         } else {
-          alert(errorData.message || 'Error adding comment');
+          toast.error(errorData.message || 'Error adding comment');
         }
       }
     } catch (error) {
@@ -213,7 +214,7 @@ const PublicBlogDetail = () => {
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
+      toast.success('Link copied to clipboard!');
     }
   };
 
