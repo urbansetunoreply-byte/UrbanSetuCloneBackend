@@ -10856,7 +10856,7 @@ export const sendNewMessageNotificationEmail = async (email, messageDetails) => 
 };
 
 // Send data export email with download links
-export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtDownloadUrl) => {
+export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtDownloadUrl, exportedModules = []) => {
   try {
     const subject = `Your UrbanSetu Data Export - ${new Date().toLocaleDateString()}`;
     const exportDate = formatIndiaTime(new Date(), {
@@ -10866,6 +10866,56 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
       hour: '2-digit',
       minute: '2-digit'
     });
+
+    const moduleNames = {
+      wishlist: "Wishlist items",
+      watchlist: "Watchlist properties",
+      appointments: "Appointments and bookings",
+      listings: "Your property listings",
+      reviews: "Reviews and ratings",
+      payments: "Payment history",
+      gamification: "SetuCoins history and gamification stats",
+      rentalContracts: "Rental contracts",
+      rentalLoans: "Rental loan applications",
+      rentalRatings: "Rental ratings",
+      gemini: "Gemini chat history",
+      calls: "Call history logs",
+      community: "Community forum discussions",
+      blogComments: "Blog comments",
+      routes: "Saved routes and planner data",
+      investments: "Investment tool calculations",
+      referrals: "Referral records"
+    };
+
+    let listItems = '';
+    if (exportedModules && exportedModules.length > 0) {
+      // Always include Account Info and Stats as they are core
+      listItems += '<li>Account information and profile details</li>';
+
+      exportedModules.forEach(mod => {
+        if (moduleNames[mod]) {
+          listItems += `<li>${moduleNames[mod]}</li>`;
+        }
+      });
+
+      listItems += '<li>Account statistics and counts</li>';
+    } else {
+      // Fallback for full export
+      listItems = `
+              <li>Account information and profile details</li>
+              <li>Wishlist items and watchlist properties</li>
+              <li>Appointments and bookings</li>
+              <li>Your property listings</li>
+              <li>Reviews and ratings</li>
+              <li>Payment history</li>
+              <li>SetuCoins history and gamification stats</li>
+              <li>Rental contracts and loan applications</li>
+              <li>Gemini chat history and prompt counts</li>
+              <li>Call history logs (Audio/Video)</li>
+              <li>Community discussions and blog comments</li>
+              <li>Saved routes and investment calculations</li>
+              <li>Account statistics and counts</li>`;
+    }
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
@@ -10881,23 +10931,11 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
               Hello ${username},
             </p>
             <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
-              Your requested data export from UrbanSetu has been prepared and is attached to this email. This file contains a comprehensive copy of your account data, including:
+              Your requested data export from UrbanSetu has been prepared and is attached to this email. This file contains a copy of the selected account data:
             </p>
             
             <ul style="color: #4b5563; margin: 15px 0; padding-left: 20px; line-height: 1.8;">
-              <li>Account information and profile details</li>
-              <li>Wishlist items and watchlist properties</li>
-              <li>Appointments and bookings</li>
-              <li>Your property listings</li>
-              <li>Reviews and ratings</li>
-              <li>Payment history</li>
-              <li>SetuCoins history and gamification stats</li>
-              <li>Rental contracts and loan applications</li>
-              <li>Gemini chat history and prompt counts</li>
-              <li>Call history logs (Audio/Video)</li>
-              <li>Community discussions and blog comments</li>
-              <li>Saved routes and investment calculations</li>
-              <li>Account statistics and counts</li>
+              ${listItems}
             </ul>
             
             <div style="background-color: #d1fae5; padding: 15px; border-radius: 8px; margin: 20px 0;">

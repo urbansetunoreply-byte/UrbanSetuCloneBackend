@@ -30,6 +30,26 @@ const animationClasses = {
   scaleIn: "opacity-100 scale-100",
 };
 
+const EXPORT_MODULES = [
+  { key: 'wishlist', label: 'Wishlist items', icon: FaDownload, color: 'text-teal-500' },
+  { key: 'watchlist', label: 'Watchlist properties', icon: FaEye, color: 'text-teal-500' },
+  { key: 'appointments', label: 'Appointments & bookings', icon: FaVideo, color: 'text-pink-500' },
+  { key: 'listings', label: 'Property Listings', icon: FaTools, color: 'text-green-500' },
+  { key: 'reviews', label: 'Reviews & Ratings', icon: FaUsers, color: 'text-orange-500' },
+  { key: 'payments', label: 'Payment History', icon: FaDatabase, color: 'text-gray-500' },
+  { key: 'gamification', label: 'SetuCoins & Gamification', icon: FaCrown, color: 'text-yellow-500' },
+  { key: 'rentalContracts', label: 'Rental Contracts', icon: FaClipboardList, color: 'text-indigo-500' },
+  { key: 'rentalLoans', label: 'Rental Loans', icon: FaShieldAlt, color: 'text-red-500' },
+  { key: 'rentalRatings', label: 'Rental Ratings', icon: FaUsers, color: 'text-orange-500' },
+  { key: 'gemini', label: 'Gemini Chat History', icon: FaHistory, color: 'text-purple-500' },
+  { key: 'calls', label: 'Call History Logs', icon: FaPhone, color: 'text-pink-500' },
+  { key: 'community', label: 'Community Forum Posts', icon: FaComments, color: 'text-cyan-500' },
+  { key: 'blogComments', label: 'Blog Comments', icon: FaComments, color: 'text-cyan-500' },
+  { key: 'routes', label: 'Saved Routes', icon: FaMapMarkedAlt, color: 'text-blue-600' },
+  { key: 'investments', label: 'Investment Calculations', icon: FaChartLine, color: 'text-emerald-500' },
+  { key: 'referrals', label: 'Referrals', icon: FaUsers, color: 'text-yellow-600' },
+];
+
 export default function Settings() {
   const { t, i18n } = useTranslation();
   usePageTitle(`${t('settings.title')} - ${t('settings.subtitle')}`);
@@ -107,6 +127,8 @@ export default function Settings() {
   const [exportPasswordAttempts, setExportPasswordAttempts] = useState(0);
   const [showExportSignoutModal, setShowExportSignoutModal] = useState(false);
   const [showExportInfoModal, setShowExportInfoModal] = useState(false);
+  const [showExportSelectionModal, setShowExportSelectionModal] = useState(false);
+  const [selectedExportModules, setSelectedExportModules] = useState([]);
 
   // Account deletion states
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -921,7 +943,9 @@ export default function Settings() {
   };
 
   const handleExportDataClick = () => {
-    setShowExportPasswordModal(true);
+    // Select all modules by default
+    setSelectedExportModules(EXPORT_MODULES.map(m => m.key));
+    setShowExportSelectionModal(true);
     setExportPassword("");
     setExportPasswordError("");
     setExportPasswordVerifying(false);
@@ -974,7 +998,10 @@ export default function Settings() {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/user/export-data`, {
         method: 'POST',
-        body: JSON.stringify({ password: exportPassword })
+        body: JSON.stringify({
+          password: exportPassword,
+          selectedModules: selectedExportModules
+        })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -1052,11 +1079,23 @@ export default function Settings() {
     return <div className="text-center text-red-600 mt-10">Please sign in to access settings.</div>;
   }
 
-  const SettingSection = ({ title, icon: Icon, children }) => (
+  const SettingSection = ({ title, icon: Icon, children, onInfoClick }) => (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6 transition-colors duration-200">
       <div className="flex items-center mb-4">
-        {Icon && <Icon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />}
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">{title}</h2>
+        <div className="flex items-center flex-1">
+          {Icon && <Icon className="w-5 h-5 mr-3 text-blue-600 dark:text-blue-400" />}
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">{title}</h2>
+          {onInfoClick && (
+            <button
+              type="button"
+              onClick={onInfoClick}
+              className="ml-2 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors focus:outline-none"
+              title="More information"
+            >
+              <FaInfoCircle className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
       {children}
     </div>
@@ -1358,34 +1397,25 @@ export default function Settings() {
         </SettingSection>
 
         {/* Data Management */}
-        <SettingSection title={t('settings.section_data')} icon={FaDatabase}>
+        <SettingSection title={t('settings.section_data')} icon={FaDatabase} onInfoClick={() => setShowExportInfoModal(true)}>
           <div className="space-y-4">
-            <div className="flex gap-2 w-full">
-              <button
-                onClick={handleExportDataClick}
-                disabled={exportingData}
-                className={`flex-1 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg flex items-center justify-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${animationClasses.slideInUp}`}
-              >
-                {exportingData ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    <FaFileDownload className={`w-4 h-4 mr-2`} />
-                    {t('settings.export_data')}
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => setShowExportInfoModal(true)}
-                className={`px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center ${animationClasses.slideInUp}`}
-                title="What's included?"
-              >
-                <FaInfoCircle className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              onClick={handleExportDataClick}
+              disabled={exportingData}
+              className={`w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-[1.01] hover:shadow-lg flex items-center justify-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${animationClasses.slideInUp}`}
+            >
+              {exportingData ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <FaFileDownload className={`w-4 h-4 mr-2`} />
+                  {t('settings.export_data')}
+                </>
+              )}
+            </button>
             <p className="text-sm text-gray-500 dark:text-gray-400">Get a copy of your account data in JSON/text format</p>
           </div>
         </SettingSection>
@@ -1943,6 +1973,78 @@ export default function Settings() {
                   </div>
                 </form>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Export Selection Modal */}
+      {showExportSelectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full ${animationClasses.scaleIn} max-h-[85vh] flex flex-col`}>
+            <div className="p-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Select Data to Export</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Choose the data you want to include in your export file.</p>
+
+              <div className="mt-4 flex items-center">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-green-500 rounded border-gray-300 focus:ring-green-500"
+                    checked={selectedExportModules.length === EXPORT_MODULES.length}
+                    onChange={(e) => {
+                      if (e.target.checked) setSelectedExportModules(EXPORT_MODULES.map(m => m.key));
+                      else setSelectedExportModules([]);
+                    }}
+                  />
+                  <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Select All</span>
+                </label>
+                <span className="ml-auto text-sm text-gray-500">{selectedExportModules.length} selected</span>
+              </div>
+            </div>
+
+            <div className="p-6 py-2 overflow-y-auto custom-scrollbar flex-1">
+              <div className="space-y-3">
+                {EXPORT_MODULES.map((item) => (
+                  <label key={item.key} className="flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+                      checked={selectedExportModules.includes(item.key)}
+                      onChange={(e) => {
+                        if (e.target.checked) setSelectedExportModules([...selectedExportModules, item.key]);
+                        else setSelectedExportModules(selectedExportModules.filter(k => k !== item.key));
+                      }}
+                    />
+                    <div className={`ml-3 p-2 rounded-full bg-gray-100 dark:bg-gray-800 ${item.color}`}>
+                      <item.icon className="w-4 h-4" />
+                    </div>
+                    <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-200">{item.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-6 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={() => setShowExportSelectionModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedExportModules.length === 0) {
+                    toast.error("Please select at least one item to export");
+                    return;
+                  }
+                  setShowExportSelectionModal(false);
+                  setShowExportPasswordModal(true);
+                }}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm"
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>

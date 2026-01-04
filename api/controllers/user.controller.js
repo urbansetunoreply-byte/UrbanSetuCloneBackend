@@ -604,7 +604,7 @@ export const checkMobileAvailability = async (req, res, next) => {
 export const exportData = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { password } = req.body;
+        const { password, selectedModules } = req.body;
 
         if (!password) {
             return next(errorHandler(400, "Password is required"));
@@ -621,55 +621,92 @@ export const exportData = async (req, res, next) => {
             return next(errorHandler(401, "Invalid password"));
         }
 
-        // Phase 1: Collect independent user data
-        const [
-            wishlistItems,
-            watchlistItems,
-            appointments,
-            userListings,
-            reviewsWritten,
-            payments,
-            rentalContracts,
-            rentalLoans,
-            rentalRatings,
-            coinTransactions,
-            geminiSessions,
-            callHistoryLogs,
-            forumPosts,
-            savedRoutes,
-            calculationHistoryItems,
-            blogCommentsAgg,
-            referralCount
-        ] = await Promise.all([
-            Wishlist.find({ userId }).populate('listingId').lean(),
-            PropertyWatchlist.find({ userId }).populate('listingId').lean(),
-            Booking.find({ $or: [{ buyerId: userId }, { sellerId: userId }] }).populate('listingId').lean(),
-            Listing.find({ userRef: userId }).lean(),
-            Review.find({ userId }).populate('listingId').lean(),
-            Payment.find({ userId }).lean().catch(() => []),
-            RentLockContract.find({ $or: [{ tenantId: userId }, { landlordId: userId }] }).populate('listingId').lean().catch(() => []),
-            RentalLoan.find({ userId }).populate('contractId').lean().catch(() => []),
-            RentalRating.find({ $or: [{ reviewerId: userId }, { targetUser: userId }] }).lean().catch(() => []),
-            CoinTransaction.find({ userId }).lean().catch(() => []),
-            ChatHistory.find({ userId }).lean().catch(() => []),
-            CallHistory.find({ $or: [{ callerId: userId }, { receiverId: userId }] }).lean().catch(() => []),
-            ForumPost.find({ author: userId }).lean().catch(() => []),
-            Route.find({ userId }).lean().catch(() => []),
-            CalculationHistory.find({ userId }).lean().catch(() => []),
-            Blog.aggregate([
+        // Strong & Accurate: Check DB for existing export (survives restarts)
+        const existingExport = await DataExport.findOne({ userId: userId });
+        if (existingExport) {
+            const timeRemaining = Math.ceil((existingExport.expiresAt - new Date()) / (60 * 60 * 1000));
+            return next(errorHandler(429, `Security Policy: You can only request one data export every 24 hours. Please try again in approximately ${timeRemaining} hours.`));
+        }
+
+        // Module definitions with their data fetching logic
+        const modules = {
+            wishlist: () => Wishlist.find({ userId }).populate('listingId').lean(),
+            watchlist: () => PropertyWatchlist.find({ userId }).populate('listingId').lean(),
+            appointments: () => Booking.find({ $or: [{ buyerId: userId }, { sellerId: userId }] }).populate('listingId').lean(),
+            listings: () => Listing.find({ userRef: userId }).lean(),
+            reviews: () => Review.find({ userId }).populate('listingId').lean(),
+            payments: () => Payment.find({ userId }).lean().catch(() => []),
+            rentalContracts: () => RentLockContract.find({ $or: [{ tenantId: userId }, { landlordId: userId }] }).populate('listingId').lean().catch(() => []),
+            rentalLoans: () => RentalLoan.find({ userId }).populate('contractId').lean().catch(() => []),
+            rentalRatings: () => RentalRating.find({ $or: [{ reviewerId: userId }, { targetUser: userId }] }).lean().catch(() => []),
+            gamification: () => CoinTransaction.find({ userId }).lean().catch(() => []),
+            gemini: () => ChatHistory.find({ userId }).lean().catch(() => []),
+            calls: () => CallHistory.find({ $or: [{ callerId: userId }, { receiverId: userId }] }).lean().catch(() => []),
+            community: () => ForumPost.find({ author: userId }).lean().catch(() => []),
+            routes: () => Route.find({ userId }).lean().catch(() => []),
+            investments: () => CalculationHistory.find({ userId }).lean().catch(() => []),
+            blogComments: () => Blog.aggregate([
                 { $unwind: "$comments" },
                 { $match: { "comments.user": user._id } },
                 { $project: { _id: 1, title: 1, comment: "$comments" } }
             ]).catch(() => []),
-            User.countDocuments({ "gamification.referredBy": userId }).catch(() => 0)
-        ]);
+            referrals: () => User.countDocuments({ "gamification.referredBy": userId }).catch(() => 0)
+        };
 
-        // Phase 2: Collect data dependent on Phase 1 (e.g., reviews on user's listings)
-        const userListingIds = userListings.map(l => l._id);
-        const reviewsReceived = await Review.find({ listingId: { $in: userListingIds } })
-            .populate('listingId', 'name')
-            .lean()
-            .catch(() => []);
+        // Determine which modules to fetch (default to all if not specified)
+        const modulesToFetch = selectedModules && selectedModules.length > 0
+            ? selectedModules
+            : Object.keys(modules); // Fallback for backward compatibility
+
+        // Execute fetches in parallel
+        const results = {};
+        await Promise.all(
+            Object.entries(modules).map(async ([key, fetcher]) => {
+                // Determine if this module is needed
+                // Special case: 'listings' are needed if 'reviews' (received) is requested, even if 'listings' itself isn't requested.
+                // However, to simplify, we can just fetch if requested. If 'reviewsReceived' is requested (bundled under 'reviews' likely or a separate key), we need listings.
+                // Upon reviewing the UI map: "Reviews & Ratings (Tenant/Landlord)" -> includes written and received. 
+                // "Listings" -> listings.
+                // If user selects "Reviews", we probably want reviewsReceived. For that we need listings.
+                if (modulesToFetch.includes(key) || (key === 'listings' && modulesToFetch.includes('reviews'))) {
+                    results[key] = await fetcher();
+                } else {
+                    results[key] = []; // Default empty
+                }
+            })
+        );
+
+        // Handle Referrals special case (count vs array)
+        if (results.referrals === undefined) results.referrals = 0;
+
+        // Map results to variables for backward compatibility
+        const wishlistItems = results.wishlist || [];
+        const watchlistItems = results.watchlist || [];
+        const appointments = results.appointments || [];
+        const userListings = results.listings || [];
+        const reviewsWritten = results.reviews || [];
+        const payments = results.payments || [];
+        const rentalContracts = results.rentalContracts || [];
+        const rentalLoans = results.rentalLoans || [];
+        const rentalRatings = results.rentalRatings || [];
+        const coinTransactions = results.gamification || [];
+        const geminiSessions = results.gemini || [];
+        const callHistoryLogs = results.calls || [];
+        const forumPosts = results.community || [];
+        const savedRoutes = results.routes || [];
+        const calculationHistoryItems = results.investments || [];
+        const blogCommentsAgg = results.blogComments || [];
+        const referralCount = typeof results.referrals === 'number' ? results.referrals : 0;
+
+        // Phase 2: Dependent data - Reviews Received (depends on Listings)
+        let reviewsReceived = [];
+        if (modulesToFetch.includes('reviews') && userListings.length > 0) {
+            const userListingIds = userListings.map(l => l._id);
+            reviewsReceived = await Review.find({ listingId: { $in: userListingIds } })
+                .populate('listingId', 'name')
+                .lean()
+                .catch(() => []);
+        }
 
         // Get counts
         const wishlistCount = wishlistItems.length;
@@ -688,7 +725,7 @@ export const exportData = async (req, res, next) => {
             }
         });
 
-        // Prepare comprehensive user data
+        // Prepare comprehensive user data conditionally
         const userData = {
             accountInfo: {
                 username: user.username,
@@ -700,18 +737,6 @@ export const exportData = async (req, res, next) => {
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
                 profilePicture: user.profilePicture
-            },
-            gamification: {
-                setuCoinsBalance: user.gamification?.setuCoinsBalance || 0,
-                totalCoinsEarned: user.gamification?.totalCoinsEarned || 0,
-                currentStreak: user.gamification?.currentStreak || 0,
-                referralsCount: referralCount,
-                transactions: coinTransactions.map(tx => ({
-                    amount: tx.amount,
-                    type: tx.type,
-                    description: tx.description,
-                    createdAt: tx.createdAt
-                }))
             },
             statistics: {
                 wishlistCount,
@@ -729,20 +754,51 @@ export const exportData = async (req, res, next) => {
                 calculationsCount: calculationHistoryItems.length,
                 blogCommentsCount: blogCommentsAgg.length,
                 totalCalls: callHistoryLogs.length
-            },
-            wishlist: wishlistItems.map(item => ({
+            }
+        };
+
+        // Add Gamification data if selected
+        if (modulesToFetch.includes('gamification')) {
+            userData.gamification = {
+                setuCoinsBalance: user.gamification?.setuCoinsBalance || 0,
+                totalCoinsEarned: user.gamification?.totalCoinsEarned || 0,
+                currentStreak: user.gamification?.currentStreak || 0,
+                transactions: coinTransactions.map(tx => ({
+                    amount: tx.amount,
+                    type: tx.type,
+                    description: tx.description,
+                    createdAt: tx.createdAt
+                }))
+            };
+        }
+
+        // Add Referrals if selected
+        if (modulesToFetch.includes('referrals')) {
+            if (!userData.gamification) userData.gamification = {};
+            userData.gamification.referralsCount = referralCount;
+        }
+
+        // Conditional data blocks
+        if (modulesToFetch.includes('wishlist')) {
+            userData.wishlist = wishlistItems.map(item => ({
                 listingId: item.listingId?._id || item.listingId,
                 listingTitle: item.listingId?.name || 'N/A',
                 addedAt: item.addedAt || item.createdAt,
                 effectivePriceAtAdd: item.effectivePriceAtAdd
-            })),
-            watchlist: watchlistItems.map(item => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('watchlist')) {
+            userData.watchlist = watchlistItems.map(item => ({
                 listingId: item.listingId?._id || item.listingId,
                 listingTitle: item.listingId?.name || 'N/A',
                 addedAt: item.addedAt || item.createdAt,
                 effectivePriceAtAdd: item.effectivePriceAtAdd
-            })),
-            appointments: appointments.map(apt => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('appointments')) {
+            userData.appointments = appointments.map(apt => ({
                 appointmentId: apt._id,
                 listingId: apt.listingId?._id || apt.listingId,
                 listingTitle: apt.listingId?.name || apt.propertyName || 'N/A',
@@ -751,8 +807,11 @@ export const exportData = async (req, res, next) => {
                 time: apt.time,
                 status: apt.status,
                 createdAt: apt.createdAt
-            })),
-            listings: userListings.map(listing => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('listings')) {
+            userData.listings = userListings.map(listing => ({
                 listingId: listing._id,
                 name: listing.name,
                 address: listing.address,
@@ -762,49 +821,68 @@ export const exportData = async (req, res, next) => {
                 offer: listing.offer,
                 createdAt: listing.createdAt,
                 updatedAt: listing.updatedAt
-            })),
-            reviewsWritten: reviewsWritten.map(review => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('reviews')) {
+            userData.reviewsWritten = reviewsWritten.map(review => ({
                 reviewId: review._id,
                 listingId: review.listingId?._id || review.listingId,
                 listingTitle: review.listingId?.name || 'N/A',
                 starRating: review.starRating,
                 comment: review.comment,
                 createdAt: review.createdAt
-            })),
-            reviewsReceived: reviewsReceived.map(review => ({
+            }));
+
+            userData.reviewsReceived = reviewsReceived.map(review => ({
                 reviewId: review._id,
                 listingTitle: review.listingId?.name || 'N/A',
                 starRating: review.starRating,
                 comment: review.comment,
                 createdAt: review.createdAt
-            })),
-            rentalContracts: rentalContracts.map(contract => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('rentalContracts')) {
+            userData.rentalContracts = rentalContracts.map(contract => ({
                 contractId: contract._id,
                 status: contract.status,
                 rentAmount: contract.rentAmount,
                 startDate: contract.startDate,
                 endDate: contract.endDate,
                 role: contract.tenantId?.toString() === userId ? 'Tenant' : 'Landlord'
-            })),
-            rentalLoans: rentalLoans.map(loan => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('rentalLoans')) {
+            userData.rentalLoans = rentalLoans.map(loan => ({
                 loanId: loan._id,
                 amount: loan.amount,
                 status: loan.status,
                 createdAt: loan.createdAt
-            })),
-            rentalRatings: rentalRatings.map(rating => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('rentalRatings')) {
+            userData.rentalRatings = rentalRatings.map(rating => ({
                 rating: rating.rating,
                 comment: rating.comment,
-                type: rating.type, // tenant or landlord rating
+                type: rating.type,
                 createdAt: rating.createdAt
-            })),
-            payments: payments.map(payment => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('payments')) {
+            userData.payments = payments.map(payment => ({
                 paymentId: payment._id,
                 amount: payment.amount,
                 status: payment.status,
                 createdAt: payment.createdAt
-            })),
-            geminiHistorySummary: {
+            }));
+        }
+
+        if (modulesToFetch.includes('gemini')) {
+            userData.geminiHistorySummary = {
                 totalSessions: geminiSessions.length,
                 totalPrompts: geminiPromptsCount,
                 sessions: geminiSessions.map(s => ({
@@ -812,43 +890,60 @@ export const exportData = async (req, res, next) => {
                     messageCount: s.messages ? s.messages.length : 0,
                     lastActivity: s.lastActivity
                 }))
-            },
-            callHistory: callHistoryLogs.map(call => ({
+            };
+        }
+
+        if (modulesToFetch.includes('calls')) {
+            userData.callHistory = callHistoryLogs.map(call => ({
                 type: call.callType,
                 status: call.status,
                 duration: call.duration,
                 startedAt: call.startTime,
                 role: call.callerId?.toString() === userId ? 'Caller' : 'Receiver'
-            })),
-            communityDiscussions: forumPosts.map(post => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('community')) {
+            userData.communityDiscussions = forumPosts.map(post => ({
                 postId: post._id,
                 title: post.title,
                 category: post.category,
                 likes: post.likes ? post.likes.length : 0,
                 createdAt: post.createdAt
-            })),
-            blogComments: blogCommentsAgg.map(item => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('blogComments')) {
+            userData.blogComments = blogCommentsAgg.map(item => ({
                 blogId: item._id,
                 blogTitle: item.title,
                 comment: item.comment?.content,
                 commentedAt: item.comment?.createdAt
-            })),
-            savedRoutes: savedRoutes.map(route => ({
+            }));
+        }
+
+        if (modulesToFetch.includes('routes')) {
+            userData.savedRoutes = savedRoutes.map(route => ({
                 routeId: route._id,
                 name: route.name,
                 distance: route.route?.distance,
                 stopsCount: route.stops ? route.stops.length : 0,
                 createdAt: route.createdAt
-            })),
-            investmentCalculations: calculationHistoryItems.map(calc => ({
-                type: calc.type, // e.g., 'roi', 'loan'
-                inputs: calc.inputs, // Assuming it stores input params
+            }));
+        }
+
+        if (modulesToFetch.includes('investments')) {
+            userData.investmentCalculations = calculationHistoryItems.map(calc => ({
+                type: calc.type,
+                inputs: calc.inputs,
                 result: calc.result,
                 createdAt: calc.createdAt
-            })),
-            exportDate: new Date().toISOString(),
-            exportVersion: "1.2"
-        };
+            }));
+        }
+
+        // Add metadata
+        userData.exportDate = new Date().toISOString();
+        userData.exportVersion = "1.2";
 
         // Convert to JSON string
         const dataStr = JSON.stringify(userData, null, 2);
@@ -873,7 +968,7 @@ export const exportData = async (req, res, next) => {
         const txtDownloadUrl = `${base}/api/user/export-data/${exportToken}/txt`;
 
         // Send email with download links
-        const emailResult = await sendDataExportEmail(user.email, user.username, jsonDownloadUrl, txtDownloadUrl);
+        const emailResult = await sendDataExportEmail(user.email, user.username, jsonDownloadUrl, txtDownloadUrl, modulesToFetch);
 
         if (!emailResult.success) {
             // Clean up database on email failure
