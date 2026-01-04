@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaTimes, FaImage, FaVideo, FaTags, FaPencilAlt, FaPlus, FaCloudUploadAlt } from 'react-icons/fa';
+import { FaTimes, FaImage, FaVideo, FaTags, FaPencilAlt, FaPlus, FaCloudUploadAlt, FaPlay } from 'react-icons/fa';
+import ImagePreview from './ImagePreview';
+import VideoPreview from './VideoPreview';
 
 const BlogEditModal = ({
   isOpen,
@@ -14,11 +16,27 @@ const BlogEditModal = ({
   isEdit = false
 }) => {
   const [tagInput, setTagInput] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [previewVideo, setPreviewVideo] = useState(null);
 
   const handleMediaUpload = async (e, type) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
+    // Validate file sizes
+    for (const file of files) {
+      if (type === 'image' && file.size > 10 * 1024 * 1024) {
+        alert(`Image ${file.name} exceeds 10MB limit.`);
+        return;
+      }
+      if (type === 'video' && file.size > 100 * 1024 * 1024) {
+        alert(`Video ${file.name} exceeds 100MB limit.`);
+        return;
+      }
+    }
+
+    setUploading(true);
     try {
       // Upload files to Cloudinary via backend
       const uploadPromises = files.map(async (file) => {
@@ -55,6 +73,8 @@ const BlogEditModal = ({
     } catch (error) {
       console.error('Upload error:', error);
       alert('Failed to upload files. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -93,6 +113,12 @@ const BlogEditModal = ({
     const file = e.target.files[0];
     if (!file) return;
 
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Thumbnail image size must be less than 10MB');
+      return;
+    }
+
+    setUploading(true);
     try {
       const bodyFormData = new FormData();
       bodyFormData.append('image', file);
@@ -112,6 +138,8 @@ const BlogEditModal = ({
     } catch (error) {
       console.error('Thumbnail upload error:', error);
       alert('Failed to upload thumbnail. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -236,6 +264,7 @@ const BlogEditModal = ({
                     </div>
                   )}
                 </div>
+                {uploading && formData.thumbnail && <div className="text-blue-500 font-bold animate-pulse text-sm mt-2 text-center">Uploading new thumbnail...</div>}
               </div>
 
               {/* Additional Media */}
@@ -268,28 +297,34 @@ const BlogEditModal = ({
                   </label>
                 </div>
 
+                {uploading && <div className="text-blue-500 font-bold animate-pulse text-sm mt-2">⏳ Uploading media... Please wait.</div>}
+
                 {(formData.imageUrls?.length > 0 || formData.videoUrls?.length > 0) && (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-[150px] overflow-y-auto pr-1 custom-scrollbar">
                     {formData.imageUrls?.map((url, index) => (
-                      <div key={`img-${index}`} className="relative group aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-600">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      <div key={`img-${index}`} className="relative group aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-600 cursor-pointer" onClick={() => setPreviewImage(url)}>
+                        <img src={url} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                         <button
                           type="button"
-                          onClick={() => removeMedia(index, 'image')}
-                          className="absolute top-1 right-1 bg-red-500/90 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          onClick={(e) => { e.stopPropagation(); removeMedia(index, 'image'); }}
+                          className="absolute top-1 right-1 bg-red-500/90 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
                         >
                           <FaTimes className="text-[10px]" />
                         </button>
                       </div>
                     ))}
                     {formData.videoUrls?.map((url, index) => (
-                      <div key={`vid-${index}`} className="relative group aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-600 bg-black">
+                      <div key={`vid-${index}`} className="relative group aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-600 bg-black cursor-pointer" onClick={() => setPreviewVideo(url)}>
                         <video src={url} className="w-full h-full object-cover opacity-70" />
-                        <FaVideo className="absolute inset-0 m-auto text-white/50 text-xl pointer-events-none" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full group-hover:scale-110 transition-transform">
+                            <FaPlay className="text-white text-lg ml-1" />
+                          </div>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => removeMedia(index, 'video')}
-                          className="absolute top-1 right-1 bg-red-500/90 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          onClick={(e) => { e.stopPropagation(); removeMedia(index, 'video'); }}
+                          className="absolute top-1 right-1 bg-red-500/90 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
                         >
                           <FaTimes className="text-[10px]" />
                         </button>
@@ -436,8 +471,24 @@ const BlogEditModal = ({
           onSubmit={onSubmit}
           className="hidden"
         />
-      </div>
-    </div>
+      </div >
+      {previewImage && (
+        <ImagePreview
+          isOpen={!!previewImage}
+          imageUrl={previewImage}
+          onClose={() => setPreviewImage(null)}
+        />
+      )}
+      {
+        previewVideo && (
+          <VideoPreview
+            isOpen={!!previewVideo}
+            videos={[previewVideo]}
+            onClose={() => setPreviewVideo(null)}
+          />
+        )
+      }
+    </div >
   );
 };
 
