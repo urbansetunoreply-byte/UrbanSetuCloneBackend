@@ -4438,14 +4438,7 @@ function AdminAppointmentRow({
           )
         );
 
-        // Emit socket event for real-time updates to other party - perform in parallel
-        unreadMessages.forEach(msg => {
-          socket.emit('messageRead', {
-            appointmentId: appt._id,
-            messageId: msg._id,
-            userId: currentUser._id
-          });
-        });
+
       } catch (error) {
         console.error('Error marking messages as read:', error);
       } finally {

@@ -5670,15 +5670,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
           )
         );
 
-        // Emit socket event for real-time updates to other party - perform in parallel
-        // We use a Promise.all to ensure all emits happen but we don't await them strictly for UI responsiveness
-        unreadMessages.forEach(msg => {
-          socket.emit('messageRead', {
-            appointmentId: appt._id,
-            messageId: msg._id,
-            userId: currentUser._id
-          });
-        });
+
       } catch (error) {
         console.error('Error marking messages as read:', error);
       } finally {
@@ -5727,11 +5719,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
   const checkIfAtBottom = useCallback(() => {
     if (chatContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-      const atBottom = scrollHeight - scrollTop - clientHeight < 10; // 10px threshold
+      const atBottom = scrollHeight - scrollTop - clientHeight < 10; // 10px threshold for auto-scroll state
+      const isVisibleRange = scrollHeight - scrollTop - clientHeight < 150; // 150px threshold for reading
       setIsAtBottom(atBottom);
 
-      // When user reaches bottom, mark unread messages as read ONLY if they manually scrolled
-      if (atBottom) {
+      // When user is in visible range (150px), mark unread messages as read
+      if (isVisibleRange) {
         const unreadCount = comments.filter(c =>
           !c.readBy?.includes(currentUser._id) &&
           c.senderEmail !== currentUser.email
