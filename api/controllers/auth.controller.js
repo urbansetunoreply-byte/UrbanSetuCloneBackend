@@ -851,51 +851,66 @@ export const verifyAuth = async (req, res, next) => {
 
         let decoded;
 
-        try {
-            // Try to verify access token first
-            decoded = jwt.verify(accessToken, process.env.JWT_TOKEN, {
-                issuer: 'urbansetu',
-                audience: 'urbansetu-users'
-            });
-        } catch (accessError) {
-            // If access token is invalid or expired, try refresh token
-            if (accessError.name === 'TokenExpiredError' && refreshToken) {
-                try {
-                    const refreshDecoded = jwt.verify(refreshToken, process.env.JWT_TOKEN, {
-                        issuer: 'urbansetu',
-                        audience: 'urbansetu-refresh'
-                    });
-
-                    // Generate new token pair
-                    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokenPair({ id: refreshDecoded.id });
-
-                    // Set new cookies
-                    setSecureCookies(res, newAccessToken, newRefreshToken);
-
-                    decoded = refreshDecoded;
-                } catch (refreshError) {
-                    return next(errorHandler(401, "Session expired. Please sign in again."));
-                }
-            } else {
-                return next(errorHandler(401, "Invalid token"));
+        // 1. Try to verify ACCESS TOKEN
+        if (accessToken) {
+            try {
+                decoded = jwt.verify(accessToken, process.env.JWT_TOKEN, {
+                    issuer: 'urbansetu',
+                    audience: 'urbansetu-users'
+                });
+            } catch (ignored) {
+                // Access token invalid/expired, fall through to refresh logic
             }
         }
 
-        const user = await User.findById(decoded.id).select('-password');
+        // 2. If access token failed/missing, try REFRESH TOKEN
+        if (!decoded && refreshToken) {
+            try {
+                const refreshDecoded = jwt.verify(refreshToken, process.env.JWT_TOKEN, {
+                    issuer: 'urbansetu',
+                    audience: 'urbansetu-refresh'
+                });
 
+                // User must exist to issue new tokens
+                const user = await User.findById(refreshDecoded.id);
+                if (!user) {
+                    return next(errorHandler(401, "User no longer exists"));
+                }
+
+                // Check suspension status during refresh
+                if (user.status === 'suspended') {
+                    return next(errorHandler(403, "Account suspended"));
+                }
+
+                // Generate new token pair
+                const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokenPair({ id: user._id });
+
+                // Set new cookies
+                setSecureCookies(res, newAccessToken, newRefreshToken);
+
+                // Use the user data directly since we already fetched it
+                return res.status(200).json(user);
+
+            } catch (refreshError) {
+                // Both tokens failed
+                return next(errorHandler(401, "Session expired. Please sign in again."));
+            }
+        }
+
+        if (!decoded) {
+            return next(errorHandler(401, "Invalid authentication"));
+        }
+
+        // 3. User Lookup (for valid Access Token case)
+        const user = await User.findById(decoded.id).select('-password');
         if (!user) {
             return next(errorHandler(404, "User not found"));
         }
 
         res.status(200).json(user);
     } catch (error) {
-        if (error.name === 'JsonWebTokenError') {
-            return next(errorHandler(401, "Invalid token"));
-        }
-        if (error.name === 'TokenExpiredError') {
-            return next(errorHandler(401, "Token expired"));
-        }
-        next(error);
+        // Fallback error handler
+        next(errorHandler(401, "Authentication failed"));
     }
 };
 
