@@ -57,7 +57,7 @@ export const generateTokenPair = (payload) => {
 
 // Set secure cookies
 export const setSecureCookies = (res, accessToken, refreshToken) => {
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER;
     const cookieOptions = {
         httpOnly: true,
         secure: isProduction,
@@ -80,11 +80,11 @@ export const setSecureCookies = (res, accessToken, refreshToken) => {
 
 // Clear all auth cookies
 export const clearAuthCookies = (res) => {
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER;
     const cookieOptions = {
         httpOnly: true,
         secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
+        sameSite: isProduction ? 'none' : 'lax', // Lax for dev (HTTP), None for prod (HTTPS)
         path: '/'
     };
 
