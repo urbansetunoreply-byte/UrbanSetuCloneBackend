@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaCoins, FaUsers, FaChartLine, FaHistory, FaArrowTrendUp, FaArrowTrendDown, FaGear } from 'react-icons/fa6';
+import { FaCoins, FaUsers, FaChartLine, FaArrowTrendUp, FaGear } from 'react-icons/fa6';
 import { Link } from 'react-router-dom';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
