@@ -5,10 +5,12 @@ import { toast } from 'react-toastify';
 import { socket } from '../utils/socket.js';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function NotificationBell({ mobile = false }) {
+  const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
   const [notifications, setNotifications] = useState([]);
   const [allNotifications, setAllNotifications] = useState([]);
@@ -588,19 +590,37 @@ export default function NotificationBell({ mobile = false }) {
       </button>
 
       {/* Notification Dropdown or Modal */}
-      {isOpen && (
-        mobile ? (
-          // Mobile: Fullscreen Modal with Portal
-          createPortal(
-            <div
-              className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+      {/* Mobile View Modal */}
+      {mobile && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 flex items-end justify-center sm:hidden backdrop-blur-sm bg-black/60"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setIsOpen(false);
                 }
               }}
             >
-              <div className="w-full sm:max-w-md bg-white dark:bg-gray-900 sm:rounded-3xl rounded-t-3xl shadow-2xl border border-white/20 dark:border-gray-800 max-h-[92vh] flex flex-col overflow-hidden animate-modal-up glass-morphism transition-colors duration-300">
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                drag="y"
+                dragConstraints={{ top: 0 }}
+                dragElastic={{ top: 0, bottom: 0.2 }}
+                onDragEnd={(e, { offset, velocity }) => {
+                  if (offset.y > 100 || velocity.y > 500) {
+                    setIsOpen(false);
+                  }
+                }}
+                className="w-full sm:max-w-md bg-white dark:bg-gray-900 sm:rounded-3xl rounded-t-3xl shadow-2xl border border-white/20 dark:border-gray-800 max-h-[92vh] flex flex-col overflow-hidden glass-morphism transition-colors duration-300"
+              >
                 {/* Header Strip */}
                 <div className="flex items-center justify-center py-2 sm:hidden">
                   <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
@@ -1095,11 +1115,17 @@ export default function NotificationBell({ mobile = false }) {
                     </div>
                   )}
                 </div>
-              </div>
-            </div>,
-            document.body
-          )
-        ) : (
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )
+      }
+
+      {/* Desktop: Dropdown */}
+      {
+        !mobile && isOpen && (
           // Desktop: Dropdown
           createPortal(
             <div
@@ -1521,10 +1547,10 @@ export default function NotificationBell({ mobile = false }) {
             document.body
           )
         )
-      )}
+      }
 
       {/* Enhanced Animations & Styles */}
-      <style jsx>{`
+      <style>{`
         @keyframes fadeInNotification {
           from { 
             opacity: 0; 
@@ -1654,6 +1680,6 @@ export default function NotificationBell({ mobile = false }) {
           box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 12px -2px rgba(0, 0, 0, 0.05);
         }
       `}</style>
-    </div>
+    </div >
   );
 }
