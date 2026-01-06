@@ -1302,7 +1302,7 @@ export default function Profile() {
                     {theme?.logoDecoration === 'flower' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin" style={{ animationDuration: '8s' }} title={theme.name}>🌺</span>}
                     {theme?.logoDecoration === 'marigold' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin-slow" title={theme.name}>🌼</span>}
                     {theme?.logoDecoration === 'diya' && <span className="text-3xl ml-2 filter drop-shadow-md animate-flicker" title={theme.name}>🪔</span>}
-                    {theme?.logoDecoration === 'snow-cap' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle-slow" title={theme.name}>❄️</span>}
+                    {theme?.logoDecoration === 'snow-cap' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin-slow" title={theme.name}>❄️</span>}
                     {theme?.logoDecoration === 'clover' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle" title={theme.name}>☘️</span>}
                     {theme?.logoDecoration === 'leaf' && <span className="text-3xl ml-2 filter drop-shadow-md animate-grow-shrink" title={theme.name}>🌱</span>}
                     {theme?.logoDecoration === 'glasses' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle-slow" title={theme.name}>👓</span>}

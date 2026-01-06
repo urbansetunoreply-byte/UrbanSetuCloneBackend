@@ -367,7 +367,7 @@ export default function Header() {
                     <span className="absolute -top-3 -right-2 text-2xl filter drop-shadow-md animate-flicker">🪔</span>
                   )}
                   {theme?.logoDecoration === 'snow-cap' && (
-                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-wiggle-slow">❄️</span>
+                    <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-spin-slow">❄️</span>
                   )}
                   {/* Extended Festival Decorations */}
                   {theme?.logoDecoration === 'clover' && (
