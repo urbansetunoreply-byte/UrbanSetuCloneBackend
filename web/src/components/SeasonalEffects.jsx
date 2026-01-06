@@ -24,7 +24,9 @@ const SeasonalEffects = ({ className }) => {
                 ? ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][Math.floor(Math.random() * 5)]
                 : theme.effect === 'tricolor'
                     ? ['#FF9933', '#FFFFFF', '#138808'][Math.floor(Math.random() * 3)] // India Saffron, White, Green
-                    : '#FFF'
+                    : theme.effect === 'snow'
+                        ? 'var(--snow-color)'
+                        : '#FFF'
         }));
 
         setParticles(newParticles);

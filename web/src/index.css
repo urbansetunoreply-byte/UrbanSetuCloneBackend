@@ -3,6 +3,14 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --snow-color: #94a3b8; /* Slate-400 for visibility on light backgrounds */
+  }
+
+  .dark {
+    --snow-color: #ffffff;
+  }
+
   body {
     @apply bg-white text-gray-900 transition-colors duration-300;
   }
