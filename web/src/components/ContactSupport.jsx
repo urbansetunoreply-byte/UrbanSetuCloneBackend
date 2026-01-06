@@ -40,6 +40,30 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     }
   }, [forceModalOpen]);
 
+  // Mobile Menu Detection
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    const checkMobileMenu = () => {
+      setIsMobileMenuOpen(document.body.classList.contains('mobile-menu-open'));
+    };
+
+    // Check initially
+    checkMobileMenu();
+
+    // Observe body for class changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          checkMobileMenu();
+        }
+      });
+    });
+
+    observer.observe(document.body, { attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
+
   // Dispatch custom event when modal state changes
   useEffect(() => {
     const event = new CustomEvent('contactSupportToggle', {
@@ -290,7 +314,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
   return (
     <>
       {/* Enhanced Floating Contact Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className={`fixed bottom-6 right-6 z-50 ${isMobileMenuOpen ? 'hidden' : ''}`}>
         <button
           onClick={() => setIsModalOpen(true)}
           className="relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center"

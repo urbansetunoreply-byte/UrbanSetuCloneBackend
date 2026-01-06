@@ -233,6 +233,30 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             observer.disconnect();
         };
     }, []);
+    // Mobile Menu Detection
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    useEffect(() => {
+        const checkMobileMenu = () => {
+            setIsMobileMenuOpen(document.body.classList.contains('mobile-menu-open'));
+        };
+
+        // Check initially
+        checkMobileMenu();
+
+        // Observe body for class changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    checkMobileMenu();
+                }
+            });
+        });
+
+        observer.observe(document.body, { attributes: true });
+
+        return () => observer.disconnect();
+    }, []);
+
     const [showVoiceInput, setShowVoiceInput] = useState(false);
     const [showFileUpload, setShowFileUpload] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -4410,7 +4434,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     return (
         <div style={{ display: isContactSupportOpen ? 'none' : 'block' }}>
             {/* Enhanced Floating AI Chat Button */}
-            <div className="fixed bottom-20 right-6 z-50">
+            <div className={`fixed bottom-20 right-6 z-50 ${isMobileMenuOpen ? 'hidden' : ''}`}>
                 <div className="relative">
                     {/* Quick Action Buttons */}
                     {!isOpen && (
