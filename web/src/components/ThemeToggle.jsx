@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FaSun, FaMoon, FaDesktop, FaChevronDown } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
@@ -86,7 +87,17 @@ const ThemeToggle = ({ mobile = false, variant = 'dropdown', className = '' }) =
                 title={`Current theme: ${currentTheme.label}. Click to cycle.`}
                 aria-label="Toggle theme"
             >
-                <currentTheme.icon className="text-xl text-white" />
+                <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                        key={theme}
+                        initial={{ y: -20, opacity: 0, rotate: -90 }}
+                        animate={{ y: 0, opacity: 1, rotate: 0 }}
+                        exit={{ y: 20, opacity: 0, rotate: 90 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <currentTheme.icon className="text-xl text-white" />
+                    </motion.div>
+                </AnimatePresence>
             </button>
         );
     }
