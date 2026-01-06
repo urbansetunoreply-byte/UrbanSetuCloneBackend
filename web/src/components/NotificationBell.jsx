@@ -1198,6 +1198,43 @@ export default function NotificationBell({ mobile = false }) {
                               <FaCheck className="w-3.5 h-3.5" />
                             </button>
                           )}
+                          {allNotifications.length > 0 && (
+                            showClearConfirmation ? (
+                              <div className="flex items-center gap-2 animate-fadeIn bg-gray-50 dark:bg-gray-800 p-1.5 rounded-xl">
+                                <span className="text-[10px] font-bold text-gray-500 hidden sm:inline">Confirm?</span>
+                                <button
+                                  onClick={() => {
+                                    fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
+                                      method: 'DELETE',
+                                      credentials: 'include',
+                                    }).then(() => {
+                                      setAllNotifications([]);
+                                      setUnreadCount(0);
+                                      toast.success('Inbox cleared');
+                                      setShowClearConfirmation(false);
+                                    });
+                                  }}
+                                  className="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-lg"
+                                >
+                                  Yes
+                                </button>
+                                <button
+                                  onClick={() => setShowClearConfirmation(false)}
+                                  className="text-[10px] font-bold text-gray-400 hover:text-gray-600 transition-colors bg-white dark:bg-gray-700 px-2 py-1 rounded-lg shadow-sm"
+                                >
+                                  No
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setShowClearConfirmation(true)}
+                                className="p-2.5 bg-gray-50 dark:bg-gray-800 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all flex items-center gap-1.5"
+                                title="Clear all notifications"
+                              >
+                                <FaTrash className="w-3.5 h-3.5" />
+                              </button>
+                            )
+                          )}
                         </div>
                       </div>
 
