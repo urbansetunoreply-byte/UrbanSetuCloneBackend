@@ -5,12 +5,13 @@ import { toast } from 'react-toastify';
 import { socket } from '../utils/socket.js';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function NotificationBell({ mobile = false }) {
   const navigate = useNavigate();
+  const dragControls = useDragControls();
   const { currentUser } = useSelector((state) => state.user);
   const [notifications, setNotifications] = useState([]);
   const [allNotifications, setAllNotifications] = useState([]);
@@ -612,6 +613,8 @@ export default function NotificationBell({ mobile = false }) {
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 drag="y"
+                dragControls={dragControls}
+                dragListener={false}
                 dragConstraints={{ top: 0 }}
                 dragElastic={{ top: 0, bottom: 0.2 }}
                 onDragEnd={(e, { offset, velocity }) => {
@@ -621,8 +624,11 @@ export default function NotificationBell({ mobile = false }) {
                 }}
                 className="w-full sm:max-w-md bg-white dark:bg-gray-900 sm:rounded-3xl rounded-t-3xl shadow-2xl border border-white/20 dark:border-gray-800 max-h-[92vh] flex flex-col overflow-hidden glass-morphism transition-colors duration-300"
               >
-                {/* Header Strip */}
-                <div className="flex items-center justify-center py-2 sm:hidden">
+                {/* Header Strip - Drag Handle */}
+                <div
+                  className="flex items-center justify-center py-4 sm:hidden cursor-grab active:cursor-grabbing touch-none"
+                  onPointerDown={(e) => dragControls.start(e)}
+                >
                   <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
                 </div>
 
