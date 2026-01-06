@@ -558,13 +558,7 @@ export default function AdminHeader() {
                   <div className={`${getHeaderGradient()} p-6 text-white`}>
                     <div className="flex items-center justify-between">
                       <h2 className="text-xl font-bold">Admin Menu</h2>
-                      <button
-                        className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
-                        aria-label="Close menu"
-                      >
-                        <FaTimes className="text-xl" />
-                      </button>
+                      <ThemeToggle variant="cycle" />
                     </div>
                   </div>
 
@@ -670,9 +664,11 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
         </li>
       </Link>
 
-      <li className={`${mobile ? 'mt-2 mb-2 px-1' : 'flex items-center'}`}>
-        <ThemeToggle mobile={mobile} />
-      </li>
+      {!mobile && (
+        <li className="flex items-center">
+          <ThemeToggle mobile={mobile} />
+        </li>
+      )}
 
       <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium' : 'flex items-center'}`}>
         <NotificationBell mobile={mobile} />

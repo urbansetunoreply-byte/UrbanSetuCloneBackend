@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaSun, FaMoon, FaDesktop, FaChevronDown } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
-const ThemeToggle = ({ mobile = false }) => {
+const ThemeToggle = ({ mobile = false, variant = 'dropdown', className = '' }) => {
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'system');
@@ -70,6 +70,26 @@ const ThemeToggle = ({ mobile = false }) => {
     ];
 
     const currentTheme = themes.find(t => t.id === theme) || themes[2];
+
+    if (variant === 'cycle') {
+        const cycleTheme = () => {
+            const order = ['light', 'dark', 'system'];
+            const currentIndex = order.indexOf(theme !== 'light' && theme !== 'dark' && theme !== 'system' ? 'system' : theme);
+            const nextTheme = order[(currentIndex + 1) % order.length];
+            handleThemeChange(nextTheme);
+        };
+
+        return (
+            <button
+                onClick={cycleTheme}
+                className={`p-2 hover:bg-white/20 rounded-lg transition-colors flex items-center justify-center ${className}`}
+                title={`Current theme: ${currentTheme.label}. Click to cycle.`}
+                aria-label="Toggle theme"
+            >
+                <currentTheme.icon className="text-xl text-white" />
+            </button>
+        );
+    }
 
     if (mobile) {
         return (
