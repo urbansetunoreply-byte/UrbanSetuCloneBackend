@@ -7,7 +7,7 @@ const REFRESH_TOKEN_EXPIRY = '7d'; // 7 days
 
 // Generate access token (short-lived)
 export const generateAccessToken = (payload) => {
-    return jwt.sign(payload, JWT_SECRET, { 
+    return jwt.sign(payload, JWT_SECRET, {
         expiresIn: ACCESS_TOKEN_EXPIRY,
         issuer: 'urbansetu',
         audience: 'urbansetu-users'
@@ -16,7 +16,7 @@ export const generateAccessToken = (payload) => {
 
 // Generate refresh token (long-lived)
 export const generateRefreshToken = (payload) => {
-    return jwt.sign(payload, JWT_SECRET, { 
+    return jwt.sign(payload, JWT_SECRET, {
         expiresIn: REFRESH_TOKEN_EXPIRY,
         issuer: 'urbansetu',
         audience: 'urbansetu-refresh'
@@ -57,10 +57,11 @@ export const generateTokenPair = (payload) => {
 
 // Set secure cookies
 export const setSecureCookies = (res, accessToken, refreshToken) => {
+    const isProduction = process.env.NODE_ENV === 'production';
     const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax', // Lax for dev (HTTP), None for prod (HTTPS)
         path: '/'
     };
 
@@ -79,10 +80,11 @@ export const setSecureCookies = (res, accessToken, refreshToken) => {
 
 // Clear all auth cookies
 export const clearAuthCookies = (res) => {
+    const isProduction = process.env.NODE_ENV === 'production';
     const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         path: '/'
     };
 
