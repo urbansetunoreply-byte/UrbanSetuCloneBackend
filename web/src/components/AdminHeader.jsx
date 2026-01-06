@@ -557,7 +557,7 @@ export default function AdminHeader() {
                   {/* Header */}
                   <div className={`${getHeaderGradient()} p-6 text-white`}>
                     <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold">Admin Menu</h2>
+                      <h2 className="text-xl font-bold">UrbanSetu</h2>
                       <ThemeToggle variant="cycle" />
                     </div>
                   </div>
@@ -714,7 +714,13 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
               textSize="text-xs"
               showBorder={true}
             />
-            <span>Profile</span>
+            <span>
+              {currentUser.firstName
+                ? (currentUser.firstName.length > 15 ? currentUser.firstName.substring(0, 15) + '...' : currentUser.firstName)
+                : (currentUser.username
+                  ? (currentUser.username.length > 15 ? currentUser.username.substring(0, 15) + '...' : currentUser.username)
+                  : 'Profile')}
+            </span>
           </div>
         </li>
       )}

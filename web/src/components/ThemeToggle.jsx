@@ -95,7 +95,7 @@ const ThemeToggle = ({ mobile = false, variant = 'dropdown', className = '' }) =
                         exit={{ y: 20, opacity: 0, rotate: 90 }}
                         transition={{ duration: 0.2 }}
                     >
-                        <currentTheme.icon className="text-xl text-white" />
+                        <currentTheme.icon className={`text-xl ${currentTheme.color}`} />
                     </motion.div>
                 </AnimatePresence>
             </button>

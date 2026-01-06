@@ -512,7 +512,7 @@ export default function Header() {
                   {/* Header */}
                   <div className={`${getHeaderGradient()} p-6 text-white`}>
                     <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold">Menu</h2>
+                      <h2 className="text-xl font-bold">UrbanSetu</h2>
                       <ThemeToggle variant="cycle" />
                     </div>
                   </div>
@@ -543,31 +543,33 @@ export default function Header() {
                     />
                   </div>
 
-                  {/* Android App Download - Mobile */}
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <button
-                      onClick={async () => {
-                        const result = await downloadAndroidApp();
-                        if (result.success) {
-                          toast.success(result.message);
-                        } else {
-                          toast.error(result.message);
-                        }
-                        setMobileMenuOpen(false);
-                      }}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 font-medium"
-                    >
-                      <FaDownload className="text-lg" />
-                      <span>{getDownloadButtonText()}</span>
-                    </button>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-                      Download our Android app for the best mobile experience!
-                    </p>
-                  </div>
+
 
                   {/* Navigation Links */}
                   <div className="flex-1 overflow-y-auto p-6">
                     <UserNavLinks mobile onNavigate={() => setMobileMenuOpen(false)} signout={signout} />
+
+                    {/* Android App Download - Moved to bottom */}
+                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={async () => {
+                          const result = await downloadAndroidApp();
+                          if (result.success) {
+                            toast.success(result.message);
+                          } else {
+                            toast.error(result.message);
+                          }
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 font-medium shadow-lg hover:shadow-xl transform transition-all active:scale-95"
+                      >
+                        <FaDownload className="text-lg" />
+                        <span>{getDownloadButtonText()}</span>
+                      </button>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3 font-medium">
+                        Download our Android app for the best mobile experience!
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -858,7 +860,13 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
                   textSize="text-xs"
                   showBorder={true}
                 />
-                <span>Profile</span>
+                <span>
+                  {currentUser.firstName
+                    ? (currentUser.firstName.length > 15 ? currentUser.firstName.substring(0, 15) + '...' : currentUser.firstName)
+                    : (currentUser.username
+                      ? (currentUser.username.length > 15 ? currentUser.username.substring(0, 15) + '...' : currentUser.username)
+                      : 'Profile')}
+                </span>
               </div>
             </li>
           )}
