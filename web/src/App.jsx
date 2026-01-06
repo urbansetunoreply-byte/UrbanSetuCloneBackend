@@ -434,8 +434,8 @@ function AppRoutes({ bootstrapped }) {
           dispatch(signoutUserSuccess());
         }
       } catch (err) {
-        dispatch(verifyAuthFailure('Network error'));
-        dispatch(signoutUserSuccess());
+        console.warn('Session verification network error, keeping existing state:', err);
+        // Do NOT sign out on network error - allow offline usage or retry later
       } finally {
         setSessionChecked(true);
       }
@@ -697,11 +697,9 @@ function AppRoutes({ bootstrapped }) {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/auth/verify`, { credentials: 'include' });
-        if (res.status === 401) {
-          // Session expired - silently sign out user
-          dispatch(signoutUserSuccess());
-          navigate("/sign-in");
-        } else if (res.status === 403) {
+
+        // Handle Account Suspension (403) eagerly for security
+        if (res.status === 403) {
           try {
             const data = await res.clone().json();
             if (data.message && data.message.toLowerCase().includes("suspended")) {
@@ -711,6 +709,12 @@ function AppRoutes({ bootstrapped }) {
             }
           } catch (e) { }
         }
+
+        // NOTE: We intentionally DO NOT handle 401 (Session Expired) here to prevent 
+        // interrupting the user's workflow (e.g. while typing). 
+        // If the session is truly dead, their next interaction will naturally fail 
+        // and redirect them, or they can refresh manually.
+
       } catch (e) {
         // Network errors or other issues - ignore silently
       }
