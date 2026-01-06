@@ -543,7 +543,7 @@ export default function AdminHeader() {
         {/* Mobile Navigation Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden">
-            <div className="fixed inset-0 z-50">
+            <div className="fixed inset-0 z-[200]">
               {/* Backdrop */}
               <div
                 className="absolute inset-0 bg-black/70 backdrop-blur-md animate-mobile-backdrop-in"

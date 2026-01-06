@@ -600,7 +600,7 @@ export default function NotificationBell({ mobile = false }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 flex items-end justify-center sm:hidden backdrop-blur-sm bg-black/60"
+              className="fixed inset-0 z-[1000] flex items-end justify-center sm:hidden backdrop-blur-sm bg-black/60"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setIsOpen(false);
