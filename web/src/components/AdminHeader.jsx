@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
@@ -28,6 +29,7 @@ export default function AdminHeader() {
   const [appointmentCount, setAppointmentCount] = useState(0);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
   const { signout } = useSignout();
 
   // NEW: For desktop search icon expansion
@@ -225,7 +227,12 @@ export default function AdminHeader() {
     }
   };
 
-  const handleSignout = async () => {
+  const handleSignout = () => {
+    setShowSignOutModal(true);
+  };
+
+  const confirmSignout = async () => {
+    setShowSignOutModal(false);
     await signout({
       showToast: true,
       navigateTo: "/",
@@ -598,6 +605,50 @@ export default function AdminHeader() {
           </div>
         )}
       </header>
+      {/* Sign Out Confirmation Modal */}
+      <AnimatePresence>
+        {showSignOutModal && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSignOutModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
+            >
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <LogOut className="text-2xl text-red-600 dark:text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Sign Out</h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">
+                  Are you sure you want to sign out? You will need to sign in again to access admin features.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowSignOutModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmSignout}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-red-500/30"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
