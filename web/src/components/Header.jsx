@@ -813,6 +813,31 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
             <NotificationBell mobile={mobile} />
           </li>
 
+          {/* Profile for mobile */}
+          {mobile && (
+            <li>
+              <div
+                className="cursor-pointer transition-transform duration-300 hover:scale-110 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium"
+                onClick={() => { navigate("/user/profile"); if (onNavigate) onNavigate(); }}
+                title="Profile"
+              >
+                <UserAvatar
+                  user={currentUser}
+                  size="h-7 w-7"
+                  textSize="text-xs"
+                  showBorder={true}
+                />
+                <span>
+                  {currentUser.firstName
+                    ? (currentUser.firstName.length > 15 ? currentUser.firstName.substring(0, 15) + '...' : currentUser.firstName)
+                    : (currentUser.username
+                      ? (currentUser.username.length > 15 ? currentUser.username.substring(0, 15) + '...' : currentUser.username)
+                      : 'Profile')}
+                </span>
+              </div>
+            </li>
+          )}
+
           <li
             className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium cursor-pointer animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base cursor-pointer flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}
             onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
@@ -846,30 +871,7 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
             </li>
           )}
 
-          {/* Profile for mobile */}
-          {mobile && (
-            <li>
-              <div
-                className="cursor-pointer transition-transform duration-300 hover:scale-110 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium"
-                onClick={() => { navigate("/user/profile"); if (onNavigate) onNavigate(); }}
-                title="Profile"
-              >
-                <UserAvatar
-                  user={currentUser}
-                  size="h-7 w-7"
-                  textSize="text-xs"
-                  showBorder={true}
-                />
-                <span>
-                  {currentUser.firstName
-                    ? (currentUser.firstName.length > 15 ? currentUser.firstName.substring(0, 15) + '...' : currentUser.firstName)
-                    : (currentUser.username
-                      ? (currentUser.username.length > 15 ? currentUser.username.substring(0, 15) + '...' : currentUser.username)
-                      : 'Profile')}
-                </span>
-              </div>
-            </li>
-          )}
+
         </>
       ) : (
         <>
