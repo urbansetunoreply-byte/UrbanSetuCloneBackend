@@ -842,7 +842,13 @@ export const Signout = async (req, res, next) => {
 
 export const verifyAuth = async (req, res, next) => {
     try {
-        const accessToken = req.cookies.access_token;
+        let accessToken = req.cookies.access_token;
+
+        // Fallback: Check Authorization header if cookie is missing
+        if (!accessToken && req.headers.authorization?.startsWith('Bearer ')) {
+            accessToken = req.headers.authorization.split(' ')[1];
+        }
+
         const refreshToken = req.cookies.refresh_token;
 
         if (!accessToken && !refreshToken) {
