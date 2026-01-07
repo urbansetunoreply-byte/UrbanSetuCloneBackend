@@ -1010,7 +1010,8 @@ export const searchUsers = async (req, res, next) => {
             $or: [
                 { username: { $regex: q, $options: 'i' } },
                 { email: { $regex: q, $options: 'i' } }
-            ]
+            ],
+            role: { $nin: ['admin', 'rootadmin'] }
         })
             .select('username email _id avatar')
             .limit(10);
