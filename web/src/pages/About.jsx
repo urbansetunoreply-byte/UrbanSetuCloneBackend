@@ -275,7 +275,7 @@ export default function About() {
                     <img src="/images/bhavith_ceo_2.jpg" alt="Bhavith Tungena - Speaking" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
                   </div>
                   <div className="col-span-1 rounded-2xl overflow-hidden shadow-xl h-36 transform -rotate-2 hover:rotate-0 transition-all duration-500 border-2 border-white dark:border-gray-800 mt-4">
-                    <img src="/images/bhavith_ceo_3.jpg" alt="Bhavith Tungena - Event" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
+                    <img src="/images/bhavith_ceo_3.jpg" alt="Bhavith Tungena - Event" className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-700" />
                   </div>
                   <div className="col-span-1 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-white h-36 border-2 border-white dark:border-gray-800 shadow-xl transform rotate-1 hover:rotate-0 transition-all duration-500">
                     <div className="text-center p-4">
