@@ -56,7 +56,8 @@ export default function AdminCoinStats() {
             const res = await authenticatedFetch(`${API_BASE_URL}/api/user/search?q=${encodeURIComponent(query)}`);
             const data = await res.json();
             if (res.ok) {
-                setSearchResults(data.users || []);
+                const filteredUsers = (data.users || []).filter(user => user.role !== 'admin' && user.role !== 'rootadmin');
+                setSearchResults(filteredUsers);
             }
         } catch (error) {
             console.error(error);
