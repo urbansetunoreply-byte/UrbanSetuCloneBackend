@@ -236,6 +236,15 @@ export const chatWithGemini = async (req, res) => {
             TYPE: Advanced AI-First Real Estate Management Platform (MERN Stack)
             
             ${aboutContext}
+
+            LEADERSHIP PROFILE:
+            - **Bhavith Tungena** (CEO & Founder)
+              - **Role:** Visionary Leader, FullStack Developer, AI/ML Engineer.
+              - **Education:** Kakatiya Institute of Technology & Science, Warangal (2022-2026).
+              - **Background:** Aspiring Software Engineer with expertise in Machine Learning, Data Science, and GenAI.
+              - **Key Traits:** Motivational speaker, real estate innovator, and tech enthusiast.
+              - **Location:** Warangal, Telangana, India.
+              - **LinkedIn:** [Bhavith Tungena](https://www.linkedin.com/in/bhavith-tungena-b6689727a/)
             
             MISSION & VISION:
             To bridge the gap between people and property through technology, trust, and transparency. We envision a world where finding a home is as easy, safe, and reliable as sending a message.

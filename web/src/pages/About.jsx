@@ -234,24 +234,79 @@ export default function About() {
         </div>
 
         {/* 8. Team Section */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-purple-900/10 p-8 transition-colors">
-          <h2 className="text-3xl font-bold text-purple-700 dark:text-purple-400 flex items-center gap-3 mb-6 text-center justify-center">
-            <FaUserFriends className="text-purple-500" /> Meet Our Team
-          </h2>
-          <p className="text-lg text-slate-700 dark:text-gray-300 text-center mb-8 max-w-4xl mx-auto">
-            {aboutData.team || ''}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(aboutData.teamMembers || []).map((member, idx) => (
-              <div key={idx} className="bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/20 rounded-lg p-6 border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow">
-                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg">
-                  {member.name.split(' ').map(n => n[0]).join('')}
+        <div className="space-y-8">
+          {/* CEO Spotlight */}
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-purple-900/10 p-8 transition-colors">
+            <h2 className="text-3xl font-bold text-purple-700 dark:text-purple-400 flex items-center gap-3 mb-8 text-center justify-center">
+              <FaUserFriends className="text-purple-500" /> Leadership Spotlight
+            </h2>
+            <div className="flex flex-col lg:flex-row items-center lg:items-start gap-12 max-w-6xl mx-auto">
+              {/* Left: Main Profile */}
+              <div className="flex-1 text-center lg:text-left">
+                <div className="w-56 h-56 mx-auto lg:mx-0 relative rounded-full overflow-hidden border-4 border-purple-500 shadow-2xl mb-6 transform hover:scale-105 transition-transform duration-300">
+                  <img src="/images/bhavith_ceo.png" alt="Bhavith Tungena" className="w-full h-full object-cover" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-1">{member.name}</h3>
-                <p className="text-blue-600 dark:text-blue-400 font-medium mb-2">{member.role}</p>
-                <p className="text-sm text-slate-600 dark:text-gray-400">{member.description}</p>
+                <h3 className="text-3xl font-extrabold text-gray-800 dark:text-white mb-2">Bhavith Tungena</h3>
+                <div className="inline-block bg-blue-100 dark:bg-blue-900/30 px-4 py-1 rounded-full mb-4">
+                  <p className="text-blue-700 dark:text-blue-400 font-bold text-lg">CEO & Founder</p>
+                </div>
+                <p className="text-lg text-slate-600 dark:text-gray-300 italic mb-6 leading-relaxed">
+                  "Innovating at the intersection of Real Estate and Artificial Intelligence."
+                </p>
+                <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-xl border border-purple-100 dark:border-purple-800 shadow-sm text-left">
+                  <h4 className="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                    <FaRocket className="text-purple-500" /> Visionary & Technologist
+                  </h4>
+                  <p className="text-slate-600 dark:text-gray-400 mb-4 leading-relaxed">
+                    A visionary leader and motivational speaker with immense experience in real estate and software development.
+                    Expertise in <strong>Machine Learning, Data Science, and GenAI</strong>.
+                    Currently pursuing engineering at <span className="text-purple-600 dark:text-purple-400 font-medium">Kakatiya Institute of Technology & Science, Warangal (2022-2026)</span>.
+                  </p>
+                  <a href="https://www.linkedin.com/in/bhavith-tungena-b6689727a/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-lg font-medium transition-all shadow-md hover:shadow-lg">
+                    <FaGlobe /> Connect on LinkedIn
+                  </a>
+                </div>
               </div>
-            ))}
+
+              {/* Right: Featured Moments / Gallery */}
+              <div className="flex-1 w-full max-w-md lg:max-w-none">
+                <div className="grid grid-cols-2 gap-4 relative">
+                  <div className="col-span-1 row-span-2 rounded-2xl overflow-hidden shadow-xl h-80 transform rotate-2 hover:rotate-0 transition-all duration-500 border-2 border-white dark:border-gray-800">
+                    <img src="/images/bhavith_ceo_2.jpg" alt="Bhavith Tungena - Speaking" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
+                  </div>
+                  <div className="col-span-1 rounded-2xl overflow-hidden shadow-xl h-36 transform -rotate-2 hover:rotate-0 transition-all duration-500 border-2 border-white dark:border-gray-800 mt-4">
+                    <img src="/images/bhavith_ceo_3.jpg" alt="Bhavith Tungena - Event" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
+                  </div>
+                  <div className="col-span-1 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-white h-36 border-2 border-white dark:border-gray-800 shadow-xl transform rotate-1 hover:rotate-0 transition-all duration-500">
+                    <div className="text-center p-4">
+                      <FaStar className="text-3xl mx-auto mb-2 text-yellow-300" />
+                      <span className="font-bold text-sm">Most Eligible & Motivational Speaker</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-purple-900/10 p-8 transition-colors">
+            <h2 className="text-3xl font-bold text-purple-700 dark:text-purple-400 flex items-center gap-3 mb-6 text-center justify-center">
+              <FaUserFriends className="text-purple-500" /> Meet Our Team
+            </h2>
+            <p className="text-lg text-slate-700 dark:text-gray-300 text-center mb-8 max-w-4xl mx-auto">
+              {aboutData.team || ''}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {(aboutData.teamMembers || []).map((member, idx) => (
+                <div key={idx} className="bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/20 rounded-lg p-6 border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow">
+                  <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg">
+                    {member.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-1">{member.name}</h3>
+                  <p className="text-blue-600 dark:text-blue-400 font-medium mb-2">{member.role}</p>
+                  <p className="text-sm text-slate-600 dark:text-gray-400">{member.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
