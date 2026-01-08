@@ -24,7 +24,7 @@ export default function RewardsSkeleton() {
 
                 {/* Tabs Skeleton */}
                 <div className="flex gap-2 mb-8 bg-white dark:bg-gray-800 p-2 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-x-auto transition-colors duration-300">
-                    {[1, 2, 3, 4, 5].map(i => (
+                    {[1, 2, 3, 4, 5, 6].map(i => (
                         <div key={i} className="h-12 w-32 bg-gray-200 dark:bg-gray-700 rounded-xl flex-shrink-0 transition-colors duration-300"></div>
                     ))}
                 </div>

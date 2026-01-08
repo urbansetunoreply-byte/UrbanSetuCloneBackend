@@ -142,6 +142,7 @@ export default function Rewards() {
     };
 
     const tabs = [
+        { id: 'overview', label: 'Overview', icon: <FaRocket /> },
         { id: 'rewards', label: 'Redeem', icon: <FaGift /> },
         { id: 'activities', label: 'Earn More', icon: <FaStar /> },
         { id: 'referrals', label: 'Referrals', icon: <FaUserFriends /> },
