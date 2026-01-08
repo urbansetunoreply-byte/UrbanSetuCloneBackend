@@ -29,6 +29,7 @@ const coinTransactionSchema = new mongoose.Schema({
             "admin_adjustment",
             "redemption_rent_fee",
             "redemption_coupon",
+            "monthly_leaderboard_reward",
             "other"
         ],
         required: true

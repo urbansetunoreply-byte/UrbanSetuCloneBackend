@@ -82,6 +82,7 @@ import { startScheduledSync } from "./services/scheduledSyncService.js";
 import { initializeYearInReviewScheduler } from "./utils/yearInReviewScheduler.js";
 import { startCoinExpiryScheduler } from "./schedulers/coinExpiryScheduler.js";
 import { startFestivalGreetingScheduler } from "./schedulers/festivalGreetingScheduler.js";
+import { startMonthlyLeaderboardScheduler } from "./schedulers/monthlyLeaderboardScheduler.js";
 
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -173,6 +174,7 @@ connectToMongoDB().then(() => {
   initializeYearInReviewScheduler();
   startCoinExpiryScheduler();
   startFestivalGreetingScheduler();
+  startMonthlyLeaderboardScheduler();
 });
 
 const __dirname = path.resolve();

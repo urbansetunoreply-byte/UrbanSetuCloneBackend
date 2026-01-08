@@ -15570,3 +15570,57 @@ export const sendCommentDeletedEmail = async (email, username, blogTitle, blogId
     return createErrorResponse(error, 'comment_deleted');
   }
 };
+
+// Send Leaderboard Bonus Email
+export const sendLeaderboardBonusEmail = async (email, username, rank, amount, monthName) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `You won the Monthly Leaderboard! - UrbanSetu`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #f59e0b; margin: 0; font-size: 28px;">Congratulations! 🏆</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Monthly Leaderboard Winner</p>
+          </div>
+          
+          <div style="background-color: #fffbeb; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+            <h2 style="color: #92400e; margin: 0 0 15px 0; font-size: 20px;">You are a Top Earner!</h2>
+            <p style="color: #92400e; margin: 0 0 15px 0; line-height: 1.6;">
+              Incredible job, <strong>${username}</strong>! You finished <strong>Rank #${rank}</strong> in the ${monthName} leaderboard race.
+            </p>
+            
+            <div style="background-color: #f59e0b; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+              <span style="font-size: 14px; display:block; margin-bottom:5px;">You've won a bonus of</span>
+              <span style="font-size: 32px; font-weight: bold;">${amount} SetuCoins</span>
+            </div>
+            
+            <p style="color: #92400e; margin: 0; font-size: 14px;">
+              Your rewards count towards your lifetime status. Keep participating to stay on top!
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <a href="https://urbansetu.vercel.app/user/rewards?tab=leaderboard" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold;">View Leaderboard</a>
+          </div>
+
+          <div style="text-align: center; margin-top: 20px;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'leaderboard_bonus') :
+      createErrorResponse(new Error(result.error), 'leaderboard_bonus');
+  } catch (error) {
+    return createErrorResponse(error, 'leaderboard_bonus');
+  }
+};

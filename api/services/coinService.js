@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import CoinTransaction from "../models/coinTransaction.model.js";
 import mongoose from "mongoose";
+import { sendLeaderboardBonusEmail } from "../utils/emailService.js";
 
 /**
  * Service to handle SetuCoins operations
@@ -456,6 +457,109 @@ class CoinService {
             frozenAmount: totalExpired
         };
     }
+
+    /**
+     * Process Monthly Leaderboard Rewards
+     * Run this on the 1st of every month to reward previous month's winners.
+     */
+    async processMonthlyLeaderboardRewards() {
+        console.log('🏆 Starting Monthly Leaderboard Reward Processing...');
+
+        // 1. Calculate Date Range (Previous Month)
+        const now = new Date();
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+
+        const monthName = startOfLastMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+        console.log(`   Processing for period: ${monthName}`);
+
+        // 2. Aggregate Transactions to find Top Earners
+        const leaderboard = await CoinTransaction.aggregate([
+            {
+                $match: {
+                    type: 'credit',
+                    // Exclude rewards/adjustments to prevent feedback loops and ensure fair play
+                    source: {
+                        $in: [
+                            'signup_bonus',
+                            'profile_completion',
+                            'rent_payment',
+                            'rent_streak_bonus',
+                            'review_reward',
+                            'referral',
+                            'other' // Including other for now, but usually should be specific
+                        ]
+                    },
+                    createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth }
+                }
+            },
+            {
+                $group: {
+                    _id: '$userId',
+                    totalEarned: { $sum: '$amount' }
+                }
+            },
+            { $sort: { totalEarned: -1 } },
+            { $limit: 3 }
+        ]);
+
+        if (leaderboard.length === 0) {
+            console.log('   No eligible users found for rewards.');
+            return;
+        }
+
+        // 3. Define Rewards
+        const rewards = [1000, 500, 200]; // 1st, 2nd, 3rd
+
+        for (let i = 0; i < leaderboard.length; i++) {
+            const winnerId = leaderboard[i]._id;
+            const amount = rewards[i];
+            const rank = i + 1;
+
+            try {
+                // Check if already rewarded (Idempotency)
+                // We use source 'monthly_leaderboard_reward'
+                const existingReward = await CoinTransaction.findOne({
+                    userId: winnerId,
+                    type: 'credit',
+                    source: 'monthly_leaderboard_reward',
+                    description: { $regex: new RegExp(`Rank #${rank} - ${monthName}`) }
+                });
+
+                if (existingReward) {
+                    console.log(`   ⚠️ Reward already given to ${winnerId} for Rank ${rank}`);
+                    continue;
+                }
+
+                // Credit the user
+                await this.credit({
+                    userId: winnerId,
+                    amount: amount,
+                    source: 'monthly_leaderboard_reward',
+                    description: `Monthly Leaderboard Bonus - Rank #${rank} - ${monthName}`,
+                });
+
+                // Fetch user details for email
+                const user = await User.findById(winnerId);
+                if (user) {
+                    await sendLeaderboardBonusEmail(
+                        user.email,
+                        user.username || 'UrbanSetu User',
+                        rank,
+                        amount,
+                        monthName
+                    );
+                    console.log(`   ✅ Rewarded ${user.username} (Rank ${rank}): ${amount} coins`);
+                }
+
+            } catch (err) {
+                console.error(`   ❌ Failed to process reward for Rank ${rank} (User: ${winnerId}):`, err);
+            }
+        }
+
+        console.log('🏆 Monthly Leaderboard Processing Complete.');
+    }
 }
+
 
 export default new CoinService();
