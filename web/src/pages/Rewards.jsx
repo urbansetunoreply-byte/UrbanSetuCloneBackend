@@ -484,7 +484,7 @@ export default function Rewards() {
                     )}
 
                     {activeTab === 'referrals' && (
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             {/* Stats Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl">
@@ -499,56 +499,67 @@ export default function Rewards() {
                                 </div>
                             </div>
 
-                            {/* Invite CTA */}
-                            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-slate-100 dark:border-gray-700 text-center">
-                                <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Invite friends, earn rewards!</h3>
-                                <p className="text-slate-500 dark:text-gray-400 mb-6 max-w-lg mx-auto">Share your unique link. When they join, you get <span className="text-indigo-600 dark:text-indigo-400 font-bold">100 coins</span> and they get <span className="text-indigo-600 dark:text-indigo-400 font-bold">50 coins</span>.</p>
-                                <button
-                                    onClick={() => setShowReferral(true)}
-                                    className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30"
-                                >
-                                    Invite Friends Now
-                                </button>
-                            </div>
-
-                            {/* Referred Users List */}
+                            {/* Merged Invite & Network Section */}
                             <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
-                                <div className="p-6 border-b border-slate-50 dark:border-gray-700">
-                                    <h3 className="text-xl font-bold text-slate-800 dark:text-white">Your Network</h3>
+                                {/* Header with Invite CTA */}
+                                <div className="p-8 border-b border-slate-50 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-800/50">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Your Network</h3>
+                                            <p className="text-slate-500 dark:text-gray-400 text-sm max-w-md">
+                                                Earn <span className="font-bold text-indigo-600 dark:text-indigo-400">100 coins</span> for every friend who joins. They get <span className="font-bold text-indigo-600 dark:text-indigo-400">50 coins</span> too!
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowReferral(true)}
+                                            className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30 flex items-center gap-2 whitespace-nowrap md:w-auto w-full justify-center"
+                                        >
+                                            <FaUserFriends /> Invite Friend
+                                        </button>
+                                    </div>
                                 </div>
-                                {referralStats.loading ? (
-                                    <div className="p-8 text-center text-slate-400">Loading...</div>
-                                ) : referralStats.referredUsers.length === 0 ? (
-                                    <div className="p-12 text-center text-slate-400">
-                                        <FaUserFriends className="text-5xl mx-auto mb-4 text-slate-200 dark:text-gray-700" />
-                                        <p>You haven't invited anyone yet.</p>
-                                    </div>
-                                ) : (
-                                    <div className="divide-y divide-slate-50 dark:divide-gray-700">
-                                        {referralStats.referredUsers.map((user) => (
-                                            <div key={user.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                                                        {user.avatar ? (
-                                                            <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <span className="text-xl font-bold text-slate-400 dark:text-gray-500">{user.username.charAt(0).toUpperCase()}</span>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-bold text-slate-800 dark:text-white">{user.username}</h4>
-                                                        <p className="text-xs text-slate-500 dark:text-gray-400 flex items-center gap-1">
-                                                            Joined <FaCalendarAlt className="text-[10px]" /> {new Date(user.joinedAt).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-bold">
-                                                    Referral Active
-                                                </div>
+
+                                {/* Network List */}
+                                <div className="bg-white dark:bg-gray-800">
+                                    {referralStats.loading ? (
+                                        <div className="p-12 text-center text-slate-400">Loading your network...</div>
+                                    ) : referralStats.referredUsers.length === 0 ? (
+                                        <div className="p-12 text-center flex flex-col items-center justify-center">
+                                            <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 rounded-full flex items-center justify-center mb-4 text-2xl">
+                                                <FaUserFriends />
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
+                                            <h4 className="text-lg font-bold text-slate-700 dark:text-gray-300 mb-1">No referrals yet</h4>
+                                            <p className="text-slate-400 dark:text-gray-500 text-sm">Start inviting friends to build your network and earn coins!</p>
+                                        </div>
+                                    ) : (
+                                        <div className="divide-y divide-slate-50 dark:divide-gray-700">
+                                            {referralStats.referredUsers.map((user) => (
+                                                <div key={user.id} className="p-4 md:px-8 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors group">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border-2 ${user.isDeleted ? 'bg-gray-100 border-gray-200 dark:bg-gray-700 dark:border-gray-600' : 'bg-slate-100 border-white shadow-sm dark:bg-gray-700 dark:border-gray-600'}`}>
+                                                            {user.avatar ? (
+                                                                <img src={user.avatar} alt={user.username} className={`w-full h-full object-cover ${user.isDeleted ? 'grayscale opacity-50' : ''}`} />
+                                                            ) : (
+                                                                <span className="text-lg font-bold text-slate-400 dark:text-gray-500">{user.username.charAt(0).toUpperCase()}</span>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className={`font-bold ${user.isDeleted ? 'text-gray-400 dark:text-gray-500 italic' : 'text-slate-800 dark:text-white'}`}>
+                                                                {user.username} {user.isDeleted && <span className="text-[10px] bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded ml-2 not-italic font-normal">Deleted</span>}
+                                                            </h4>
+                                                            <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
+                                                                Joined <FaCalendarAlt className="text-[10px]" /> {new Date(user.joinedAt).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="md:px-4 md:py-1.5 px-3 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full text-xs font-bold border border-green-100 dark:border-green-900/50">
+                                                        +100 Coins
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}

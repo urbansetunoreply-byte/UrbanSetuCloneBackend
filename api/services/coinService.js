@@ -345,7 +345,7 @@ class CoinService {
             source: 'referral',
             type: 'credit',
             referenceModel: 'User'
-        }).select('referenceId amount');
+        }).select('referenceId amount description createdAt');
 
         const transactionUserIds = referralTransactions
             .map(tx => tx.referenceId)
@@ -362,18 +362,43 @@ class CoinService {
             .select('username createdAt avatar')
             .sort({ createdAt: -1 });
 
-        // 5. Calculate Total Earned
+        // 5. Construct Final List (handling deleted users by checking transactions)
+        const finalReferredUsers = uniqueUserIds.map(id => {
+            const userProfile = allReferredUsers.find(u => u._id.toString() === id.toString());
+
+            if (userProfile) {
+                return {
+                    id: userProfile._id,
+                    username: userProfile.username,
+                    avatar: userProfile.avatar,
+                    joinedAt: userProfile.createdAt
+                };
+            }
+
+            // Fallback: Try to find name from transaction history if user is deleted/missing
+            const tx = referralTransactions.find(t => t.referenceId && t.referenceId.toString() === id.toString());
+            let fallbackName = "Unknown User";
+            if (tx && tx.description) {
+                // expecting format: "Referral bonus for inviting [Name]"
+                const match = tx.description.match(/inviting\s+(.*?)(\s*\(|$)/); // Matches name until "(" or end
+                if (match && match[1]) fallbackName = match[1];
+            }
+
+            return {
+                id: id,
+                username: fallbackName,
+                avatar: null, // Default placeholder will be used
+                joinedAt: tx ? tx.createdAt : new Date(),
+                isDeleted: true
+            };
+        });
+
         const totalEarned = referralTransactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
 
         return {
             referralsCount: uniqueUserIds.length,
             totalEarned,
-            referredUsers: allReferredUsers.map(u => ({
-                id: u._id,
-                username: u.username,
-                avatar: u.avatar,
-                joinedAt: u.createdAt
-            }))
+            referredUsers: finalReferredUsers
         };
     }
 
