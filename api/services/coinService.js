@@ -335,6 +335,12 @@ class CoinService {
         // Count users who were referred by this user
         const referralsCount = await User.countDocuments({ 'gamification.referredBy': userId });
 
+        // Get details of referred users
+        const referredUsers = await User.find({ 'gamification.referredBy': userId })
+            .select('username createdAt avatar')
+            .sort({ createdAt: -1 })
+            .limit(50); // Limit to last 50 referrals for performance
+
         // Calculate total coins earned from referrals
         const referralTransactions = await CoinTransaction.aggregate([
             { $match: { userId: new mongoose.Types.ObjectId(userId), source: 'referral', type: 'credit' } },
@@ -345,7 +351,13 @@ class CoinService {
 
         return {
             referralsCount,
-            totalEarned
+            totalEarned,
+            referredUsers: referredUsers.map(u => ({
+                id: u._id,
+                username: u.username,
+                avatar: u.avatar,
+                joinedAt: u.createdAt
+            }))
         };
     }
 

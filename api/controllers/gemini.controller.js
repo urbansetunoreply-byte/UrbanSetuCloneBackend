@@ -335,6 +335,15 @@ export const chatWithGemini = async (req, res) => {
             - Route-planner: https://urbansetu.vercel.app/user/route-planner
             - Investment Tools: https://urbansetu.vercel.app/user/investment-tools
             - Device Management: https://urbansetu.vercel.app/user/device-management
+            - Rewards: https://urbansetu.vercel.app/user/rewards
+            - Community Leaderboard: https://urbansetu.vercel.app/user/leaderboard
+            - Property Reviews: https://urbansetu.vercel.app/user/reviews
+            - Rental Ratings: https://urbansetu.vercel.app/user/rental-ratings
+            - Property Verification: https://urbansetu.vercel.app/user/property-verification
+            - Dispute Resolution: https://urbansetu.vercel.app/user/disputes
+            - Rental Loans: https://urbansetu.vercel.app/user/rental-loans
+            - Call History: https://urbansetu.vercel.app/user/call-history
+            - Deleted Listings: https://urbansetu.vercel.app/user/deleted-listings
             `;
 
             const basePrompt = `You are "SetuAI", the advanced AI assistant for UrbanSetu.

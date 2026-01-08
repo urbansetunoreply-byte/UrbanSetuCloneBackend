@@ -53,7 +53,7 @@ export default function Rewards() {
     const [showReferral, setShowReferral] = useState(false);
     const [currentFact, setCurrentFact] = useState(DID_YOU_KNOW_FACTS[0]);
     const [activeContractId, setActiveContractId] = useState(null);
-    const [referralStats, setReferralStats] = useState({ referralsCount: 0, totalEarned: 0, loading: true });
+    const [referralStats, setReferralStats] = useState({ referralsCount: 0, totalEarned: 0, referredUsers: [], loading: true });
 
     useEffect(() => {
         // Pick a random fact on every mountain/visit
@@ -131,6 +131,7 @@ export default function Rewards() {
                 setReferralStats({
                     referralsCount: data.referralsCount || 0,
                     totalEarned: data.totalEarned || 0,
+                    referredUsers: data.referredUsers || [],
                     loading: false
                 });
             }
@@ -141,9 +142,9 @@ export default function Rewards() {
     };
 
     const tabs = [
-        { id: 'overview', label: 'Overview', icon: <FaRocket /> },
         { id: 'rewards', label: 'Redeem', icon: <FaGift /> },
         { id: 'activities', label: 'Earn More', icon: <FaStar /> },
+        { id: 'referrals', label: 'Referrals', icon: <FaUserFriends /> },
         { id: 'history', label: 'History', icon: <FaHistory /> },
         { id: 'leaderboard', label: 'Leaderboard', icon: <FaTrophy /> },
     ];
@@ -479,6 +480,76 @@ export default function Rewards() {
 
                     {activeTab === 'leaderboard' && (
                         <CommunityLeaderboard />
+                    )}
+
+                    {activeTab === 'referrals' && (
+                        <div className="space-y-8">
+                            {/* Stats Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl">
+                                    <FaUserFriends className="absolute bottom-4 right-4 text-6xl text-white/10" />
+                                    <p className="text-indigo-100 font-bold uppercase tracking-wider text-sm mb-1">Friends Invited</p>
+                                    <h3 className="text-4xl font-black">{referralStats.referralsCount}</h3>
+                                </div>
+                                <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl">
+                                    <FaCoins className="absolute bottom-4 right-4 text-6xl text-white/10" />
+                                    <p className="text-orange-100 font-bold uppercase tracking-wider text-sm mb-1">Coins Earned from Referrals</p>
+                                    <h3 className="text-4xl font-black">{referralStats.totalEarned}</h3>
+                                </div>
+                            </div>
+
+                            {/* Invite CTA */}
+                            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-slate-100 dark:border-gray-700 text-center">
+                                <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Invite friends, earn rewards!</h3>
+                                <p className="text-slate-500 dark:text-gray-400 mb-6 max-w-lg mx-auto">Share your unique link. When they join, you get <span className="text-indigo-600 dark:text-indigo-400 font-bold">100 coins</span> and they get <span className="text-indigo-600 dark:text-indigo-400 font-bold">50 coins</span>.</p>
+                                <button
+                                    onClick={() => setShowReferral(true)}
+                                    className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30"
+                                >
+                                    Invite Friends Now
+                                </button>
+                            </div>
+
+                            {/* Referred Users List */}
+                            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
+                                <div className="p-6 border-b border-slate-50 dark:border-gray-700">
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-white">Your Network</h3>
+                                </div>
+                                {referralStats.loading ? (
+                                    <div className="p-8 text-center text-slate-400">Loading...</div>
+                                ) : referralStats.referredUsers.length === 0 ? (
+                                    <div className="p-12 text-center text-slate-400">
+                                        <FaUserFriends className="text-5xl mx-auto mb-4 text-slate-200 dark:text-gray-700" />
+                                        <p>You haven't invited anyone yet.</p>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-slate-50 dark:divide-gray-700">
+                                        {referralStats.referredUsers.map((user) => (
+                                            <div key={user.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                                                        {user.avatar ? (
+                                                            <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <span className="text-xl font-bold text-slate-400 dark:text-gray-500">{user.username.charAt(0).toUpperCase()}</span>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-slate-800 dark:text-white">{user.username}</h4>
+                                                        <p className="text-xs text-slate-500 dark:text-gray-400 flex items-center gap-1">
+                                                            Joined <FaCalendarAlt className="text-[10px]" /> {new Date(user.joinedAt).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-bold">
+                                                    Referral Active
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     )}
                 </div>
 
