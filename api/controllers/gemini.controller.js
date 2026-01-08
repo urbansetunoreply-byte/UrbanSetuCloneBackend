@@ -314,6 +314,12 @@ export const chatWithGemini = async (req, res) => {
             - Privacy Policy: https://urbansetu.vercel.app/privacy
             - Cookie Policy: https://urbansetu.vercel.app/cookie-policy
             - Blogs: https://urbansetu.vercel.app/blogs
+            - Community: https://urbansetu.vercel.app/community
+            - Blog Detail: https://urbansetu.vercel.app/blog/BLOG_TITLE (Replace BLOG_TITLE with actual slug/title)
+            - Forgot Password: https://urbansetu.vercel.app/forgot-password?email= (Append email if known)
+            - Community Guidelines: https://urbansetu.vercel.app/community-guidelines
+            - FAQs: https://urbansetu.vercel.app/faqs
+            - Property Details: https://urbansetu.vercel.app/listing/PROPERTY_ID (Replace PROPERTY_ID with actual ID)
             - Create New Listing: https://urbansetu.vercel.app/user/create-listing
             - My Listings: https://urbansetu.vercel.app/user/my-listings
             - My Appointments: https://urbansetu.vercel.app/user/my-appointments
@@ -325,8 +331,10 @@ export const chatWithGemini = async (req, res) => {
             - Pay Rent: https://urbansetu.vercel.app/user/pay-monthly-rent
             - Settings: https://urbansetu.vercel.app/user/settings
             - AI Assistant: https://urbansetu.vercel.app/user/ai
-            - Admin Dashboard: https://urbansetu.vercel.app/admin
-            - Property Details: https://urbansetu.vercel.app/listing/PROPERTY_ID (Replace PROPERTY_ID with actual ID)
+            - Services: https://urbansetu.vercel.app/user/services
+            - Route-planner: https://urbansetu.vercel.app/user/route-planner
+            - Investment Tools: https://urbansetu.vercel.app/user/investment-tools
+            - Device Management: https://urbansetu.vercel.app/user/device-management
             `;
 
             const basePrompt = `You are "SetuAI", the advanced AI assistant for UrbanSetu.
@@ -343,6 +351,7 @@ export const chatWithGemini = async (req, res) => {
             3. **SMART ROUTING**: ONLY if a user explicitly asks "Where can I see my meetings?" or "Go to appointments" or "Show me X page", explicitly suggest the link using Markdown: "[My Appointments](https://urbansetu.vercel.app/user/my-appointments)".
             4. **PROPERTY LINKING**: When discussing properties, ALWAYS use absolute Markdown links: "[Property Name](https://urbansetu.vercel.app/listing/PROPERTY_ID)".
             5. **STATUS AWARENESS**: Always mention if a property is "[SALE-LOCKED]" or "[RENT-LOCKED]" based on the status provided in the context. Explain that these statuses mean the property is secured and no further negotiations are being accepted for now.
+            6. **AUTHENTICATION AWARENESS**: For any link containing "/user/" (e.g., My Listings, Appointments, Rent Wallet), explicitly mention that the user must be logged in to access it.
              
             GENERAL INSTRUCTIONS:
             - Always provide accurate, helpful, and professional responses.
