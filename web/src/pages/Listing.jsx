@@ -1387,11 +1387,11 @@ export default function Listing() {
 
   if (!listing) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
+      <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-950 dark:to-gray-900 min-h-screen py-10 px-2 md:px-8 transition-colors duration-300">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative dark:border dark:border-gray-700 transition-colors duration-300">
           <div className="text-center">
-            <h3 className="text-2xl font-bold text-red-600 mb-4">Property Not Found</h3>
-            <p className="text-gray-600 mb-6">The property you're looking for doesn't exist or has been removed.</p>
+            <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Property Not Found</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">The property you're looking for doesn't exist or has been removed.</p>
             <Link
               to={backButtonInfo.path}
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold"
