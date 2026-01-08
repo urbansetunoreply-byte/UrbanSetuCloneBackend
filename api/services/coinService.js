@@ -332,27 +332,43 @@ class CoinService {
      * @param {string} userId 
      */
     async getReferralStats(userId) {
-        // Count users who were referred by this user
-        const referralsCount = await User.countDocuments({ 'gamification.referredBy': userId });
+        const userObjectId = new mongoose.Types.ObjectId(userId);
 
-        // Get details of referred users
-        const referredUsers = await User.find({ 'gamification.referredBy': userId })
+        // 1. Get users explicitly linked via 'referredBy'
+        const directlyReferredUsers = await User.find({ 'gamification.referredBy': userId })
+            .select('_id username createdAt avatar');
+
+        // 2. Get users linked via CoinTransactions (Reconciliation fallback)
+        // This ensures if a reward was given (transaction exists) but 'referredBy' link is broken/missing, we still show them.
+        const referralTransactions = await CoinTransaction.find({
+            userId: userObjectId,
+            source: 'referral',
+            type: 'credit',
+            referenceModel: 'User'
+        }).select('referenceId amount');
+
+        const transactionUserIds = referralTransactions
+            .map(tx => tx.referenceId)
+            .filter(id => id); // Filter nulls
+
+        // 3. Combine unique User IDs
+        const uniqueUserIds = [...new Set([
+            ...directlyReferredUsers.map(u => u._id.toString()),
+            ...transactionUserIds.map(id => id.toString())
+        ])];
+
+        // 4. Fetch details for all unique users (in case some were only in transactions)
+        const allReferredUsers = await User.find({ _id: { $in: uniqueUserIds } })
             .select('username createdAt avatar')
-            .sort({ createdAt: -1 })
-            .limit(50); // Limit to last 50 referrals for performance
+            .sort({ createdAt: -1 });
 
-        // Calculate total coins earned from referrals
-        const referralTransactions = await CoinTransaction.aggregate([
-            { $match: { userId: new mongoose.Types.ObjectId(userId), source: 'referral', type: 'credit' } },
-            { $group: { _id: null, totalEarned: { $sum: '$amount' } } }
-        ]);
-
-        const totalEarned = referralTransactions[0]?.totalEarned || 0;
+        // 5. Calculate Total Earned
+        const totalEarned = referralTransactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
 
         return {
-            referralsCount,
+            referralsCount: uniqueUserIds.length,
             totalEarned,
-            referredUsers: referredUsers.map(u => ({
+            referredUsers: allReferredUsers.map(u => ({
                 id: u._id,
                 username: u.username,
                 avatar: u.avatar,
