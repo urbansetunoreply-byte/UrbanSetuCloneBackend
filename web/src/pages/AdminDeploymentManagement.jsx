@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { FaUpload, FaTrash, FaDownload, FaCheck, FaTimes, FaMobile, FaDesktop, FaApple, FaAndroid, FaWindows, FaSpinner, FaCloudUploadAlt, FaHistory, FaInfoCircle, FaRocket, FaFileCode } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -378,6 +378,9 @@ export default function AdminDeploymentManagement() {
               </p>
             </div>
             <div className="flex gap-3">
+              <Link to="/download" target="_blank" className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-100 dark:border-green-800 shadow-sm hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">
+                <FaDownload className="mr-2" /> View Downloads Page
+              </Link>
               <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800 shadow-sm">
                 <FaInfoCircle className="mr-2" /> Max File Size: 200MB
               </span>

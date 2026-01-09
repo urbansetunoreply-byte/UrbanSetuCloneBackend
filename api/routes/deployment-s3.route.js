@@ -60,7 +60,7 @@ const upload = multer({
       mimetype: file.mimetype,
       size: file.size
     });
-    
+
     // Allow specific file types
     const allowedTypes = [
       'application/vnd.android.package-archive', // APK
@@ -70,7 +70,7 @@ const upload = multer({
       'application/x-apple-diskimage', // DMG
       'application/x-newton-compatible-pkg', // PKG
     ];
-    
+
     if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(apk|ipa|exe|msi|dmg|pkg)$/)) {
       cb(null, true);
     } else {
@@ -115,7 +115,7 @@ router.get('/test-s3', async (req, res) => {
         message: 'AWS S3 not configured. Please set AWS_S3_BUCKET_NAME environment variable.'
       });
     }
-    
+
     console.log('Testing S3 connection...');
     const command = new ListBucketsCommand({});
     const result = await s3Client.send(command);
@@ -142,7 +142,7 @@ router.get('/', verifyToken, async (req, res) => {
         message: 'AWS S3 not configured. Please set AWS_S3_BUCKET_NAME environment variable.'
       });
     }
-    
+
     // Root admin only
     if (!req.user || req.user.role !== 'rootadmin') {
       return res.status(403).json({ success: false, message: 'Access denied. Root admin only.' });
@@ -156,21 +156,21 @@ router.get('/', verifyToken, async (req, res) => {
 
     const result = await s3Client.send(command);
     const contents = Array.isArray(result.Contents) ? result.Contents : [];
-    
+
     const files = contents.map(file => {
       const fileName = file.Key.split('/').pop();
       const fileExtension = (fileName.split('.').pop() || '').toLowerCase();
       // Infer platform from key when possible: latest-<platform>-<version>-<ts>.<ext>
       const nameWithoutPrefix = fileName.startsWith('latest-') ? fileName.slice('latest-'.length) : fileName;
       const inferredPlatform = nameWithoutPrefix.split('-')[0];
-      
+
       return {
         id: file.Key,
         name: fileName,
         url: null, // will be presigned on demand
         size: file.Size,
         format: fileExtension,
-        platform: getPlatformFromFormat(fileExtension) !== 'unknown' ? getPlatformFromFormat(fileExtension) : (['android','ios','windows','macos'].includes(inferredPlatform) ? inferredPlatform : 'unknown'),
+        platform: getPlatformFromFormat(fileExtension) !== 'unknown' ? getPlatformFromFormat(fileExtension) : (['android', 'ios', 'windows', 'macos'].includes(inferredPlatform) ? inferredPlatform : 'unknown'),
         version: extractVersionFromFilename(fileName),
         createdAt: file.LastModified,
         isActive: file.Key.includes('latest'),
@@ -199,7 +199,7 @@ router.get('/active', async (req, res) => {
         message: 'AWS S3 not configured. Please set AWS_S3_BUCKET_NAME environment variable.'
       });
     }
-    
+
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
       Prefix: 'mobile-apps/latest-',
@@ -208,20 +208,20 @@ router.get('/active', async (req, res) => {
 
     const result = await s3Client.send(command);
     const contents = Array.isArray(result.Contents) ? result.Contents : [];
-    
+
     const activeFiles = contents.map(file => {
       const fileName = file.Key.split('/').pop();
       const fileExtension = (fileName.split('.').pop() || '').toLowerCase();
       const nameWithoutPrefix = fileName.startsWith('latest-') ? fileName.slice('latest-'.length) : fileName;
       const inferredPlatform = nameWithoutPrefix.split('-')[0];
-      
+
       return {
         id: file.Key,
         name: fileName,
         url: null, // will be presigned on demand
         size: file.Size,
         format: fileExtension,
-        platform: getPlatformFromFormat(fileExtension) !== 'unknown' ? getPlatformFromFormat(fileExtension) : (['android','ios','windows','macos'].includes(inferredPlatform) ? inferredPlatform : 'unknown'),
+        platform: getPlatformFromFormat(fileExtension) !== 'unknown' ? getPlatformFromFormat(fileExtension) : (['android', 'ios', 'windows', 'macos'].includes(inferredPlatform) ? inferredPlatform : 'unknown'),
         version: extractVersionFromFilename(fileName),
         createdAt: file.LastModified,
       };
@@ -236,6 +236,57 @@ router.get('/active', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch active deployment files'
+    });
+  }
+});
+
+// Get all public deployment files (Version History) - S3
+router.get('/public', async (req, res) => {
+  try {
+    if (!bucketName) {
+      return res.status(500).json({
+        success: false,
+        message: 'AWS S3 not configured. Please set AWS_S3_BUCKET_NAME environment variable.'
+      });
+    }
+
+    const command = new ListObjectsV2Command({
+      Bucket: bucketName,
+      Prefix: 'mobile-apps/',
+      MaxKeys: 100 // Fetch more history for public page
+    });
+
+    const result = await s3Client.send(command);
+    const contents = Array.isArray(result.Contents) ? result.Contents : [];
+
+    const files = contents.map(file => {
+      const fileName = file.Key.split('/').pop();
+      const fileExtension = (fileName.split('.').pop() || '').toLowerCase();
+      const nameWithoutPrefix = fileName.startsWith('latest-') ? fileName.slice('latest-'.length) : fileName;
+      const inferredPlatform = nameWithoutPrefix.split('-')[0];
+
+      return {
+        id: file.Key,
+        name: fileName,
+        url: null,
+        size: file.Size,
+        format: fileExtension,
+        platform: getPlatformFromFormat(fileExtension) !== 'unknown' ? getPlatformFromFormat(fileExtension) : (['android', 'ios', 'windows', 'macos'].includes(inferredPlatform) ? inferredPlatform : 'unknown'),
+        version: extractVersionFromFilename(fileName),
+        createdAt: file.LastModified,
+        isActive: file.Key.includes('latest'),
+      };
+    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json({
+      success: true,
+      data: files
+    });
+  } catch (error) {
+    console.error('Error fetching public deployment files:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch public deployment files'
     });
   }
 });
@@ -342,7 +393,7 @@ router.put('/set-active/:id', verifyToken, async (req, res) => {
     }
 
     const { id } = req.params;
-    
+
     // First, remove 'latest' from all files
     const listCommand = new ListObjectsV2Command({
       Bucket: bucketName,
@@ -350,7 +401,7 @@ router.put('/set-active/:id', verifyToken, async (req, res) => {
     });
 
     const allFiles = await s3Client.send(listCommand);
-    
+
     for (const file of allFiles.Contents) {
       if (file.Key.includes('latest')) {
         const newKey = file.Key.replace('latest-', '');
@@ -360,7 +411,7 @@ router.put('/set-active/:id', verifyToken, async (req, res) => {
           Key: newKey
         });
         await s3Client.send(copyCommand);
-        
+
         const deleteCommand = new DeleteObjectCommand({
           Bucket: bucketName,
           Key: file.Key
@@ -372,7 +423,7 @@ router.put('/set-active/:id', verifyToken, async (req, res) => {
     // Set the selected file as active by adding 'latest' prefix
     const fileKey = decodeURIComponent(id);
     const newKey = fileKey.replace('mobile-apps/', 'mobile-apps/latest-');
-    
+
     const copyCommand = new CopyObjectCommand({
       Bucket: bucketName,
       CopySource: `${bucketName}/${fileKey}`,
@@ -403,7 +454,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
     const { id } = req.params;
     const fileKey = decodeURIComponent(id);
-    
+
     const deleteCommand = new DeleteObjectCommand({
       Bucket: bucketName,
       Key: fileKey

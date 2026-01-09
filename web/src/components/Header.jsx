@@ -259,21 +259,14 @@ export default function Header() {
                   <span>📞 +1 (555) 123-4567</span>
                   <span>✉️ info@urbansetu.com</span>
                   {/* Android App Download Button */}
-                  <button
-                    onClick={async () => {
-                      const result = await downloadAndroidApp();
-                      if (result.success) {
-                        toast.success(result.message);
-                      } else {
-                        toast.error(result.message);
-                      }
-                    }}
+                  <Link
+                    to="/download"
                     className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors duration-200 font-medium"
-                    title="Download Android App"
+                    title="Download App"
                   >
                     <FaDownload className="text-xs" />
                     <span>Download App</span>
-                  </button>
+                  </Link>
                 </div>
                 {/* Mobile auth links when logged out */}
                 {!currentUser && (
@@ -551,21 +544,14 @@ export default function Header() {
 
                     {/* Android App Download - Moved to bottom */}
                     <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <button
-                        onClick={async () => {
-                          const result = await downloadAndroidApp();
-                          if (result.success) {
-                            toast.success(result.message);
-                          } else {
-                            toast.error(result.message);
-                          }
-                          setMobileMenuOpen(false);
-                        }}
+                      <Link
+                        to="/download"
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 font-medium shadow-lg hover:shadow-xl transform transition-all active:scale-95"
+                        onClick={() => setMobileMenuOpen(false)}
                       >
                         <FaDownload className="text-lg" />
-                        <span>{getDownloadButtonText()}</span>
-                      </button>
+                        <span>Download App</span>
+                      </Link>
                       <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3 font-medium">
                         Download our Android app for the best mobile experience!
                       </p>

@@ -66,7 +66,7 @@ cloudinary.v2.config({
 });
 
 // Configure multer with memory storage for better control
-const upload = multer({ 
+const upload = multer({
   storage: multer.memoryStorage(), // Use memory storage instead of CloudinaryStorage
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit (Cloudinary's limit)
@@ -79,7 +79,7 @@ const upload = multer({
       mimetype: file.mimetype,
       size: file.size
     });
-    
+
     // Allow specific file types
     const allowedTypes = [
       'application/vnd.android.package-archive', // APK
@@ -89,7 +89,7 @@ const upload = multer({
       'application/x-apple-diskimage', // DMG
       'application/x-newton-compatible-pkg', // PKG
     ];
-    
+
     if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(apk|ipa|exe|msi|dmg|pkg)$/)) {
       cb(null, true);
     } else {
@@ -169,6 +169,40 @@ router.get('/active', async (req, res) => {
   }
 });
 
+// Get all public deployment files (Version History)
+router.get('/public', async (req, res) => {
+  try {
+    const result = await cloudinary.v2.search
+      .expression('folder:mobile-apps')
+      .sort_by('created_at', 'desc')
+      .max_results(50)
+      .execute();
+
+    const files = result.resources.map(file => ({
+      id: file.public_id,
+      name: file.original_filename || file.public_id.split('/').pop(),
+      url: file.secure_url,
+      size: file.bytes,
+      format: file.format,
+      platform: getPlatformFromFormat(file.format),
+      version: extractVersionFromFilename(file.original_filename || file.public_id),
+      createdAt: file.created_at,
+      isActive: file.public_id.includes('latest'),
+    }));
+
+    res.json({
+      success: true,
+      data: files
+    });
+  } catch (error) {
+    console.error('Error fetching public deployment files:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch public deployment files'
+    });
+  }
+});
+
 // Upload new deployment file
 router.post('/upload', verifyToken, upload.single('file'), handleMulterError, async (req, res) => {
   try {
@@ -212,7 +246,7 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
     // Check file size before attempting upload
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
       console.log('File too large for Cloudinary free plan:', file.size);
-      
+
       // For now, we'll reject files larger than 10MB
       // In the future, we can implement alternative hosting
       return res.status(413).json({
@@ -263,7 +297,7 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
     });
   } catch (error) {
     console.error('Error uploading deployment file:', error);
-    
+
     // Handle specific multer errors
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(413).json({
@@ -271,21 +305,21 @@ router.post('/upload', verifyToken, upload.single('file'), handleMulterError, as
         message: 'File too large. Maximum size is 500MB.'
       });
     }
-    
+
     if (error.code === 'LIMIT_UNEXPECTED_FILE') {
       return res.status(400).json({
         success: false,
         message: 'Unexpected file field. Please use the correct form field name.'
       });
     }
-    
+
     if (error.message && error.message.includes('Invalid file type')) {
       return res.status(400).json({
         success: false,
         message: error.message
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Upload failed: ' + (error.message || 'Unknown error')
@@ -301,7 +335,7 @@ router.put('/set-active/:id', verifyToken, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied. Root admin only.' });
     }
     const { id } = req.params;
-    
+
     // First, remove 'latest' from all files
     const allFiles = await cloudinary.v2.search
       .expression('folder:mobile-apps')
@@ -340,7 +374,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied. Root admin only.' });
     }
     const { id } = req.params;
-    
+
     await cloudinary.v2.uploader.destroy(id, { resource_type: 'raw' });
 
     res.json({

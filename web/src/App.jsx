@@ -138,6 +138,7 @@ const Updates = lazy(() => import('./pages/Updates'));
 const LockAccount = lazy(() => import('./pages/security/LockAccount'));
 const UnlockAccount = lazy(() => import('./pages/security/UnlockAccount'));
 const CommunityGuidelines = lazy(() => import('./pages/CommunityGuidelines'));
+const Downloads = lazy(() => import('./pages/Downloads'));
 
 
 // Loading component
@@ -769,6 +770,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/view-chat/preview" element={<ViewChatDocument />} />
             <Route path="/security/lock-account/:token" element={<LockAccount />} />
             <Route path="/security/unlock-account/:token" element={<UnlockAccount />} />
+            <Route path="/download" element={<Downloads />} />
 
             {/* User Routes (Protected) */}
             <Route element={<Private bootstrapped={bootstrapped} />}>

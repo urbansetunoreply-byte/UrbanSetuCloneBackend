@@ -686,20 +686,13 @@ export default function AdminAbout() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
-              <button
-                onClick={async () => {
-                  const result = await downloadAndroidApp();
-                  if (result.success) {
-                    toast.success(result.message);
-                  } else {
-                    toast.error(result.message);
-                  }
-                }}
+              <Link
+                to="/download"
                 className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <FaDownload className="text-xl" />
-                <span>{getDownloadButtonText()}</span>
-              </button>
+                <span>Download App</span>
+              </Link>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">Download our Android app to access UrbanSetu on your mobile device!</p>
           </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
+import { Link } from 'react-router-dom';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaAndroid, FaDownload, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { downloadAndroidApp, getDownloadButtonText } from '../utils/androidDownload';
@@ -391,20 +392,13 @@ export default function PublicAbout() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
-              <button
-                onClick={async () => {
-                  const result = await downloadAndroidApp();
-                  if (result.success) {
-                    toast.success(result.message);
-                  } else {
-                    toast.error(result.message);
-                  }
-                }}
+              <Link
+                to="/download"
                 className="flex items-center gap-2 px-6 py-3 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 text-white rounded-lg transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <FaDownload className="text-xl" />
-                <span>{getDownloadButtonText()}</span>
-              </button>
+                <span>Download App</span>
+              </Link>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors">Download our Android app to access UrbanSetu on your mobile device!</p>
           </div>
