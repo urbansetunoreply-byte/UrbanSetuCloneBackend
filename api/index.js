@@ -207,6 +207,7 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   'https://urbansetu.vercel.app',
+  'https://urbansetuglobal.onrender.com',
   'http://localhost:5173', // for local development
 ];
 
