@@ -118,7 +118,16 @@ export default function Oauth({ pageType, disabled = false, onAuthStart = null, 
                 const result = await signInWithPopup(auth, provider);
                 await processGoogleAuth(result);
             } catch (popupError) {
-                console.log('Popup failed, trying redirect method:', popupError);
+                console.log('Popup failed:', popupError);
+
+                if (popupError.code === 'auth/unauthorized-domain') {
+                    setError(`Domain not authorized. Please add '${window.location.hostname}' to Firebase Console > Auth > Settings > Authorized Domains.`);
+                    setIsLoading(false);
+                    if (onAuthStart) onAuthStart(null);
+                    return;
+                }
+
+                console.log('Trying redirect method...');
 
                 // If popup fails due to CORS or other issues, use redirect
                 const provider = new GoogleAuthProvider();
@@ -130,7 +139,16 @@ export default function Oauth({ pageType, disabled = false, onAuthStart = null, 
             }
         } catch (error) {
             console.error(`Error initiating Google ${pageType}:`, error);
-            setError('Failed to initiate Google authentication. Please try again.');
+
+            let errorMessage = 'Failed to initiate Google authentication. Please try again.';
+
+            if (error.code === 'auth/unauthorized-domain') {
+                errorMessage = `Domain not authorized. Please add '${window.location.hostname}' to Firebase Console > Auth > Settings > Authorized Domains.`;
+            } else if (error.code === 'auth/popup-closed-by-user') {
+                errorMessage = 'Sign-in popup was closed.';
+            }
+
+            setError(errorMessage);
             setIsLoading(false);
 
             // Notify parent component that Google auth failed
