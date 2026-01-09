@@ -424,16 +424,21 @@ function AppRoutes({ bootstrapped }) {
       dispatch(verifyAuthStart());
       try {
         const token = localStorage.getItem('accessToken');
+        const sessionId = localStorage.getItem('sessionId');
         const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
           method: 'GET',
           credentials: 'include',
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...(sessionId ? { 'X-Session-Id': sessionId } : {})
+          }
         });
         const data = await res.json();
         if (res.ok) {
           dispatch(verifyAuthSuccess(data));
         } else {
           localStorage.removeItem('accessToken');
+          localStorage.removeItem('sessionId');
           dispatch(verifyAuthFailure(data.message || 'Session invalid'));
           dispatch(signoutUserSuccess());
         }
@@ -701,9 +706,13 @@ function AppRoutes({ bootstrapped }) {
     const interval = setInterval(async () => {
       try {
         const token = localStorage.getItem('accessToken');
+        const sessionId = localStorage.getItem('sessionId');
         const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
           credentials: 'include',
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...(sessionId ? { 'X-Session-Id': sessionId } : {})
+          }
         });
 
         // Handle Account Suspension (403) eagerly for security
@@ -945,18 +954,24 @@ export default function App() {
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('accessToken');
+        const sessionId = localStorage.getItem('sessionId');
         const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
           credentials: 'include',
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...(sessionId ? { 'X-Session-Id': sessionId } : {})
+          }
         });
         const data = await res.json();
         if (data.success === false) {
           localStorage.removeItem('accessToken');
+          localStorage.removeItem('sessionId');
           dispatch(signoutUserSuccess());
         }
       } catch (error) {
         console.error("Auth check failed:", error);
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('sessionId');
         dispatch(signoutUserSuccess());
       } finally {
         setBootstrapped(true);

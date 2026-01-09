@@ -545,6 +545,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
+                if (data.sessionId) localStorage.setItem('sessionId', data.sessionId);
                 localStorage.setItem('login', Date.now()); // Notify other tabs
             }
 
@@ -657,6 +658,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
+                if (data.sessionId) localStorage.setItem('sessionId', data.sessionId);
                 localStorage.setItem('login', Date.now()); // Notify other tabs
             }
 
