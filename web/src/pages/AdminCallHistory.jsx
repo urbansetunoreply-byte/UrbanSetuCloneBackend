@@ -230,6 +230,7 @@ const AdminCallHistory = () => {
               <input
                 type="date"
                 value={dateRange.start}
+                max={new Date().toISOString().split('T')[0]}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
                 className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm dark:text-white dark:placeholder-gray-400"
               />
@@ -237,6 +238,7 @@ const AdminCallHistory = () => {
               <input
                 type="date"
                 value={dateRange.end}
+                max={new Date().toISOString().split('T')[0]}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
                 className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm dark:text-white dark:placeholder-gray-400"
               />
