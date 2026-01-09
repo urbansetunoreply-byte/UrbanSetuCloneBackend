@@ -770,7 +770,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/view-chat/preview" element={<ViewChatDocument />} />
             <Route path="/security/lock-account/:token" element={<LockAccount />} />
             <Route path="/security/unlock-account/:token" element={<UnlockAccount />} />
-            <Route path="/download" element={<Downloads />} />
+            <Route path="/download" element={currentUser ? <Navigate to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? "/admin/download" : "/user/download"} /> : <Downloads />} />
 
             {/* User Routes (Protected) */}
             <Route element={<Private bootstrapped={bootstrapped} />}>
@@ -823,6 +823,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/leaderboard" element={<Leaderboard />} />
               <Route path="/user/year/:year" element={<YearInReview />} />
               <Route path="/user/updates" element={<Updates />} />
+              <Route path="/user/download" element={<Downloads />} />
 
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
@@ -858,6 +859,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/community-guidelines" element={<CommunityGuidelines />} />
               <Route path="/admin/updates" element={<AdminUpdates />} />
               <Route path="/admin/management" element={<AdminManagement />} />
+              <Route path="/admin/download" element={<Downloads />} />
               <Route path="/admin/reviews" element={<AdminReviews />} />
               <Route path="/admin/services" element={<AdminServices />} />
               <Route path="/admin/route-planner" element={<RoutePlannerAdmin />} />
