@@ -193,6 +193,27 @@ export default function RoutePlanner() {
     };
   }, [mapReady, mapStyle]);
 
+  // Trigger map resize when sidebar state changes
+  useEffect(() => {
+    if (map) {
+      // Resize immediately and periodically during transition
+      const interval = setInterval(() => {
+        map.resize();
+      }, 50);
+
+      // Final resize after transition completes
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        map.resize();
+      }, 350);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+  }, [map, isSidebarOpen]);
+
   // Clear all route sources and layers
   const clearRoutes = useCallback(() => {
     if (!map) return;
