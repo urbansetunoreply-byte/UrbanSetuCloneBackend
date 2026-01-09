@@ -937,7 +937,7 @@ export default function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/verify`);
+        const res = await fetch(`${API_BASE_URL}/api/auth/verify`, { credentials: 'include' });
         const data = await res.json();
         if (data.success === false) {
           dispatch(signoutUserSuccess());
