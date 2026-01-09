@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle, FaTrafficLight, FaLayerGroup, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle, FaTrafficLight, FaLayerGroup, FaChevronLeft, FaChevronRight, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -943,7 +943,7 @@ export default function RoutePlanner() {
     <div className={`flex flex-col lg:flex-row h-screen lg:h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900 overflow-hidden relative ${isFullscreen ? 'fixed inset-0 z-50 h-screen' : ''}`}>
 
       {/* LEFT SIDEBAR - CONTROLS & RESULTS */}
-      <div className={`h-[50vh] lg:h-full bg-white dark:bg-gray-800 shadow-2xl z-20 flex flex-col order-2 lg:order-1 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-full lg:w-[420px] opacity-100' : 'w-full lg:w-0 lg:opacity-0 overflow-hidden'}`}>
+      <div className={`lg:h-full bg-white dark:bg-gray-800 shadow-2xl z-20 flex flex-col order-2 lg:order-1 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'h-[50vh] w-full lg:w-[420px] opacity-100' : 'h-16 w-full lg:w-0 lg:opacity-0 overflow-hidden'}`}>
         <div className="w-full lg:min-w-[420px] h-full flex flex-col">
           {/* Header Section */}
           <div className="p-4 bg-gradient-to-r from-blue-700 to-purple-700 text-white shadow-md flex-shrink-0">
@@ -954,11 +954,16 @@ export default function RoutePlanner() {
               </h1>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setIsSidebarOpen(false)}
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 hidden lg:block transition-colors backdrop-blur-sm"
-                  title="Collapse Sidebar"
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm"
+                  title={isSidebarOpen ? "Collapse" : "Expand"}
                 >
-                  <FaChevronLeft className="text-white text-sm" />
+                  <FaChevronLeft className="text-white text-sm hidden lg:block" />
+                  {isSidebarOpen ? (
+                    <FaChevronDown className="text-white text-sm lg:hidden" />
+                  ) : (
+                    <FaChevronUp className="text-white text-sm lg:hidden" />
+                  )}
                 </button>
                 <button
                   onClick={() => setShowSettings(!showSettings)}
