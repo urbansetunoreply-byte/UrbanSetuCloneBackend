@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle, FaTrafficLight } from 'react-icons/fa';
+import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle, FaTrafficLight, FaLayerGroup } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -38,6 +38,7 @@ export default function RoutePlanner() {
   const [mapStyle, setMapStyle] = useState('streets');
   const [showTraffic, setShowTraffic] = useState(false);
   const [showSatellite, setShowSatellite] = useState(false);
+  const [showMapStyles, setShowMapStyles] = useState(false);
   const [routeOptimization, setRouteOptimization] = useState(true);
   const [avoidTolls, setAvoidTolls] = useState(false);
   const [avoidHighways, setAvoidHighways] = useState(false);
@@ -1112,7 +1113,7 @@ export default function RoutePlanner() {
               {optimizing ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Calculaint Route...
+                  Finding the best route...
                 </>
               ) : (
                 <>
@@ -1211,21 +1212,41 @@ export default function RoutePlanner() {
 
             {/* Floating Map Controls */}
             <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
-                {Object.entries(mapStyles).map(([key, value]) => (
-                  <button
-                    key={key}
-                    onClick={() => changeMapStyle(key)}
-                    className={`p-2 px-3 text-xs font-medium text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${mapStyle === key ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-l-2 border-blue-600' : 'text-gray-600 dark:text-gray-300'}`}
-                    title={key}
+              <button
+                onClick={() => setShowMapStyles(!showMapStyles)}
+                className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center text-gray-600 dark:text-gray-300"
+                title="Change Map Style"
+              >
+                <FaLayerGroup size={18} />
+              </button>
+
+              <AnimatePresence>
+                {showMapStyles && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
                   >
-                    {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
-                  </button>
-                ))}
-                <button onClick={toggleTraffic} className={`p-2 px-3 text-xs font-medium text-left border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${showTraffic ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : 'text-gray-600 dark:text-gray-300'}`}>
-                  Traffic {showTraffic ? 'On' : 'Off'}
-                </button>
-              </div>
+                    {Object.entries(mapStyles).map(([key, value]) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          changeMapStyle(key);
+                          setShowMapStyles(false);
+                        }}
+                        className={`p-2 px-3 text-xs font-medium text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${mapStyle === key ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-l-2 border-blue-600' : 'text-gray-600 dark:text-gray-300'}`}
+                        title={key}
+                      >
+                        {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                      </button>
+                    ))}
+                    <button onClick={toggleTraffic} className={`p-2 px-3 text-xs font-medium text-left border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${showTraffic ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : 'text-gray-600 dark:text-gray-300'}`}>
+                      Traffic {showTraffic ? 'On' : 'Off'}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="absolute top-4 right-14 z-10 hidden lg:block">
