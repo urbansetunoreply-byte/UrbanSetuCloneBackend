@@ -262,10 +262,10 @@ export default function Header() {
                   <Link
                     to="/download"
                     className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors duration-200 font-medium"
-                    title="Download App"
+                    title="Download"
                   >
                     <FaDownload className="text-xs" />
-                    <span>Download App</span>
+                    <span>Download</span>
                   </Link>
                 </div>
                 {/* Mobile auth links when logged out */}
@@ -550,10 +550,10 @@ export default function Header() {
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <FaDownload className="text-lg" />
-                        <span>Download App</span>
+                        <span>Download</span>
                       </Link>
                       <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3 font-medium">
-                        Download our Android app for the best mobile experience!
+                        Download our app for the best experience!
                       </p>
                     </div>
                   </div>
