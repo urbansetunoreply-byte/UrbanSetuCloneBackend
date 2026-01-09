@@ -4376,6 +4376,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             return;
         }
 
+        // Prevent auto-save if only system messages (like welcome message) exist
+        // This avoids 404 errors when trying to update a session that hasn't been created in DB yet
+        const hasUserMessage = messages.some(m => m.role === 'user');
+        if (!hasUserMessage) {
+            // console.log('Auto-save skipped: No user messages yet');
+            return;
+        }
+
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();

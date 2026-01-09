@@ -68,8 +68,7 @@ export default function Home() {
           fetch(`${API_BASE_URL}/api/watchlist/top?limit=6`, { credentials: 'include' }),
           Promise.all([
             fetch(`${API_BASE_URL}/api/listing/count`),
-            fetch(`${API_BASE_URL}/api/user/count`),
-            fetch(`${API_BASE_URL}/api/bookings/count`)
+            fetch(`${API_BASE_URL}/api/user/count`)
           ])
         ]);
 
@@ -85,10 +84,10 @@ export default function Home() {
         }
 
         // Handle Stats Data
-        const [propsRes, usersRes, transRes] = statsRes;
+        const [propsRes, usersRes] = statsRes;
         const propsData = await propsRes.json();
         const uData = await usersRes.json();
-        const transData = await transRes.json();
+        // const transData = await transRes.json();
 
         setOfferListings(Array.isArray(offerData) ? offerData : []);
         setRentListings(Array.isArray(rentData) ? rentData : []);
@@ -98,7 +97,7 @@ export default function Home() {
         setStats({
           properties: Number(propsData.count) || 1250,
           users: Number(uData.count) || 5000,
-          transactions: Number(transData.count) || 2500,
+          transactions: 2500, // Number(transData.count) || 2500,
           satisfaction: 98
         });
 
