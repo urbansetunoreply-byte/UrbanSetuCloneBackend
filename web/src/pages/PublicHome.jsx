@@ -32,8 +32,6 @@ export default function PublicHome() {
   const [offerListings, setOfferListings] = useState([]);
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);
-  const [recommendedListings, setRecommendedListings] = useState([]);
-  const [trendingListings, setTrendingListings] = useState([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [stats, setStats] = useState({ properties: 0, users: 0, transactions: 0, satisfaction: 0 });
@@ -51,20 +49,15 @@ export default function PublicHome() {
           offerRes,
           rentRes,
           saleRes,
-          statsRes,
-          recommendedRes,
-          trendingRes
+          statsRes
         ] = await Promise.all([
           fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`),
           fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`),
           fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`),
           Promise.all([
             fetch(`${API_BASE_URL}/api/listing/count`),
-            fetch(`${API_BASE_URL}/api/user/count`),
-            fetch(`${API_BASE_URL}/api/bookings/count`)
-          ]),
-          fetch(`${API_BASE_URL}/api/listing/recommended?limit=6`),
-          fetch(`${API_BASE_URL}/api/watchlist/top-watched?limit=6`)
+            fetch(`${API_BASE_URL}/api/user/count`)
+          ])
         ]);
 
         // Helper to safely parse JSON
@@ -82,24 +75,19 @@ export default function PublicHome() {
         const offerData = await safeJson(offerRes);
         const rentData = await safeJson(rentRes);
         const saleData = await safeJson(saleRes);
-        const recommendedData = await safeJson(recommendedRes);
-        const trendingData = await safeJson(trendingRes);
 
-        const [propsRes, usersRes, transRes] = statsRes;
+        const [propsRes, usersRes] = statsRes;
         const propsData = await safeJson(propsRes);
         const uData = await safeJson(usersRes);
-        const transData = await safeJson(transRes);
 
         setOfferListings(Array.isArray(offerData) ? offerData : []);
         setRentListings(Array.isArray(rentData) ? rentData : []);
         setSaleListings(Array.isArray(saleData) ? saleData : []);
-        setRecommendedListings(Array.isArray(recommendedData) ? recommendedData : []);
-        setTrendingListings(Array.isArray(trendingData) ? trendingData : []);
 
         setStats({
           properties: Number(propsData.count) || 1250,
           users: Number(uData.count) || 5000,
-          transactions: Number(transData.count) || 2500,
+          transactions: 2500,
           satisfaction: 98
         });
 

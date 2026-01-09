@@ -434,7 +434,7 @@ function AppRoutes({ bootstrapped }) {
           }
         });
         const data = await res.json();
-        if (res.ok) {
+        if (res.ok && data.authenticated !== false) {
           dispatch(verifyAuthSuccess(data));
         } else {
           localStorage.removeItem('accessToken');

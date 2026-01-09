@@ -852,7 +852,7 @@ export const verifyAuth = async (req, res, next) => {
         const refreshToken = req.cookies.refresh_token;
 
         if (!accessToken && !refreshToken) {
-            return next(errorHandler(401, "No authentication tokens found"));
+            return res.status(200).json({ authenticated: false, message: "No tokens found" });
         }
 
         let decoded;
@@ -880,12 +880,12 @@ export const verifyAuth = async (req, res, next) => {
                 // User must exist to issue new tokens
                 const user = await User.findById(refreshDecoded.id);
                 if (!user) {
-                    return next(errorHandler(401, "User no longer exists"));
+                    return res.status(200).json({ authenticated: false, message: "User no longer exists" });
                 }
 
                 // Check suspension status during refresh
                 if (user.status === 'suspended') {
-                    return next(errorHandler(403, "Account suspended"));
+                    return res.status(200).json({ authenticated: false, message: "Account suspended" });
                 }
 
                 // Generate new token pair
@@ -899,24 +899,24 @@ export const verifyAuth = async (req, res, next) => {
 
             } catch (refreshError) {
                 // Both tokens failed
-                return next(errorHandler(401, "Session expired. Please sign in again."));
+                return res.status(200).json({ authenticated: false, message: "Session expired" });
             }
         }
 
         if (!decoded) {
-            return next(errorHandler(401, "Invalid authentication"));
+            return res.status(200).json({ authenticated: false, message: "Invalid authentication" });
         }
 
         // 3. User Lookup (for valid Access Token case)
         const user = await User.findById(decoded.id).select('-password');
         if (!user) {
-            return next(errorHandler(404, "User not found"));
+            return res.status(200).json({ authenticated: false, message: "User not found" });
         }
 
         res.status(200).json(user);
     } catch (error) {
         // Fallback error handler
-        next(errorHandler(401, "Authentication failed"));
+        return res.status(200).json({ authenticated: false, message: "Authentication failed" });
     }
 };
 
