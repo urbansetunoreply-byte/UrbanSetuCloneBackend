@@ -385,10 +385,10 @@ export default function PublicAbout() {
         <div className="mb-2 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-green-200 dark:border-green-800 transition-colors">
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <FaAndroid className="text-4xl text-green-600 dark:text-green-400 transition-colors" />
+              <FaMobileAlt className="text-4xl text-blue-600 dark:text-blue-400 transition-colors" />
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white transition-colors">Available on Android</h2>
-                <p className="text-gray-600 dark:text-gray-400 transition-colors">Get the UrbanSetu mobile app for the best experience</p>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white transition-colors">Download Our App</h2>
+                <p className="text-gray-600 dark:text-gray-400 transition-colors">Get the UrbanSetu app for the best experience on any device</p>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
@@ -400,7 +400,7 @@ export default function PublicAbout() {
                 <span>Download App</span>
               </Link>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors">Download our Android app to access UrbanSetu on your mobile device!</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors">Available for Windows, macOS, Android, and iOS!</p>
           </div>
         </div>
       </div>
