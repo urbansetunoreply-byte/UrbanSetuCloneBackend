@@ -2,9 +2,9 @@ import VisitorLog from '../models/visitorLog.model.js';
 import crypto from 'crypto';
 import { getDeviceInfo, getBrowserInfo, getOSInfo, getDeviceType, getLocationFromIP } from '../utils/sessionManager.js';
 
-// Generate fingerprint for visitor (IP + User-Agent hash)
-const generateFingerprint = (ip, userAgent) => {
-  const combined = `${ip}|${userAgent}`;
+// Generate fingerprint for visitor (IP + User-Agent + Source hash)
+const generateFingerprint = (ip, userAgent, source = 'Unknown') => {
+  const combined = `${ip}|${userAgent}|${source}`;
   return crypto.createHash('sha256').update(combined).digest('hex');
 };
 
@@ -18,23 +18,23 @@ const getStartOfDay = (date = new Date()) => {
 // Track visitor when they accept cookies
 export const trackVisitor = async (req, res, next) => {
   try {
-    const { cookiePreferences, referrer, page } = req.body;
+    const { cookiePreferences, referrer, page, source } = req.body;
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent') || 'Unknown';
-    
+
     // Generate fingerprint
-    const fingerprint = generateFingerprint(ip, userAgent);
-    
+    const fingerprint = generateFingerprint(ip, userAgent, source);
+
     // Get device and location info
     const device = getDeviceInfo(userAgent);
     const browserInfo = getBrowserInfo(userAgent);
     const os = getOSInfo(userAgent);
     const deviceType = getDeviceType(userAgent);
     const location = getLocationFromIP(ip);
-    
+
     // Get today's date (start of day for grouping)
     const visitDate = getStartOfDay();
-    
+
     // Try to create visitor log (will fail if already exists for today)
     try {
       const visitorLog = await VisitorLog.create({
@@ -55,9 +55,10 @@ export const trackVisitor = async (req, res, next) => {
         },
         visitDate,
         referrer: referrer || 'Direct',
-        page: page || '/'
+        page: page || '/',
+        source: source || 'Unknown'
       });
-      
+
       res.status(201).json({
         success: true,
         message: 'Visitor tracked successfully',
@@ -87,7 +88,7 @@ export const trackVisitor = async (req, res, next) => {
             timestamp: new Date()
           }
         );
-        
+
         res.status(200).json({
           success: true,
           message: 'Visitor preferences updated'
@@ -109,7 +110,7 @@ export const getDailyVisitorCount = async (req, res, next) => {
     const count = await VisitorLog.countDocuments({
       visitDate: today
     });
-    
+
     res.status(200).json({
       success: true,
       count,
@@ -125,21 +126,21 @@ export const getDailyVisitorCount = async (req, res, next) => {
 export const getVisitorStats = async (req, res, next) => {
   try {
     const { days = 30 } = req.query;
-    
+
     // Get total unique visitors
     const totalVisitors = await VisitorLog.countDocuments();
-    
+
     // Get today's count
     const today = getStartOfDay();
     const todayCount = await VisitorLog.countDocuments({
       visitDate: today
     });
-    
+
     // Get daily statistics for the last N days
     const daysAgo = new Date();
     daysAgo.setDate(daysAgo.getDate() - parseInt(days));
     daysAgo.setHours(0, 0, 0, 0);
-    
+
     const dailyStats = await VisitorLog.aggregate([
       {
         $match: {
@@ -163,7 +164,7 @@ export const getVisitorStats = async (req, res, next) => {
         }
       }
     ]);
-    
+
     // Get device breakdown
     const deviceStats = await VisitorLog.aggregate([
       {
@@ -185,7 +186,7 @@ export const getVisitorStats = async (req, res, next) => {
         }
       }
     ]);
-    
+
     // Get location breakdown
     const locationStats = await VisitorLog.aggregate([
       {
@@ -213,7 +214,7 @@ export const getVisitorStats = async (req, res, next) => {
         }
       }
     ]);
-    
+
     res.status(200).json({
       success: true,
       stats: {
@@ -245,10 +246,10 @@ export const getAllVisitors = async (req, res, next) => {
       marketing = 'any',
       functional = 'any'
     } = req.query;
-    
+
     // Build filter
     let filter = {};
-    
+
     // Date range filter
     const today = getStartOfDay();
     switch (dateRange) {
@@ -276,17 +277,17 @@ export const getAllVisitors = async (req, res, next) => {
         // No date filter
         break;
     }
-    
+
     // Device filter
     if (device !== 'all') {
       filter.device = { $regex: device, $options: 'i' };
     }
-    
+
     // Location filter
     if (location !== 'all') {
       filter.location = { $regex: location, $options: 'i' };
     }
-    
+
     // Search filter (IP or fingerprint)
     if (search) {
       filter.$or = [
@@ -303,10 +304,10 @@ export const getAllVisitors = async (req, res, next) => {
     if (marketing !== 'any') consent['cookiePreferences.marketing'] = marketing === 'true';
     if (functional !== 'any') consent['cookiePreferences.functional'] = functional === 'true';
     Object.assign(filter, consent);
-    
+
     // Get total count
     const total = await VisitorLog.countDocuments(filter);
-    
+
     // Get visitors with pagination
     const skip = (page - 1) * limit;
     const visitors = await VisitorLog.find(filter)
@@ -314,7 +315,7 @@ export const getAllVisitors = async (req, res, next) => {
       .skip(skip)
       .limit(parseInt(limit))
       .select('-fingerprint'); // Exclude only fingerprint, keep userAgent for admin debugging
-    
+
     res.status(200).json({
       success: true,
       visitors,
@@ -333,15 +334,15 @@ export const getAllVisitors = async (req, res, next) => {
 export const clearOldVisitorLogs = async (req, res, next) => {
   try {
     const { days = 90 } = req.body;
-    
+
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - parseInt(days));
     cutoffDate.setHours(0, 0, 0, 0);
-    
+
     const result = await VisitorLog.deleteMany({
       visitDate: { $lt: cutoffDate }
     });
-    
+
     res.status(200).json({
       success: true,
       message: `Deleted ${result.deletedCount} old visitor logs`,

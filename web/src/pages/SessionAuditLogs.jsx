@@ -1273,6 +1273,9 @@ const SessionAuditLogs = () => {
                           Location
                         </th>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Source
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Cookie Consent
                         </th>
                       </tr>
@@ -1324,6 +1327,22 @@ const SessionAuditLogs = () => {
                               <FaMapMarkerAlt className="text-red-400" />
                               {visitor.location || 'Unknown'}
                             </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {(visitor.source?.includes('render') || visitor.source?.includes('onrender')) ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                Render
+                              </span>
+                            ) : (visitor.source?.includes('vercel')) ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-black text-white dark:bg-white dark:text-black border border-gray-800">
+                                <svg className="w-3 h-3 mr-1" viewBox="0 0 1155 1000" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M577.344 0L1154.69 1000H0L577.344 0Z" /></svg>
+                                Vercel
+                              </span>
+                            ) : (
+                              <span className="text-gray-500 text-xs font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
+                                {visitor.source || 'N/A'}
+                              </span>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex gap-1.5 flex-wrap">

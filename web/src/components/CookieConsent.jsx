@@ -44,7 +44,8 @@ const CookieConsent = () => {
           body: JSON.stringify({
             cookiePreferences: { necessary: true, analytics: false, marketing: false, functional: false },
             referrer: document.referrer || 'Direct',
-            page: window.location.pathname
+            page: window.location.pathname,
+            source: window.location.hostname
           })
         });
         localStorage.setItem(todayKey, '1');
@@ -98,7 +99,8 @@ const CookieConsent = () => {
         body: JSON.stringify({
           cookiePreferences: preferences,
           referrer: document.referrer || 'Direct',
-          page: window.location.pathname
+          page: window.location.pathname,
+          source: window.location.hostname
         })
       });
 

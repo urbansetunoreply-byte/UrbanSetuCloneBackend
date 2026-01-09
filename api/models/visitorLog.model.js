@@ -71,6 +71,12 @@ const visitorLogSchema = new mongoose.Schema({
   page: {
     type: String,
     required: false
+  },
+  // Source domain (e.g. urbansetu.vercel.app or urbansetuglobal.onrender.com)
+  source: {
+    type: String,
+    required: false,
+    default: 'Unknown'
   }
 }, { timestamps: true });
 
