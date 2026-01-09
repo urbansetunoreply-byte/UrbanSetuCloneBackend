@@ -23,7 +23,7 @@ export const saveChatMessage = async (req, res) => {
 
         // Find or create chat session
         const chatHistory = await ChatHistory.findOrCreateSession(userId, sessionId);
-        
+
         // Add message to the session
         await chatHistory.addMessage(role, content);
 
@@ -65,9 +65,14 @@ export const getChatHistory = async (req, res) => {
         }).populate('userId', 'username email role');
 
         if (!chatHistory) {
-            return res.status(404).json({
-                success: false,
-                message: 'Chat session not found'
+            // Return empty session instead of 404 to avoid console errors
+            return res.status(200).json({
+                success: true,
+                data: {
+                    sessionId: sessionId,
+                    messages: [],
+                    totalMessages: 0
+                }
             });
         }
 
@@ -104,11 +109,11 @@ export const getUserChatSessions = async (req, res) => {
             userId,
             isActive: true
         })
-        .sort({ lastActivity: -1 })
-        .skip(skip)
-        .limit(parseInt(limit))
-        .select('sessionId totalMessages lastActivity createdAt')
-        .populate('userId', 'username email role');
+            .sort({ lastActivity: -1 })
+            .skip(skip)
+            .limit(parseInt(limit))
+            .select('sessionId totalMessages lastActivity createdAt')
+            .populate('userId', 'username email role');
 
         const totalSessions = await ChatHistory.countDocuments({
             userId,
@@ -191,8 +196,8 @@ export const clearAllChatHistory = async (req, res) => {
 
         const result = await ChatHistory.updateMany(
             { userId, isActive: true },
-            { 
-                $set: { 
+            {
+                $set: {
                     messages: [],
                     totalMessages: 0,
                     lastActivity: new Date()
