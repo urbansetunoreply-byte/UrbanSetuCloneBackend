@@ -1212,7 +1212,7 @@ export default function RoutePlanner() {
             {/* Floating Map Controls */}
             <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
-                {Object.entries(mapStyles).slice(0, 3).map(([key, value]) => (
+                {Object.entries(mapStyles).map(([key, value]) => (
                   <button
                     key={key}
                     onClick={() => changeMapStyle(key)}
