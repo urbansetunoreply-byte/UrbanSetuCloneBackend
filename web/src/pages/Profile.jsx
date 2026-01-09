@@ -2167,13 +2167,15 @@ export default function Profile() {
             </span>
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-            <button
-              onClick={handleShowListings}
-              className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-450`}
-            >
-              <FaHome className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
-              <span className="font-medium text-xs sm:text-sm">My Listings</span>
-            </button>
+            {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+              <button
+                onClick={handleShowListings}
+                className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-450`}
+              >
+                <FaHome className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
+                <span className="font-medium text-xs sm:text-sm">My Listings</span>
+              </button>
+            )}
 
             <Link
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/appointments" : "/user/my-appointments"}

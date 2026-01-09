@@ -311,75 +311,83 @@ const CallHistory = () => {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {calls.map((call, index) => (
-              <div
-                key={call._id}
-                className="group bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-blue-100 dark:hover:border-blue-800 transition-all duration-200"
-                style={{ animation: `fadeIn 0.3s ease-out ${index * 0.05}s backwards` }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-5">
-                    {/* Icon */}
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${call.callType === 'video' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                      }`}>
-                      {call.callType === 'video' ? <FaVideo size={20} /> : <FaPhone size={20} />}
-                    </div>
-
-                    {/* Info */}
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
-                          {call.callerId?.username || 'Unknown'}
-                          <span className="text-gray-400 dark:text-gray-500 px-2">→</span>
-                          {call.receiverId?.username || 'Unknown'}
-                        </h3>
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border flex items-center gap-1.5 ${getStatusColor(call.status)}`}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors duration-200">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50/50 dark:bg-gray-700/50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Details</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date & Time</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duration</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {calls.map((call, index) => (
+                    <tr
+                      key={call._id}
+                      className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors"
+                      style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className={`p-2 rounded-lg ${call.callType === 'video' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400'}`}>
+                            {call.callType === 'video' ? <FaVideo /> : <FaPhone />}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {call.callerId?.username || 'Unknown'} <span className="text-gray-400">→</span> {call.receiverId?.username || 'Unknown'}
+                          </span>
+                          {call.appointmentId?.propertyName && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{call.appointmentId.propertyName}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex flex-col">
+                          <span>{new Date(call.startTime).toLocaleDateString(undefined, {
+                            year: 'numeric', month: 'short', day: 'numeric'
+                          })}</span>
+                          <span className="text-xs text-gray-400">{new Date(call.startTime).toLocaleTimeString(undefined, {
+                            hour: '2-digit', minute: '2-digit'
+                          })}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        {call.duration > 0 ? (
+                          <span className="flex items-center gap-1.5 text-blue-600/80 dark:text-blue-400/80">
+                            {formatDuration(call.duration)}
+                          </span>
+                        ) : '0s'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium border flex items-center w-fit gap-1.5 ${getStatusColor(call.status)}`}>
                           {getStatusIcon(call.status)}
                           <span className="capitalize">{call.status}</span>
                         </span>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="flex items-center gap-1.5">
-                          <FaCalendarAlt className="text-gray-400 dark:text-gray-500" />
-                          {new Date(call.startTime).toLocaleDateString(undefined, {
-                            year: 'numeric', month: 'short', day: 'numeric'
-                          })}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <FaClock className="text-gray-400 dark:text-gray-500" />
-                          {new Date(call.startTime).toLocaleTimeString(undefined, {
-                            hour: '2-digit', minute: '2-digit'
-                          })}
-                        </span>
-                        {call.duration > 0 && (
-                          <span className="flex items-center gap-1.5 text-blue-600/80 dark:text-blue-400/80 font-medium">
-                            <span className="w-1 h-1 rounded-full bg-blue-400 dark:bg-blue-300"></span>
-                            {formatDuration(call.duration)}
-                          </span>
-                        )}
-                        {call.appointmentId?.propertyName && (
-                          <span className="text-gray-400 dark:text-gray-500">• {call.appointmentId.propertyName}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <button
-                    onClick={() => {
-                      setCallToDelete(call);
-                      setShowDeleteSingleModal(true);
-                    }}
-                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                    title="Delete record"
-                  >
-                    <FaTrash />
-                  </button>
-                </div>
-              </div>
-            ))}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => {
+                            setCallToDelete(call);
+                            setShowDeleteSingleModal(true);
+                          }}
+                          className="text-gray-400 hover:text-red-600 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full"
+                          title="Delete record"
+                        >
+                          <FaTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
