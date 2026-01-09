@@ -423,14 +423,17 @@ function AppRoutes({ bootstrapped }) {
     const checkSession = async () => {
       dispatch(verifyAuthStart());
       try {
+        const token = localStorage.getItem('accessToken');
         const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
           method: 'GET',
           credentials: 'include',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         const data = await res.json();
         if (res.ok) {
           dispatch(verifyAuthSuccess(data));
         } else {
+          localStorage.removeItem('accessToken');
           dispatch(verifyAuthFailure(data.message || 'Session invalid'));
           dispatch(signoutUserSuccess());
         }
@@ -697,7 +700,11 @@ function AppRoutes({ bootstrapped }) {
     if (!currentUser) return; // Only run if user is logged in
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/verify`, { credentials: 'include' });
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+          credentials: 'include',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
 
         // Handle Account Suspension (403) eagerly for security
         if (res.status === 403) {
@@ -937,13 +944,19 @@ export default function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/verify`, { credentials: 'include' });
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+          credentials: 'include',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         const data = await res.json();
         if (data.success === false) {
+          localStorage.removeItem('accessToken');
           dispatch(signoutUserSuccess());
         }
       } catch (error) {
         console.error("Auth check failed:", error);
+        localStorage.removeItem('accessToken');
         dispatch(signoutUserSuccess());
       } finally {
         setBootstrapped(true);

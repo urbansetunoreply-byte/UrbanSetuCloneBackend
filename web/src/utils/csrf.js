@@ -16,7 +16,7 @@ const CACHE_DURATION = 50 * 60 * 1000;
  */
 export const fetchCSRFToken = async () => {
   try {
-    
+
     // Always fetch a fresh token since server deletes tokens after use
     const response = await fetch(`${API_BASE_URL}/api/auth/csrf-token`, {
       method: 'GET',
@@ -42,7 +42,7 @@ export const fetchCSRFToken = async () => {
     }
 
     const data = await response.json();
-    
+
     if (!data.csrfToken) {
       throw new Error('No CSRF token received from server');
     }
@@ -82,12 +82,13 @@ export const clearCSRFTokenCache = () => {
 export const createAuthenticatedFetchOptions = async (options = {}) => {
   try {
     const csrfToken = await getCSRFToken();
-    
+
     return {
       ...options,
       headers: {
         'Content-Type': 'application/json',
         'X-CSRF-Token': csrfToken,
+        ...(localStorage.getItem('accessToken') ? { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` } : {}),
         ...options.headers,
       },
       credentials: 'include',
@@ -102,6 +103,7 @@ export const createAuthenticatedFetchOptions = async (options = {}) => {
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-Token': csrfToken,
+          ...(localStorage.getItem('accessToken') ? { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` } : {}),
           ...options.headers,
         },
         credentials: 'include',
@@ -130,9 +132,9 @@ export const createAuthenticatedFetchOptions = async (options = {}) => {
 export const authenticatedFetch = async (url, options = {}) => {
   try {
     const authenticatedOptions = await createAuthenticatedFetchOptions(options);
-    
+
     const response = await fetch(url, authenticatedOptions);
-    
+
     if (!response.ok) {
       // Clone before consuming so downstream can still read the body
       const cloned = response.clone();
@@ -157,7 +159,7 @@ export const authenticatedFetch = async (url, options = {}) => {
       }
       console.error(`${response.status} response:`, errorData);
     }
-    
+
     return response;
   } catch (error) {
     console.error('Authenticated fetch error:', error);
