@@ -122,21 +122,86 @@ export const getDailyVisitorCount = async (req, res, next) => {
   }
 };
 
-// Get visitor statistics for admin (all time + daily)
+// Get visitor statistics for admin (filtered)
 export const getVisitorStats = async (req, res, next) => {
   try {
-    const { days = 30 } = req.query;
+    const {
+      days = 30,
+      dateRange = 'today',
+      device = 'all',
+      location = 'all',
+      search = '',
+      analytics = 'any',
+      marketing = 'any',
+      functional = 'any'
+    } = req.query;
 
-    // Get total unique visitors
-    const totalVisitors = await VisitorLog.countDocuments();
+    // 1. Build Base Filter (Non-Date)
+    const baseFilter = {};
+    if (device !== 'all') baseFilter.device = { $regex: device, $options: 'i' };
+    if (location !== 'all') baseFilter.location = { $regex: location, $options: 'i' };
+    if (search) {
+      baseFilter.$or = [
+        { ip: { $regex: search, $options: 'i' } },
+        { fingerprint: { $regex: search, $options: 'i' } },
+        { location: { $regex: search, $options: 'i' } },
+        { device: { $regex: search, $options: 'i' } }
+      ];
+    }
+    const consent = {};
+    if (analytics !== 'any') consent['cookiePreferences.analytics'] = analytics === 'true';
+    if (marketing !== 'any') consent['cookiePreferences.marketing'] = marketing === 'true';
+    if (functional !== 'any') consent['cookiePreferences.functional'] = functional === 'true';
+    Object.assign(baseFilter, consent);
 
-    // Get today's count
+    // 2. Build Date Filter for Aggregates (Devices, Locations, Summary Counts)
+    const dateFilter = {};
     const today = getStartOfDay();
-    const todayCount = await VisitorLog.countDocuments({
-      visitDate: today
-    });
+    switch (dateRange) {
+      case 'today':
+        dateFilter.visitDate = today;
+        break;
+      case 'yesterday': {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        dateFilter.visitDate = yesterday;
+        break;
+      }
+      case '7days':
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        dateFilter.visitDate = { $gte: sevenDaysAgo };
+        break;
+      case '30days':
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        dateFilter.visitDate = { $gte: thirtyDaysAgo };
+        break;
+      case 'all':
+      default:
+        // No date constraint
+        break;
+    }
 
-    // Get daily statistics for the last N days
+    const fullFilter = { ...baseFilter, ...dateFilter };
+
+    // 3. Execute Queries
+
+    // Total filtered visitors (for the "Visitors" card, usually total in range)
+    // Note: The UI shows "Visitors" (Total) and "Today" (Today).
+    // If filters are active, "Visitors" should probably match the filter count.
+    const totalVisitors = await VisitorLog.countDocuments(fullFilter);
+
+    // Today's count (Filtered)
+    // If dateRange is NOT today, this might be 0 or irrelevant, but UI expects it.
+    // We'll calculate "Count in Range" as "totalVisitors".
+    // But let's keep "todayCount" specifically for Today matching the base filters?
+    // Actually, if I filter "Yesterday", "todayCount" should be 0? Or should "todayCount" always be TODAY's count matching base filters?
+    // Let's make "todayCount" represent the count matching BASE filters + Today.
+    const todayCount = await VisitorLog.countDocuments({ ...baseFilter, visitDate: today });
+
+
+    // Daily Stats (Graph) - Match Base Filter + Last N Days
     const daysAgo = new Date();
     daysAgo.setDate(daysAgo.getDate() - parseInt(days));
     daysAgo.setHours(0, 0, 0, 0);
@@ -144,6 +209,7 @@ export const getVisitorStats = async (req, res, next) => {
     const dailyStats = await VisitorLog.aggregate([
       {
         $match: {
+          ...baseFilter, // Apply device/location/search filters
           visitDate: { $gte: daysAgo }
         }
       },
@@ -153,9 +219,7 @@ export const getVisitorStats = async (req, res, next) => {
           count: { $sum: 1 }
         }
       },
-      {
-        $sort: { _id: 1 }
-      },
+      { $sort: { _id: 1 } },
       {
         $project: {
           _id: 0,
@@ -165,64 +229,31 @@ export const getVisitorStats = async (req, res, next) => {
       }
     ]);
 
-    // Get device breakdown
+    // Device Breakdown - Apply FULL filter (including Date Range)
     const deviceStats = await VisitorLog.aggregate([
-      {
-        $match: {
-          visitDate: today
-        }
-      },
-      {
-        $group: {
-          _id: '$device',
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          device: '$_id',
-          count: 1
-        }
-      }
+      { $match: fullFilter },
+      { $group: { _id: '$device', count: { $sum: 1 } } },
+      { $project: { _id: 0, device: '$_id', count: 1 } },
+      { $sort: { count: -1 } } // Sort by count desc
     ]);
 
-    // Get location breakdown
+    // Location Breakdown - Apply FULL filter
     const locationStats = await VisitorLog.aggregate([
-      {
-        $match: {
-          visitDate: today
-        }
-      },
-      {
-        $group: {
-          _id: '$location',
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { count: -1 }
-      },
-      {
-        $limit: 10
-      },
-      {
-        $project: {
-          _id: 0,
-          location: '$_id',
-          count: 1
-        }
-      }
+      { $match: fullFilter },
+      { $group: { _id: '$location', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+      { $project: { _id: 0, location: '$_id', count: 1 } }
     ]);
 
     res.status(200).json({
       success: true,
       stats: {
-        totalVisitors,
-        todayCount,
-        dailyStats,
-        deviceStats,
-        locationStats
+        totalVisitors, // Filtered Total
+        todayCount,    // Today's count (matching base filters)
+        dailyStats,    // Graph Data (Base Filter + 30 Days)
+        deviceStats,   // Filtered Breakdown
+        locationStats  // Filtered Breakdown
       }
     });
   } catch (error) {

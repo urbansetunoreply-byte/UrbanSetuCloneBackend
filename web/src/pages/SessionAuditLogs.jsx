@@ -235,7 +235,18 @@ const SessionAuditLogs = () => {
   // Fetch visitor statistics
   const fetchVisitorStats = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/stats?days=30`, {
+      const params = new URLSearchParams({
+        days: 30, // Get last 30 days for trend graph regardless of date filter (or should match? Backend now handles it)
+        dateRange: visitorFilters.dateRange,
+        device: visitorFilters.device,
+        location: visitorFilters.location,
+        search: visitorFilters.search,
+        analytics: visitorFilters.analytics,
+        marketing: visitorFilters.marketing,
+        functional: visitorFilters.functional
+      });
+
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/stats?${params}`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
