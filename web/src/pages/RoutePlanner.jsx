@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaDirections, FaInfoCircle, FaTrafficLight, FaLayerGroup, FaChevronLeft, FaChevronRight, FaChevronDown, FaChevronUp, FaExpand, FaCompress } from 'react-icons/fa';
+import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaDirections, FaInfoCircle, FaTrafficLight, FaLayerGroup, FaChevronLeft, FaChevronRight, FaChevronDown, FaChevronUp, FaExpand, FaCompress, FaPrint } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -977,7 +977,7 @@ export default function RoutePlanner() {
     <div className={`flex flex-col lg:flex-row h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900 overflow-hidden relative ${isFullscreen ? 'fixed inset-0 z-50 h-screen' : ''}`}>
 
       {/* LEFT SIDEBAR - CONTROLS & RESULTS */}
-      <div className={`lg:h-full bg-white dark:bg-gray-800 shadow-2xl z-20 flex flex-col order-2 lg:order-1 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'h-[50vh] w-full lg:w-[420px] opacity-100' : 'h-16 w-full lg:w-0 lg:opacity-0 overflow-hidden'}`}>
+      <div className={`lg:h-full bg-white dark:bg-gray-800 shadow-2xl z-20 flex flex-col order-2 lg:order-1 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out print:hidden ${isSidebarOpen ? 'h-[50vh] w-full lg:w-[420px] opacity-100' : 'h-16 w-full lg:w-0 lg:opacity-0 overflow-hidden'}`}>
         <div className="w-full lg:min-w-[420px] h-full flex flex-col">
           {/* Header Section */}
           <div className="p-4 bg-gradient-to-r from-blue-700 to-purple-700 text-white shadow-md flex-shrink-0">
@@ -1203,7 +1203,7 @@ export default function RoutePlanner() {
                   </div>
 
                   {/* Quick Actions Bar */}
-                  <div className="flex gap-2 justify-between">
+                  <div className="grid grid-cols-2 gap-2 mt-4">
                     <button onClick={saveRoute} disabled={isRouteSaved} className={`flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition-colors ${isRouteSaved ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'}`}>
                       <FaBookmark /> {isRouteSaved ? 'Saved' : 'Save'}
                     </button>
@@ -1212,6 +1212,9 @@ export default function RoutePlanner() {
                     </button>
                     <button onClick={exportRoute} className="flex-1 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
                       <FaDownload /> GPX
+                    </button>
+                    <button onClick={() => window.print()} className="flex-1 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
+                      <FaPrint /> Print / PDF
                     </button>
                   </div>
 
