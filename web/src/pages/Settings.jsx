@@ -197,6 +197,32 @@ export default function Settings() {
   const [transferPasswordAttempts, setTransferPasswordAttempts] = useState(0);
   const transferRightsOtpRef = useRef(null);
 
+  // Timezone Preview State
+  const [currentTimePreview, setCurrentTimePreview] = useState('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      try {
+        if (!timezone) return;
+        const time = new Date().toLocaleTimeString('en-US', {
+          timeZone: timezone,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+          // timeZoneName: 'short'
+        });
+        setCurrentTimePreview(time);
+      } catch (error) {
+        setCurrentTimePreview('');
+      }
+    };
+
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, [timezone]);
+
   // Lock body scroll when modals are open
   useEffect(() => {
     const shouldLock = showPasswordModal || showTransferPasswordModal || showTransferModal || showAdminModal || showSignOutModal;
@@ -1142,7 +1168,7 @@ export default function Settings() {
     );
   };
 
-  const SelectOption = ({ label, value, options, onChange, description, onInfoClick, isLoading }) => {
+  const SelectOption = ({ label, value, options, onChange, description, onInfoClick, isLoading, extraContent }) => {
     const handleChange = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1168,6 +1194,7 @@ export default function Settings() {
             )}
           </div>
           {description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>}
+          {extraContent && <div className="mt-2">{extraContent}</div>}
         </div>
         <select
           value={value}
@@ -1353,6 +1380,14 @@ export default function Settings() {
               ]}
               onChange={handleTimezoneChange}
               description="Set your timezone"
+              extraContent={
+                currentTimePreview && (
+                  <div className="flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg border border-blue-100 dark:border-blue-800/50">
+                    <FaClock className="w-4 h-4 mr-2" />
+                    <span>Current Time: {currentTimePreview}</span>
+                  </div>
+                )
+              }
             />
             <SelectOption
               label={t('settings.date_format')}

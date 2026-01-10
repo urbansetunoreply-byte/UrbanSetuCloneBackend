@@ -461,7 +461,7 @@ export default function Profile() {
   const [storageUpdateTrigger, setStorageUpdateTrigger] = useState(0);
   useEffect(() => {
     const handleStorageChange = (e) => {
-      if (e.key === 'showEmail' || e.key === 'showPhone') {
+      if (e.key === 'showEmail' || e.key === 'showPhone' || e.key === 'timezone') {
         setStorageUpdateTrigger(prev => prev + 1);
       }
     };
@@ -1090,11 +1090,24 @@ export default function Profile() {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    // Ensure we depend on storageUpdateTrigger (implied by component re-render)
+    const _ = storageUpdateTrigger;
+    const timezone = localStorage.getItem('timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        timeZone: timezone
+      });
+    } catch (e) {
+      // Fallback in case of invalid timezone
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
   };
 
   // Add this useEffect to initialize formData when entering edit mode
