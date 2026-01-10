@@ -801,7 +801,7 @@ export default function NotificationBell({ mobile = false }) {
                                 key={notification._id}
                                 className={`notification-card p-4 rounded-2xl border transition-all duration-300 animate-fadeInNotification ${!notification.isRead
                                   ? 'bg-white dark:bg-gray-800 border-blue-100 dark:border-blue-900/30 shadow-sm ring-1 ring-blue-50 dark:ring-blue-900/20 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                  : 'bg-white/60 dark:bg-gray-800/40 border-gray-100 dark:border-gray-700/50 grayscale-[0.3] hover:bg-gray-100/60 dark:hover:bg-gray-800/60'
+                                  : 'bg-white/80 dark:bg-gray-800/60 border-gray-100 dark:border-gray-700/50 hover:bg-gray-100/60 dark:hover:bg-gray-800/60'
                                   }`}
                                 style={{ animationDelay: `${index * 0.05}s` }}
                               >
@@ -809,14 +809,14 @@ export default function NotificationBell({ mobile = false }) {
                                   {getNotificationIcon(notification.type)}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-2">
-                                      <h4 className={`text-sm font-bold truncate ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                      <h4 className={`text-sm font-bold truncate ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
                                         {notification.title}
                                       </h4>
                                       <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full whitespace-nowrap">
                                         {formatDate(notification.createdAt)}
                                       </span>
                                     </div>
-                                    <p className={`text-xs mt-1 leading-relaxed ${!notification.isRead ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+                                    <p className={`text-xs mt-1 leading-relaxed ${!notification.isRead ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
                                       {notification.link ? (
                                         <button
                                           onClick={() => {
@@ -1301,7 +1301,7 @@ export default function NotificationBell({ mobile = false }) {
                                 key={n._id}
                                 className={`notification-card group p-3.5 rounded-2xl border transition-all cursor-default ${!n.isRead
                                   ? 'bg-white dark:bg-gray-800 border-blue-50 dark:border-blue-900/30 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700'
-                                  : 'bg-white/40 dark:bg-gray-800/40 border-transparent opacity-60 grayscale-[0.5] hover:bg-gray-50/50 dark:hover:bg-gray-800/60'
+                                  : 'bg-white/60 dark:bg-gray-800/50 border-transparent hover:bg-gray-50/50 dark:hover:bg-gray-800/60'
                                   }`}
                                 style={{ animationDelay: `${i * 0.05}s` }}
                               >
@@ -1309,14 +1309,14 @@ export default function NotificationBell({ mobile = false }) {
                                   {getNotificationIcon(n.type)}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-2">
-                                      <h4 className={`text-xs font-black truncate leading-tight ${!n.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                      <h4 className={`text-xs font-black truncate leading-tight ${!n.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
                                         {n.title}
                                       </h4>
                                       <span className="text-[9px] font-black text-gray-300 dark:text-gray-600 uppercase whitespace-nowrap">
                                         {formatDate(n.createdAt)}
                                       </span>
                                     </div>
-                                    <p className={`text-[11px] mt-1.5 leading-relaxed ${!n.isRead ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+                                    <p className={`text-[11px] mt-1.5 leading-relaxed ${!n.isRead ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
                                       {n.link ? (
                                         <button
                                           onClick={() => {
