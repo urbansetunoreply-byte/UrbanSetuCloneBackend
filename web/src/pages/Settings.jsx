@@ -196,6 +196,7 @@ export default function Settings() {
   const [transferOtpAttempts, setTransferOtpAttempts] = useState(0);
   const [transferPasswordAttempts, setTransferPasswordAttempts] = useState(0);
   const transferRightsOtpRef = useRef(null);
+  const scrollPositionRef = useRef(0);
 
   // Timezone Preview State
   const [currentTimePreview, setCurrentTimePreview] = useState('');
@@ -757,51 +758,23 @@ export default function Settings() {
     }
   };
 
-  // Handlers for settings - prevent scroll to top
-  const preventScroll = () => {
-    const scrollY = window.scrollY;
-    // Use requestAnimationFrame to restore scroll position after any potential scroll
-    requestAnimationFrame(() => {
-      window.scrollTo(0, scrollY);
-    });
-  };
 
-  // Enhanced toast function that prevents scrolling
+
+  // Enhanced toast function
   const showToast = (message, type = 'success') => {
-    const scrollY = scrollPositionRef.current || window.scrollY;
-    scrollPositionRef.current = scrollY;
-
-    const restoreScroll = () => {
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-      });
-      setTimeout(() => {
-        window.scrollTo(0, scrollY);
-      }, 0);
-    };
-
     if (type === 'success') {
       toast.success(message, {
         position: 'top-center',
-        autoClose: 2000,
-        onOpen: restoreScroll,
-        onClose: restoreScroll
+        autoClose: 2000
       });
     } else {
       toast.error(message, {
         position: 'top-center',
-        autoClose: 2000,
-        onOpen: restoreScroll,
-        onClose: restoreScroll
+        autoClose: 2000
       });
     }
-
-    // Restore scroll immediately and after delays
-    restoreScroll();
-    setTimeout(restoreScroll, 10);
-    setTimeout(restoreScroll, 50);
-    setTimeout(restoreScroll, 100);
   };
+
 
   const handleEmailNotificationsChange = (value) => {
     scrollPositionRef.current = window.scrollY;
@@ -1058,31 +1031,7 @@ export default function Settings() {
     }
   };
 
-  // Store scroll position to prevent unwanted scrolling
-  const scrollPositionRef = useRef(0);
-
-  // Monitor scroll position and restore it when needed
-  useEffect(() => {
-    const handleScroll = () => {
-      scrollPositionRef.current = window.scrollY;
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Restore scroll position after any state change that might cause scrolling
-  useEffect(() => {
-    const restoreScroll = () => {
-      if (scrollPositionRef.current > 0) {
-        requestAnimationFrame(() => {
-          window.scrollTo(0, scrollPositionRef.current);
-        });
-      }
-    };
-    // Restore scroll after a short delay to ensure DOM updates are complete
-    const timeoutId = setTimeout(restoreScroll, 0);
-    return () => clearTimeout(timeoutId);
-  }, [emailNotifications, inAppNotifications, pushNotifications, notificationSound, profileVisibility, showEmail, showPhone, dataSharing, language, timezone, dateFormat, theme, fontSize]);
+  // Scroll monitoring removed to fix disorientation issues
 
   // Apply theme on mount and change
   useEffect(() => {
