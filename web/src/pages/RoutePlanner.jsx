@@ -1049,15 +1049,23 @@ export default function RoutePlanner() {
 
                 {/* Collapsible Options */}
                 <div className="border border-gray-100 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setRouteOptimization(prev => !prev)}
+                  <div
                     className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                    <button
+                      onClick={() => setRouteOptimization(prev => !prev)}
+                      className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2"
+                    >
                       <FaFilter className="text-blue-500" /> Route Preferences
-                    </span>
-                    <FaCog className="text-gray-400 text-xs" />
-                  </button>
+                    </button>
+                    <Link
+                      to={currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/settings" : "/user/settings"}
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+                      title="Settings"
+                    >
+                      <FaCog className="text-gray-400 text-xs" />
+                    </Link>
+                  </div>
                   <div className="p-3 bg-gray-50 dark:bg-gray-900 grid grid-cols-2 gap-3">
                     <label className="flex items-center gap-2 cursor-pointer p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700 hover:border-blue-200 transition-colors">
                       <input type="checkbox" checked={routeOptimization} onChange={(e) => setRouteOptimization(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
