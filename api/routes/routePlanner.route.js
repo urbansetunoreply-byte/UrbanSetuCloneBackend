@@ -20,7 +20,7 @@ router.post('/plan', verifyToken, async (req, res) => {
     }
 
     // Validate waypoint format
-    const validWaypoints = waypoints.filter(wp => 
+    const validWaypoints = waypoints.filter(wp =>
       wp && typeof wp.latitude === 'number' && typeof wp.longitude === 'number'
     );
 
@@ -165,7 +165,7 @@ router.get('/optimize/:propertyId', verifyToken, async (req, res) => {
 // GET: Get Mapbox API status
 router.get('/status', (req, res) => {
   const hasMapboxKey = !!API_KEYS.MAPBOX_ACCESS_TOKEN;
-  
+
   res.json({
     success: true,
     data: {
@@ -199,9 +199,12 @@ router.post('/save', verifyToken, async (req, res) => {
 
     await savedRoute.save();
 
+    const responseRoute = savedRoute.toObject();
+    delete responseRoute.route;
+
     res.status(201).json({
       message: 'Route saved successfully',
-      route: savedRoute
+      route: responseRoute
     });
   } catch (error) {
     console.error('Error saving route:', error);
@@ -215,6 +218,7 @@ router.get('/saved', verifyToken, async (req, res) => {
     const userId = req.user.id;
 
     const routes = await Route.find({ userId })
+      .select('-route')
       .sort({ timestamp: -1 })
       .limit(20); // Limit to last 20 routes
 
@@ -225,6 +229,28 @@ router.get('/saved', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Error fetching saved routes:', error);
     res.status(500).json({ message: 'Server error fetching saved routes.' });
+  }
+});
+
+// GET: Fetch full details of a specific saved route
+router.get('/saved/:routeId', verifyToken, async (req, res) => {
+  try {
+    const { routeId } = req.params;
+    const userId = req.user.id;
+
+    const route = await Route.findOne({ _id: routeId, userId });
+
+    if (!route) {
+      return res.status(404).json({ message: 'Route not found or access denied.' });
+    }
+
+    res.status(200).json({
+      success: true,
+      route
+    });
+  } catch (error) {
+    console.error('Error fetching route details:', error);
+    res.status(500).json({ message: 'Server error fetching route details.' });
   }
 });
 

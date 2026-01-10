@@ -601,7 +601,9 @@ export default function RoutePlanner() {
 
       if (response.ok) {
         const data = await response.json();
-        setSavedRoutes(prev => [data.route, ...prev]);
+        // Optimistically add the route with local geometry to avoid re-fetching immediately
+        const routeWithData = { ...data.route, route: routeData };
+        setSavedRoutes(prev => [routeWithData, ...prev]);
         setIsRouteSaved(true);
         toast.success('Route saved successfully!');
       } else {
@@ -613,13 +615,45 @@ export default function RoutePlanner() {
     }
   };
 
-  // Load saved route
-  const loadRoute = (savedRoute) => {
-    setStops(savedRoute.stops);
-    setTravelMode(savedRoute.travelMode);
-    setRouteData(savedRoute.route);
-    setIsRouteSaved(true);
-    toast.success('Route loaded successfully!');
+  // Load saved route (fetches full details if needed)
+  const loadRoute = async (savedRoute) => {
+    try {
+      let routeGeometry = savedRoute.route;
+
+      // If geometry is missing (from optimized list fetch), fetch full details
+      if (!routeGeometry) {
+        const loadingToast = toast.loading("Fetching route details...");
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${savedRoute._id}`, {
+            credentials: 'include'
+          });
+
+          if (!response.ok) throw new Error("Failed to fetch details");
+
+          const data = await response.json();
+          if (data.success && data.route) {
+            routeGeometry = data.route.route;
+          } else {
+            throw new Error("Invalid route data");
+          }
+        } catch (err) {
+          toast.update(loadingToast, { render: "Failed to load route details", type: "error", isLoading: false, autoClose: 3000 });
+          return;
+        }
+        toast.dismiss(loadingToast);
+      }
+
+      if (routeGeometry) {
+        setStops(savedRoute.stops);
+        setTravelMode(savedRoute.travelMode);
+        setRouteData(routeGeometry);
+        setIsRouteSaved(true);
+        toast.success('Route loaded successfully!');
+      }
+    } catch (error) {
+      console.error("Load route error:", error);
+      toast.error("Error loading route");
+    }
   };
 
   // Fetch saved routes from backend
