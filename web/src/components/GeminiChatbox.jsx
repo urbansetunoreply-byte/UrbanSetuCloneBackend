@@ -8945,10 +8945,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </p>
                             </div>
                             <div className="flex gap-3 flex-col sm:flex-row">
-                                <a href="/login" className="flex-1 py-2.5 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white text-center transition-colors shadow-lg shadow-blue-500/25">
+                                <a href="/sign-in" className="flex-1 py-2.5 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white text-center transition-colors shadow-lg shadow-blue-500/25">
                                     Login
                                 </a>
-                                <a href="/signup" className={`flex-1 py-2.5 rounded-xl font-medium text-center transition-colors border ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200 hover:bg-gray-50'}`}>
+                                <a href="/sign-up" className={`flex-1 py-2.5 rounded-xl font-medium text-center transition-colors border ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200 hover:bg-gray-50'}`}>
                                     Sign Up
                                 </a>
                             </div>
