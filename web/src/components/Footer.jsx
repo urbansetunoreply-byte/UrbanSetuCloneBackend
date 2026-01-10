@@ -100,7 +100,10 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link
+                  to={currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/support" : "/contact"}
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
+                >
                   Contact
                 </Link>
               </li>
