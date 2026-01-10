@@ -224,8 +224,8 @@ export default function Downloads() {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab
-                                            ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                         } capitalize`}
                                 >
                                     {tab}
@@ -272,9 +272,9 @@ export default function Downloads() {
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
                                             <button
                                                 onClick={() => handleDownload(file)}
-                                                className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+                                                className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium inline-flex items-center gap-2"
                                             >
-                                                Download
+                                                <FaDownload /> Download
                                             </button>
                                         </td>
                                     </tr>
