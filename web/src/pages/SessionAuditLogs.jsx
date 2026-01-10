@@ -509,30 +509,28 @@ const SessionAuditLogs = () => {
                 </button>
               </div>
 
-              {activeTab === 'audit' && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowExportModal(true)}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 shadow-sm text-sm font-medium rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    title="Export logs as CSV"
-                  >
-                    <FaFileExport className="mr-2" />
-                    Export
-                  </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowExportModal(true)}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 shadow-sm text-sm font-medium rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  title={`Export ${activeTab === 'audit' ? 'audit logs' : 'visitor data'} as CSV`}
+                >
+                  <FaFileExport className="mr-2" />
+                  Export
+                </button>
 
-                  {currentUser?.role === 'rootadmin' && (
-                    <button
-                      onClick={() => setShowClearModal(true)}
-                      className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-red-200 text-red-600 dark:border-red-800 dark:text-red-400 shadow-sm text-sm font-medium rounded-lg bg-white dark:bg-gray-700 hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:border-red-700 transition-colors ${isClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      title="Clear all audit logs"
-                      disabled={isClearing}
-                    >
-                      <FaTrash className={`mr-2 ${isClearing ? 'animate-pulse' : ''}`} />
-                      {isClearing ? 'Clearing...' : 'Clear All'}
-                    </button>
-                  )}
-                </div>
-              )}
+                {activeTab === 'audit' && currentUser?.role === 'rootadmin' && (
+                  <button
+                    onClick={() => setShowClearModal(true)}
+                    className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-red-200 text-red-600 dark:border-red-800 dark:text-red-400 shadow-sm text-sm font-medium rounded-lg bg-white dark:bg-gray-700 hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:border-red-700 transition-colors ${isClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title="Clear all audit logs"
+                    disabled={isClearing}
+                  >
+                    <FaTrash className={`mr-2 ${isClearing ? 'animate-pulse' : ''}`} />
+                    {isClearing ? 'Clearing...' : 'Clear All'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -1521,7 +1519,7 @@ const SessionAuditLogs = () => {
                     <FaFileExport className="text-xl text-blue-600 dark:text-blue-400" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Export Logs
+                    Export {activeTab === 'audit' ? 'Logs' : 'Visitors'}
                   </h3>
                 </div>
                 <button onClick={() => setShowExportModal(false)} className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
@@ -1540,8 +1538,8 @@ const SessionAuditLogs = () => {
                     className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                   />
                   <div className="ml-3">
-                    <span className="block text-sm font-medium text-gray-900 dark:text-white">Export All Logs</span>
-                    <span className="block text-xs text-gray-500 dark:text-gray-400">Download complete history of all sessions</span>
+                    <span className="block text-sm font-medium text-gray-900 dark:text-white">Export All {activeTab === 'audit' ? 'Logs' : 'Visitors'}</span>
+                    <span className="block text-xs text-gray-500 dark:text-gray-400">Download complete history of all {activeTab === 'audit' ? 'sessions' : 'visits'}</span>
                   </div>
                 </label>
 
@@ -1612,45 +1610,74 @@ const SessionAuditLogs = () => {
                         params.append('endDate', exportEndDate);
                       }
 
-                      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs?${params}`, {
+                      const endpoint = activeTab === 'audit'
+                        ? `${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`
+                        : `${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all`;
+
+                      const res = await fetch(`${endpoint}?${params}`, {
                         credentials: 'include',
                         headers: { 'Content-Type': 'application/json' }
                       });
 
-                      if (!res.ok) throw new Error('Failed to fetch logs');
+                      if (!res.ok) throw new Error(`Failed to fetch ${activeTab}`);
 
                       const data = await res.json();
                       if (!data.success) throw new Error(data.message);
 
-                      const exportLogs = data.logs || [];
-                      if (exportLogs.length === 0) {
-                        toast.info('No logs found to export');
+                      let exportData = [];
+                      let filenamePrefix = '';
+                      let csvContent = '';
+
+                      if (activeTab === 'audit') {
+                        exportData = data.logs || [];
+                        filenamePrefix = 'session-logs';
+                        // Generate CSV for Audit Logs
+                        const rows = exportData.map(l => ({
+                          timestamp: new Date(l.timestamp).toISOString(),
+                          user: l.userId?.username || '',
+                          email: l.userId?.email || '',
+                          role: l.role || '',
+                          action: l.action,
+                          ip: l.ip,
+                          location: l.location || '',
+                          device: l.device || '',
+                          suspicious: l.isSuspicious ? 'yes' : 'no'
+                        }));
+                        const header = ['timestamp', 'user', 'email', 'role', 'action', 'ip', 'location', 'device', 'suspicious'];
+                        csvContent = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
+                      } else {
+                        exportData = data.visitors || [];
+                        filenamePrefix = 'visitor-logs';
+                        // Generate CSV for Visitor Logs
+                        const rows = exportData.map(v => ({
+                          timestamp: new Date(v.timestamp).toISOString(),
+                          browser: v.browser || '',
+                          version: v.browserVersion || '',
+                          os: v.os || '',
+                          deviceType: v.deviceType || '',
+                          ip: v.ip,
+                          location: v.location || '',
+                          source: v.source || '',
+                          analytics: v.cookiePreferences?.analytics ? 'yes' : 'no'
+                        }));
+                        const header = ['timestamp', 'browser', 'version', 'os', 'deviceType', 'ip', 'location', 'source', 'analytics_consent'];
+                        csvContent = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
+                      }
+
+                      if (exportData.length === 0) {
+                        toast.info('No data found to export');
                         setIsExporting(false);
                         return;
                       }
 
-                      // Generate CSV
-                      const rows = exportLogs.map(l => ({
-                        timestamp: new Date(l.timestamp).toISOString(),
-                        user: l.userId?.username || '',
-                        email: l.userId?.email || '',
-                        role: l.role || '',
-                        action: l.action,
-                        ip: l.ip,
-                        location: l.location || '',
-                        device: l.device || '',
-                        suspicious: l.isSuspicious ? 'yes' : 'no'
-                      }));
-                      const header = ['timestamp', 'user', 'email', 'role', 'action', 'ip', 'location', 'device', 'suspicious'];
-                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
-                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
-                      a.href = url; a.download = `session-logs-${exportOption}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+                      a.href = url; a.download = `${filenamePrefix}-${exportOption}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
                       URL.revokeObjectURL(url);
 
                       setShowExportModal(false);
-                      toast.success(`Exported ${exportLogs.length} logs successfully`);
+                      toast.success(`Exported ${exportData.length} records successfully`);
                     } catch (err) {
                       console.error('Export failed', err);
                       toast.error('Export failed: ' + err.message);

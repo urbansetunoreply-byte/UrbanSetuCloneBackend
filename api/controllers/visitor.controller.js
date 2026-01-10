@@ -305,8 +305,17 @@ export const getAllVisitors = async (req, res, next) => {
         break;
       case 'all':
       default:
-        // No date filter
+        // No preset date filter
         break;
+    }
+
+    // Custom Date Range Support (overrides preset if provided)
+    if (req.query.startDate && req.query.endDate) {
+      const start = new Date(req.query.startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(req.query.endDate);
+      end.setHours(23, 59, 59, 999);
+      filter.visitDate = { $gte: start, $lte: end };
     }
 
     // Device filter
