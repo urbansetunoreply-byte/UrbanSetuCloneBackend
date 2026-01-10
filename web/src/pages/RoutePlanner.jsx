@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle, FaTrafficLight, FaLayerGroup, FaChevronLeft, FaChevronRight, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle, FaTrafficLight, FaLayerGroup, FaChevronLeft, FaChevronRight, FaChevronDown, FaChevronUp, FaExpand, FaCompress } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -1293,7 +1293,7 @@ export default function RoutePlanner() {
               </AnimatePresence>
             </div>
 
-            <div className="absolute top-4 right-14 z-10 hidden lg:block">
+            <div className="absolute top-4 right-14 z-10">
               <button
                 onClick={() => {
                   const newFullscreen = !isFullscreen;
@@ -1303,7 +1303,7 @@ export default function RoutePlanner() {
                 className="p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg shadow-lg transition-all"
                 title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
               >
-                <FaMapPin />
+                {isFullscreen ? <FaCompress /> : <FaExpand />}
               </button>
             </div>
 
