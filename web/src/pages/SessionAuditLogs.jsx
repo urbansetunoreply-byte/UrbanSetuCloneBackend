@@ -104,22 +104,49 @@ const SessionAuditLogs = () => {
   };
 
   const visitorInsights = useMemo(() => {
-    const daily = Array.isArray(visitorStats?.dailyStats) ? visitorStats.dailyStats : [];
+    const dailyRaw = Array.isArray(visitorStats?.dailyStats) ? visitorStats.dailyStats : [];
     const deviceStats = Array.isArray(visitorStats?.deviceStats) ? visitorStats.deviceStats : [];
     const locationStats = Array.isArray(visitorStats?.locationStats) ? visitorStats.locationStats : [];
 
-    const totalWindow = daily.reduce((sum, entry) => sum + getVisitorEntryValue(entry), 0);
-    const last7 = daily.slice(-7);
-    const prev7 = daily.slice(Math.max(0, daily.length - 14), Math.max(0, daily.length - 7));
-    const last7Total = last7.reduce((sum, entry) => sum + getVisitorEntryValue(entry), 0);
-    const prev7Total = prev7.reduce((sum, entry) => sum + getVisitorEntryValue(entry), 0);
-    const trendPercentage = prev7Total > 0 ? ((last7Total - prev7Total) / prev7Total) * 100 : null;
-    const avgDaily = daily.length > 0 ? totalWindow / daily.length : (visitorStats?.totalVisitors || 0);
+    // Fill gaps for last 30 days to ensure accurate trend/avg calculation
+    const daysWindow = 30; // Matching the query default
+    const filledDaily = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const peakEntry = daily.reduce((max, entry) => {
+    const statsMap = new Map();
+    dailyRaw.forEach(item => {
+      const d = new Date(item.date || item._id);
+      d.setHours(0, 0, 0, 0);
+      statsMap.set(d.getTime(), getVisitorEntryValue(item));
+    });
+
+    for (let i = daysWindow - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const val = statsMap.get(d.getTime()) || 0;
+      filledDaily.push({ date: d, count: val, value: val }); // standardized format
+    }
+
+    const totalWindow = filledDaily.reduce((sum, entry) => sum + entry.count, 0);
+
+    // Calculate 7-day stats
+    const last7 = filledDaily.slice(-7);
+    const last7Total = last7.reduce((sum, entry) => sum + entry.count, 0);
+
+    // Calculate previous 7-day stats for trend
+    const prev7 = filledDaily.slice(-14, -7);
+    const prev7Total = prev7.reduce((sum, entry) => sum + entry.count, 0);
+
+    const trendPercentage = prev7Total > 0 ? ((last7Total - prev7Total) / prev7Total) * 100 : (last7Total > 0 ? 100 : 0);
+
+    // Avg Daily: Total / Window (30) ensures we count zero-days
+    const avgDaily = totalWindow / daysWindow;
+
+    const peakEntry = filledDaily.reduce((max, entry) => {
       if (!max) return entry;
-      return getVisitorEntryValue(entry) > getVisitorEntryValue(max) ? entry : max;
-    }, null);
+      return entry.count > max.count ? entry : max;
+    }, filledDaily[0]);
 
     const topDevice = deviceStats.reduce((max, entry) => {
       if (!max) return entry;
@@ -137,10 +164,10 @@ const SessionAuditLogs = () => {
       summaryPoints.push(`Traffic is ${direction} ${Math.abs(trendPercentage).toFixed(1)}% compared to the previous week.`);
     }
     if (avgDaily > 0) {
-      summaryPoints.push(`Average daily visitors: ${Math.round(avgDaily).toLocaleString('en-IN')}.`);
+      summaryPoints.push(`Average daily visitors: ${avgDaily < 1 ? avgDaily.toFixed(1) : Math.round(avgDaily).toLocaleString('en-IN')}.`);
     }
-    if (peakEntry) {
-      summaryPoints.push(`Peak traffic on ${formatVisitorDate(peakEntry.date || peakEntry.day)} with ${getVisitorEntryValue(peakEntry)} visits.`);
+    if (peakEntry && peakEntry.count > 0) {
+      summaryPoints.push(`Peak traffic on ${formatVisitorDate(peakEntry.date)} with ${peakEntry.count} visits.`);
     }
     if (topDevice) {
       summaryPoints.push(`Most visitors use ${topDevice.device || topDevice.name || 'Unknown'} devices (${topDevice.count || 0}).`);
@@ -158,7 +185,9 @@ const SessionAuditLogs = () => {
       topLocation,
       summaryPoints,
       topDevices: deviceStats.slice(0, 4),
-      topLocations: locationStats.slice(0, 4)
+      topLocations: locationStats.slice(0, 4),
+      // Expose filledDaily for charts if needed
+      chartData: filledDaily.map(d => ({ date: formatVisitorDate(d.date), count: d.count }))
     };
   }, [visitorStats]);
 
