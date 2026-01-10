@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle, FaTrafficLight, FaLayerGroup, FaChevronLeft, FaChevronRight, FaChevronDown, FaChevronUp, FaExpand, FaCompress } from 'react-icons/fa';
+import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaDirections, FaInfoCircle, FaTrafficLight, FaLayerGroup, FaChevronLeft, FaChevronRight, FaChevronDown, FaChevronUp, FaExpand, FaCompress } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -981,7 +981,7 @@ export default function RoutePlanner() {
                   className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm lg:hidden"
                   title="Toggle Fullscreen"
                 >
-                  <FaMapPin className="text-white text-sm" />
+                  {isFullscreen ? <FaCompress className="text-white text-sm" /> : <FaExpand className="text-white text-sm" />}
                 </button>
               </div>
             </div>
