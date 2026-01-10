@@ -972,17 +972,7 @@ export default function RoutePlanner() {
                 >
                   <FaBookmark className="text-white text-sm" />
                 </button>
-                <button
-                  onClick={() => {
-                    const newFullscreen = !isFullscreen;
-                    setIsFullscreen(newFullscreen);
-                    if (newFullscreen) hideHeader(); else showHeader();
-                  }}
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm lg:hidden"
-                  title="Toggle Fullscreen"
-                >
-                  {isFullscreen ? <FaCompress className="text-white text-sm" /> : <FaExpand className="text-white text-sm" />}
-                </button>
+
               </div>
             </div>
           </div>
