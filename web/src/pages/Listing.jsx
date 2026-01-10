@@ -3842,11 +3842,11 @@ export default function Listing() {
                 setAssignUserSearch(value);
               }}
               placeholder="Search users by name, email, or mobile number (max 10 digits)"
-              className="border rounded p-2 w-full"
+              className="border rounded p-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-700"
               disabled={assignOwnerLoading}
             />
             <select
-              className="border rounded p-2 w-full"
+              className="border rounded p-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-700"
               value={selectedNewOwner}
               onChange={(e) => setSelectedNewOwner(e.target.value)}
               disabled={assignOwnerLoading}
