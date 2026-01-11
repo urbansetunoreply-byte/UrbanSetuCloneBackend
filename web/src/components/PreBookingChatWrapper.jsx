@@ -29,6 +29,19 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
     const [sendIconSent, setSendIconSent] = useState(false);
 
     const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
+
+    // Keyboard shortcut to focus input
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === '/' && e.ctrlKey && activeChat) {
+                e.preventDefault();
+                inputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [activeChat]);
 
     const isOwner = currentUser && ownerId && currentUser._id === ownerId;
 
@@ -560,6 +573,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                 {/* Input */}
                 <form onSubmit={handleSend} className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex gap-2 items-center">
                     <input
+                        ref={inputRef}
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
