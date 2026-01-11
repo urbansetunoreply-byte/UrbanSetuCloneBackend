@@ -13031,7 +13031,7 @@ export const sendLoanEMIDueReminderEmail = async (email, details) => {
             </p>
             
             <div style="background-color: #fff; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #e5e7eb;">
-              <p style="margin: 5px 0; color: #374151;"><strong>Amount Due:</strong> ₹${details.amount}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Amount Due:</strong> ${details.amount}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>Due Date:</strong> ${details.dueDate}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>Month:</strong> ${details.month}</p>
             </div>
