@@ -666,6 +666,23 @@ function AppRoutes({ bootstrapped }) {
       }
     };
 
+    const handlePreBookingMessage = (data) => {
+      // Ignore own messages
+      if (data.senderId === currentUser._id) return;
+
+      try { playNotification(); } catch (_) { }
+
+      toast.info(`New message from ${data.senderName || 'Property Inquiry'}`, {
+        onClick: () => {
+          navigate(`/listing/${data.listingId}?openChat=true`);
+        },
+        autoClose: 5000,
+        closeOnClick: true,
+        pauseOnHover: false
+      });
+    };
+
+    socket.on('pre_booking_message', handlePreBookingMessage);
     socket.on('commentUpdate', handleNewMessage);
 
     // Handle new notifications with sound and toast
@@ -695,6 +712,7 @@ function AppRoutes({ bootstrapped }) {
     socket.on('watchlistNotification', handleNewNotification);
 
     return () => {
+      socket.off('pre_booking_message', handlePreBookingMessage);
       socket.off('commentUpdate', handleNewMessage);
       socket.off('notificationCreated', handleNewNotification);
       socket.off('watchlistNotification', handleNewNotification);

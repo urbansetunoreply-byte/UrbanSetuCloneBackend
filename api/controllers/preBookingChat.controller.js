@@ -93,13 +93,16 @@ export const sendMessage = async (req, res, next) => {
         // Socket Emission
         const io = req.app.get('io');
         const recipientId = chat.participants.find(p => p._id.toString() !== senderId)._id.toString();
+        const sender = chat.participants.find(p => p._id.toString() === senderId);
+        const senderName = sender ? sender.username : 'User';
 
         // Emit to recipient's room
         io.to(recipientId).emit('pre_booking_message', {
             chatId: chat._id,
             message: newMessage,
             listingId: chat.listingId._id,
-            senderId
+            senderId,
+            senderName
         });
 
         // Also emit to sender (for multi-device sync)
@@ -107,12 +110,13 @@ export const sendMessage = async (req, res, next) => {
             chatId: chat._id,
             message: newMessage,
             listingId: chat.listingId._id,
-            senderId
+            senderId,
+            senderName
         });
 
         // Email Notification
         const recipient = chat.participants.find(p => p._id.toString() === recipientId);
-        const sender = chat.participants.find(p => p._id.toString() === senderId);
+
 
         if (recipient && sender) {
             // Check if recipient is online
@@ -120,10 +124,18 @@ export const sendMessage = async (req, res, next) => {
             const recipientSocketRoom = io.sockets.adapter.rooms.get(recipientId);
             const isRecipientOnline = recipientSocketRoom && recipientSocketRoom.size > 0;
 
-            // Only send email if recipient is OFFLINE
-            if (!isRecipientOnline) {
+            // Cooldown logic: 30 minutes
+            const EMAIL_COOLDOWN = 30 * 60 * 1000;
+            const now = new Date();
+            const lastEmailSent = chat.lastEmailSentAt ? new Date(chat.lastEmailSentAt) : new Date(0);
+
+            // Only send email if recipient is OFFLINE and cooldown has passed
+            if (!isRecipientOnline && (now - lastEmailSent > EMAIL_COOLDOWN)) {
                 // Construct property link (assuming client structure)
                 const propertyLink = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${chat.listingId._id}`;
+
+                // Update lastEmailSentAt immediately to lock
+                await PreBookingChat.findByIdAndUpdate(chat._id, { lastEmailSentAt: now });
 
                 // We don't await email to avoid delaying response
                 sendPreBookingMessageNotification(
@@ -131,7 +143,6 @@ export const sendMessage = async (req, res, next) => {
                     recipient.username,
                     sender.username,
                     chat.listingId.name,
-                    content.substring(0, 50) + (content.length > 50 ? '...' : ''),
                     propertyLink
                 ).catch(err => console.error('Email sending failed:', err));
             }

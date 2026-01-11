@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FaComments, FaTimes, FaPaperPlane, FaUser, FaCircle, FaCheck, FaTrash, FaEdit, FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -9,6 +10,15 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle }) {
     const { currentUser } = useSelector((state) => state.user);
     const [isOpen, setIsOpen] = useState(false);
+    const location = useLocation();
+
+    // Check query params to auto-open chat
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get('openChat') === 'true') {
+            setIsOpen(true);
+        }
+    }, [location.search]);
 
     // State for Owner View
     const [inboxChats, setInboxChats] = useState([]);

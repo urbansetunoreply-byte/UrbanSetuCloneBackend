@@ -15630,7 +15630,8 @@ export const sendLeaderboardBonusEmail = async (email, username, rank, amount, m
 };
 
 // Send Pre-Booking Message Notification Email
-export const sendPreBookingMessageNotification = async (email, recipientName, senderName, propertyName, messagePreview, propertyLink) => {
+// Send Pre-Booking Message Notification Email
+export const sendPreBookingMessageNotification = async (email, recipientName, senderName, propertyName, propertyLink) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -15651,15 +15652,13 @@ export const sendPreBookingMessageNotification = async (email, recipientName, se
             <p style='color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;'>
               You have received a new message from <strong>${senderName}</strong> regarding your property <strong>${propertyName}</strong>.
             </p>
-            
-            <div style='background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #e5e7eb;'>
-              <strong style='color: #374151;'>Message Preview:</strong><br/>
-              <p style='margin: 5px 0 0 0; color: #4b5563; font-style: italic;'>${messagePreview}</p>
-            </div>
+            <p style='color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;'>
+              For privacy and security reasons, please log in to your account to view and reply to this message.
+            </p>
             
             <div style='text-align: center; margin: 20px 0;'>
               <a href='${propertyLink}' style='display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;'>
-                Reply to Message
+                View Message
               </a>
             </div>
           </div>

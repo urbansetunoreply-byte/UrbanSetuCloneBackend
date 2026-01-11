@@ -50,7 +50,10 @@ const preBookingChatSchema = new mongoose.Schema({
             type: Date,
             default: Date.now
         }
-    }]
+    }],
+    lastEmailSentAt: {
+        type: Date
+    }
 }, { timestamps: true });
 
 // Index for efficient querying by user and listing
