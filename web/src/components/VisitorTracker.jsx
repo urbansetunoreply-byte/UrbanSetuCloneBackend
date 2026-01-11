@@ -189,10 +189,32 @@ const VisitorTracker = () => {
         const handleClick = (e) => {
             const target = e.target.closest('button, a, input, select, textarea, [role="button"]');
             if (target) {
-                const elementLabel = target.innerText?.slice(0, 30) || target.id || target.name || target.className || target.tagName;
+                // Better heuristic for element label
+                let label = target.getAttribute('aria-label') ||
+                    target.getAttribute('title') ||
+                    target.getAttribute('data-testid') ||
+                    target.id;
+
+                // Fallback to text content if no accessibility label
+                if (!label && target.innerText) {
+                    label = target.innerText.trim().slice(0, 30);
+                }
+
+                // Fallback to form attributes
+                if (!label) {
+                    label = target.name || target.placeholder || target.value;
+                }
+
+                // Last resort: Tag Name (Avoid className as it's often messy tailwind)
+                if (!label) {
+                    label = target.tagName.toLowerCase();
+                    // If it's a link with an href, maybe use that
+                    if (target.href) label += `:${target.href.split('/').pop()}`;
+                }
+
                 if (interactionsRef.current.length < 20) {
                     interactionsRef.current.push({
-                        element: `${target.tagName.toLowerCase()}:${elementLabel}`,
+                        element: `${target.tagName.toLowerCase()}:${label}`,
                         action: 'click',
                         timestamp: new Date()
                     });

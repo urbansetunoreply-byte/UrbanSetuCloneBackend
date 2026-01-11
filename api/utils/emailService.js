@@ -9448,11 +9448,15 @@ export const sendPropertyPublishedAfterVerificationEmail = async (email, listing
       city,
       state,
       imageUrls,
-      badgeNumber
+      badgeNumber,
+      propertyId // Add propertyId as fallback
     } = listingDetails;
 
+    // Use listingId or propertyId interchangeably
+    const finalListingId = listingId || propertyId;
+
     const subject = `🎉 Your Property "${propertyName}" is Now Live & Verified!`;
-    const listingUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/listing/${listingId}`;
+    const listingUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/listing/${finalListingId}`;
     const dashboardUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-listings`;
 
     const html = `
