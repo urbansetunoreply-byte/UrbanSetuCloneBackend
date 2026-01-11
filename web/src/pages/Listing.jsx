@@ -32,6 +32,7 @@ import VirtualTourViewer from "../components/VirtualTourViewer"; // Import the v
 import VirtualStagingTool from "../components/VirtualStagingTool"; // Import Virtual Staging Tool
 import ListingSkeleton from "../components/skeletons/ListingSkeleton"; // Import ListingSkeleton
 import SeasonalEffects from "../components/SeasonalEffects";
+import VerifiedModal from "../components/VerifiedModal";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UNAVAILABLE_STATUSES = ['reserved', 'under_contract', 'rented', 'sold', 'suspended'];
@@ -167,6 +168,7 @@ export default function Listing() {
   const [localityScore, setLocalityScore] = useState(null);
   const [showLocalityScore, setShowLocalityScore] = useState(false);
   const [localityLoading, setLocalityLoading] = useState(false);
+  const [showVerifiedModal, setShowVerifiedModal] = useState(false);
 
   const listingAvailabilityStatus = listing?.availabilityStatus;
   const isListingUnavailable = listing && UNAVAILABLE_STATUSES.includes(listingAvailabilityStatus);
@@ -1901,9 +1903,13 @@ export default function Listing() {
               <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-white break-words flex items-center gap-2">
                 {listing.name}
                 {listing.isVerified && (
-                  <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                  <button
+                    onClick={() => setShowVerifiedModal(true)}
+                    className="ml-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1 cursor-pointer hover:bg-green-200 transition-colors focus:outline-none"
+                    title="Click to see whatVerified means"
+                  >
                     <FaCheckCircle /> Verified Property
-                  </span>
+                  </button>
                 )}
                 {/* Root Admin verification bypass button - ONLY for NOT verified */}
                 {currentUser?.role === 'rootadmin' && !listing.isVerified && (
@@ -3822,6 +3828,12 @@ export default function Listing() {
           </div>
         </div>
       )}
+
+      {/* Verified Property Modal */}
+      <VerifiedModal
+        isOpen={showVerifiedModal}
+        onClose={() => setShowVerifiedModal(false)}
+      />
 
       {/* Assign New Owner Modal */}
       {showAssignOwnerModal && (
