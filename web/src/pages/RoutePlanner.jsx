@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useHeader } from '../contexts/HeaderContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -54,6 +55,15 @@ export default function RoutePlanner() {
   const [selectedAlternative, setSelectedAlternative] = useState(0);
   const [isRouteSaved, setIsRouteSaved] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(null);
+
+  // Confirmation Modal State
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+    isDestructive: false
+  });
 
   const mapRef = useRef(null);
   const geocoderRefs = useRef([]);
@@ -673,51 +683,69 @@ export default function RoutePlanner() {
   };
 
   // Delete a saved route
-  const deleteSavedRoute = async (routeId) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${routeId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
+  const deleteSavedRoute = (routeId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Saved Route',
+      message: 'Are you sure you want to delete this route from your saved list? This action cannot be undone.',
+      confirmText: 'Delete',
+      isDestructive: true,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${routeId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
 
-      if (response.ok) {
-        setSavedRoutes(prev => prev.filter(route => route._id !== routeId));
-        toast.success('Route deleted successfully!');
-      } else {
-        throw new Error('Failed to delete route');
+          if (response.ok) {
+            setSavedRoutes(prev => prev.filter(route => route._id !== routeId));
+            toast.success('Route deleted successfully!');
+          } else {
+            throw new Error('Failed to delete route');
+          }
+        } catch (error) {
+          console.error('Error deleting route:', error);
+          toast.error('Failed to delete route. Please try again.');
+        } finally {
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }
       }
-    } catch (error) {
-      console.error('Error deleting route:', error);
-      toast.error('Failed to delete route. Please try again.');
-    }
+    });
   };
 
   // Delete all saved routes
-  const deleteAllSavedRoutes = async () => {
+  const deleteAllSavedRoutes = () => {
     if (savedRoutes.length === 0) {
       toast.info('No routes to delete');
       return;
     }
 
-    if (!window.confirm(`Are you sure you want to delete all ${savedRoutes.length} saved routes? This action cannot be undone.`)) {
-      return;
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete All Saved Routes',
+      message: `Are you sure you want to delete all ${savedRoutes.length} saved routes? This action cannot be undone.`,
+      confirmText: 'Delete All',
+      isDestructive: true,
+      onConfirm: async () => {
+        try {
+          const deletePromises = savedRoutes.map(route =>
+            fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${route._id}`, {
+              method: 'DELETE',
+              credentials: 'include'
+            })
+          );
 
-    try {
-      const deletePromises = savedRoutes.map(route =>
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${route._id}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        })
-      );
-
-      await Promise.all(deletePromises);
-      setSavedRoutes([]);
-      toast.success('All routes deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting all routes:', error);
-      toast.error('Failed to delete all routes. Please try again.');
-    }
+          await Promise.all(deletePromises);
+          setSavedRoutes([]);
+          toast.success('All routes deleted successfully!');
+        } catch (error) {
+          console.error('Error deleting all routes:', error);
+          toast.error('Failed to delete all routes. Please try again.');
+        } finally {
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
   };
 
   // Export route as GPX
@@ -1411,9 +1439,9 @@ export default function RoutePlanner() {
                               <div className="font-semibold text-gray-800 dark:text-white">{route.name}</div>
                               <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">{new Date(route.timestamp).toLocaleDateString()} • {route.travelMode}</div>
                             </div>
-                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => { loadRoute(route); setShowSettings(false); }} className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60">Load</button>
-                              <button onClick={() => deleteSavedRoute(route._id || route.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"><FaTrash /></button>
+                            <div className="flex gap-2">
+                              <button onClick={() => { loadRoute(route); setShowSettings(false); }} className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors">Load</button>
+                              <button onClick={() => deleteSavedRoute(route._id || route.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"><FaTrash /></button>
                             </div>
                           </div>
                         ))}
@@ -1446,6 +1474,15 @@ export default function RoutePlanner() {
           )}
         </AnimatePresence>
       </div>
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        isDestructive={confirmModal.isDestructive}
+      />
     </>
   );
 }
