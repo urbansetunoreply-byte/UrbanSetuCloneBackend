@@ -12,6 +12,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
 
     // State for Owner View
     const [inboxChats, setInboxChats] = useState([]);
+    const [hasViewedInquiries, setHasViewedInquiries] = useState(false);
 
     // State for Chat View
     const [activeChat, setActiveChat] = useState(null); // The full chat object
@@ -33,6 +34,9 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
         if (!currentUser) {
             toast.info('Please sign in to chat with the owner.');
             return;
+        }
+        if (!isOpen && isOwner) {
+            setHasViewedInquiries(true);
         }
         setIsOpen(!isOpen);
     };
@@ -411,7 +415,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                         <FaComments className="w-5 h-5 text-white drop-shadow-lg" />
 
                         {/* Badge for Owner */}
-                        {isOwner && inboxChats.length > 0 && (
+                        {isOwner && inboxChats.length > 0 && !hasViewedInquiries && (
                             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full animate-pulse font-bold">
                                 {inboxChats.length > 99 ? '99+' : inboxChats.length}
                             </span>
