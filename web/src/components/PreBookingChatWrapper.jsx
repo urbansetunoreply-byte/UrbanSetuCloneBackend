@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { FaComments, FaTimes, FaPaperPlane, FaUser, FaCircle } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaUser, FaCircle, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { socket } from '../utils/socket';
 
@@ -19,6 +19,10 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    // State for animations and UI
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const [sendIconAnimating, setSendIconAnimating] = useState(false);
+    const [sendIconSent, setSendIconSent] = useState(false);
 
     const messagesEndRef = useRef(null);
 
@@ -141,6 +145,9 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
         if (!newMessage.trim() || !activeChat) return;
 
         setIsSending(true);
+        // Start animation
+        setSendIconAnimating(true);
+
         try {
             const res = await fetch(`${API_BASE_URL}/api/pre-booking-chat/send`, {
                 method: 'POST',
@@ -152,20 +159,32 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
             if (data.success) {
                 setNewMessage('');
                 // Socket will handle the append
+
+                // Animate success
+                setSendIconAnimating(false);
+                setSendIconSent(true);
+                setTimeout(() => setSendIconSent(false), 2000);
             } else {
                 toast.error('Failed to send message');
+                setSendIconAnimating(false);
             }
         } catch (error) {
             console.error(error);
+            setSendIconAnimating(false);
         } finally {
             setIsSending(false);
         }
     };
 
     // Clear Chat
-    const handleClearChat = async () => {
+    const handleClearChat = () => {
         if (!activeChat) return;
-        if (!window.confirm("Are you sure you want to clear this chat?")) return;
+        setShowClearConfirm(true);
+    }
+
+    const confirmClearChat = async () => {
+        setShowClearConfirm(false);
+        if (!activeChat) return;
 
         try {
             const res = await fetch(`${API_BASE_URL}/api/pre-booking-chat/${activeChat._id}`, {
@@ -243,7 +262,33 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
         };
 
         return (
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full relative">
+                {/* Clear Chat Confirmation Overlay */}
+                {showClearConfirm && (
+                    <div className="absolute inset-0 z-50 bg-black/50 flex items-center justify-center p-4 rounded-lg">
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-sm w-full animate-slideUp">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Clear Chat History?</h3>
+                            <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm">
+                                This will permanently delete all messages in this chat. This action cannot be undone.
+                            </p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setShowClearConfirm(false)}
+                                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmClearChat}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-md transition-colors"
+                                >
+                                    Yes, Clear it
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-blue-600 text-white rounded-t-lg flex justify-between items-center shadow-md">
                     <div className="flex items-center gap-3">
@@ -254,18 +299,14 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                         )}
 
                         <div className="flex items-center gap-3">
-                            {/* Avatar */}
+                            {/* Generic Avatar */}
                             <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white overflow-hidden border border-white/30">
-                                {otherParticipant?.avatar ? (
-                                    <img src={otherParticipant.avatar} alt={otherParticipant.username} className="w-full h-full object-cover" />
-                                ) : (
-                                    <span className="font-bold text-sm">{otherParticipant?.username?.[0]?.toUpperCase() || <FaUser className="text-xs" />}</span>
-                                )}
+                                <FaUser className="text-sm" />
                             </div>
 
                             <div className="leading-tight">
                                 <div className="font-semibold text-sm">
-                                    {isOwner ? otherParticipant?.username : 'Property Owner'}
+                                    {isOwner ? 'Prospective Buyer' : 'Property Owner'}
                                 </div>
                                 <div className="text-[10px] opacity-90 flex items-center gap-1.5">
                                     <FaCircle className="w-2 h-2 text-green-400" /> Online
@@ -331,13 +372,15 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                     <button
                         type="submit"
                         disabled={isSending || !newMessage.trim()}
-                        className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 transition-all duration-200 transform hover:scale-110 active:scale-95 shadow-md hover:shadow-xl"
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white w-12 h-12 rounded-full shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none flex items-center justify-center active:scale-95 group"
                     >
-                        {isSending ? (
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        ) : (
-                            <FaPaperPlane className="ml-1 text-lg" />
-                        )}
+                        <div className="relative flex items-center justify-center">
+                            {sendIconSent ? (
+                                <FaCheck className="text-lg text-white animate-bounce" />
+                            ) : (
+                                <FaPaperPlane className={`text-lg text-white ml-0.5 ${sendIconAnimating ? 'animate-ping' : 'group-hover:scale-110 transition-transform'}`} />
+                            )}
+                        </div>
                     </button>
                 </form>
             </div>
