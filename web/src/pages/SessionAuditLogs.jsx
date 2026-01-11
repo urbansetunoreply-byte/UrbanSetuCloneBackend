@@ -1696,9 +1696,13 @@ const SessionAuditLogs = () => {
                             ip: l.ip,
                             location: l.location || '',
                             device: l.device || '',
-                            suspicious: l.isSuspicious ? 'yes' : 'no'
+                            source: l.metadata?.source || '', // New
+                            suspicious: l.isSuspicious ? 'yes' : 'no',
+                            suspicious_reason: l.suspiciousReason || '', // New
+                            performed_by: l.performedBy?.username || '', // New
+                            additional_info: l.additionalInfo || '' // New
                           }));
-                          const header = ['timestamp', 'user', 'email', 'role', 'action', 'ip', 'location', 'device', 'suspicious'];
+                          const header = ['timestamp', 'user', 'email', 'role', 'action', 'ip', 'location', 'device', 'source', 'suspicious', 'suspicious_reason', 'performed_by', 'additional_info'];
                           csvContent = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
                         } else {
                           exportData = data.visitors || [];
@@ -1706,6 +1710,11 @@ const SessionAuditLogs = () => {
                           // Generate CSV for Visitor Logs
                           const rows = exportData.map(v => ({
                             timestamp: new Date(v.timestamp).toISOString(),
+                            session_start: v.sessionStart ? new Date(v.sessionStart).toISOString() : '',
+                            last_active: v.lastActive ? new Date(v.lastActive).toISOString() : '',
+                            duration_seconds: (v.sessionStart && v.lastActive) ? Math.round((new Date(v.lastActive) - new Date(v.sessionStart)) / 1000) : 0,
+                            page_views_count: v.pageViews?.length || 0,
+                            click_path: v.pageViews?.map(p => p.path).join(' -> ') || '',
                             browser: v.browser || '',
                             version: v.browserVersion || '',
                             os: v.os || '',
@@ -1713,9 +1722,13 @@ const SessionAuditLogs = () => {
                             ip: v.ip,
                             location: v.location || '',
                             source: v.source || '',
-                            analytics: v.cookiePreferences?.analytics ? 'yes' : 'no'
+                            referrer: v.referrer || '',
+                            analytics_consent: v.cookiePreferences?.analytics ? 'yes' : 'no',
+                            functional_consent: v.cookiePreferences?.functional ? 'yes' : 'no',
+                            marketing_consent: v.cookiePreferences?.marketing ? 'yes' : 'no',
+                            utm_tags: v.utm ? JSON.stringify(v.utm).replaceAll('"', "'") : ''
                           }));
-                          const header = ['timestamp', 'browser', 'version', 'os', 'deviceType', 'ip', 'location', 'source', 'analytics_consent'];
+                          const header = ['timestamp', 'session_start', 'last_active', 'duration_seconds', 'page_views_count', 'click_path', 'browser', 'version', 'os', 'deviceType', 'ip', 'location', 'source', 'referrer', 'analytics_consent', 'functional_consent', 'marketing_consent', 'utm_tags'];
                           csvContent = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
                         }
 
