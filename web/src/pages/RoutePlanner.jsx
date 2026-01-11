@@ -658,6 +658,47 @@ export default function RoutePlanner() {
         setTravelMode(savedRoute.travelMode);
         setRouteData(routeGeometry);
         setIsRouteSaved(true);
+
+        // Calculate Route Stats
+        setRouteStats({
+          distance: (routeGeometry.distance / 1000).toFixed(2), // km
+          duration: Math.round(routeGeometry.duration / 60), // minutes
+          fuelCost: calculateFuelCost(routeGeometry.distance, savedRoute.travelMode),
+          co2Emission: calculateCO2Emission(routeGeometry.distance, savedRoute.travelMode)
+        });
+
+        // Reconstruct Itinerary/Plan
+        const now = Date.now();
+        let cumulativeDuration = 0;
+        const itinerary = savedRoute.stops.map((stop, idx) => {
+          if (idx > 0) {
+            // Legs array length is stops.length - 1
+            const legDuration = routeGeometry.legs && routeGeometry.legs[idx - 1] ? routeGeometry.legs[idx - 1].duration * 1000 : 0;
+            cumulativeDuration += legDuration;
+          }
+          return {
+            addr: stop.address,
+            eta: new Date(now + cumulativeDuration),
+            coordinates: stop.coordinates
+          };
+        });
+        setPlan(itinerary);
+
+        // Fit map bounds
+        if (map && routeGeometry.geometry && routeGeometry.geometry.coordinates.length > 0) {
+          try {
+            const bounds = routeGeometry.geometry.coordinates.reduce((bounds, coord) => {
+              return bounds.extend(coord);
+            }, new mapboxgl.LngLatBounds(routeGeometry.geometry.coordinates[0], routeGeometry.geometry.coordinates[0]));
+
+            map.fitBounds(bounds, {
+              padding: 50
+            });
+          } catch (e) {
+            console.warn("Could not fit bounds", e);
+          }
+        }
+
         toast.success('Route loaded successfully!');
       }
     } catch (error) {
