@@ -5674,7 +5674,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             <h5 className="font-medium text-gray-800 mb-2">📱 User Experience</h5>
                                             <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
                                                 <li>Mobile-friendly responsive design</li>
-                                                <li>Keyboard shortcuts (Ctrl+F, Esc)</li>
+                                                <li>Keyboard shortcuts (Ctrl+/, Esc)</li>
                                                 <li>Auto-scroll to latest messages</li>
                                                 <li>Typing indicators</li>
                                                 <li>Unread message notifications</li>

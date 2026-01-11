@@ -86,8 +86,8 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
     // maybe we should only show relevant chats? 
     // The user requirement says: "at owner side as single owner it should first show all the messsaged users"
     // So I will show all chats.
-    const fetchOwnerChats = async () => {
-        setIsLoading(true);
+    const fetchOwnerChats = async (showLoading = true) => {
+        if (showLoading) setIsLoading(true);
         try {
             const res = await fetch(`${API_BASE_URL}/api/pre-booking-chat/user-chats`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` } // If using bearer, or relies on cookie
@@ -103,7 +103,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
             console.error(error);
             toast.error('Failed to load chats');
         } finally {
-            setIsLoading(false);
+            if (showLoading) setIsLoading(false);
         }
     };
 
@@ -142,7 +142,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                 scrollToBottom();
             } else if (isOwner) {
                 // If owner is in inbox view, update the last message preview
-                fetchOwnerChats(); // Simple re-fetch to update order/preview
+                fetchOwnerChats(false); // Simple re-fetch to update order/preview
             }
         };
 
@@ -311,7 +311,9 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
             hash = userId.charCodeAt(i) + ((hash << 5) - hash);
         }
         const index = Math.abs(hash) % FANTASY_NAMES.length;
-        return FANTASY_NAMES[index];
+        // Append last 4 chars of userId to ensure uniqueness even if names collide
+        const suffix = userId.substring(userId.length - 4);
+        return `${FANTASY_NAMES[index]} (${suffix})`;
     };
 
     // Render Functions
@@ -647,7 +649,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-24 right-6 z-40 w-96 h-[500px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp border border-gray-200 dark:border-gray-700">
+                <div className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-6 sm:w-96 z-40 h-[500px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp border border-gray-200 dark:border-gray-700">
                     {(isOwner && !activeChat) ? renderInbox() : renderChat()}
                 </div>
             )}
