@@ -579,7 +579,7 @@ export default function AdminHeader() {
                         onChange={handleSearchInputChange}
                         onFocus={handleSearchInputFocus}
                         onBlur={handleSearchInputBlur}
-                        className="px-4 py-3 outline-none w-full text-gray-800 bg-transparent"
+                        className="px-4 py-3 outline-none w-full text-gray-800 dark:text-white bg-transparent"
                       />
                       <button className={`${getSearchButtonColor()} text-white p-3 transition-colors`} type="submit">
                         <FaSearch />
