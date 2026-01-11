@@ -10,7 +10,7 @@ services:
         value: production
       - key: MONGO
         sync: false
-      - key: JWT_SECRET
+      - key: JWT_TOKEN
         sync: false
     healthCheckPath: /api/health
 
