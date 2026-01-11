@@ -41,13 +41,22 @@ class GlobalErrorBoundary extends React.Component {
 
     getAlternativeUrl = () => {
         const currentHost = window.location.hostname;
-        const currentPath = window.location.pathname + window.location.search;
+        // Read auth state
+        const token = localStorage.getItem('accessToken');
+        const sessionId = localStorage.getItem('sessionId');
+        const params = new URLSearchParams(window.location.search);
+
+        if (token) params.set('transfer_token', token);
+        if (sessionId) params.set('transfer_session', sessionId);
+
+        const newSearch = params.toString();
+        const suffix = newSearch ? `?${newSearch}` : '';
 
         // Logic to switch domains
         if (currentHost.includes('vercel.app')) {
-            return `https://urbansetuglobal.onrender.com${currentPath}`;
+            return `https://urbansetuglobal.onrender.com${window.location.pathname}${suffix}`;
         } else if (currentHost.includes('onrender.com')) {
-            return `https://urbansetu.vercel.app${currentPath}`;
+            return `https://urbansetu.vercel.app${window.location.pathname}${suffix}`;
         }
 
         // Fallback/Localhost

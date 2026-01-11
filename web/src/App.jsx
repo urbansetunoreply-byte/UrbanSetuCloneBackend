@@ -972,6 +972,25 @@ export default function App() {
   // Set this to true to halt all services and show the maintenance page
   const MAINTENANCE_MODE = false;
 
+  // Handle cross-domain auth transfer
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const transferToken = params.get('transfer_token');
+    const transferSession = params.get('transfer_session');
+
+    if (transferToken) {
+      localStorage.setItem('accessToken', transferToken);
+      if (transferSession) localStorage.setItem('sessionId', transferSession);
+
+      // Clean URL
+      params.delete('transfer_token');
+      params.delete('transfer_session');
+      const newSearch = params.toString();
+      const newPath = window.location.pathname + (newSearch ? `?${newSearch}` : '');
+      window.history.replaceState({}, '', newPath);
+    }
+  }, []);
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
