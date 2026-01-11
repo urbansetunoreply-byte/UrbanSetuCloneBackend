@@ -52,6 +52,17 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                 initiateOrGetChat();
             }
         }
+
+        // Prevent background scrolling when chat window is open
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [isOpen, currentUser, isOwner, listingId]);
 
     // 2. Fetch Owner's Inbox (All chats for this user)
