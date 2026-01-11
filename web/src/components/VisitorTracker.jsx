@@ -175,11 +175,25 @@ const VisitorTracker = () => {
 
     // Global Listeners for Interactions and Errors
     useEffect(() => {
-        // Error Listener
+        // Error Listener (Regular JS Errors)
         const handleError = (event) => {
             if (errorsRef.current.length < 10) {
                 errorsRef.current.push({
                     message: event.message || 'Unknown Error',
+                    stack: event.error?.stack?.slice(0, 500),
+                    source: `${event.filename?.split('/').pop()}:${event.lineno}`,
+                    timestamp: new Date()
+                });
+            }
+        };
+
+        // Unhandled Promise Rejection Listener (Async Errors)
+        const handlePromiseRejection = (event) => {
+            if (errorsRef.current.length < 10) {
+                errorsRef.current.push({
+                    message: `Unhandled Promise Rejection: ${event.reason?.message || event.reason}`,
+                    stack: event.reason?.stack?.slice(0, 500),
+                    type: 'promise_rejection',
                     timestamp: new Date()
                 });
             }
@@ -234,11 +248,13 @@ const VisitorTracker = () => {
         };
 
         window.addEventListener('error', handleError);
+        window.addEventListener('unhandledrejection', handlePromiseRejection);
         document.addEventListener('click', handleClick, true);
         window.addEventListener('resize', handleResize);
 
         return () => {
             window.removeEventListener('error', handleError);
+            window.removeEventListener('unhandledrejection', handlePromiseRejection);
             document.removeEventListener('click', handleClick, true);
             window.removeEventListener('resize', handleResize);
         };

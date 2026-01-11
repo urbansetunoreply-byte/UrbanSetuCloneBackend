@@ -2156,6 +2156,16 @@ const SessionAuditLogs = () => {
                             <p className="text-sm font-bold text-red-600 dark:text-red-400 break-words">
                               {item.message || 'Unknown Error'}
                             </p>
+                            {item.source && (
+                              <p className="text-xs text-gray-500 mt-1 font-mono">
+                                {item.source}
+                              </p>
+                            )}
+                            {item.stack && (
+                              <pre className="mt-2 p-2 bg-gray-100 dark:bg-gray-900 rounded text-[10px] text-gray-600 dark:text-gray-400 overflow-x-auto custom-scrollbar">
+                                {item.stack}
+                              </pre>
+                            )}
                           </>
                         )}
                         <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
