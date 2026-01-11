@@ -431,12 +431,55 @@ const SessionAuditLogs = () => {
 
 
 
+  const [isRefreshingVisitor, setIsRefreshingVisitor] = useState(false);
+
   const resetFilters = () => {
     setFilters({ action: '', isSuspicious: '', userId: '' });
     setSearchQuery('');
     setFilterDateRange('all');
     setFilterRole('all');
     setCurrentPage(1);
+  };
+
+  const handleRefreshVisitorDetails = async () => {
+    if (!selectedVisitor) return;
+    setIsRefreshingVisitor(true);
+    try {
+      // Re-fetch all visitors (or implement a single visitor fetch if available API-wise)
+      // Since we rely on the list, we'll fetch the list and find the updated record.
+      const params = new URLSearchParams({
+        limit: 1000,
+        dateRange: visitorFilters.dateRange,
+        // ... include key filters to ensure the visitor is in the list
+      });
+
+      // Simple fetch of all recent visitors to get updated data
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all?limit=2000`, { // Fetch enough to likely include current
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!res.ok) throw new Error("Failed to refresh");
+      const data = await res.json();
+
+      if (data.success && data.visitors) {
+        const updated = data.visitors.find(v => v._id === selectedVisitor._id);
+        if (updated) {
+          setSelectedVisitor(updated);
+          // Also update the main list if needed
+          setAllVisitors(data.visitors);
+          // setVisitors is derived from allVisitors via pagination effect, so it will update automatically
+          toast.success("Visitor details updated");
+        } else {
+          toast.warn("Visitor not found in recent logs");
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to refresh details");
+    } finally {
+      setIsRefreshingVisitor(false);
+    }
   };
 
   const getActiveFiltersCount = () => {
@@ -1796,12 +1839,22 @@ const SessionAuditLogs = () => {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowVisitorDetailsModal(false)}
-                  className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                >
-                  <FaTimes />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleRefreshVisitorDetails}
+                    disabled={isRefreshingVisitor}
+                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
+                    title="Refresh details"
+                  >
+                    <FaSync className={isRefreshingVisitor ? 'animate-spin' : ''} />
+                  </button>
+                  <button
+                    onClick={() => setShowVisitorDetailsModal(false)}
+                    className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
               </div>
 
               <div className="p-6 overflow-y-auto custom-scrollbar space-y-8">
