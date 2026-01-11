@@ -1521,7 +1521,7 @@ export default function Settings() {
                   </div>
                   <div className="ml-2">
                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                      <strong>Note:</strong> {t('settings.transfer_admin_note')}
+                      {t('settings.transfer_admin_note')}
                     </p>
                   </div>
                 </div>
