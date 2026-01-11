@@ -66,6 +66,7 @@ export default function Oauth({ pageType, disabled = false, onAuthStart = null, 
 
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
+                if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
                 localStorage.setItem('login', Date.now()); // Notify other tabs
             }
 

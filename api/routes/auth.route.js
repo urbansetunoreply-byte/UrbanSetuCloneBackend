@@ -1,5 +1,5 @@
 import express from 'express'
-import { SignUp, SignIn, Google, Signout, verifyAuth, forgotPassword, resetPassword, sendLoginOTP, verifyLoginOTP, lockAccountByToken, unlockAccountByToken } from '../controllers/auth.controller.js'
+import { SignUp, SignIn, Google, Signout, verifyAuth, forgotPassword, resetPassword, sendLoginOTP, verifyLoginOTP, lockAccountByToken, unlockAccountByToken, RefreshToken } from '../controllers/auth.controller.js'
 import { validateRecaptcha } from '../middleware/recaptcha.js';
 import OtpTracking from '../models/otpTracking.model.js';
 import bcryptjs from 'bcryptjs';
@@ -26,6 +26,7 @@ router.post("/google", signInRateLimit, bruteForceProtection, conditionalRecaptc
   const identifier = req.ip || req.connection.remoteAddress;
   return getFailedAttempts(identifier) >= 3;
 }), Google)
+router.post("/refresh", RefreshToken)
 router.get("/signout", Signout)
 router.get("/verify", verifyAuth)
 router.post("/forgot-password", forgotPasswordRateLimit, verifyCSRFToken, validateRecaptcha({ required: true }), forgotPassword)

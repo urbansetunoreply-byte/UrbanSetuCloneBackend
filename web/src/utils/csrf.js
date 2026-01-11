@@ -135,10 +135,46 @@ export const authenticatedFetch = async (url, options = {}) => {
   try {
     const authenticatedOptions = await createAuthenticatedFetchOptions(options);
 
-    const response = await fetch(url, authenticatedOptions);
+    let response = await fetch(url, authenticatedOptions);
+
+    // Intercept 401 and try to refresh token
+    if (response.status === 401) {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken })
+          });
+
+          if (refreshRes.ok) {
+            const data = await refreshRes.json();
+            if (data.token) {
+              localStorage.setItem('accessToken', data.token);
+              // Retry original request with new token
+              const newOptions = {
+                ...authenticatedOptions,
+                headers: {
+                  ...authenticatedOptions.headers,
+                  'Authorization': `Bearer ${data.token}`
+                }
+              };
+              response = await fetch(url, newOptions);
+            }
+          } else {
+            // Refresh failed - likely expired refresh token
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('refreshToken');
+          }
+        } catch (e) {
+          console.error("Token refresh failed", e);
+        }
+      }
+    }
 
     if (!response.ok) {
-      // Clone before consuming so downstream can still read the body
       const cloned = response.clone();
       let errorData = null;
       try {

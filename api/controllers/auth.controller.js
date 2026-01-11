@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
 import { generateOTP, sendSignupOTPEmail, sendLoginOTPEmail, sendPasswordResetSuccessEmail, sendPasswordChangeSuccessEmail, sendWelcomeEmail, sendReferralBonusEmail, sendReferredWelcomeEmail } from "../utils/emailService.js";
-import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/jwtUtils.js";
+import { generateTokenPair, setSecureCookies, clearAuthCookies, verifyRefreshToken, generateAccessToken } from "../utils/jwtUtils.js";
 import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
 import {
     createEnhancedSession,
@@ -456,6 +456,7 @@ export const SignIn = async (req, res, next) => {
             address: validUser.address,
             gender: validUser.gender,
             token: accessToken, // Keep for backward compatibility
+            refreshToken, // Send for cross-domain storage
             sessionId: session.sessionId,
             emailNotificationStatus: 'pending' // Inform client that email is being sent
         });
@@ -615,6 +616,7 @@ export const Google = async (req, res, next) => {
                 address: validUser.address,
                 gender: validUser.gender,
                 token: accessToken, // Keep for backward compatibility
+                refreshToken, // Send for cross-domain storage
                 sessionId: session.sessionId,
             });
         }
@@ -795,6 +797,7 @@ export const Google = async (req, res, next) => {
                 address: newUser.address,
                 gender: newUser.gender,
                 token: accessToken, // Keep for backward compatibility
+                refreshToken, // Send for cross-domain storage
                 sessionId: session.sessionId
             });
         }
@@ -1688,5 +1691,38 @@ export const unlockAccountByToken = async (req, res, next) => {
         res.status(200).json({ success: true, message });
     } catch (error) {
         next(error);
+    }
+};
+
+export const RefreshToken = async (req, res, next) => {
+    try {
+        const refreshToken = req.cookies.refresh_token || req.body.refreshToken;
+
+        if (!refreshToken) {
+            return next(errorHandler(401, "Refresh token not found"));
+        }
+
+        const decoded = verifyRefreshToken(refreshToken);
+        const user = await User.findById(decoded.id);
+
+        if (!user) {
+            return next(errorHandler(404, "User not found"));
+        }
+
+        if (user.status === 'suspended') {
+            return next(errorHandler(403, "Account suspended"));
+        }
+
+        const newAccessToken = generateAccessToken({ id: user._id });
+
+        setSecureCookies(res, newAccessToken, refreshToken);
+
+        res.status(200).json({
+            token: newAccessToken,
+            refreshToken
+        });
+
+    } catch (error) {
+        next(errorHandler(401, "Invalid refresh token"));
     }
 };
