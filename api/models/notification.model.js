@@ -67,7 +67,8 @@ const notificationSchema = new mongoose.Schema(
         'rent_auto_debit_enabled',
         'rent_auto_debit_failed',
         'property_assigned',
-        'property_deassigned'
+        'property_deassigned',
+        'client_error_report'
       ],
     },
     title: {

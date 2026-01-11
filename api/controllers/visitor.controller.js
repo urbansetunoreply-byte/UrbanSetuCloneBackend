@@ -1,4 +1,6 @@
 import VisitorLog from '../models/visitorLog.model.js';
+import User from '../models/user.model.js';
+import Notification from '../models/notification.model.js';
 import crypto from 'crypto';
 import { getDeviceInfo, getBrowserInfo, getOSInfo, getDeviceType, getLocationFromIP } from '../utils/sessionManager.js';
 
@@ -113,9 +115,67 @@ export const trackVisitor = async (req, res, next) => {
                 if (!lastPage.interactions) lastPage.interactions = [];
                 metrics.interactions.forEach(i => lastPage.interactions.push(i));
               }
-              if (metrics.errors && Array.isArray(metrics.errors)) {
+              if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
                 if (!lastPage.errors) lastPage.errors = [];
                 metrics.errors.forEach(e => lastPage.errors.push(e));
+
+                // --- TRIGGER ADMIN NOTIFICATIONS FOR ERRORS ---
+                try {
+                  // Find all admins
+                  const admins = await User.find({
+                    $or: [
+                      { role: 'rootadmin' },
+                      { role: 'admin' },
+                      { isDefaultAdmin: true }
+                    ],
+                    status: { $ne: 'suspended' } // optional: don't notify suspended admins
+                  }).select('_id');
+
+                  if (admins.length > 0) {
+                    const errorCount = metrics.errors.length;
+                    const firstError = metrics.errors[0];
+
+                    // Prepare generic error title
+                    const title = `⚠️ Client Error: ${errorCount} New Error${errorCount > 1 ? 's' : ''}`;
+
+                    // Helper to format error details for the message
+                    const formatError = (err) => {
+                      let msg = `Message: ${err.message || 'Unknown'}`;
+                      if (err.source) msg += `\nSource: ${err.source}`;
+                      // We truncate stack for notification message, full details in audit logs
+                      // Notifications are for immediate awareness
+                      return msg;
+                    };
+
+                    const message = metrics.errors.map(e => formatError(e)).join('\n\n');
+
+                    const notificationsToCreate = admins.map(admin => ({
+                      userId: admin._id,
+                      type: 'client_error_report',
+                      title: title,
+                      message: message,
+                      meta: {
+                        visitorId: existingVisitor._id,
+                        page: page,
+                        errors: metrics.errors
+                      }
+                    }));
+
+                    const createdNotifications = await Notification.insertMany(notificationsToCreate);
+
+                    // Emit Socket Events
+                    const io = req.app.get('io');
+                    if (io) {
+                      createdNotifications.forEach(notification => {
+                        io.to(notification.userId.toString()).emit('notificationCreated', notification);
+                      });
+                    }
+                    console.log(`🔔 Notified ${admins.length} admins about ${errorCount} client errors.`);
+                  }
+                } catch (notifyErr) {
+                  console.error('Failed to notify admins of visitor errors:', notifyErr);
+                }
+                // ----------------------------------------------
               }
             }
           }

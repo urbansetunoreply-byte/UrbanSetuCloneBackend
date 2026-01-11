@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { FaBell, FaTimes, FaCheck, FaTrash, FaEye, FaCalendarAlt, FaEdit, FaEnvelope, FaPaperPlane, FaUsers, FaUser, FaRedo, FaUndo, FaSearch, FaFilter, FaCopy } from 'react-icons/fa';
+import { FaBell, FaTimes, FaCheck, FaTrash, FaEye, FaCalendarAlt, FaEdit, FaEnvelope, FaPaperPlane, FaUsers, FaUser, FaRedo, FaUndo, FaSearch, FaFilter, FaCopy, FaExclamationTriangle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { socket } from '../utils/socket.js';
 import { useNavigate } from 'react-router-dom';
@@ -428,6 +428,12 @@ export default function NotificationBell({ mobile = false }) {
         return (
           <div className={`${containerBase} bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400`}>
             <FaTimes className={iconBase} />
+          </div>
+        );
+      case 'client_error_report':
+        return (
+          <div className={`${containerBase} bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400`}>
+            <FaExclamationTriangle className={iconBase} />
           </div>
         );
       default:
