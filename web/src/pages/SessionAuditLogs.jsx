@@ -1826,6 +1826,9 @@ const SessionAuditLogs = () => {
                       {selectedVisitor.cookiePreferences?.marketing ?
                         <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded border border-green-200">Marketing: On</span> :
                         <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded border border-gray-200">Marketing: Off</span>}
+                      {selectedVisitor.cookiePreferences?.functional ?
+                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded border border-green-200">Functional: On</span> :
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded border border-gray-200">Functional: Off</span>}
                     </div>
                   </div>
                 </div>

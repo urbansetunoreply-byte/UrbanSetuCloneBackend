@@ -14,6 +14,7 @@ import { CallProvider, useCallContext } from "./contexts/CallContext";
 import ContactSupportWrapper from "./components/ContactSupportWrapper";
 import NetworkStatus from "./components/NetworkStatus";
 import CookieConsent from "./components/CookieConsent";
+import VisitorTracker from "./components/VisitorTracker";
 import Footer from "./components/Footer";
 import GlobalCallModals from "./components/GlobalCallModals";
 import SignoutModal from "./components/SignoutModal";
@@ -748,6 +749,7 @@ function AppRoutes({ bootstrapped }) {
     <>
       <NetworkStatus />
       <CookieConsent />
+      <VisitorTracker />
       {!hideHeaderRoutes.includes(location.pathname) && !location.pathname.includes('/year/') && isHeaderVisible && (
         currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
           ? <AdminHeader />

@@ -18,7 +18,7 @@ const getStartOfDay = (date = new Date()) => {
 // Track visitor when they accept cookies
 export const trackVisitor = async (req, res, next) => {
   try {
-    const { cookiePreferences, referrer, page, source, utm } = req.body;
+    const { cookiePreferences, referrer, page, source, utm, type } = req.body;
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent') || 'Unknown';
 
@@ -76,36 +76,44 @@ export const trackVisitor = async (req, res, next) => {
     } catch (error) {
       // If duplicate (visitor already tracked today), update preferences and device info
       if (error.code === 11000) {
-        // Track page view and update last active
-        await VisitorLog.findOneAndUpdate(
-          { fingerprint, visitDate },
-          {
-            $set: {
-              device,
-              browser: browserInfo.name,
-              browserVersion: browserInfo.version,
-              os,
-              deviceType,
-              cookiePreferences: cookiePreferences || {
-                necessary: true,
-                analytics: false,
-                marketing: false,
-                functional: false
-              },
-              timestamp: new Date(),
-              lastActive: new Date(),
-              page: page || undefined // Update current page
-            },
-            $push: {
-              pageViews: { path: page || '/', title: '', timestamp: new Date() }
+        // Find the existing visitor first to check for duplicate page views
+        const existingVisitor = await VisitorLog.findOne({ fingerprint, visitDate });
+
+        if (existingVisitor) {
+          // Always update lastActive and device info
+          existingVisitor.device = device;
+          existingVisitor.browser = browserInfo.name;
+          existingVisitor.browserVersion = browserInfo.version;
+          existingVisitor.os = os;
+          existingVisitor.deviceType = deviceType;
+          existingVisitor.lastActive = new Date();
+          existingVisitor.timestamp = new Date(); // Update last seen
+
+          if (cookiePreferences) {
+            existingVisitor.cookiePreferences = cookiePreferences;
+          }
+
+          // Handle Page View Logic
+          if (type !== 'heartbeat' && page) {
+            const lastPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
+            // Only add if path is different from last path
+            // This prevents "refresh" duplicates or rapid-fire events
+            if (!lastPage || lastPage.path !== page) {
+              existingVisitor.pageViews.push({ path: page, title: '', timestamp: new Date() });
+              existingVisitor.page = page;
             }
           }
-        );
 
-        res.status(200).json({
-          success: true,
-          message: 'Visitor preferences updated'
-        });
+          await existingVisitor.save();
+
+          res.status(200).json({
+            success: true,
+            message: 'Visitor updated'
+          });
+        } else {
+          // Fallback if not found (weird race condition)
+          res.status(200).json({ success: true });
+        }
       } else {
         throw error;
       }
