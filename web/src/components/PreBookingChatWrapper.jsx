@@ -31,17 +31,23 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
-    // Keyboard shortcut to focus input
+    // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e) => {
+            // Focus input with Ctrl+/
             if (e.key === '/' && e.ctrlKey && activeChat) {
                 e.preventDefault();
                 inputRef.current?.focus();
             }
+            // Close chat with Esc
+            if (e.key === 'Escape' && isOpen) {
+                e.preventDefault();
+                setIsOpen(false);
+            }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [activeChat]);
+    }, [activeChat, isOpen]);
 
     const isOwner = currentUser && ownerId && currentUser._id === ownerId;
 
