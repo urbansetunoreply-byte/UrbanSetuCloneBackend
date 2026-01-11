@@ -1893,7 +1893,112 @@ const SessionAuditLogs = () => {
           </div>
         )
       }
-    </div >
+
+      {/* Audit Log Details Modal */}
+      {
+        showAuditLogModal && selectedAuditLog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col">
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-xl ${selectedAuditLog.isSuspicious ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'} dark:bg-opacity-20`}>
+                    <FaShieldAlt className="text-xl" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Audit Log Details</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      ID: {selectedAuditLog._id} | {formatDate(selectedAuditLog.timestamp)}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAuditLogModal(false)}
+                  className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
+                {/* User & Action */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">User Info</p>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between"><span className="text-gray-500">Username:</span> <span className="font-medium dark:text-white">{selectedAuditLog.userId?.username || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Email:</span> <span className="font-medium dark:text-white">{selectedAuditLog.userId?.email || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Role:</span> <span className="font-medium dark:text-white capitalize">{selectedAuditLog.role}</span></div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">Action Context</p>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between"><span className="text-gray-500">Action:</span> <span className="font-bold text-blue-600 dark:text-blue-400 uppercase">{selectedAuditLog.action}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Status:</span>
+                        {selectedAuditLog.isSuspicious ?
+                          <span className="text-red-600 font-bold flex items-center gap-1"><FaExclamationTriangle className="text-xs" /> Suspicious</span> :
+                          <span className="text-green-600 font-bold flex items-center gap-1"><FaCheckCircle className="text-xs" /> Normal</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Source Details (Requested) */}
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">Source Details</p>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-gray-500 text-xs font-semibold">IP Address & Location:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded font-mono text-xs text-gray-800 dark:text-gray-200">{selectedAuditLog.ip}</span>
+                        <span className="text-gray-700 dark:text-gray-300 flex items-center gap-1"><FaMapMarkerAlt className="text-red-500" /> {selectedAuditLog.location || 'Unknown'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <span className="text-gray-500 text-xs font-semibold">Device / User Agent:</span>
+                      <span className="font-mono text-xs text-gray-700 dark:text-gray-300 break-all bg-white dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-600">
+                        {selectedAuditLog.device}
+                      </span>
+                    </div>
+
+                    {/* Show Metadata if exists */}
+                    {selectedAuditLog.metadata && Object.keys(selectedAuditLog.metadata).length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                        <p className="text-xs font-semibold text-gray-500 mb-2">Additional Metadata:</p>
+                        {Object.entries(selectedAuditLog.metadata).map(([key, val]) => (
+                          <div key={key} className="flex justify-between text-xs py-0.5">
+                            <span className="text-gray-500">{key}:</span>
+                            <span className="font-mono text-gray-700 dark:text-gray-300">{JSON.stringify(val)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {selectedAuditLog.suspiciousReason && (
+                  <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-100 dark:border-red-900/30">
+                    <p className="text-xs text-red-600 dark:text-red-400 font-bold uppercase tracking-wider mb-2">Security Alert</p>
+                    <p className="text-sm text-red-700 dark:text-red-300">{selectedAuditLog.suspiciousReason}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-end">
+                <button
+                  onClick={() => setShowAuditLogModal(false)}
+                  className="px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-lg shadow-gray-200 dark:shadow-none"
+                >
+                  Close Details
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div>
   );
 };
 
