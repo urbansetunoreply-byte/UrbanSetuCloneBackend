@@ -85,7 +85,7 @@ const visitorLogSchema = new mongoose.Schema({
       action: String,  // "click"
       timestamp: Date
     }],
-    errors: [{
+    errorLogs: [{
       message: String,
       timestamp: Date
     }],

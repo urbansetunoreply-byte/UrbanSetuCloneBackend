@@ -1760,7 +1760,7 @@ const SessionAuditLogs = () => {
                               if (p.scrollPercentage) meta.push(`Scroll:${p.scrollPercentage}%`);
                               if (p.loadTime) meta.push(`Load:${p.loadTime}ms`);
                               if (p.interactions?.length) meta.push(`Actions:${p.interactions.length}`);
-                              if (p.errors?.length) meta.push(`Errors:${p.errors.length}`);
+                              if ((p.errorLogs || p.errors)?.length) meta.push(`Errors:${(p.errorLogs || p.errors).length}`);
                               return meta.length > 0 ? `${p.path} (${meta.join(', ')})` : p.path;
                             }).join(' -> ') || '',
                             browser: v.browser || '',
@@ -1956,13 +1956,13 @@ const SessionAuditLogs = () => {
                                   <FaFingerprint className="text-[8px]" /> {pv.interactions.length} Actions
                                 </button>
                               )}
-                              {pv.errors?.length > 0 && (
+                              {(pv.errorLogs || pv.errors)?.length > 0 && (
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); setDrillDownData(pv.errors); setDrillDownType('errors'); setShowDrillDownModal(true); }}
+                                  onClick={(e) => { e.stopPropagation(); setDrillDownData(pv.errorLogs || pv.errors); setDrillDownType('errors'); setShowDrillDownModal(true); }}
                                   className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-red-200 dark:border-red-800 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
                                   title="Click to view errors"
                                 >
-                                  <FaExclamationTriangle className="text-[8px]" /> {pv.errors.length} Errors
+                                  <FaExclamationTriangle className="text-[8px]" /> {(pv.errorLogs || pv.errors).length} Errors
                                 </button>
                               )}
                             </div>

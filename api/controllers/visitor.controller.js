@@ -116,8 +116,8 @@ export const trackVisitor = async (req, res, next) => {
                 metrics.interactions.forEach(i => lastPage.interactions.push(i));
               }
               if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
-                if (!lastPage.errors) lastPage.errors = [];
-                metrics.errors.forEach(e => lastPage.errors.push(e));
+                if (!lastPage.errorLogs) lastPage.errorLogs = [];
+                metrics.errors.forEach(e => lastPage.errorLogs.push(e));
 
                 // --- TRIGGER ADMIN NOTIFICATIONS FOR ERRORS ---
                 try {
