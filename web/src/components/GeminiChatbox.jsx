@@ -1619,8 +1619,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!isOpen) return;
 
         const handleKeyDown = (event) => {
-            if (event.ctrlKey && event.key === 'f') {
-                event.preventDefault(); // Prevent browser find dialog
+            if (event.ctrlKey && event.key === '/') {
+                event.preventDefault();
                 if (!isMobileDevice()) {
                     inputRef.current?.focus();
                 }

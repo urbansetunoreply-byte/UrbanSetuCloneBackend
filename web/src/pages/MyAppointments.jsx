@@ -6191,12 +6191,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     }
 
     const handleKeyDown = (event) => {
-      if (event.ctrlKey && event.key === 'f') {
-        event.preventDefault(); // Prevent browser find dialog
-        if (inputRef.current) {
-          focusWithKeyboard(inputRef.current, inputRef.current.value.length);
-        }
-      } else if (event.key === 'Escape') {
+      if (event.key === 'Escape') {
         event.preventDefault();
         handleChatModalClose();
       }
