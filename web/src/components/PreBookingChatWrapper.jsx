@@ -312,11 +312,11 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
             "Valley Voyager", "Cloud Chaser", "Star Gazer", "Horizon Hunter",
             "Dawn Dreamer", "Dusk Dweller"
         ];
-        let hash = 0;
-        for (let i = 0; i < userId.length; i++) {
-            hash = userId.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const index = Math.abs(hash) % FANTASY_NAMES.length;
+        // Use the last 8 characters of the userId (hex) to determine the index.
+        // MongoDB ObjectIDs end with a counter which is most likely to be distinct.
+        const hexSuffix = userId.substring(userId.length - 8);
+        const index = parseInt(hexSuffix, 16) % FANTASY_NAMES.length;
+
         // Append last 4 chars of userId to ensure uniqueness even if names collide
         const suffix = userId.substring(userId.length - 4);
         return `${FANTASY_NAMES[index]} (${suffix})`;
