@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -489,7 +489,7 @@ export default function AdminFraudManagement() {
                 <option value="Generic template review">Generic template review</option>
                 <option value="Suspicious rating pattern">Suspicious rating pattern</option>
               </select>
-              <select value={sortBy} onChange={(e) => { setSortBy(e.target.value); }} className="border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
+              <select value={sortBy} onChange={(e) => { setSortBy(e.target.value); setPageL(1); setPageR(1); }} className="border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
                 <option value="severity">Sort: Severity</option>
                 <option value="recent">Sort: Most Recent</option>
                 <option value="alpha">Sort: Alphabetical</option>
@@ -499,7 +499,7 @@ export default function AdminFraudManagement() {
                 className="border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400 rounded p-2 text-sm flex-1 min-w-[180px] outline-none focus:ring-2 focus:ring-blue-500/20"
                 placeholder="Search text, reasons, city, user, listing…"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setPageL(1); setPageR(1); }}
               />
               <button className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm" onClick={() => {
                 // CSV export minimal
@@ -542,178 +542,207 @@ export default function AdminFraudManagement() {
               )}
             </div>
 
-            {(filter === 'all' || filter === 'listings') && (
-              <div className="mb-8">
-                <h4 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-3">Suspicious Listings</h4>
-                <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-                  <table className="min-w-full w-full text-xs sm:text-sm">
-                    <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
-                      <tr>
-                        {showSelectMode && <th className="p-3 text-left w-8">Select</th>}
-                        <th className="p-3 text-left">Name</th>
-                        <th className="p-3 text-left">City</th>
-                        <th className="p-3 text-left">Reasons</th>
-                        <th className="p-3 text-left">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {listings
-                        .filter(l => {
-                          const q = searchQuery.trim().toLowerCase();
-                          if (!q) return true;
-                          const fields = [
-                            l.name,
-                            l.city,
-                            l.state,
-                            (l.description || ''),
-                            (l._fraudReasons || []).join(' ')
-                          ].join(' ').toLowerCase();
-                          return fields.includes(q);
-                        })
-                        .filter(l => includeLowSeverity ? true : (l._fraudReasons || []).length >= 2)
-                        .filter(l => reasonFilter === 'all' ? true : (l._fraudReasons || []).includes(reasonFilter))
-                        .sort((a, b) => {
-                          if (sortBy === 'alpha') return String(a.name || '').localeCompare(String(b.name || ''));
-                          if (sortBy === 'recent') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-                          const sa = (a._fraudReasons || []).length, sb = (b._fraudReasons || []).length; return sb - sa;
-                        })
-                        .slice((pageL - 1) * pageSize, pageL * pageSize)
-                        .map(l => (
-                          <tr key={l._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                            {showSelectMode && <td className="p-3"><input type="checkbox" className="rounded dark:bg-gray-700 dark:border-gray-600" checked={selectedRows.listings.has(l._id)} onChange={(e) => {
-                              const ns = new Set(selectedRows.listings); if (e.target.checked) ns.add(l._id); else ns.delete(l._id);
-                              setSelectedRows(s => ({ ...s, listings: ns }));
-                            }} /></td>}
-                            <td className="p-3 font-medium text-gray-900 dark:text-gray-100">{l.name}</td>
-                            <td className="p-3 text-gray-600 dark:text-gray-400">{l.city}, {l.state}</td>
-                            <td className="p-3">
-                              <div className="flex flex-wrap gap-1">
-                                {(l._fraudReasons || []).map((reason, i) => (
-                                  <span key={i} className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-[10px] font-bold">
-                                    {reason}
-                                  </span>
-                                ))}
-                              </div>
-                            </td>
-                            <td className="p-3"><div className="flex flex-wrap gap-2">
-                              <Link to={`/admin/listing/${l._id}`} className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs sm:text-sm transition-colors">Open</Link>
-                              <button className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded text-xs sm:text-sm transition-colors" onClick={() => window.open(`/admin/listing/${l._id}`, '_blank')}>New Tab</button>
-                            </div></td>
-                          </tr>
-                        ))}
-                      {listings
-                        .filter(l => {
-                          const q = searchQuery.trim().toLowerCase();
-                          if (!q) return true;
-                          const fields = [l.name, l.city, l.state, (l.description || ''), (l._fraudReasons || []).join(' ')].join(' ').toLowerCase();
-                          return fields.includes(q);
-                        })
-                        .filter(l => reasonFilter === 'all' ? true : (l._fraudReasons || []).includes(reasonFilter))
-                        .length === 0 && (
-                          <tr><td className="p-6 text-sm text-gray-500 dark:text-gray-400 text-center italic" colSpan={showSelectMode ? 5 : 4}>No suspicious listings found</td></tr>
-                        )}
-                    </tbody>
-                  </table>
-                </div>
-                {/* Pagination for listings */}
-                <div className="flex items-center justify-end gap-2 mt-4">
-                  <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50" disabled={pageL === 1} onClick={() => setPageL(p => Math.max(1, p - 1))}>Prev</button>
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-400">Page {pageL}</span>
-                  <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors" onClick={() => setPageL(p => p + 1)}>Next</button>
-                </div>
-              </div>
-            )}
+            {/* Client-side processing with useMemo for performance and pagination consistency */}
+            {(() => {
+              // Listing Processing
+              const processedListings = useMemo(() => {
+                return listings
+                  .filter(l => {
+                    const q = searchQuery.trim().toLowerCase();
+                    if (!q) return true;
+                    const fields = [
+                      l.name,
+                      l.city,
+                      l.state,
+                      (l.description || ''),
+                      (l._fraudReasons || []).join(' ')
+                    ].join(' ').toLowerCase();
+                    return fields.includes(q);
+                  })
+                  .filter(l => includeLowSeverity ? true : (l._fraudReasons || []).length >= 2)
+                  .filter(l => reasonFilter === 'all' ? true : (l._fraudReasons || []).includes(reasonFilter))
+                  .sort((a, b) => {
+                    if (sortBy === 'alpha') return String(a.name || '').localeCompare(String(b.name || ''));
+                    if (sortBy === 'recent') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+                    const sa = (a._fraudReasons || []).length, sb = (b._fraudReasons || []).length; return sb - sa;
+                  });
+              }, [listings, searchQuery, includeLowSeverity, reasonFilter, sortBy]);
 
-            {(filter === 'all' || filter === 'reviews') && (
-              <div>
-                <h4 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-3">Suspected Fake Reviews</h4>
-                <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-                  <table className="min-w-full w-full text-xs sm:text-sm">
-                    <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
-                      <tr>
-                        {showSelectMode && <th className="p-3 text-left w-8">Select</th>}
-                        <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">Listing</th>
-                        <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">User</th>
-                        <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">Comment</th>
-                        <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">Reasons</th>
-                        <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {reviews
-                        .filter(r => {
-                          const q = searchQuery.trim().toLowerCase();
-                          if (!q) return true;
-                          const fields = [
-                            (r.listingId?.name) || String(r.listingId || ''),
-                            (r.userId?.email) || String(r.userId || ''),
-                            (r.comment || ''),
-                            (r._fraudReasons || []).join(' ')
-                          ].join(' ').toLowerCase();
-                          return fields.includes(q);
-                        })
-                        .filter(r => includeLowSeverity ? true : (r._fraudReasons || []).length >= 2)
-                        .filter(r => reasonFilter === 'all' ? true : (r._fraudReasons || []).includes(reasonFilter))
-                        .sort((a, b) => {
-                          if (sortBy === 'alpha') return String(a.listingId?.name || '').localeCompare(String(b.listingId?.name || ''));
-                          if (sortBy === 'recent') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-                          const sa = (a._fraudReasons || []).length, sb = (b._fraudReasons || []).length; return sb - sa;
-                        })
-                        .slice((pageR - 1) * pageSize, pageR * pageSize)
-                        .map(r => (
-                          <tr key={r._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                            {showSelectMode && <td className="p-3"><input type="checkbox" className="rounded dark:bg-gray-700 dark:border-gray-600" checked={selectedRows.reviews.has(r._id)} onChange={(e) => {
-                              const ns = new Set(selectedRows.reviews); if (e.target.checked) ns.add(r._id); else ns.delete(r._id);
-                              setSelectedRows(s => ({ ...s, reviews: ns }));
-                            }} /></td>}
-                            <td className="p-3 font-medium text-gray-900 dark:text-gray-100">{r.listingId?.name || r.listingId}</td>
-                            <td className="p-3 text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">{r.userId?.email || r.userId}</td>
-                            <td className="p-3 max-w-[10rem] sm:max-w-md truncate text-gray-600 dark:text-gray-300 italic" title={r.comment}>"{r.comment}"</td>
-                            <td className="p-3">
-                              <div className="flex flex-wrap gap-1">
-                                {(r._fraudReasons || []).map((reason, i) => (
-                                  <span key={i} className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-[10px] font-bold">
-                                    {reason}
-                                  </span>
-                                ))}
-                              </div>
-                            </td>
-                            <td className="p-3"><div className="flex flex-wrap gap-2">
-                              <a href={`/admin/listing/${r.listingId?._id || r.listingId}`} className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs sm:text-sm transition-colors">Open</a>
-                              <button className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded text-xs sm:text-sm transition-colors" onClick={() => window.open(`/admin/listing/${r.listingId?._id || r.listingId}`, '_blank')}>New Tab</button>
-                            </div></td>
-                          </tr>
-                        ))}
-                      {reviews
-                        .filter(r => {
-                          const q = searchQuery.trim().toLowerCase();
-                          if (!q) return true;
-                          const fields = [
-                            (r.listingId?.name) || String(r.listingId || ''),
-                            (r.userId?.email) || String(r.userId || ''),
-                            (r.comment || ''),
-                            (r._fraudReasons || []).join(' ')
-                          ].join(' ').toLowerCase();
-                          return fields.includes(q);
-                        })
-                        .filter(r => reasonFilter === 'all' ? true : (r._fraudReasons || []).includes(reasonFilter))
-                        .length === 0 && (
-                          <tr><td className="p-6 text-sm text-gray-500 dark:text-gray-400 text-center italic" colSpan={showSelectMode ? 6 : 5}>No suspected fake reviews found</td></tr>
-                        )}
-                    </tbody>
-                  </table>
-                </div>
-                {/* Pagination for reviews */}
-                <div className="flex items-center justify-end gap-2 mt-4">
-                  <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50" disabled={pageR === 1} onClick={() => setPageR(p => Math.max(1, p - 1))}>Prev</button>
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-400">Page {pageR}</span>
-                  <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors" onClick={() => setPageR(p => p + 1)}>Next</button>
-                </div>
-              </div>
-            )}
+              const totalPagesL = Math.max(1, Math.ceil(processedListings.length / pageSize));
+              const currentListings = processedListings.slice((pageL - 1) * pageSize, pageL * pageSize);
+
+              // Review Processing
+              const processedReviews = useMemo(() => {
+                return reviews
+                  .filter(r => {
+                    const q = searchQuery.trim().toLowerCase();
+                    if (!q) return true;
+                    const fields = [
+                      (r.listingId?.name) || String(r.listingId || ''),
+                      (r.userId?.email) || String(r.userId || ''),
+                      (r.comment || ''),
+                      (r._fraudReasons || []).join(' ')
+                    ].join(' ').toLowerCase();
+                    return fields.includes(q);
+                  })
+                  .filter(r => includeLowSeverity ? true : (r._fraudReasons || []).length >= 2)
+                  .filter(r => reasonFilter === 'all' ? true : (r._fraudReasons || []).includes(reasonFilter))
+                  .sort((a, b) => {
+                    if (sortBy === 'alpha') return String(a.listingId?.name || '').localeCompare(String(b.listingId?.name || ''));
+                    if (sortBy === 'recent') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+                    const sa = (a._fraudReasons || []).length, sb = (b._fraudReasons || []).length; return sb - sa;
+                  });
+              }, [reviews, searchQuery, includeLowSeverity, reasonFilter, sortBy]);
+
+              const totalPagesR = Math.max(1, Math.ceil(processedReviews.length / pageSize));
+              const currentReviews = processedReviews.slice((pageR - 1) * pageSize, pageR * pageSize);
+
+              return (
+                <>
+                  {(filter === 'all' || filter === 'listings') && (
+                    <div className="mb-8">
+                      <h4 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-3">Suspicious Listings <span className="text-sm font-normal text-gray-500">({processedListings.length})</span></h4>
+                      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+                        <table className="min-w-full w-full text-xs sm:text-sm">
+                          <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                            <tr>
+                              {showSelectMode && <th className="p-3 text-left w-8">Select</th>}
+                              <th className="p-3 text-left">Name</th>
+                              <th className="p-3 text-left">City</th>
+                              <th className="p-3 text-left">Reasons</th>
+                              <th className="p-3 text-left">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {currentListings.length > 0 ? (
+                              currentListings.map(l => (
+                                <tr key={l._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                  {showSelectMode && <td className="p-3"><input type="checkbox" className="rounded dark:bg-gray-700 dark:border-gray-600" checked={selectedRows.listings.has(l._id)} onChange={(e) => {
+                                    const ns = new Set(selectedRows.listings); if (e.target.checked) ns.add(l._id); else ns.delete(l._id);
+                                    setSelectedRows(s => ({ ...s, listings: ns }));
+                                  }} /></td>}
+                                  <td className="p-3 font-medium text-gray-900 dark:text-gray-100">{l.name}</td>
+                                  <td className="p-3 text-gray-600 dark:text-gray-400">{l.city}, {l.state}</td>
+                                  <td className="p-3">
+                                    <div className="flex flex-wrap gap-1">
+                                      {(l._fraudReasons || []).map((reason, i) => (
+                                        <span key={i} className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-[10px] font-bold">
+                                          {reason}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="p-3"><div className="flex flex-wrap gap-2">
+                                    <Link to={`/admin/listing/${l._id}`} className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs sm:text-sm transition-colors">Open</Link>
+                                    <button className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded text-xs sm:text-sm transition-colors" onClick={() => window.open(`/admin/listing/${l._id}`, '_blank')}>New Tab</button>
+                                  </div></td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr><td className="p-6 text-sm text-gray-500 dark:text-gray-400 text-center italic" colSpan={showSelectMode ? 5 : 4}>No suspicious listings found</td></tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                      {/* Pagination for listings */}
+                      {processedListings.length > 0 && (
+                        <div className="flex items-center justify-end gap-2 mt-4">
+                          <button
+                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={pageL === 1}
+                            onClick={() => setPageL(p => Math.max(1, p - 1))}
+                          >
+                            Prev
+                          </button>
+                          <span className="text-xs font-bold text-gray-600 dark:text-gray-400">Page {pageL} of {totalPagesL}</span>
+                          <button
+                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={pageL >= totalPagesL}
+                            onClick={() => setPageL(p => Math.min(totalPagesL, p + 1))}
+                          >
+                            Next
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {(filter === 'all' || filter === 'reviews') && (
+                    <div>
+                      <h4 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-3">Suspected Fake Reviews <span className="text-sm font-normal text-gray-500">({processedReviews.length})</span></h4>
+                      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+                        <table className="min-w-full w-full text-xs sm:text-sm">
+                          <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                            <tr>
+                              {showSelectMode && <th className="p-3 text-left w-8">Select</th>}
+                              <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">Listing</th>
+                              <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">User</th>
+                              <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">Comment</th>
+                              <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">Reasons</th>
+                              <th className="p-3 text-left text-xs uppercase tracking-wider font-bold">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {currentReviews.length > 0 ? (
+                              currentReviews.map(r => (
+                                <tr key={r._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                  {showSelectMode && <td className="p-3"><input type="checkbox" className="rounded dark:bg-gray-700 dark:border-gray-600" checked={selectedRows.reviews.has(r._id)} onChange={(e) => {
+                                    const ns = new Set(selectedRows.reviews); if (e.target.checked) ns.add(r._id); else ns.delete(r._id);
+                                    setSelectedRows(s => ({ ...s, reviews: ns }));
+                                  }} /></td>}
+                                  <td className="p-3 font-medium text-gray-900 dark:text-gray-100">{r.listingId?.name || r.listingId}</td>
+                                  <td className="p-3 text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">{r.userId?.email || r.userId}</td>
+                                  <td className="p-3 max-w-[10rem] sm:max-w-md truncate text-gray-600 dark:text-gray-300 italic" title={r.comment}>"{r.comment}"</td>
+                                  <td className="p-3">
+                                    <div className="flex flex-wrap gap-1">
+                                      {(r._fraudReasons || []).map((reason, i) => (
+                                        <span key={i} className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-[10px] font-bold">
+                                          {reason}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="p-3"><div className="flex flex-wrap gap-2">
+                                    <a href={`/admin/listing/${r.listingId?._id || r.listingId}`} className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs sm:text-sm transition-colors">Open</a>
+                                    <button className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 rounded text-xs sm:text-sm transition-colors" onClick={() => window.open(`/admin/listing/${r.listingId?._id || r.listingId}`, '_blank')}>New Tab</button>
+                                  </div></td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr><td className="p-6 text-sm text-gray-500 dark:text-gray-400 text-center italic" colSpan={showSelectMode ? 6 : 5}>No suspected fake reviews found</td></tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                      {/* Pagination for reviews */}
+                      {processedReviews.length > 0 && (
+                        <div className="flex items-center justify-end gap-2 mt-4">
+                          <button
+                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={pageR === 1}
+                            onClick={() => setPageR(p => Math.max(1, p - 1))}
+                          >
+                            Prev
+                          </button>
+                          <span className="text-xs font-bold text-gray-600 dark:text-gray-400">Page {pageR} of {totalPagesR}</span>
+                          <button
+                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={pageR >= totalPagesR}
+                            onClick={() => setPageR(p => Math.min(totalPagesR, p + 1))}
+                          >
+                            Next
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </>
         )}
       </div>
     </div>
   );
 }
+
