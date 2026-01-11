@@ -1791,13 +1791,13 @@ const SessionAuditLogs = () => {
                 <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
                   <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">Acquisition</p>
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Source:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{selectedVisitor.source}</span>
+                    <div className="flex flex-col gap-1 text-sm">
+                      <span className="text-gray-600 dark:text-gray-400 text-xs font-semibold">Source:</span>
+                      <span className="font-medium text-gray-900 dark:text-white break-all text-xs">{selectedVisitor.source}</span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Referrer:</span>
-                      <span className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]" title={selectedVisitor.referrer}>{selectedVisitor.referrer || 'Direct'}</span>
+                    <div className="flex flex-col gap-1 text-sm mt-2">
+                      <span className="text-gray-600 dark:text-gray-400 text-xs font-semibold">Referrer:</span>
+                      <span className="font-medium text-gray-900 dark:text-white break-all text-xs">{selectedVisitor.referrer || 'Direct'}</span>
                     </div>
                     {selectedVisitor.utm && Object.keys(selectedVisitor.utm).length > 0 && (
                       <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
