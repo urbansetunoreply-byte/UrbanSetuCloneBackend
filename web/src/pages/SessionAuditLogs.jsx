@@ -69,7 +69,7 @@ const SessionAuditLogs = () => {
 
   // Visitors state
   const [visitors, setVisitors] = useState([]);
-  const [allVisitors, setAllVisitors] = useState([]);
+  // allVisitors removed - using server-side pagination
   const [visitorsLoading, setVisitorsLoading] = useState(false);
   const [visitorsPage, setVisitorsPage] = useState(1);
   const [visitorsTotalPages, setVisitorsTotalPages] = useState(1);
@@ -334,7 +334,8 @@ const SessionAuditLogs = () => {
     if (opts.manual) setVisitorsLoading(true);
     try {
       const params = new URLSearchParams({
-        limit: 1000, // Fetch all visitors, pagination will be done client-side
+        page: visitorsPage,
+        limit: 10, // Server-side pagination with manageable chunks
         dateRange: visitorFilters.dateRange,
         device: visitorFilters.device,
         location: visitorFilters.location,
@@ -358,9 +359,13 @@ const SessionAuditLogs = () => {
       const data = await res.json();
 
       if (data.success) {
-        setAllVisitors(data.visitors || []);
+        setVisitors(data.visitors || []);
         setTotalVisitors(data.total);
-        setVisitorsPage(1); // Reset to first page when filters change
+        if (data.pages) {
+          setVisitorsTotalPages(data.pages);
+        } else {
+          setVisitorsTotalPages(Math.ceil(data.total / 10));
+        }
         setLastUpdated(new Date());
       } else {
         toast.error(data.message || 'Failed to fetch visitors');
@@ -373,25 +378,13 @@ const SessionAuditLogs = () => {
     }
   };
 
-  // Effect to fetch visitors when tab changes
+  // Effect to fetch visitors when tab or page changes
   useEffect(() => {
     if (activeTab === 'visitors') {
       fetchVisitorStats();
       fetchVisitors();
     }
-  }, [activeTab, visitorFilters]);
-
-  // Pagination effect for visitors
-  useEffect(() => {
-    const itemsPerPage = 10;
-    const totalPages = Math.ceil(allVisitors.length / itemsPerPage);
-    setVisitorsTotalPages(totalPages);
-
-    const startIndex = (visitorsPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentPageVisitors = allVisitors.slice(startIndex, endIndex);
-    setVisitors(currentPageVisitors);
-  }, [allVisitors, visitorsPage]);
+  }, [activeTab, visitorFilters, visitorsPage]);
 
   // Effect to restart auto-refresh when switching tabs
   useEffect(() => {
@@ -1512,7 +1505,7 @@ const SessionAuditLogs = () => {
             </div>
 
             {/* Pagination for Visitors */}
-            {allVisitors.length > 10 && visitorsTotalPages > 1 && (
+            {totalVisitors > 10 && visitorsTotalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between mt-8 gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-fade-in-delay-3 transition-colors duration-200">
                 <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600">
                   Page <span className="font-bold text-gray-800 dark:text-white">{visitorsPage}</span> of <span className="font-bold text-gray-800 dark:text-white">{visitorsTotalPages}</span>
