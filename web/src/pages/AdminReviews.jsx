@@ -247,10 +247,10 @@ export default function AdminReviews() {
   const fetchReviews = async () => {
     try {
       const params = new URLSearchParams({
-        page: 1,
+        page: currentPage,
         limit: 10,
-        sort: 'date',
-        order: 'desc'
+        sort: sortBy,
+        order: sortOrder
       });
 
       if (selectedStatus) {
