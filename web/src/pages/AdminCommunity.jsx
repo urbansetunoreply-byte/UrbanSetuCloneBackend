@@ -1071,14 +1071,20 @@ export default function AdminCommunity() {
                                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                             />
                             {showSuggestions && suggestions.length > 0 && (
-                                <div className="absolute top-full left-0 w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 z-50 border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                <div className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-xl rounded-xl mt-2 z-50 border border-gray-100 dark:border-gray-800 overflow-hidden animate-fade-in max-h-60 overflow-y-auto">
+                                    <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800/50 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+                                        Suggested Discussions
+                                    </div>
                                     {suggestions.map((s, i) => (
                                         <div
                                             key={i}
-                                            className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-700 dark:text-gray-300 truncate transition-colors"
+                                            className="px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer text-sm text-gray-700 dark:text-gray-200 border-b border-gray-50 dark:border-gray-800 last:border-0 transition-colors flex items-center gap-3 group"
                                             onClick={() => handleSearchSelect(s.title)}
                                         >
-                                            {s.title}
+                                            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                                                <FaSearch className="text-gray-400 group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400 text-xs" />
+                                            </div>
+                                            <span className="truncate font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{s.title}</span>
                                         </div>
                                     ))}
                                 </div>
