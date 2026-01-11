@@ -1718,6 +1718,8 @@ const SessionAuditLogs = () => {
                               let meta = [];
                               if (p.scrollPercentage) meta.push(`Scroll:${p.scrollPercentage}%`);
                               if (p.loadTime) meta.push(`Load:${p.loadTime}ms`);
+                              if (p.interactions?.length) meta.push(`Actions:${p.interactions.length}`);
+                              if (p.errors?.length) meta.push(`Errors:${p.errors.length}`);
                               return meta.length > 0 ? `${p.path} (${meta.join(', ')})` : p.path;
                             }).join(' -> ') || '',
                             browser: v.browser || '',
@@ -1892,6 +1894,16 @@ const SessionAuditLogs = () => {
                                     'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
                                   }`}>
                                   <FaClock className="text-[8px]" /> {Math.round(pv.loadTime)}ms
+                                </span>
+                              )}
+                              {pv.interactions?.length > 0 && (
+                                <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-purple-200 dark:border-purple-800" title={pv.interactions.map(i => i.element).join(', ')}>
+                                  <FaFingerprint className="text-[8px]" /> {pv.interactions.length} Actions
+                                </span>
+                              )}
+                              {pv.errors?.length > 0 && (
+                                <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-red-200 dark:border-red-800" title={pv.errors.map(e => e.message).join('\n')}>
+                                  <FaExclamationTriangle className="text-[8px]" /> {pv.errors.length} Errors
                                 </span>
                               )}
                             </div>

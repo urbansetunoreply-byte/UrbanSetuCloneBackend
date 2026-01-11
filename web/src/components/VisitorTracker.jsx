@@ -16,6 +16,9 @@ const VisitorTracker = () => {
 
     const maxScrollRef = useRef(0);
     const loadTimeRef = useRef(0);
+    const interactionsRef = useRef([]);
+    const errorsRef = useRef([]);
+    const resizeCountRef = useRef(0);
 
     // Calculate Scroll Percentage
     const getScrollPercentage = () => {
@@ -40,6 +43,16 @@ const VisitorTracker = () => {
             // Quantize scroll to 25% buckets for cleaner data
             const quantizedScroll = Math.floor(maxScrollRef.current / 25) * 25;
 
+            // Consume interactions, errors, and resize buffer
+            const interactionsToSend = [...interactionsRef.current];
+            const errorsToSend = [...errorsRef.current];
+            const resizeCountToSend = resizeCountRef.current;
+
+            // Clear buffers immediately
+            interactionsRef.current = [];
+            errorsRef.current = [];
+            resizeCountRef.current = 0;
+
             // Construct body
             const body = {
                 type,
@@ -49,7 +62,10 @@ const VisitorTracker = () => {
                 cookiePreferences: preferences || undefined,
                 metrics: {
                     scrollPercentage: quantizedScroll,
-                    loadTime: loadTimeRef.current
+                    loadTime: loadTimeRef.current,
+                    interactions: interactionsToSend.length > 0 ? interactionsToSend : undefined,
+                    errors: errorsToSend.length > 0 ? errorsToSend : undefined,
+                    resizeCount: resizeCountToSend > 0 ? resizeCountToSend : undefined
                 }
             };
 
@@ -135,6 +151,55 @@ const VisitorTracker = () => {
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, []);
+
+    // Global Listeners for Interactions and Errors
+    useEffect(() => {
+        // Error Listener
+        const handleError = (event) => {
+            if (errorsRef.current.length < 10) {
+                errorsRef.current.push({
+                    message: event.message || 'Unknown Error',
+                    timestamp: new Date()
+                });
+            }
+        };
+
+        // Click Listener
+        const handleClick = (e) => {
+            const target = e.target.closest('button, a, input, select, textarea, [role="button"]');
+            if (target) {
+                const elementLabel = target.innerText?.slice(0, 30) || target.id || target.name || target.className || target.tagName;
+                if (interactionsRef.current.length < 20) {
+                    interactionsRef.current.push({
+                        element: `${target.tagName.toLowerCase()}:${elementLabel}`,
+                        action: 'click',
+                        timestamp: new Date()
+                    });
+                }
+            }
+        };
+
+        // Resize Listener
+        let resizeTimeout;
+        const handleResize = () => {
+            if (!resizeTimeout) {
+                resizeTimeout = setTimeout(() => {
+                    resizeCountRef.current += 1;
+                    resizeTimeout = null;
+                }, 1000);
+            }
+        };
+
+        window.addEventListener('error', handleError);
+        document.addEventListener('click', handleClick, true);
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('error', handleError);
+            document.removeEventListener('click', handleClick, true);
+            window.removeEventListener('resize', handleResize);
+        };
     }, []);
 
     return null;

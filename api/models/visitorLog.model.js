@@ -78,7 +78,18 @@ const visitorLogSchema = new mongoose.Schema({
     title: { type: String },
     timestamp: { type: Date, default: Date.now },
     scrollPercentage: { type: Number, default: 0 },
-    loadTime: { type: Number, default: 0 }
+    loadTime: { type: Number, default: 0 },
+    // New trackers
+    interactions: [{
+      element: String, // e.g. "button#submit", "a.nav-link"
+      action: String,  // "click"
+      timestamp: Date
+    }],
+    errors: [{
+      message: String,
+      timestamp: Date
+    }],
+    deviceWait: { type: Boolean, default: false } // Placeholder for resize/orientation events if needed, but simple resize count is enough
   }],
   // Session Timing
   sessionStart: {

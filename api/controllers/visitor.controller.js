@@ -107,6 +107,16 @@ export const trackVisitor = async (req, res, next) => {
                 // Keep the longest load time if reported multiple times, or initial
                 lastPage.loadTime = metrics.loadTime;
               }
+
+              // Append interactions and errors
+              if (metrics.interactions && Array.isArray(metrics.interactions)) {
+                if (!lastPage.interactions) lastPage.interactions = [];
+                metrics.interactions.forEach(i => lastPage.interactions.push(i));
+              }
+              if (metrics.errors && Array.isArray(metrics.errors)) {
+                if (!lastPage.errors) lastPage.errors = [];
+                metrics.errors.forEach(e => lastPage.errors.push(e));
+              }
             }
           }
 
