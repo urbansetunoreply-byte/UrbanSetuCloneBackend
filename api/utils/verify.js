@@ -4,15 +4,16 @@ import User from '../models/user.model.js';
 
 export const verifyToken = async (req, res, next) => {
   try {
-    // Try to get token from cookies first (preferred method)
-    let token = req.cookies.access_token;
+    // 1. Try Authorization header first (Prioritize header-based auth)
+    let token;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
 
-    // If no cookie token, try Authorization header as fallback (for third-party cookie blocking)
+    // 2. Fallback to cookies if no header token
     if (!token) {
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7); // Remove 'Bearer ' prefix
-      }
+      token = req.cookies.access_token;
     }
 
     if (!token) {
@@ -69,15 +70,16 @@ export const verifyToken = async (req, res, next) => {
 // Optional authentication middleware - doesn't fail if no token provided
 export const optionalAuth = async (req, res, next) => {
   try {
-    // Try to get token from cookies first (preferred method)
-    let token = req.cookies.access_token;
+    // 1. Try Authorization header first (Prioritize header-based auth)
+    let token;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
 
-    // If no cookie token, try Authorization header as fallback (for third-party cookie blocking)
+    // 2. Fallback to cookies if no header token
     if (!token) {
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7); // Remove 'Bearer ' prefix
-      }
+      token = req.cookies.access_token;
     }
 
     if (!token) {
