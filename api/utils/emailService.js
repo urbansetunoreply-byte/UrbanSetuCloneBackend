@@ -15628,3 +15628,58 @@ export const sendLeaderboardBonusEmail = async (email, username, rank, amount, m
     return createErrorResponse(error, 'leaderboard_bonus');
   }
 };
+
+// Send Pre-Booking Message Notification Email
+export const sendPreBookingMessageNotification = async (email, recipientName, senderName, propertyName, messagePreview, propertyLink) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `New Message from ${senderName} regarding ${propertyName} - UrbanSetu`,
+    html: `
+      <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;'>
+        <div style='background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);'>
+          <div style='text-align: center; margin-bottom: 30px;'>
+            <h1 style='color: #2563eb; margin: 0; font-size: 28px;'>UrbanSetu</h1>
+            <p style='color: #6b7280; margin: 10px 0 0 0;'>New Inquiry Message</p>
+          </div>
+          
+          <div style='background-color: #eff6ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2563eb;'>
+            <h2 style='color: #1f2937; margin: 0 0 15px 0; font-size: 20px;'>New Message Received</h2>
+            <p style='color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;'>
+              Hello <strong>${recipientName}</strong>,
+            </p>
+            <p style='color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;'>
+              You have received a new message from <strong>${senderName}</strong> regarding your property <strong>${propertyName}</strong>.
+            </p>
+            
+            <div style='background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #e5e7eb;'>
+              <strong style='color: #374151;'>Message Preview:</strong><br/>
+              <p style='margin: 5px 0 0 0; color: #4b5563; font-style: italic;'>${messagePreview}</p>
+            </div>
+            
+            <div style='text-align: center; margin: 20px 0;'>
+              <a href='${propertyLink}' style='display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;'>
+                Reply to Message
+              </a>
+            </div>
+          </div>
+          
+          <div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;'>
+            <p style='color: #9ca3af; margin: 0; font-size: 12px;'>
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'pre_booking_message') :
+      createErrorResponse(new Error(result.error), 'pre_booking_message');
+  } catch (error) {
+    return createErrorResponse(error, 'pre_booking_message');
+  }
+};

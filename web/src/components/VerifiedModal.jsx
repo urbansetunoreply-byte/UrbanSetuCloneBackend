@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FaShieldAlt, FaCheckCircle, FaTimes, FaUser, FaHome } from 'react-icons/fa';
 

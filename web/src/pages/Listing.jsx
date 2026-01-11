@@ -33,6 +33,7 @@ import VirtualStagingTool from "../components/VirtualStagingTool"; // Import Vir
 import ListingSkeleton from "../components/skeletons/ListingSkeleton"; // Import ListingSkeleton
 import SeasonalEffects from "../components/SeasonalEffects";
 import VerifiedModal from "../components/VerifiedModal";
+import PreBookingChatWrapper from "../components/PreBookingChatWrapper";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UNAVAILABLE_STATUSES = ['reserved', 'under_contract', 'rented', 'sold', 'suspended'];
@@ -3827,6 +3828,15 @@ export default function Listing() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Pre-Booking Chat Wrapper */}
+      {listing && (
+        <PreBookingChatWrapper
+          listingId={listing._id}
+          ownerId={listing.userRef}
+          listingTitle={listing.name}
+        />
       )}
 
       {/* Verified Property Modal */}
