@@ -2857,6 +2857,18 @@ function AdminAppointmentRow({
   const chatEndRef = React.useRef(null);
   const chatContainerRef = React.useRef(null);
   const inputRef = React.useRef(null);
+
+  // Keyboard shortcut to focus input
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === '/' && e.ctrlKey && showChatModal && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showChatModal]);
   const passwordInputRef = React.useRef(null);
   const prevServerCommentsLengthRef = React.useRef(0);
   const [allProperties, setAllProperties] = useState([]);

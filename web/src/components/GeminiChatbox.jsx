@@ -161,6 +161,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         return () => window.removeEventListener('contactSupportToggle', handleContactSupportToggle);
     }, []);
 
+    // Keyboard shortcut to focus input
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === '/' && e.ctrlKey && isOpen && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                inputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen]);
+
     // Rate limiting state
     const [rateLimitInfo, setRateLimitInfo] = useState({
         role: currentUser ? (currentUser.role || 'user') : 'public',

@@ -2108,6 +2108,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
   const typingTimeoutRef = useRef(null);
   const scrollTimeoutRef = useRef(null);
   const inputRef = useRef(null); // Add inputRef here
+
+  // Keyboard shortcut to focus input
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === '/' && e.ctrlKey && showChatModal && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showChatModal]);
   const [allProperties, setAllProperties] = useState([]);
   const [propertiesLoaded, setPropertiesLoaded] = useState(false);
 
