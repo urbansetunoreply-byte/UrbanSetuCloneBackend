@@ -55,6 +55,10 @@ const SessionAuditLogs = () => {
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const [showVisitorDetailsModal, setShowVisitorDetailsModal] = useState(false);
 
+  // Audit Log Details Modal
+  const [selectedAuditLog, setSelectedAuditLog] = useState(null);
+  const [showAuditLogModal, setShowAuditLogModal] = useState(false);
+
   // New Audit Log Filters
   const [showUserActions, setShowUserActions] = useState(false); // Toggle for rootadmin to see activity logs
 
@@ -921,6 +925,13 @@ const SessionAuditLogs = () => {
                                   By: {log.performedBy.username}
                                 </div>
                               )}
+                              <button
+                                onClick={() => { setSelectedAuditLog(log); setShowAuditLogModal(true); }}
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1 flex items-center gap-1"
+                              >
+                                View Details <FaArrowRight className="text-[10px]" />
+                              </button>
+
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -1486,397 +1497,403 @@ const SessionAuditLogs = () => {
         )}
       </div>
       {/* Clear Logs Confirmation Modal */}
-      {showClearModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 dark:border-gray-700">
-            <div className="p-6">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
-                <FaTrash className="text-xl text-red-600 dark:text-red-400" />
-              </div>
-              <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
-                Clear All Audit Logs
-              </h3>
-              <p className="text-center text-gray-500 dark:text-gray-400 mb-6">
-                Are you sure you want to permanently delete all session audit logs? This action cannot be undone.
-              </p>
+      {
+        showClearModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 dark:border-gray-700">
+              <div className="p-6">
+                <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
+                  <FaTrash className="text-xl text-red-600 dark:text-red-400" />
+                </div>
+                <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
+                  Clear All Audit Logs
+                </h3>
+                <p className="text-center text-gray-500 dark:text-gray-400 mb-6">
+                  Are you sure you want to permanently delete all session audit logs? This action cannot be undone.
+                </p>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowClearModal(false)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      setIsClearing(true);
-                      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`, {
-                        method: 'DELETE',
-                        credentials: 'include',
-                        headers: { 'Content-Type': 'application/json' }
-                      });
-                      const data = await res.json();
-                      if (!res.ok || !data.success) {
-                        throw new Error(data.message || `Failed with status ${res.status}`);
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowClearModal(false)}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        setIsClearing(true);
+                        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`, {
+                          method: 'DELETE',
+                          credentials: 'include',
+                          headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await res.json();
+                        if (!res.ok || !data.success) {
+                          throw new Error(data.message || `Failed with status ${res.status}`);
+                        }
+                        toast.success(data.message || 'Audit logs cleared');
+                        setLogs([]);
+                        setTotalLogs(0);
+                        setLastUpdated(new Date());
+                        setShowClearModal(false);
+                      } catch (err) {
+                        console.error('Failed to clear audit logs', err);
+                        toast.error(err.message || 'Failed to clear audit logs');
+                      } finally {
+                        setIsClearing(false);
                       }
-                      toast.success(data.message || 'Audit logs cleared');
-                      setLogs([]);
-                      setTotalLogs(0);
-                      setLastUpdated(new Date());
-                      setShowClearModal(false);
-                    } catch (err) {
-                      console.error('Failed to clear audit logs', err);
-                      toast.error(err.message || 'Failed to clear audit logs');
-                    } finally {
-                      setIsClearing(false);
-                    }
-                  }}
-                  disabled={isClearing}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
-                >
-                  {isClearing ? <FaSync className="animate-spin mr-2" /> : null}
-                  {isClearing ? 'Clearing...' : 'Yes, Delete All'}
-                </button>
+                    }}
+                    disabled={isClearing}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
+                  >
+                    {isClearing ? <FaSync className="animate-spin mr-2" /> : null}
+                    {isClearing ? 'Clearing...' : 'Yes, Delete All'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Export Options Modal */}
-      {showExportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 dark:border-gray-700">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
-                    <FaFileExport className="text-xl text-blue-600 dark:text-blue-400" />
+      {
+        showExportModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 dark:border-gray-700">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
+                      <FaFileExport className="text-xl text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                      Export {activeTab === 'audit' ? 'Logs' : 'Visitors'}
+                    </h3>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Export {activeTab === 'audit' ? 'Logs' : 'Visitors'}
-                  </h3>
+                  <button onClick={() => setShowExportModal(false)} className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <FaTimes />
+                  </button>
                 </div>
-                <button onClick={() => setShowExportModal(false)} className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+
+                <div className="mb-6 space-y-4">
+                  <label className="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <input
+                      type="radio"
+                      name="exportOption"
+                      value="all"
+                      checked={exportOption === 'all'}
+                      onChange={() => setExportOption('all')}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <div className="ml-3">
+                      <span className="block text-sm font-medium text-gray-900 dark:text-white">Export All {activeTab === 'audit' ? 'Logs' : 'Visitors'}</span>
+                      <span className="block text-xs text-gray-500 dark:text-gray-400">Download complete history of all {activeTab === 'audit' ? 'sessions' : 'visits'}</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className="flex items-center h-5">
+                      <input
+                        type="radio"
+                        name="exportOption"
+                        value="range"
+                        checked={exportOption === 'range'}
+                        onChange={() => setExportOption('range')}
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="ml-3 w-full">
+                      <span className="block text-sm font-medium text-gray-900 dark:text-white">Export Date Range</span>
+                      <span className="block text-xs text-gray-500 dark:text-gray-400 mb-3">Download logs for a specific period</span>
+
+                      {exportOption === 'range' && (
+                        <div className="grid grid-cols-2 gap-3 mt-2 animate-fade-in">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                            <input
+                              type="date"
+                              value={exportStartDate}
+                              onChange={(e) => setExportStartDate(e.target.value)}
+                              max={new Date().toISOString().split('T')[0]}
+                              className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                            <input
+                              type="date"
+                              value={exportEndDate}
+                              onChange={(e) => setExportEndDate(e.target.value)}
+                              max={new Date().toISOString().split('T')[0]}
+                              className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowExportModal(false)}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        setIsExporting(true);
+                        // Construct params
+                        const params = new URLSearchParams({
+                          limit: 100000,
+                        });
+
+                        if (exportOption === 'range') {
+                          if (!exportStartDate || !exportEndDate) {
+                            toast.error('Please select both start and end dates');
+                            setIsExporting(false);
+                            return;
+                          }
+                          params.append('startDate', exportStartDate);
+                          params.append('endDate', exportEndDate);
+                        } else {
+                          // Explicitly set dateRange to 'all' to override backend defaults (e.g. visitors defaults to 'today')
+                          params.append('dateRange', 'all');
+                        }
+
+                        const endpoint = activeTab === 'audit'
+                          ? `${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`
+                          : `${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all`;
+
+                        const res = await fetch(`${endpoint}?${params}`, {
+                          credentials: 'include',
+                          headers: { 'Content-Type': 'application/json' }
+                        });
+
+                        if (!res.ok) throw new Error(`Failed to fetch ${activeTab}`);
+
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message);
+
+                        let exportData = [];
+                        let filenamePrefix = '';
+                        let csvContent = '';
+
+                        if (activeTab === 'audit') {
+                          exportData = data.logs || [];
+                          filenamePrefix = 'session-logs';
+                          // Generate CSV for Audit Logs
+                          const rows = exportData.map(l => ({
+                            timestamp: new Date(l.timestamp).toISOString(),
+                            user: l.userId?.username || '',
+                            email: l.userId?.email || '',
+                            role: l.role || '',
+                            action: l.action,
+                            ip: l.ip,
+                            location: l.location || '',
+                            device: l.device || '',
+                            suspicious: l.isSuspicious ? 'yes' : 'no'
+                          }));
+                          const header = ['timestamp', 'user', 'email', 'role', 'action', 'ip', 'location', 'device', 'suspicious'];
+                          csvContent = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
+                        } else {
+                          exportData = data.visitors || [];
+                          filenamePrefix = 'visitor-logs';
+                          // Generate CSV for Visitor Logs
+                          const rows = exportData.map(v => ({
+                            timestamp: new Date(v.timestamp).toISOString(),
+                            browser: v.browser || '',
+                            version: v.browserVersion || '',
+                            os: v.os || '',
+                            deviceType: v.deviceType || '',
+                            ip: v.ip,
+                            location: v.location || '',
+                            source: v.source || '',
+                            analytics: v.cookiePreferences?.analytics ? 'yes' : 'no'
+                          }));
+                          const header = ['timestamp', 'browser', 'version', 'os', 'deviceType', 'ip', 'location', 'source', 'analytics_consent'];
+                          csvContent = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
+                        }
+
+                        if (exportData.length === 0) {
+                          toast.info('No data found to export');
+                          setIsExporting(false);
+                          return;
+                        }
+
+                        const blob = new Blob([csvContent], { type: 'text/csv' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url; a.download = `${filenamePrefix}-${exportOption}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+                        URL.revokeObjectURL(url);
+
+                        setShowExportModal(false);
+                        toast.success(`Exported ${exportData.length} records successfully`);
+                      } catch (err) {
+                        console.error('Export failed', err);
+                        toast.error('Export failed: ' + err.message);
+                      } finally {
+                        setIsExporting(false);
+                      }
+                    }}
+                    disabled={isExporting}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                  >
+                    {isExporting ? <FaSync className="animate-spin mr-2" /> : <FaFileExport className="mr-2" />}
+                    {isExporting ? 'Exporting...' : 'Export CSV'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Visitor Details Modal */}
+      {
+        showVisitorDetailsModal && selectedVisitor && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col">
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="flex items-center gap-3">
+                  <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-xl text-purple-600 dark:text-purple-400">
+                    <FaFingerprint className="text-xl" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Visitor Session Details</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                      <FaClock className="text-[10px]" />
+                      Duration: {calculateDuration(selectedVisitor.sessionStart || selectedVisitor.timestamp, selectedVisitor.lastActive || selectedVisitor.timestamp)}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowVisitorDetailsModal(false)}
+                  className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                >
                   <FaTimes />
                 </button>
               </div>
 
-              <div className="mb-6 space-y-4">
-                <label className="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <input
-                    type="radio"
-                    name="exportOption"
-                    value="all"
-                    checked={exportOption === 'all'}
-                    onChange={() => setExportOption('all')}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <div className="ml-3">
-                    <span className="block text-sm font-medium text-gray-900 dark:text-white">Export All {activeTab === 'audit' ? 'Logs' : 'Visitors'}</span>
-                    <span className="block text-xs text-gray-500 dark:text-gray-400">Download complete history of all {activeTab === 'audit' ? 'sessions' : 'visits'}</span>
-                  </div>
-                </label>
-
-                <label className="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <div className="flex items-center h-5">
-                    <input
-                      type="radio"
-                      name="exportOption"
-                      value="range"
-                      checked={exportOption === 'range'}
-                      onChange={() => setExportOption('range')}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="ml-3 w-full">
-                    <span className="block text-sm font-medium text-gray-900 dark:text-white">Export Date Range</span>
-                    <span className="block text-xs text-gray-500 dark:text-gray-400 mb-3">Download logs for a specific period</span>
-
-                    {exportOption === 'range' && (
-                      <div className="grid grid-cols-2 gap-3 mt-2 animate-fade-in">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
-                          <input
-                            type="date"
-                            value={exportStartDate}
-                            onChange={(e) => setExportStartDate(e.target.value)}
-                            max={new Date().toISOString().split('T')[0]}
-                            className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
-                          <input
-                            type="date"
-                            value={exportEndDate}
-                            onChange={(e) => setExportEndDate(e.target.value)}
-                            max={new Date().toISOString().split('T')[0]}
-                            className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                        </div>
+              <div className="p-6 overflow-y-auto custom-scrollbar space-y-8">
+                {/* Session ID & Source */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">Device Info</p>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Device:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{selectedVisitor.device} ({selectedVisitor.deviceType})</span>
                       </div>
-                    )}
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">OS:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{selectedVisitor.os}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Browser:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{selectedVisitor.browser} {selectedVisitor.browserVersion}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">IP:</span>
+                        <span className="font-mono text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-600 px-1 rounded text-xs">{selectedVisitor.ip}</span>
+                      </div>
+                    </div>
                   </div>
-                </label>
-              </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowExportModal(false)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      setIsExporting(true);
-                      // Construct params
-                      const params = new URLSearchParams({
-                        limit: 100000,
-                      });
+                  <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">Acquisition</p>
+                    <div className="space-y-1">
+                      <div className="flex flex-col gap-1 text-sm">
+                        <span className="text-gray-600 dark:text-gray-400 text-xs font-semibold">Source:</span>
+                        <span className="font-medium text-gray-900 dark:text-white break-all text-xs">{selectedVisitor.source}</span>
+                      </div>
+                      <div className="flex flex-col gap-1 text-sm mt-2">
+                        <span className="text-gray-600 dark:text-gray-400 text-xs font-semibold">Referrer:</span>
+                        <span className="font-medium text-gray-900 dark:text-white break-all text-xs">{selectedVisitor.referrer || 'Direct'}</span>
+                      </div>
+                      {selectedVisitor.utm && Object.keys(selectedVisitor.utm).length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                          {Object.entries(selectedVisitor.utm).map(([key, val]) => (
+                            <div key={key} className="flex items-center justify-between text-xs">
+                              <span className="text-gray-500">{key}:</span>
+                              <span className="text-gray-700 dark:text-gray-300 font-mono">{val}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                      if (exportOption === 'range') {
-                        if (!exportStartDate || !exportEndDate) {
-                          toast.error('Please select both start and end dates');
-                          setIsExporting(false);
-                          return;
-                        }
-                        params.append('startDate', exportStartDate);
-                        params.append('endDate', exportEndDate);
-                      } else {
-                        // Explicitly set dateRange to 'all' to override backend defaults (e.g. visitors defaults to 'today')
-                        params.append('dateRange', 'all');
-                      }
-
-                      const endpoint = activeTab === 'audit'
-                        ? `${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`
-                        : `${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all`;
-
-                      const res = await fetch(`${endpoint}?${params}`, {
-                        credentials: 'include',
-                        headers: { 'Content-Type': 'application/json' }
-                      });
-
-                      if (!res.ok) throw new Error(`Failed to fetch ${activeTab}`);
-
-                      const data = await res.json();
-                      if (!data.success) throw new Error(data.message);
-
-                      let exportData = [];
-                      let filenamePrefix = '';
-                      let csvContent = '';
-
-                      if (activeTab === 'audit') {
-                        exportData = data.logs || [];
-                        filenamePrefix = 'session-logs';
-                        // Generate CSV for Audit Logs
-                        const rows = exportData.map(l => ({
-                          timestamp: new Date(l.timestamp).toISOString(),
-                          user: l.userId?.username || '',
-                          email: l.userId?.email || '',
-                          role: l.role || '',
-                          action: l.action,
-                          ip: l.ip,
-                          location: l.location || '',
-                          device: l.device || '',
-                          suspicious: l.isSuspicious ? 'yes' : 'no'
-                        }));
-                        const header = ['timestamp', 'user', 'email', 'role', 'action', 'ip', 'location', 'device', 'suspicious'];
-                        csvContent = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
-                      } else {
-                        exportData = data.visitors || [];
-                        filenamePrefix = 'visitor-logs';
-                        // Generate CSV for Visitor Logs
-                        const rows = exportData.map(v => ({
-                          timestamp: new Date(v.timestamp).toISOString(),
-                          browser: v.browser || '',
-                          version: v.browserVersion || '',
-                          os: v.os || '',
-                          deviceType: v.deviceType || '',
-                          ip: v.ip,
-                          location: v.location || '',
-                          source: v.source || '',
-                          analytics: v.cookiePreferences?.analytics ? 'yes' : 'no'
-                        }));
-                        const header = ['timestamp', 'browser', 'version', 'os', 'deviceType', 'ip', 'location', 'source', 'analytics_consent'];
-                        csvContent = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
-                      }
-
-                      if (exportData.length === 0) {
-                        toast.info('No data found to export');
-                        setIsExporting(false);
-                        return;
-                      }
-
-                      const blob = new Blob([csvContent], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url; a.download = `${filenamePrefix}-${exportOption}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
-                      URL.revokeObjectURL(url);
-
-                      setShowExportModal(false);
-                      toast.success(`Exported ${exportData.length} records successfully`);
-                    } catch (err) {
-                      console.error('Export failed', err);
-                      toast.error('Export failed: ' + err.message);
-                    } finally {
-                      setIsExporting(false);
-                    }
-                  }}
-                  disabled={isExporting}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
-                >
-                  {isExporting ? <FaSync className="animate-spin mr-2" /> : <FaFileExport className="mr-2" />}
-                  {isExporting ? 'Exporting...' : 'Export CSV'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Visitor Details Modal */}
-      {showVisitorDetailsModal && selectedVisitor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-xl text-purple-600 dark:text-purple-400">
-                  <FaFingerprint className="text-xl" />
+                  <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">Location & Consent</p>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white">
+                        <FaMapMarkerAlt className="text-red-500" />
+                        {selectedVisitor.location}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedVisitor.cookiePreferences?.analytics ?
+                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded border border-green-200">Analytics: On</span> :
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded border border-gray-200">Analytics: Off</span>}
+                        {selectedVisitor.cookiePreferences?.marketing ?
+                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded border border-green-200">Marketing: On</span> :
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded border border-gray-200">Marketing: Off</span>}
+                        {selectedVisitor.cookiePreferences?.functional ?
+                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded border border-green-200">Functional: On</span> :
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded border border-gray-200">Functional: Off</span>}
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Clickstream / Page Views Timeline */}
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Visitor Session Details</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                    <FaClock className="text-[10px]" />
-                    Duration: {calculateDuration(selectedVisitor.sessionStart || selectedVisitor.timestamp, selectedVisitor.lastActive || selectedVisitor.timestamp)}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowVisitorDetailsModal(false)}
-                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-              >
-                <FaTimes />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto custom-scrollbar space-y-8">
-              {/* Session ID & Source */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">Device Info</p>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Device:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{selectedVisitor.device} ({selectedVisitor.deviceType})</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">OS:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{selectedVisitor.os}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Browser:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{selectedVisitor.browser} {selectedVisitor.browserVersion}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">IP:</span>
-                      <span className="font-mono text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-600 px-1 rounded text-xs">{selectedVisitor.ip}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">Acquisition</p>
-                  <div className="space-y-1">
-                    <div className="flex flex-col gap-1 text-sm">
-                      <span className="text-gray-600 dark:text-gray-400 text-xs font-semibold">Source:</span>
-                      <span className="font-medium text-gray-900 dark:text-white break-all text-xs">{selectedVisitor.source}</span>
-                    </div>
-                    <div className="flex flex-col gap-1 text-sm mt-2">
-                      <span className="text-gray-600 dark:text-gray-400 text-xs font-semibold">Referrer:</span>
-                      <span className="font-medium text-gray-900 dark:text-white break-all text-xs">{selectedVisitor.referrer || 'Direct'}</span>
-                    </div>
-                    {selectedVisitor.utm && Object.keys(selectedVisitor.utm).length > 0 && (
-                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                        {Object.entries(selectedVisitor.utm).map(([key, val]) => (
-                          <div key={key} className="flex items-center justify-between text-xs">
-                            <span className="text-gray-500">{key}:</span>
-                            <span className="text-gray-700 dark:text-gray-300 font-mono">{val}</span>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <FaHistory className="text-blue-500" /> Session Timeline
+                  </h4>
+                  <div className="relative border-l-2 border-gray-200 dark:border-gray-700 ml-3 space-y-6">
+                    {selectedVisitor.pageViews?.map((pv, idx) => (
+                      <div key={idx} className="relative pl-6">
+                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 border-4 border-white dark:border-gray-800"></div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors">
+                          <div>
+                            <p className="text-sm font-bold text-gray-800 dark:text-white">{pv.path}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{pv.title || 'Page View'}</p>
                           </div>
-                        ))}
+                          <span className="text-xs font-mono text-gray-400 mt-2 sm:mt-0">
+                            {new Date(pv.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {(!selectedVisitor.pageViews || selectedVisitor.pageViews.length === 0) && (
+                      <div className="relative pl-6">
+                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-300"></div>
+                        <p className="text-sm text-gray-500">No page view history available.</p>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-2">Location & Consent</p>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white">
-                      <FaMapMarkerAlt className="text-red-500" />
-                      {selectedVisitor.location}
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedVisitor.cookiePreferences?.analytics ?
-                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded border border-green-200">Analytics: On</span> :
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded border border-gray-200">Analytics: Off</span>}
-                      {selectedVisitor.cookiePreferences?.marketing ?
-                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded border border-green-200">Marketing: On</span> :
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded border border-gray-200">Marketing: Off</span>}
-                      {selectedVisitor.cookiePreferences?.functional ?
-                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded border border-green-200">Functional: On</span> :
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded border border-gray-200">Functional: Off</span>}
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              {/* Clickstream / Page Views Timeline */}
-              <div>
-                <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <FaHistory className="text-blue-500" /> Session Timeline
-                </h4>
-                <div className="relative border-l-2 border-gray-200 dark:border-gray-700 ml-3 space-y-6">
-                  {selectedVisitor.pageViews?.map((pv, idx) => (
-                    <div key={idx} className="relative pl-6">
-                      <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 border-4 border-white dark:border-gray-800"></div>
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors">
-                        <div>
-                          <p className="text-sm font-bold text-gray-800 dark:text-white">{pv.path}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">{pv.title || 'Page View'}</p>
-                        </div>
-                        <span className="text-xs font-mono text-gray-400 mt-2 sm:mt-0">
-                          {new Date(pv.timestamp).toLocaleTimeString()}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {(!selectedVisitor.pageViews || selectedVisitor.pageViews.length === 0) && (
-                    <div className="relative pl-6">
-                      <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-300"></div>
-                      <p className="text-sm text-gray-500">No page view history available.</p>
-                    </div>
-                  )}
-                </div>
+              <div className="p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-end">
+                <button
+                  onClick={() => setShowVisitorDetailsModal(false)}
+                  className="px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-lg shadow-gray-200 dark:shadow-none"
+                >
+                  Close Details
+                </button>
               </div>
-
-            </div>
-
-            <div className="p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-end">
-              <button
-                onClick={() => setShowVisitorDetailsModal(false)}
-                className="px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-lg shadow-gray-200 dark:shadow-none"
-              >
-                Close Details
-              </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 
