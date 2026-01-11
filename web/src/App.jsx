@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, useLocation, Navigate, useNavigate, useParams } from "react-router-dom";
 import React, { useEffect, Suspense, lazy, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { verifyAuthStart, verifyAuthSuccess, verifyAuthFailure, signoutUserSuccess } from "./redux/user/userSlice.js";
+import { verifyAuthStart, verifyAuthSuccess, verifyAuthFailure, signoutUserSuccess, updateUserSuccess } from "./redux/user/userSlice.js";
+import { persistor } from './redux/store';
 import { socket } from "./utils/socket";
 import Header from './components/Header';
 import AdminHeader from './components/AdminHeader';
@@ -440,6 +441,7 @@ function AppRoutes({ bootstrapped }) {
         } else {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('sessionId');
+          await persistor.purge();
           dispatch(verifyAuthFailure(data.message || 'Session invalid'));
           dispatch(signoutUserSuccess());
         }

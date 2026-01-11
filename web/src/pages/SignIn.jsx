@@ -209,14 +209,17 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     // Block access if already signed in
     useEffect(() => {
         if (bootstrapped && sessionChecked && currentUser && !showLoader) {
-            if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
-                if (currentUser.isDefaultAdmin) {
-                    navigate('/admin', { replace: true });
+            // Validate token exists/is valid before redirecting to prevent loops
+            if (isAuthenticated()) {
+                if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
+                    if (currentUser.isDefaultAdmin) {
+                        navigate('/admin', { replace: true });
+                    } else {
+                        navigate('/admin', { replace: true });
+                    }
                 } else {
-                    navigate('/admin', { replace: true });
+                    navigate('/user', { replace: true });
                 }
-            } else {
-                navigate('/user', { replace: true });
             }
         }
     }, [bootstrapped, sessionChecked, currentUser, navigate]);
