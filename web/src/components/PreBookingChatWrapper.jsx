@@ -185,8 +185,11 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
     // Render Functions
     const renderInbox = () => (
         <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-t-lg">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-t-lg flex justify-between items-center">
                 <h3 className="font-semibold text-gray-800 dark:text-white">Inquiries</h3>
+                <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                    <FaTimes />
+                </button>
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
                 {inboxChats.length === 0 ? (
@@ -225,101 +228,148 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
         </div>
     );
 
-    const renderChat = () => (
-        <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-blue-600 text-white rounded-t-lg flex justify-between items-center shadow-md">
-                <div className="flex items-center gap-3">
-                    {isOwner && (
-                        <button onClick={() => setActiveChat(null)} className="mr-1 hover:bg-blue-700 p-1 rounded">
-                            &larr;
-                        </button>
-                    )}
-                    <div className="font-semibold">
-                        {isOwner ?
-                            activeChat?.participants.find(p => p._id !== currentUser._id)?.username
-                            : 'Owner'}
-                    </div>
-                    <div className="text-xs opacity-75 flex items-center gap-1">
-                        <FaCircle className="w-2 h-2 text-green-300" /> Online
-                    </div>
-                </div>
-                <div className="flex gap-2">
-                    <button onClick={handleClearChat} className="text-xs bg-red-500/20 hover:bg-red-500/40 p-1 rounded" title="Clear Chat">Clear</button>
-                    <button onClick={toggleChat} className="hover:bg-blue-700 p-1 rounded"><FaTimes /></button>
-                </div>
-            </div>
+    const renderChat = () => {
+        const otherParticipant = activeChat?.participants?.find(p => p._id !== currentUser._id);
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-100 dark:bg-gray-900">
-                {messages.map((msg, idx) => {
-                    const isMe = msg.sender === currentUser._id;
-                    return (
-                        <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                            <div
-                                className={`max-w-[75%] p-3 rounded-2xl shadow-sm text-sm ${isMe
-                                        ? 'bg-blue-600 text-white rounded-tr-none'
-                                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-tl-none'
-                                    }`}
-                            >
-                                <p>{msg.content}</p>
-                                <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
-                                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        return (
+            <div className="flex flex-col h-full">
+                {/* Header */}
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-blue-600 text-white rounded-t-lg flex justify-between items-center shadow-md">
+                    <div className="flex items-center gap-3">
+                        {isOwner && (
+                            <button onClick={() => setActiveChat(null)} className="mr-1 hover:bg-blue-700 p-1 rounded text-white">
+                                &larr;
+                            </button>
+                        )}
+
+                        <div className="flex items-center gap-3">
+                            {/* Avatar */}
+                            <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white overflow-hidden border border-white/30">
+                                {otherParticipant?.avatar ? (
+                                    <img src={otherParticipant.avatar} alt={otherParticipant.username} className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="font-bold text-sm">{otherParticipant?.username?.[0]?.toUpperCase() || <FaUser className="text-xs" />}</span>
+                                )}
+                            </div>
+
+                            <div className="leading-tight">
+                                <div className="font-semibold text-sm">
+                                    {isOwner ? otherParticipant?.username : 'Property Owner'}
+                                </div>
+                                <div className="text-[10px] opacity-90 flex items-center gap-1.5">
+                                    <FaCircle className="w-2 h-2 text-green-400" /> Online
                                 </div>
                             </div>
                         </div>
-                    );
-                })}
-                <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <form onSubmit={handleSend} className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex gap-2">
-                <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type a message..."
-                    className="flex-1 px-4 py-2 border rounded-full dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                    type="submit"
-                    disabled={isSending || !newMessage.trim()}
-                    className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 transition"
-                >
-                    <FaPaperPlane className="ml-1" />
-                </button>
-            </form>
-        </div>
-    );
-
-    return (
-        <>
-            {/* Floating Entry Button */}
-            {!isOpen && (
-                <button
-                    onClick={toggleChat}
-                    className="fixed bottom-24 right-6 z-40 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 group"
-                    title={isOwner ? "View Inquiries" : "Chat with Owner"}
-                >
-                    <FaComments className="w-6 h-6" />
-                    {/* Badge for Owner */}
-                    {isOwner && inboxChats.length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full animate-pulse">
-                            {inboxChats.length}
-                        </span>
-                    )}
-                </button>
-            )}
-
-            {/* Chat Window */}
-            {isOpen && (
-                <div className="fixed bottom-24 right-6 z-40 w-96 h-[500px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp border border-gray-200 dark:border-gray-700">
-                    {(isOwner && !activeChat) ? renderInbox() : renderChat()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {messages.length > 0 && (
+                            <button onClick={handleClearChat} className="text-xs bg-red-500/20 hover:bg-red-500/40 px-2 py-1.5 rounded text-white transition-colors font-medium border border-red-500/30" title="Clear Chat">
+                                Clear
+                            </button>
+                        )}
+                        <button onClick={toggleChat} className="hover:bg-blue-700 p-1.5 rounded-full transition-colors text-white/90 hover:text-white"><FaTimes /></button>
+                    </div>
                 </div>
-            )}
 
-            <style jsx>{`
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-100 dark:bg-gray-900">
+                    {messages.map((msg, idx) => {
+                        const isMe = msg.sender === currentUser._id;
+                        return (
+                            <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                <div
+                                    className={`max-w-[75%] p-3 rounded-2xl shadow-sm text-sm ${isMe
+                                        ? 'bg-blue-600 text-white rounded-tr-none'
+                                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-tl-none'
+                                        }`}
+                                >
+                                    <p>{msg.content}</p>
+                                    <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
+                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input */}
+                <form onSubmit={handleSend} className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        className="flex-1 px-4 py-2 border rounded-full dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                        type="submit"
+                        disabled={isSending || !newMessage.trim()}
+                        className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 transition"
+                    >
+                        <FaPaperPlane className="ml-1" />
+                    </button>
+                </form>
+            </div>
+        );
+
+        return (
+            <>
+                {/* Floating Entry Button */}
+                {!isOpen && (
+                    <div className="fixed bottom-24 right-6 z-40">
+                        <button
+                            onClick={toggleChat}
+                            className="relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center"
+                            style={{
+                                background: `linear-gradient(135deg, #3b82f6, #6366f1)`, // Blue to Indigo gradient
+                                boxShadow: `0 10px 25px rgba(59, 130, 246, 0.4)`
+                            }}
+                        >
+                            {/* Animated background ring */}
+                            <div
+                                className="absolute inset-0 rounded-full animate-ping"
+                                style={{
+                                    border: `3px solid rgba(59, 130, 246, 0.3)`,
+                                }}
+                            ></div>
+
+                            <FaComments className="w-5 h-5 text-white drop-shadow-lg" />
+
+                            {/* Badge for Owner */}
+                            {isOwner && inboxChats.length > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full animate-pulse font-bold">
+                                    {inboxChats.length > 99 ? '99+' : inboxChats.length}
+                                </span>
+                            )}
+
+                            {/* Enhanced Hover Tooltip */}
+                            <div className="absolute bottom-full right-0 mb-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 dark:border-gray-700 transform -translate-y-1 transition-all duration-200">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-lg">💬</span>
+                                    <span className="font-medium">
+                                        {isOwner
+                                            ? (inboxChats.length > 0 ? `${inboxChats.length} Inquir${inboxChats.length !== 1 ? 'ies' : 'y'}` : 'View Inquiries')
+                                            : 'Chat with Owner'}
+                                    </span>
+                                </div>
+                                {/* Tooltip arrow */}
+                                <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white dark:border-t-gray-800"></div>
+                            </div>
+                        </button>
+                    </div>
+                )}
+
+                {/* Chat Window */}
+                {isOpen && (
+                    <div className="fixed bottom-24 right-6 z-40 w-96 h-[500px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp border border-gray-200 dark:border-gray-700">
+                        {(isOwner && !activeChat) ? renderInbox() : renderChat()}
+                    </div>
+                )}
+
+                <style jsx>{`
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
@@ -328,6 +378,6 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
           animation: slideUp 0.3s ease-out;
         }
       `}</style>
-        </>
-    );
-}
+            </>
+        );
+    }
