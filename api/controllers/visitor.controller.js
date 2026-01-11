@@ -93,13 +93,35 @@ export const trackVisitor = async (req, res, next) => {
             existingVisitor.cookiePreferences = cookiePreferences;
           }
 
+          // Handle Metrics Update (Scroll/Load Time)
+          if (req.body.metrics && existingVisitor.pageViews.length > 0) {
+            const metrics = req.body.metrics;
+            const lastPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
+
+            // Only update metrics if current page matches the last recorded page
+            if (lastPage && lastPage.path === page) {
+              if (metrics.scrollPercentage && metrics.scrollPercentage > (lastPage.scrollPercentage || 0)) {
+                lastPage.scrollPercentage = metrics.scrollPercentage;
+              }
+              if (metrics.loadTime && metrics.loadTime > 0) {
+                // Keep the longest load time if reported multiple times, or initial
+                lastPage.loadTime = metrics.loadTime;
+              }
+            }
+          }
+
           // Handle Page View Logic
-          if (type !== 'heartbeat' && page) {
+          if (type === 'pageview' && page && type !== 'heartbeat') {
             const lastPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
             // Only add if path is different from last path
-            // This prevents "refresh" duplicates or rapid-fire events
             if (!lastPage || lastPage.path !== page) {
-              existingVisitor.pageViews.push({ path: page, title: '', timestamp: new Date() });
+              existingVisitor.pageViews.push({
+                path: page,
+                title: '',
+                timestamp: new Date(),
+                scrollPercentage: 0,
+                loadTime: req.body.metrics?.loadTime || 0
+              });
               existingVisitor.page = page;
             }
           }

@@ -5,7 +5,7 @@ import {
   FaSync, FaSearch, FaFilter, FaHistory, FaGlobe, FaDesktop, FaUser,
   FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaFileAlt,
   FaChartLine, FaMapMarkerAlt, FaFileExport, FaTrash, FaFingerprint, FaTimes, FaCalendarAlt,
-  FaEye, FaClock, FaArrowRight
+  FaEye, FaClock, FaArrowRight, FaArrowDown
 } from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -1714,7 +1714,12 @@ const SessionAuditLogs = () => {
                             last_active: v.lastActive ? new Date(v.lastActive).toISOString() : '',
                             duration_seconds: (v.sessionStart && v.lastActive) ? Math.round((new Date(v.lastActive) - new Date(v.sessionStart)) / 1000) : 0,
                             page_views_count: v.pageViews?.length || 0,
-                            click_path: v.pageViews?.map(p => p.path).join(' -> ') || '',
+                            click_path: v.pageViews?.map(p => {
+                              let meta = [];
+                              if (p.scrollPercentage) meta.push(`Scroll:${p.scrollPercentage}%`);
+                              if (p.loadTime) meta.push(`Load:${p.loadTime}ms`);
+                              return meta.length > 0 ? `${p.path} (${meta.join(', ')})` : p.path;
+                            }).join(' -> ') || '',
                             browser: v.browser || '',
                             version: v.browserVersion || '',
                             os: v.os || '',
@@ -1874,7 +1879,22 @@ const SessionAuditLogs = () => {
                         <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 border-4 border-white dark:border-gray-800"></div>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors">
                           <div>
-                            <p className="text-sm font-bold text-gray-800 dark:text-white">{pv.path}</p>
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <p className="text-sm font-bold text-gray-800 dark:text-white">{pv.path}</p>
+                              {pv.scrollPercentage > 0 && (
+                                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-blue-200 dark:border-blue-800">
+                                  <FaArrowDown className="text-[8px]" /> Scrolled {pv.scrollPercentage}%
+                                </span>
+                              )}
+                              {pv.loadTime > 0 && (
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border ${pv.loadTime < 1000 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800' :
+                                  pv.loadTime < 3000 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800' :
+                                    'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
+                                  }`}>
+                                  <FaClock className="text-[8px]" /> {Math.round(pv.loadTime)}ms
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">{pv.title || 'Page View'}</p>
                           </div>
                           <span className="text-xs font-mono text-gray-400 mt-2 sm:mt-0">

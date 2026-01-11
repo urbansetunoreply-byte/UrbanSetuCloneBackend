@@ -76,7 +76,9 @@ const visitorLogSchema = new mongoose.Schema({
   pageViews: [{
     path: { type: String, required: true },
     title: { type: String },
-    timestamp: { type: Date, default: Date.now }
+    timestamp: { type: Date, default: Date.now },
+    scrollPercentage: { type: Number, default: 0 },
+    loadTime: { type: Number, default: 0 }
   }],
   // Session Timing
   sessionStart: {
