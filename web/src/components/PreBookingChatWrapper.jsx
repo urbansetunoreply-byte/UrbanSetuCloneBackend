@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { FaComments, FaTimes, FaPaperPlane, FaUser, FaCircle, FaCheck } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaUser, FaCircle, FaCheck, FaTrash, FaEdit, FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { socket } from '../utils/socket';
 
@@ -13,6 +13,8 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
     // State for Owner View
     const [inboxChats, setInboxChats] = useState([]);
     const [hasViewedInquiries, setHasViewedInquiries] = useState(false);
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
+    const [selectedChatIds, setSelectedChatIds] = useState(new Set());
 
     // State for Chat View
     const [activeChat, setActiveChat] = useState(null); // The full chat object
@@ -205,14 +207,97 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
         }
     }
 
+    // Selection Logic
+    const toggleSelectionMode = () => {
+        setIsSelectionMode(!isSelectionMode);
+        setSelectedChatIds(new Set());
+    };
+
+    const handleSelectChat = (chatId) => {
+        const newSelected = new Set(selectedChatIds);
+        if (newSelected.has(chatId)) {
+            newSelected.delete(chatId);
+        } else {
+            newSelected.add(chatId);
+        }
+        setSelectedChatIds(newSelected);
+    };
+
+    const handleSelectAll = () => {
+        if (selectedChatIds.size === inboxChats.length) {
+            setSelectedChatIds(new Set());
+        } else {
+            setSelectedChatIds(new Set(inboxChats.map(c => c._id)));
+        }
+    };
+
+    const handleDeleteSelected = async () => {
+        if (selectedChatIds.size === 0) return;
+        if (!window.confirm(`Delete ${selectedChatIds.size} selected inquir${selectedChatIds.size > 1 ? 'ies' : 'y'}?`)) return;
+
+        setIsLoading(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/pre-booking-chat/delete-batch`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ chatIds: Array.from(selectedChatIds) })
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(data.message);
+                setInboxChats(prev => prev.filter(c => !selectedChatIds.has(c._id)));
+                setIsSelectionMode(false);
+                setSelectedChatIds(new Set());
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to delete inquiries');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // Render Functions
     const renderInbox = () => (
         <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-t-lg flex justify-between items-center">
-                <h3 className="font-semibold text-gray-800 dark:text-white">Inquiries</h3>
-                <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                    <FaTimes />
-                </button>
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-t-lg flex justify-between items-center h-16">
+                {isSelectionMode ? (
+                    <>
+                        <div className="flex items-center gap-2">
+                            <button onClick={toggleSelectionMode} className="text-gray-600 hover:text-gray-800 dark:text-gray-300">Cancel</button>
+                            <span className="font-semibold text-gray-800 dark:text-white px-2">
+                                {selectedChatIds.size} Selected
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button onClick={handleSelectAll} className="text-sm text-blue-600 font-medium hover:underline">
+                                {selectedChatIds.size === inboxChats.length ? 'Deselect All' : 'Select All'}
+                            </button>
+                            {selectedChatIds.size > 0 && (
+                                <button onClick={handleDeleteSelected} className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition" title="Delete Selected">
+                                    <FaTrash />
+                                </button>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <h3 className="font-semibold text-gray-800 dark:text-white">Inquiries</h3>
+                        <div className="flex items-center gap-2">
+                            {inboxChats.length > 0 && (
+                                <button onClick={toggleSelectionMode} className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-2 rounded-full hover:bg-blue-50 dark:hover:bg-gray-700 transition" title="Select / Delete">
+                                    <FaEdit />
+                                </button>
+                            )}
+                            <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                                <FaTimes />
+                            </button>
+                        </div>
+                    </>
+                )}
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
                 {inboxChats.length === 0 ? (
@@ -220,20 +305,38 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                 ) : (
                     inboxChats.map(chat => {
                         const otherParticipant = chat.participants.find(p => p._id !== currentUser._id);
+                        const isSelected = selectedChatIds.has(chat._id);
+
                         return (
                             <div
                                 key={chat._id}
-                                onClick={() => { setActiveChat(chat); setMessages(chat.messages); }}
-                                className="p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition"
+                                onClick={() => {
+                                    if (isSelectionMode) {
+                                        handleSelectChat(chat._id);
+                                    } else {
+                                        setActiveChat(chat);
+                                        setMessages(chat.messages);
+                                    }
+                                }}
+                                className={`p-3 rounded-lg shadow-sm cursor-pointer transition flex items-center gap-3 ${isSelected
+                                    ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
+                                    : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                    }`}
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                {isSelectionMode && (
+                                    <div className="text-blue-600 dark:text-blue-400">
+                                        {isSelected ? <FaCheckSquare className="text-xl" /> : <FaSquare className="text-xl text-gray-300 dark:text-gray-500" />}
+                                    </div>
+                                )}
+
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0">
                                         {otherParticipant?.username?.[0]?.toUpperCase() || <FaUser />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-baseline">
                                             <h4 className="font-medium text-gray-900 dark:text-white truncate">{otherParticipant?.username}</h4>
-                                            <span className="text-xs text-gray-500">
+                                            <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
                                                 {chat.lastMessage?.timestamp && new Date(chat.lastMessage.timestamp).toLocaleDateString()}
                                             </span>
                                         </div>

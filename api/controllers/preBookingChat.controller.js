@@ -223,3 +223,32 @@ export const clearChat = async (req, res, next) => {
         next(error);
     }
 }
+
+export const deleteChats = async (req, res, next) => {
+    try {
+        const { chatIds } = req.body;
+        const userId = req.user.id;
+
+        if (!Array.isArray(chatIds) || chatIds.length === 0) {
+            return res.status(400).json({ success: false, message: 'No chats selected' });
+        }
+
+        // Verify the user is a participant in all chats proposed for deletion
+        // or just delete the ones where they are.
+        // We will delete chats where user is participant.
+
+        const result = await PreBookingChat.deleteMany({
+            _id: { $in: chatIds },
+            participants: userId
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'No chats found or unauthorized' });
+        }
+
+        res.status(200).json({ success: true, message: `${result.deletedCount} chats deleted` });
+
+    } catch (error) {
+        next(error);
+    }
+}
