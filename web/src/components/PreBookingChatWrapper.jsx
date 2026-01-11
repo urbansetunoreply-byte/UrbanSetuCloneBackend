@@ -443,7 +443,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                                         <div className="flex justify-between items-baseline">
                                             <h4 className="font-medium text-gray-900 dark:text-white truncate">{displayName}</h4>
                                             <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                                                {chat.lastMessage?.timestamp && new Date(chat.lastMessage.timestamp).toLocaleDateString()}
+                                                {chat.lastMessage?.timestamp && new Date(chat.lastMessage.timestamp).toLocaleDateString('en-GB')}
                                             </span>
                                         </div>
                                         <p className="text-xs text-gray-500 truncate">{chat.listingId?.name}</p>
@@ -471,7 +471,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
 
             if (date.toDateString() === today.toDateString()) return 'Today';
             if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-            return date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+            return date.toLocaleDateString('en-GB');
         };
 
         return (
