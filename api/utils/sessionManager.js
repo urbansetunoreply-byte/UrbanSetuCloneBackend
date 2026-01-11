@@ -466,7 +466,7 @@ export const enforceSessionLimits = async (userId, userRole) => {
 };
 
 // Log session action
-export const logSessionAction = async (userId, action, sessionId, ip, device, location, additionalInfo = null, isSuspicious = false, suspiciousReason = null, performedBy = null) => {
+export const logSessionAction = async (userId, action, sessionId, ip, device, location, additionalInfo = null, isSuspicious = false, suspiciousReason = null, performedBy = null, metadata = {}) => {
     const user = await User.findById(userId);
     if (!user) return;
 
@@ -481,7 +481,8 @@ export const logSessionAction = async (userId, action, sessionId, ip, device, lo
         additionalInfo,
         isSuspicious,
         suspiciousReason,
-        performedBy
+        performedBy,
+        metadata
     });
 };
 

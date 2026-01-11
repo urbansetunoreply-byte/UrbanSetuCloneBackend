@@ -337,6 +337,9 @@ export const SignIn = async (req, res, next) => {
         // Check for concurrent logins
         const concurrentInfo = detectConcurrentLogins(validUser._id, session.sessionId);
 
+        // Capture Source
+        const source = req.get('Origin') || req.get('Referer') || 'Unknown';
+
         // Log session action
         await logSessionAction(
             validUser._id,
@@ -347,7 +350,9 @@ export const SignIn = async (req, res, next) => {
             location,
             `Successful login with ${concurrentInfo.activeSessions} concurrent sessions`,
             suspiciousCheck.isSuspicious,
-            suspiciousCheck.reason
+            suspiciousCheck.reason,
+            null,
+            { source }
         );
 
         // Log successful login
@@ -506,6 +511,9 @@ export const Google = async (req, res, next) => {
             const concurrentInfo = detectConcurrentLogins(validUser._id, session.sessionId);
             const suspiciousCheck = await checkSuspiciousLogin(validUser._id, ip, device);
 
+            // Capture Source
+            const source = req.get('Origin') || req.get('Referer') || 'Unknown';
+
             // Log session action (Audit Log)
             await logSessionAction(
                 validUser._id,
@@ -516,7 +524,9 @@ export const Google = async (req, res, next) => {
                 location,
                 `Successful Google login with ${concurrentInfo.activeSessions} concurrent sessions`,
                 suspiciousCheck.isSuspicious,
-                suspiciousCheck.reason
+                suspiciousCheck.reason,
+                null,
+                { source }
             );
 
             // Log security event

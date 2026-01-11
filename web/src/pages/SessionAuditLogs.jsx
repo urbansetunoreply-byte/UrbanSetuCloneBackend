@@ -1957,6 +1957,13 @@ const SessionAuditLogs = () => {
                     </div>
 
                     <div className="flex flex-col gap-1">
+                      <span className="text-gray-500 text-xs font-semibold">Source (Origin):</span>
+                      <span className="font-medium text-gray-900 dark:text-white break-all text-xs">
+                        {selectedAuditLog.metadata?.source || 'Direct / Unknown'}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
                       <span className="text-gray-500 text-xs font-semibold">Device / User Agent:</span>
                       <span className="font-mono text-xs text-gray-700 dark:text-gray-300 break-all bg-white dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-600">
                         {selectedAuditLog.device}
