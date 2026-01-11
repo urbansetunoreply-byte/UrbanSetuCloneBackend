@@ -88,9 +88,6 @@ const SetuCoinCard = ({ balance = 0, streak = 0, expiryDate = null, loading = fa
                             <div className="inline-flex items-center gap-1.5 bg-black/10 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-semibold border border-white/5">
                                 <span>≈ ${usdValue}</span>
                             </div>
-                            <button onClick={() => setShowInfo(true)} className="ml-1 text-white/50 hover:text-white transition-colors">
-                                <FaQuestionCircle size={14} title={`${COIN_CONFIG.RATES.INR} Coins = ₹1 | ${COIN_CONFIG.RATES.USD} Coins = $1`} />
-                            </button>
                         </div>
                         {expiryDate && balance > 0 && (
                             <div className="mt-2 text-xs text-white/70 font-medium bg-black/10 inline-block px-2 py-1 rounded-md">
@@ -121,7 +118,7 @@ const SetuCoinCard = ({ balance = 0, streak = 0, expiryDate = null, loading = fa
 
             {/* Info Modal Overlay */}
             <SetuCoinInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} />
-        </div>
+        </div >
     );
 };
 
