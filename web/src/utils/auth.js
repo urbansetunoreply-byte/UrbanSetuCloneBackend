@@ -9,12 +9,14 @@ export const getAuthToken = () => {
 
 export const createAuthenticatedFetchOptions = (options = {}) => {
   const token = getAuthToken();
+  const sessionId = localStorage.getItem("sessionId");
 
   return {
     ...options,
     headers: {
       ...options.headers,
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(sessionId ? { 'X-Session-Id': sessionId } : {})
     }
   };
 };
@@ -38,4 +40,5 @@ export const isAuthenticated = () => {
 
 export const clearAuthData = () => {
   localStorage.removeItem("accessToken");
+  localStorage.removeItem("sessionId");
 };

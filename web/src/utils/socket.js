@@ -44,7 +44,7 @@ function registerUserRoom() {
     if (userId && socket && socket.connected) {
       socket.emit('registerUser', { userId });
     }
-  } catch (_) {}
+  } catch (_) { }
 }
 
 // Periodically ensure we're joined to the current session room (covers cases where cookie appears after connect)
@@ -52,7 +52,7 @@ let sessionRegisterInterval = null;
 function ensureSessionRoomRegistration() {
   if (sessionRegisterInterval) return;
   sessionRegisterInterval = setInterval(() => {
-    try { registerSessionRoom(); } catch (_) {}
+    try { registerSessionRoom(); } catch (_) { }
   }, 15000); // every 15s
 }
 
@@ -62,7 +62,7 @@ socket.on('connect', () => {
   registerSessionRoom();
   registerUserRoom();
   ensureSessionRoomRegistration();
-  
+
   // Re-register user room after connection to ensure authentication
   const token = getToken();
   if (token) {
@@ -87,12 +87,13 @@ socket.on('disconnect', () => {
 
 socket.on('connect_error', (error) => {
   console.log('[Socket] Connection error:', error);
-  
+
   // If token expired, try to refresh or ask user to sign in
   if (error.message && (error.message.includes('expired') || error.message.includes('jwt'))) {
     console.log('[Socket] Token expired, attempting to refresh...');
     // Clear expired token
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('sessionId');
     document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
     // Try to reconnect with new token if available
     const newToken = getToken();
@@ -109,7 +110,8 @@ socket.on('forceLogout', ({ reason }) => {
   // Clear auth and reload to sign-in
   try {
     localStorage.removeItem('accessToken');
-  } catch (_) {}
+    localStorage.removeItem('sessionId');
+  } catch (_) { }
   document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
   document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
   document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
@@ -121,7 +123,7 @@ socket.on('forceLogoutSession', ({ sessionId, reason }) => {
   const current = (document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1]) || null;
   if (current && sessionId && current === sessionId) {
     console.log('[Socket] Targeted force logout for this session:', reason);
-    try { localStorage.removeItem('accessToken'); } catch (_) {}
+    try { localStorage.removeItem('accessToken'); localStorage.removeItem('sessionId'); } catch (_) { }
     document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
     document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
     document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
@@ -146,7 +148,7 @@ export function reconnectSocket() {
     withCredentials: true,
     transports: ['websocket'],
   });
-  
+
   // Add socket event listeners for debugging
   socket.on('connect', () => {
     // Only log reconnection if there's a token (login) to reduce noise
@@ -155,7 +157,7 @@ export function reconnectSocket() {
     }
     registerSessionRoom();
     registerUserRoom();
-    
+
     // Re-register user room after reconnection
     if (token) {
       try {
@@ -178,12 +180,13 @@ export function reconnectSocket() {
 
   socket.on('connect_error', (error) => {
     console.log('[Socket] Connection error:', error);
-    
+
     // If token expired, try to refresh or ask user to sign in
     if (error.message && (error.message.includes('expired') || error.message.includes('jwt'))) {
       console.log('[Socket] Token expired, attempting to refresh...');
       // Clear expired token
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('sessionId');
       document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
       // Try to reconnect with new token if available
       const newToken = getToken();
@@ -196,7 +199,7 @@ export function reconnectSocket() {
 
   socket.on('forceLogout', ({ reason }) => {
     console.log('[Socket] Force logout received:', reason);
-    try { localStorage.removeItem('accessToken'); } catch (_) {}
+    try { localStorage.removeItem('accessToken'); localStorage.removeItem('sessionId'); } catch (_) { }
     document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
     document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
     document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
@@ -206,7 +209,7 @@ export function reconnectSocket() {
     const current = (document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1]) || null;
     if (current && sessionId && current === sessionId) {
       console.log('[Socket] Targeted force logout for this session:', reason);
-      try { localStorage.removeItem('accessToken'); } catch (_) {}
+      try { localStorage.removeItem('accessToken'); localStorage.removeItem('sessionId'); } catch (_) { }
       document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
       document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
       document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
