@@ -14,6 +14,14 @@ const VisitorTracker = () => {
         } catch { return null; }
     };
 
+    // Helper to get Data Sharing preference (Default true)
+    const getDataSharing = () => {
+        try {
+            const stored = localStorage.getItem('dataSharing');
+            return stored !== null ? stored === 'true' : true;
+        } catch { return true; }
+    };
+
     const maxScrollRef = useRef(0);
     const loadTimeRef = useRef(0);
     const interactionsRef = useRef([]);
@@ -53,6 +61,24 @@ const VisitorTracker = () => {
             errorsRef.current = [];
             resizeCountRef.current = 0;
 
+            const isDataSharingEnabled = getDataSharing();
+
+            // Construct metrics payload
+            const metricsPayload = {};
+
+            // Always track errors for site stability/improvement
+            if (errorsToSend.length > 0) {
+                metricsPayload.errors = errorsToSend;
+            }
+
+            // Conditionally track behavioral/performance analytics
+            if (isDataSharingEnabled) {
+                metricsPayload.scrollPercentage = quantizedScroll;
+                metricsPayload.loadTime = loadTimeRef.current;
+                if (interactionsToSend.length > 0) metricsPayload.interactions = interactionsToSend;
+                if (resizeCountToSend > 0) metricsPayload.resizeCount = resizeCountToSend;
+            }
+
             // Construct body
             const body = {
                 type,
@@ -60,13 +86,7 @@ const VisitorTracker = () => {
                 source: window.location.hostname,
                 referrer: document.referrer || 'Direct',
                 cookiePreferences: preferences || undefined,
-                metrics: {
-                    scrollPercentage: quantizedScroll,
-                    loadTime: loadTimeRef.current,
-                    interactions: interactionsToSend.length > 0 ? interactionsToSend : undefined,
-                    errors: errorsToSend.length > 0 ? errorsToSend : undefined,
-                    resizeCount: resizeCountToSend > 0 ? resizeCountToSend : undefined
-                }
+                metrics: Object.keys(metricsPayload).length > 0 ? metricsPayload : undefined
             };
 
             // Capture UTM parameters from URL
