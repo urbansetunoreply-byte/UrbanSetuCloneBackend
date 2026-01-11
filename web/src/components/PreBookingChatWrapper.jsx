@@ -275,6 +275,32 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
         }
     };
 
+    // Helper for Anonymized Names
+    const getAnonymizedName = (userId) => {
+        if (!userId) return "Anonymous User";
+        const FANTASY_NAMES = [
+            "Urban Explorer", "Dream Home Seeker", "City Dweller", "Property Enthusiast",
+            "Skyline Admirer", "Metro Nomad", "Estate Visionary", "Loft Lover",
+            "Home Hunter", "Space Scout", "Modern Resident", "Vibrant Villager",
+            "Cosmo Dweller", "Suburban Soul", "Downtown Dreamer", "Penthouse Pro",
+            "Cottage Core", "Villa Visionary", "Duplex Diver", "Studio Star",
+            "Bungalow Buff", "Mansion Master", "Terrace Traveler", "Garden Guru",
+            "Balcony Boss", "High-Rise Hero", "Community Connector", "Neighborhood Nomad",
+            "Street Smart", "Avenue Ace", "Lane Leader", "Boulevard Baron",
+            "Plaza Pioneer", "Square Scout", "District Diver", "Zone Zealot",
+            "Quarter Quest", "Sector Seeker", "Block Buster", "Estate Expert",
+            "Harbor Hero", "River Resident", "Lake Lover", "Mountain Mover",
+            "Valley Voyager", "Cloud Chaser", "Star Gazer", "Horizon Hunter",
+            "Dawn Dreamer", "Dusk Dweller"
+        ];
+        let hash = 0;
+        for (let i = 0; i < userId.length; i++) {
+            hash = userId.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % FANTASY_NAMES.length;
+        return FANTASY_NAMES[index];
+    };
+
     // Render Functions
     const renderInbox = () => (
         <div className="flex flex-col h-full relative">
@@ -341,8 +367,9 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
                 {isLoading ? (
-                    <div className="flex justify-center items-center h-full">
+                    <div className="flex flex-col justify-center items-center h-full gap-2">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm animate-pulse">Loading inquiries...</p>
                     </div>
                 ) : inboxChats.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-gray-500 opacity-60">
@@ -353,6 +380,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                     inboxChats.map(chat => {
                         const otherParticipant = chat.participants.find(p => p._id !== currentUser._id);
                         const isSelected = selectedChatIds.has(chat._id);
+                        const displayName = getAnonymizedName(otherParticipant?._id);
 
                         return (
                             <div
@@ -378,11 +406,11 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
 
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0">
-                                        {otherParticipant?.username?.[0]?.toUpperCase() || <FaUser />}
+                                        {displayName[0]}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-baseline">
-                                            <h4 className="font-medium text-gray-900 dark:text-white truncate">{otherParticipant?.username}</h4>
+                                            <h4 className="font-medium text-gray-900 dark:text-white truncate">{displayName}</h4>
                                             <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
                                                 {chat.lastMessage?.timestamp && new Date(chat.lastMessage.timestamp).toLocaleDateString()}
                                             </span>
@@ -460,7 +488,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
 
                             <div className="leading-tight">
                                 <div className="font-semibold text-sm">
-                                    {isOwner ? 'Prospective Buyer' : 'Property Owner'}
+                                    {isOwner ? getAnonymizedName(otherParticipant?._id) : 'Property Owner'}
                                 </div>
                                 <div className="text-[10px] opacity-90 flex items-center gap-1.5">
                                     <FaCircle className="w-2 h-2 text-green-400" /> Online
@@ -481,8 +509,9 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-100 dark:bg-gray-900">
                     {isLoading ? (
-                        <div className="flex justify-center items-center h-full">
+                        <div className="flex flex-col justify-center items-center h-full gap-2">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm animate-pulse">Loading conversation...</p>
                         </div>
                     ) : messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-gray-400">
