@@ -44,10 +44,12 @@ class GlobalErrorBoundary extends React.Component {
         // Read auth state
         const token = localStorage.getItem('accessToken');
         const sessionId = localStorage.getItem('sessionId');
+        const refreshToken = localStorage.getItem('refreshToken');
         const params = new URLSearchParams(window.location.search);
 
         if (token) params.set('transfer_token', token);
         if (sessionId) params.set('transfer_session', sessionId);
+        if (refreshToken) params.set('transfer_refresh', refreshToken);
 
         const newSearch = params.toString();
         const suffix = newSearch ? `?${newSearch}` : '';

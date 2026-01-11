@@ -549,6 +549,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
                 if (data.sessionId) localStorage.setItem('sessionId', data.sessionId);
+                if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
                 localStorage.setItem('login', Date.now()); // Notify other tabs
             }
 

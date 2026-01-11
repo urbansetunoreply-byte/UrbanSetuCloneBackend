@@ -28,11 +28,13 @@ export const authenticatedFetch = async (url, options = {}) => {
   if (response.status === 401 && !options._retry) {
     try {
       const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const refreshToken = localStorage.getItem('refreshToken');
       const refreshRes = await fetch(`${apiUrl}/api/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
+        body: JSON.stringify({ refreshToken }),
         credentials: 'include'
       });
 
@@ -77,4 +79,5 @@ export const isAuthenticated = () => {
 export const clearAuthData = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("sessionId");
+  localStorage.removeItem("refreshToken");
 };

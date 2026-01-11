@@ -977,14 +977,17 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const transferToken = params.get('transfer_token');
     const transferSession = params.get('transfer_session');
+    const transferRefresh = params.get('transfer_refresh');
 
     if (transferToken) {
       localStorage.setItem('accessToken', transferToken);
       if (transferSession) localStorage.setItem('sessionId', transferSession);
+      if (transferRefresh) localStorage.setItem('refreshToken', transferRefresh);
 
       // Clean URL
       params.delete('transfer_token');
       params.delete('transfer_session');
+      params.delete('transfer_refresh');
       const newSearch = params.toString();
       const newPath = window.location.pathname + (newSearch ? `?${newSearch}` : '');
       window.history.replaceState({}, '', newPath);

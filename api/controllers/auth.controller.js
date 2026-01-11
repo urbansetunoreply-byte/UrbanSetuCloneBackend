@@ -1552,6 +1552,7 @@ export const verifyLoginOTP = async (req, res, next) => {
             success: true,
             message: "Login successful",
             token: accessToken, // Keep for backward compatibility
+            refreshToken, // Send for cross-domain storage
             role: user.role,
             isDefaultAdmin: user.isDefaultAdmin,
             adminApprovalStatus: user.adminApprovalStatus,
