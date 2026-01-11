@@ -1889,15 +1889,15 @@ const SessionAuditLogs = () => {
                             <div className="flex flex-wrap items-center gap-2 mb-1">
                               <p className="text-sm font-bold text-gray-800 dark:text-white">{pv.path}</p>
                               {pv.scrollPercentage > 0 && (
-                                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-blue-200 dark:border-blue-800">
+                                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-blue-200 dark:border-blue-800 cursor-help" title={`Max Scroll Depth: ${pv.scrollPercentage}%`}>
                                   <FaArrowDown className="text-[8px]" /> Scrolled {pv.scrollPercentage}%
                                 </span>
                               )}
                               {pv.loadTime > 0 && (
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border ${pv.loadTime < 1000 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800' :
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border cursor-help ${pv.loadTime < 1000 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800' :
                                   pv.loadTime < 3000 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800' :
                                     'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
-                                  }`}>
+                                  }`} title={`Page Load Time: ${Math.round(pv.loadTime)}ms`}>
                                   <FaClock className="text-[8px]" /> {Math.round(pv.loadTime)}ms
                                 </span>
                               )}
