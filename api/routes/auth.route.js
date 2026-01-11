@@ -17,12 +17,12 @@ const router = express.Router()
 // CSRF token endpoint
 router.get("/csrf-token", getCSRFToken)
 
-router.post("/signup", signUpRateLimit, verifyCSRFToken, validateRecaptcha({ required: true }), SignUp)
-router.post("/signin", signInRateLimit, bruteForceProtection, verifyCSRFToken, conditionalRecaptcha((req) => {
+router.post("/signup", signUpRateLimit, validateRecaptcha({ required: true }), SignUp)
+router.post("/signin", signInRateLimit, bruteForceProtection, conditionalRecaptcha((req) => {
   const identifier = req.ip || req.connection.remoteAddress;
   return getFailedAttempts(identifier) >= 3;
 }), SignIn)
-router.post("/google", signInRateLimit, bruteForceProtection, verifyCSRFToken, conditionalRecaptcha((req) => {
+router.post("/google", signInRateLimit, bruteForceProtection, conditionalRecaptcha((req) => {
   const identifier = req.ip || req.connection.remoteAddress;
   return getFailedAttempts(identifier) >= 3;
 }), Google)
