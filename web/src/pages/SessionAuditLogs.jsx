@@ -1610,6 +1610,9 @@ const SessionAuditLogs = () => {
                         }
                         params.append('startDate', exportStartDate);
                         params.append('endDate', exportEndDate);
+                      } else {
+                        // Explicitly set dateRange to 'all' to override backend defaults (e.g. visitors defaults to 'today')
+                        params.append('dateRange', 'all');
                       }
 
                       const endpoint = activeTab === 'audit'
