@@ -37,6 +37,12 @@ export const initiateOrGetChat = async (req, res, next) => {
             chat = await PreBookingChat.findById(chat._id)
                 .populate('participants', 'username avatar email')
                 .populate('listingId', 'name address imageSqft');
+        } else {
+            // Filter messages if chat exists and was cleared
+            const clearance = chat.clearedBy.find(c => c.userId.toString() === userId);
+            if (clearance) {
+                chat.messages = chat.messages.filter(m => new Date(m.timestamp) > new Date(clearance.clearedAt));
+            }
         }
 
         res.status(200).json({ success: true, chat });
@@ -146,7 +152,15 @@ export const getUserChats = async (req, res, next) => {
             .populate('listingId', 'name address imageSqft')
             .sort({ updatedAt: -1 });
 
-        res.status(200).json({ success: true, chats });
+        const chatsWithFilteredPreviews = chats.map(chat => {
+            const clearance = chat.clearedBy.find(c => c.userId.toString() === userId);
+            if (clearance && chat.lastMessage && new Date(chat.lastMessage.timestamp) <= new Date(clearance.clearedAt)) {
+                chat.lastMessage = null;
+            }
+            return chat;
+        });
+
+        res.status(200).json({ success: true, chats: chatsWithFilteredPreviews });
     } catch (error) {
         next(error);
     }
@@ -167,6 +181,12 @@ export const getChatDetails = async (req, res, next) => {
 
         if (!chat.participants.some(p => p._id.toString() === userId)) {
             return res.status(403).json({ success: false, message: 'Unauthorized' });
+        }
+
+        // Filter messages based on clearance
+        const clearance = chat.clearedBy.find(c => c.userId.toString() === userId);
+        if (clearance) {
+            chat.messages = chat.messages.filter(m => new Date(m.timestamp) > new Date(clearance.clearedAt));
         }
 
         // Mark messages as read if receiver is viewing
@@ -207,15 +227,34 @@ export const clearChat = async (req, res, next) => {
             return res.status(403).json({ success: false, message: 'Unauthorized' });
         }
 
-        chat.messages = [];
-        chat.lastMessage = null;
+        // Update clearedBy for this user
+        const clearIndex = chat.clearedBy.findIndex(c => c.userId.toString() === userId);
+        if (clearIndex > -1) {
+            chat.clearedBy[clearIndex].clearedAt = new Date();
+        } else {
+            chat.clearedBy.push({ userId, clearedAt: new Date() });
+        }
+
         await chat.save();
 
-        // Notify via socket
-        const io = req.app.get('io');
-        chat.participants.forEach(p => {
-            io.to(p._id.toString()).emit('chat_cleared', { chatId });
+        // Notify via socket - frontend handles "cleared" by clearing local state
+        // But now, we might not need to emit 'chat_cleared' to everyone, only to the user who cleared?
+        // Or fetch again?
+        // If I emit 'chat_cleared', the other user might also see it cleared if they are listening?
+        // The previous implementation of `handleMessage` listeners:
+        /*
+        socket.on('chat_cleared', ({ chatId }) => {
+            if (activeChat && activeChat._id === chatId) {
+                setMessages([]);
+            }
         });
+        */
+        // This would clear it for everyone listening. Bad.
+        // I should emit a custom event like 'my_chat_cleared' or just let the frontend handle the success response.
+        // But for multi-device sync, I should emit to this user's rooms.
+
+        const io = req.app.get('io');
+        io.to(userId).emit('chat_cleared', { chatId });
 
         res.status(200).json({ success: true, message: 'Chat cleared' });
 

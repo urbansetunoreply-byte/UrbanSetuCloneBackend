@@ -40,7 +40,17 @@ const preBookingChatSchema = new mongoose.Schema({
         timestamp: Date,
         sender: mongoose.Schema.Types.ObjectId,
         read: Boolean
-    }
+    },
+    clearedBy: [{
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        clearedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }]
 }, { timestamps: true });
 
 // Index for efficient querying by user and listing
