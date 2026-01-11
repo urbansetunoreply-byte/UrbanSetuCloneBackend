@@ -32,22 +32,22 @@ const AdminCoinCard = ({ loading: parentLoading }) => {
                 <div className="p-6 space-y-8">
                     <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
                             <div className="space-y-2">
-                                <div className="h-4 w-32 bg-gray-200 rounded-lg"></div>
-                                <div className="h-2 w-24 bg-gray-100 rounded-lg"></div>
+                                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                <div className="h-2 w-24 bg-gray-100 dark:bg-gray-600 rounded-lg"></div>
                             </div>
                         </div>
-                        <div className="h-10 w-32 bg-gray-200 rounded-2xl"></div>
+                        <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
                     </div>
                     <div className="grid grid-cols-2 gap-8">
                         <div className="space-y-3">
-                            <div className="h-2 w-24 bg-gray-100 rounded-lg"></div>
-                            <div className="h-8 w-32 bg-gray-200 rounded-xl"></div>
+                            <div className="h-2 w-24 bg-gray-100 dark:bg-gray-600 rounded-lg"></div>
+                            <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
                         </div>
                         <div className="space-y-3 flex flex-col items-end">
-                            <div className="h-2 w-24 bg-gray-100 rounded-lg"></div>
-                            <div className="h-6 w-16 bg-gray-200 rounded-xl"></div>
+                            <div className="h-2 w-24 bg-gray-100 dark:bg-gray-600 rounded-lg"></div>
+                            <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
                         </div>
                     </div>
                 </div>
