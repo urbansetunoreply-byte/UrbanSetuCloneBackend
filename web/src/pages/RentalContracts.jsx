@@ -364,6 +364,18 @@ export default function RentalContracts() {
               Browse Properties
             </button>
           </div>
+        ) : filteredContracts.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+            <FaFileContract className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No {filter !== 'all' ? getStatusLabel(filter).toLowerCase() : ''} Contracts Found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">You don't have any contracts matching this filter.</p>
+            <button
+              onClick={() => setFilter('all')}
+              className="px-6 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition"
+            >
+              Clear Filter
+            </button>
+          </div>
         ) : (
           <div className="space-y-4">
             {filteredContracts.map((contract) => {
