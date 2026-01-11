@@ -59,6 +59,11 @@ const SessionAuditLogs = () => {
   const [selectedAuditLog, setSelectedAuditLog] = useState(null);
   const [showAuditLogModal, setShowAuditLogModal] = useState(false);
 
+  // Drill-down Modal State
+  const [drillDownData, setDrillDownData] = useState([]);
+  const [drillDownType, setDrillDownType] = useState(''); // 'interactions' or 'errors'
+  const [showDrillDownModal, setShowDrillDownModal] = useState(false);
+
   // New Audit Log Filters
   const [showUserActions, setShowUserActions] = useState(false); // Toggle for rootadmin to see activity logs
 
@@ -1897,14 +1902,22 @@ const SessionAuditLogs = () => {
                                 </span>
                               )}
                               {pv.interactions?.length > 0 && (
-                                <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-purple-200 dark:border-purple-800" title={pv.interactions.map(i => i.element).join(', ')}>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setDrillDownData(pv.interactions); setDrillDownType('interactions'); setShowDrillDownModal(true); }}
+                                  className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-purple-200 dark:border-purple-800 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
+                                  title="Click to view details"
+                                >
                                   <FaFingerprint className="text-[8px]" /> {pv.interactions.length} Actions
-                                </span>
+                                </button>
                               )}
                               {pv.errors?.length > 0 && (
-                                <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-red-200 dark:border-red-800" title={pv.errors.map(e => e.message).join('\n')}>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setDrillDownData(pv.errors); setDrillDownType('errors'); setShowDrillDownModal(true); }}
+                                  className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 border border-red-200 dark:border-red-800 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
+                                  title="Click to view errors"
+                                >
                                   <FaExclamationTriangle className="text-[8px]" /> {pv.errors.length} Errors
-                                </span>
+                                </button>
                               )}
                             </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">{pv.title || 'Page View'}</p>
@@ -2048,7 +2061,71 @@ const SessionAuditLogs = () => {
               </div>
             </div>
           </div>
-        )
+        )}
+
+      {/* Detailed Drill-Down Modal (Interactions/Errors) */}
+      {showDrillDownModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-xl ${drillDownType === 'interactions' ? 'bg-purple-100 text-purple-600' : 'bg-red-100 text-red-600'}`}>
+                  {drillDownType === 'interactions' ? <FaFingerprint className="text-lg" /> : <FaExclamationTriangle className="text-lg" />}
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white capitalize">
+                  {drillDownType === 'interactions' ? 'User Interactions' : 'Error Logs'}
+                </h3>
+              </div>
+              <button onClick={() => setShowDrillDownModal(false)} className="text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full p-2 transition-colors">
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="p-0 overflow-y-auto custom-scrollbar">
+              {drillDownData.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">No details available.</div>
+              ) : (
+                <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {drillDownData.map((item, idx) => (
+                    <div key={idx} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors flex gap-3">
+                      <div className="mt-1">
+                        <div className={`w-2 h-2 rounded-full ${drillDownType === 'interactions' ? 'bg-purple-500' : 'bg-red-500'}`}></div>
+                      </div>
+                      <div className="flex-1">
+                        {drillDownType === 'interactions' ? (
+                          <>
+                            <p className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                              {item.action || 'Click'} on <span className="font-mono text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-300 px-1.5 py-0.5 rounded">{item.element || 'Unknown'}</span>
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm font-bold text-red-600 dark:text-red-400 break-words">
+                              {item.message || 'Unknown Error'}
+                            </p>
+                          </>
+                        )}
+                        <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                          <FaClock className="text-[10px]" /> {new Date(item.timestamp).toLocaleTimeString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-5 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-end">
+              <button
+                onClick={() => setShowDrillDownModal(false)}
+                className="px-5 py-2 bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )
       }
     </div>
   );
