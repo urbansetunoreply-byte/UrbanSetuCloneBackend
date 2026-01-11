@@ -8,8 +8,17 @@ const sessionAuditLogSchema = new mongoose.Schema({
   },
   action: {
     type: String,
-    enum: ['login', 'logout', 'suspicious_login', 'forced_logout', 'session_expired', 'session_cleaned'],
+    enum: [
+      'login', 'logout', 'suspicious_login', 'forced_logout', 'session_expired', 'session_cleaned',
+      'view_property', 'search', 'contact_agent', 'download_route', 'profile_update',
+      'create_listing', 'update_listing', 'delete_listing'
+    ],
     required: true
+  },
+  metadata: {
+    type: Map,
+    of: mongoose.Schema.Types.Mixed,
+    required: false
   },
   role: {
     type: String,

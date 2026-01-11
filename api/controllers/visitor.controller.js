@@ -18,7 +18,7 @@ const getStartOfDay = (date = new Date()) => {
 // Track visitor when they accept cookies
 export const trackVisitor = async (req, res, next) => {
   try {
-    const { cookiePreferences, referrer, page, source } = req.body;
+    const { cookiePreferences, referrer, page, source, utm } = req.body;
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent') || 'Unknown';
 
@@ -56,7 +56,12 @@ export const trackVisitor = async (req, res, next) => {
         visitDate,
         referrer: referrer || 'Direct',
         page: page || '/',
-        source: source || 'Unknown'
+        source: source || 'Unknown',
+        // Advanced Tracking
+        pageViews: [{ path: page || '/', title: '', timestamp: new Date() }],
+        sessionStart: new Date(),
+        lastActive: new Date(),
+        utm: utm || {}
       });
 
       res.status(201).json({
@@ -71,21 +76,29 @@ export const trackVisitor = async (req, res, next) => {
     } catch (error) {
       // If duplicate (visitor already tracked today), update preferences and device info
       if (error.code === 11000) {
+        // Track page view and update last active
         await VisitorLog.findOneAndUpdate(
           { fingerprint, visitDate },
           {
-            device,
-            browser: browserInfo.name,
-            browserVersion: browserInfo.version,
-            os,
-            deviceType,
-            cookiePreferences: cookiePreferences || {
-              necessary: true,
-              analytics: false,
-              marketing: false,
-              functional: false
+            $set: {
+              device,
+              browser: browserInfo.name,
+              browserVersion: browserInfo.version,
+              os,
+              deviceType,
+              cookiePreferences: cookiePreferences || {
+                necessary: true,
+                analytics: false,
+                marketing: false,
+                functional: false
+              },
+              timestamp: new Date(),
+              lastActive: new Date(),
+              page: page || undefined // Update current page
             },
-            timestamp: new Date()
+            $push: {
+              pageViews: { path: page || '/', title: '', timestamp: new Date() }
+            }
           }
         );
 

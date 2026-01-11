@@ -72,6 +72,29 @@ const visitorLogSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  // Full Clickstream / Page Views in this session
+  pageViews: [{
+    path: { type: String, required: true },
+    title: { type: String },
+    timestamp: { type: Date, default: Date.now }
+  }],
+  // Session Timing
+  sessionStart: {
+    type: Date,
+    default: Date.now
+  },
+  lastActive: {
+    type: Date,
+    default: Date.now
+  },
+  // UTM / Marketing Parameters
+  utm: {
+    source: String,
+    medium: String,
+    campaign: String,
+    term: String,
+    content: String
+  },
   // Source domain (e.g. urbansetu.vercel.app or urbansetuglobal.onrender.com)
   source: {
     type: String,
