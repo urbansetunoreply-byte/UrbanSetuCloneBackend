@@ -918,6 +918,9 @@ export default function Profile() {
       // Step 1: Verify password first
       const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ password: updatePassword })
       });
 

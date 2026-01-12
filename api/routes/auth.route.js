@@ -170,6 +170,11 @@ router.post('/password-lockouts/unlock-identifier', verifyToken, async (req, res
 router.post('/verify-password', verifyToken, async (req, res) => {
   try {
     const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ success: false, message: 'Password is required' });
+    }
+
     if (!req.user || !req.user._id) {
       return res.status(401).json({ success: false, message: 'Not authenticated' });
     }
