@@ -618,6 +618,7 @@ export const Google = async (req, res, next) => {
                 token: accessToken, // Keep for backward compatibility
                 refreshToken, // Send for cross-domain storage
                 sessionId: session.sessionId,
+                isNewUser: false
             });
         }
         else {
@@ -798,6 +799,7 @@ export const Google = async (req, res, next) => {
                 gender: newUser.gender,
                 token: accessToken, // Keep for backward compatibility
                 refreshToken, // Send for cross-domain storage
+                isNewUser: true,
                 sessionId: session.sessionId
             });
         }

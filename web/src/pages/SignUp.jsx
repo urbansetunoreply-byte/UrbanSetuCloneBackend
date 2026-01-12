@@ -541,7 +541,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
       <>
         <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
           {showLoader ? (
-            <PremiumLoader onComplete={finalizeLogin} />
+            <PremiumLoader mode={(pendingLoginData?.isNewUser === false) ? 'signin' : 'signup'} onComplete={finalizeLogin} />
           ) : (
             <div className="w-full max-w-[480px] animate-fade-in">
               <div className="text-center mb-10">
@@ -970,7 +970,6 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                     onAuthSuccess={(data) => {
                       setPendingLoginData(data);
                       setShowLoader(true);
-                      dispatch(signInSuccess(data));
                     }}
                   />
 

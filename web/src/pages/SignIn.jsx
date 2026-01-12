@@ -681,7 +681,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     };
 
     if (showLoader) {
-        return <PremiumLoader onComplete={finalizeLogin} />;
+        return <PremiumLoader mode={pendingLoginData?.isNewUser ? 'signup' : 'signin'} onComplete={finalizeLogin} />;
     }
 
     return (
@@ -1089,7 +1089,6 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             onAuthSuccess={(data) => {
                                 setPendingLoginData(data);
                                 setShowLoader(true);
-                                dispatch(signInSuccess(data));
                             }}
                         />
 

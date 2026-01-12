@@ -2,15 +2,26 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
-const PremiumLoader = ({ onComplete }) => {
+const PremiumLoader = ({ onComplete, mode = 'signin' }) => {
     const [currentStep, setCurrentStep] = useState(0);
-    const steps = [
+
+    const signinSteps = [
         "Signing you in...",
         "Activating SetuIntelligence...",
         "Analyzing User Preferences...",
         "Finalizing Data...",
         "Welcome to UrbanSetu."
     ];
+
+    const signupSteps = [
+        "Creating your account...",
+        "Setting up your personal space...",
+        "Activating SetuIntelligence...",
+        "Finalizing your profile...",
+        "Welcome to the UrbanSetu community."
+    ];
+
+    const steps = mode === 'signup' ? signupSteps : signinSteps;
 
     useEffect(() => {
         if (currentStep < steps.length) {
