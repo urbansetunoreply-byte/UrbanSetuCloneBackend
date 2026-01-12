@@ -19,6 +19,7 @@ const AdminFAQs = () => {
   const [filterCategory, setFilterCategory] = useState('all');
   const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
+  const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -116,7 +117,9 @@ const AdminFAQs = () => {
       if (showLoading) setLoading(true);
       const params = new URLSearchParams({
         page: pagination.current,
-        limit: 10
+        limit: 10,
+        isAdmin: 'true', // added to ensure hidden/inactive FAQs are returned
+        includeInactive: 'true'
       });
 
       if (searchTerm) params.append('search', searchTerm);
@@ -239,21 +242,30 @@ const AdminFAQs = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this FAQ?')) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/faqs/${id}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
+  const handleDeleteClick = (id) => {
+    setDeleteModal({ show: true, id });
+  };
 
-        if (response.ok) {
-          fetchFAQs();
-        }
-      } catch (error) {
-        console.error('Error deleting FAQ:', error);
+  const confirmDelete = async () => {
+    if (!deleteModal.id) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/faqs/${deleteModal.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        fetchFAQs();
+        setDeleteModal({ show: false, id: null });
       }
+    } catch (error) {
+      console.error('Error deleting FAQ:', error);
     }
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ show: false, id: null });
   };
 
   const toggleActive = async (faq) => {
@@ -464,7 +476,7 @@ const AdminFAQs = () => {
                           </button>
                         </td>
                         <td className="px-8 py-6 text-right">
-                          <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
+                          <div className="flex justify-end gap-2">
                             {faq.propertyId && (
                               <button
                                 onClick={() => handleViewProperty(faq)}
@@ -482,7 +494,7 @@ const AdminFAQs = () => {
                               <FaEdit className="text-xs" />
                             </button>
                             <button
-                              onClick={() => handleDelete(faq._id)}
+                              onClick={() => handleDeleteClick(faq._id)}
                               className="p-2.5 bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-800"
                               title="Erase Record"
                             >
@@ -532,7 +544,7 @@ const AdminFAQs = () => {
                         <button onClick={() => handleEdit(faq)} className="p-3 bg-gray-100 dark:bg-gray-700 rounded-2xl text-gray-600 dark:text-gray-300">
                           <FaEdit />
                         </button>
-                        <button onClick={() => handleDelete(faq._id)} className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-2xl text-rose-500">
+                        <button onClick={() => handleDeleteClick(faq._id)} className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-2xl text-rose-500">
                           <FaTrash />
                         </button>
                       </div>
@@ -699,6 +711,37 @@ const AdminFAQs = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteModal.show && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm w-full border border-gray-100 dark:border-gray-700 animate-scale-in">
+              <div className="flex flex-col items-center text-center">
+                <div className="bg-rose-100 dark:bg-rose-900/30 p-4 rounded-full mb-4">
+                  <FaTrash className="text-2xl text-rose-600 dark:text-rose-400" />
+                </div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Delete Confirmation</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">
+                  Are you sure you want to erase this FAQ record permanently? This action cannot be undone.
+                </p>
+                <div className="flex gap-4 w-full">
+                  <button
+                    onClick={closeDeleteModal}
+                    className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="flex-1 px-4 py-3 bg-rose-600 text-white rounded-xl font-bold text-sm hover:bg-rose-700 shadow-lg shadow-rose-600/30 transition-all"
+                  >
+                    Yes, Delete
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
