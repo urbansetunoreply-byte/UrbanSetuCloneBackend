@@ -924,7 +924,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Critical Operations</h2>
             </div>
-            <span className="text-xs sm:text-sm text-gray-500">(Requires Immediate Attention)</span>
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">(Requires Immediate Attention)</span>
           </div>
 
           {/* Security & Fraud Monitoring */}
@@ -940,7 +940,7 @@ export default function AdminDashboard() {
                   <FaShieldAlt className="text-2xl text-red-600" />
                 </div>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 Users temporarily locked from OTP requests
               </div>
             </div>
@@ -956,7 +956,7 @@ export default function AdminDashboard() {
                   <FaLock className="text-2xl text-orange-600" />
                 </div>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 Accounts locked due to failed login attempts
               </div>
             </div>
@@ -972,7 +972,7 @@ export default function AdminDashboard() {
                   <FaExclamationTriangle className="text-2xl text-purple-600" />
                 </div>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 Failed OTP verification attempts
               </div>
             </div>
@@ -988,7 +988,7 @@ export default function AdminDashboard() {
                   <FaSync className="text-2xl text-blue-600" />
                 </div>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 OTP requests made in recent activity
               </div>
             </div>
@@ -1159,7 +1159,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Core Business Metrics</h2>
             </div>
-            <span className="text-xs sm:text-sm text-gray-500">(Essential for Platform Health)</span>
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">(Essential for Platform Health)</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
@@ -1276,7 +1276,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Market Performance & Insights</h2>
             </div>
-            <span className="text-xs sm:text-sm text-gray-500">(Business Intelligence)</span>
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">(Business Intelligence)</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -1428,7 +1428,7 @@ export default function AdminDashboard() {
             </div>
             <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Analytical Insights</h2>
           </div>
-          <span className="text-xs sm:text-sm text-gray-500">(Strategic Decision Support)</span>
+          <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">(Strategic Decision Support)</span>
         </div>
 
         {/* Performance & Sentiment Analysis */}
@@ -1731,7 +1731,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Detailed Analytics</h2>
             </div>
-            <span className="text-xs sm:text-sm text-gray-500">(Deep Analysis & Historical Data)</span>
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">(Deep Analysis & Historical Data)</span>
           </div>
 
           {/* Top Rated Properties */}
