@@ -673,7 +673,7 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search Property..."
                   value={searchTerm}
                   onChange={handleSearchInputChange}
                   onFocus={handleSearchInputFocus}
