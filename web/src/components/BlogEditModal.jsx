@@ -127,6 +127,23 @@ const BlogEditModal = ({
     }
   };
 
+  const addTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, tagInput.trim()]
+      }));
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index)
+    }));
+  };
+
   // Keep thumbnail upload as is
   const handleThumbnailUpload = async (e) => {
     // ... existing logic ...
