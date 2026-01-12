@@ -434,7 +434,7 @@ export default function AdminHeader() {
                       <input
                         ref={searchInputRef}
                         type="text"
-                        placeholder="Search Property..."
+                        placeholder="Search Properties..."
                         value={searchTerm}
                         onChange={handleSearchInputChange}
                         onFocus={handleSearchInputFocus}
@@ -506,7 +506,7 @@ export default function AdminHeader() {
                     <form onSubmit={handleSearch} className={`flex items-center bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden focus-within:ring-2 ${getSearchFocusRingColor()} focus-within:bg-white dark:focus-within:bg-gray-700 transition-all`}>
                       <input
                         type="text"
-                        placeholder="Search properties..."
+                        placeholder="Search Properties..."
                         value={searchTerm}
                         onChange={handleSearchInputChange}
                         onFocus={handleSearchInputFocus}
