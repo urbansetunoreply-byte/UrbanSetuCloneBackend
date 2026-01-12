@@ -282,7 +282,12 @@ const AdminFAQs = () => {
       });
 
       if (response.ok) {
-        fetchFAQs();
+        // Update local state to reflect change immediately without refetching
+        setFaqs(prevFaqs =>
+          prevFaqs.map(f =>
+            f._id === faq._id ? { ...f, isActive: !f.isActive } : f
+          )
+        );
       } else {
         const errorData = await response.json();
         alert(`Error: ${errorData.message || 'Failed to toggle FAQ status'}`);
