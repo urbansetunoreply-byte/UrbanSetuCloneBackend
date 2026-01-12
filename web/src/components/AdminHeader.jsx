@@ -755,7 +755,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
         onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
       >
         <LogOut className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} />
-        <span>Sign Out</span>
+        {mobile && <span>Sign Out</span>}
       </li>
 
       {/* Profile avatar for desktop/tablet */}
