@@ -1157,7 +1157,7 @@ export default function AdminDashboard() {
               <div className="p-2 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg">
                 <FaChartLine className="text-white text-xl" />
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Core Business Metrics</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Core Business Metrics</h2>
             </div>
             <span className="text-xs sm:text-sm text-gray-500">(Essential for Platform Health)</span>
           </div>
@@ -1176,7 +1176,7 @@ export default function AdminDashboard() {
               </div>
               {currentUser?.role === 'rootadmin' && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Admins:</span>
+                  <span className="text-gray-500 dark:text-gray-400">Admins:</span>
                   <span className="font-semibold text-blue-600">{analytics.totalAdmins}</span>
                 </div>
               )}
@@ -1203,15 +1203,15 @@ export default function AdminDashboard() {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">For Sale:</span>
+                  <span className="text-gray-500 dark:text-gray-400">For Sale:</span>
                   <span className="font-semibold text-green-600">{analytics.listingStats.sale}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">For Rent:</span>
+                  <span className="text-gray-500 dark:text-gray-400">For Rent:</span>
                   <span className="font-semibold text-green-600">{analytics.listingStats.rent}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Offers:</span>
+                  <span className="text-gray-500 dark:text-gray-400">Offers:</span>
                   <span className="font-semibold text-orange-600">{analytics.listingStats.offer}</span>
                 </div>
               </div>
@@ -1233,7 +1233,7 @@ export default function AdminDashboard() {
                   <FaEye className="text-2xl text-rose-600" />
                 </div>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 Average views per property listing
               </div>
             </div>
@@ -1249,18 +1249,18 @@ export default function AdminDashboard() {
                   <FaLock className="text-2xl text-indigo-600" />
                 </div>
               </div>
-              <div className="space-y-1 text-xs text-gray-600">
+              <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
                 <div className="flex items-center justify-between">
                   <span>Reserved</span>
-                  <span className="font-semibold text-gray-800">{rentLockStats.reserved || 0}</span>
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">{rentLockStats.reserved || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Under Contract</span>
-                  <span className="font-semibold text-gray-800">{rentLockStats.under_contract || 0}</span>
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">{rentLockStats.under_contract || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Active Rentals</span>
-                  <span className="font-semibold text-gray-800">{activeRentalCount}</span>
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">{activeRentalCount}</span>
                 </div>
               </div>
             </div>
@@ -1274,14 +1274,14 @@ export default function AdminDashboard() {
               <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
                 <FaChartLine className="text-white text-xl" />
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Market Performance & Insights</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Market Performance & Insights</h2>
             </div>
             <span className="text-xs sm:text-sm text-gray-500">(Business Intelligence)</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-green-600 mr-2" /> Price Statistics</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-green-600 mr-2" /> Price Statistics</h3>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Min</p>
@@ -1296,7 +1296,7 @@ export default function AdminDashboard() {
                   <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 break-all">₹{analytics.priceStats.max.toLocaleString('en-IN')}</p>
                 </div>
               </div>
-              <p className="mt-4 text-sm text-gray-600"><span className="font-semibold text-green-700">{analytics.priceStats.discountedCount}</span> listings currently on discount</p>
+              <p className="mt-4 text-sm text-gray-600 dark:text-gray-400"><span className="font-semibold text-green-700">{analytics.priceStats.discountedCount}</span> listings currently on discount</p>
             </div>
 
             <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
