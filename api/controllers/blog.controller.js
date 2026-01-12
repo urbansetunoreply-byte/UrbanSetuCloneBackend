@@ -4,7 +4,7 @@ import User from '../models/user.model.js';
 import BlogLike from '../models/blogLike.model.js';
 import BlogView from '../models/blogView.model.js';
 import crypto from 'crypto';
-import { sendCommentEditedEmail, sendCommentDeletedEmail } from '../utils/emailService.js';
+import { sendCommentEditedEmail, sendCommentDeletedEmail, sendNewBlogNotification } from '../utils/emailService.js';
 
 // Helper function to generate fingerprint for public users
 const generateFingerprint = (req) => {
@@ -352,6 +352,29 @@ export const createBlog = async (req, res, next) => {
             { path: 'author', select: 'username' }
         ]);
 
+        // AUTOMATED EMAIL NOTIFICATION: Send to all verified users if published immediately
+        if (blog.published) {
+            // Run asynchronously to not block the response
+            (async () => {
+                try {
+                    const users = await User.find({ isVerified: true }).select('email username');
+                    console.log(`Starting blog notification for "${blog.title}" to ${users.length} users...`);
+
+                    // Send in chunks or sequentially to respect rate limits
+                    for (const user of users) {
+                        try {
+                            await sendNewBlogNotification(user.email, user.username, blog);
+                        } catch (err) {
+                            console.error(`Failed to send blog notification to ${user.email}`, err);
+                        }
+                    }
+                    console.log('Blog notifications completed.');
+                } catch (error) {
+                    console.error('Error fetching users for blog notification:', error);
+                }
+            })();
+        }
+
         res.status(201).json({
             success: true,
             message: 'Blog created successfully',
@@ -386,6 +409,8 @@ export const updateBlog = async (req, res, next) => {
                 message: 'Blog not found'
             });
         }
+
+        const wasPublished = blog.published;
 
         // Validate property exists if propertyId provided
         if (propertyId) {
@@ -424,6 +449,28 @@ export const updateBlog = async (req, res, next) => {
             { path: 'propertyId', select: 'name city state' },
             { path: 'author', select: 'username' }
         ]);
+
+        // AUTOMATED EMAIL NOTIFICATION: Send to all verified users if newly published
+        if (!wasPublished && blog.published) {
+            // Run asynchronously to not block the response
+            (async () => {
+                try {
+                    const users = await User.find({ isVerified: true }).select('email username');
+                    console.log(`Starting blog notification for "${blog.title}" to ${users.length} users...`);
+
+                    for (const user of users) {
+                        try {
+                            await sendNewBlogNotification(user.email, user.username, blog);
+                        } catch (err) {
+                            console.error(`Failed to send blog notification to ${user.email}`, err);
+                        }
+                    }
+                    console.log('Blog notifications completed.');
+                } catch (error) {
+                    console.error('Error fetching users for blog notification:', error);
+                }
+            })();
+        }
 
         res.status(200).json({
             success: true,

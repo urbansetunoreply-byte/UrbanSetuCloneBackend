@@ -15682,3 +15682,77 @@ export const sendPreBookingMessageNotification = async (email, recipientName, se
     return createErrorResponse(error, 'pre_booking_message');
   }
 };
+
+// Send New Blog Notification Email
+export const sendNewBlogNotification = async (email, username, blog) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  // Use slug if available, otherwise fallback to ID
+  const blogLink = `${clientBaseUrl}/blog/${blog.slug || blog._id}`;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `New Blog Post: ${blog.title} - UrbanSetu`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+        
+        <!-- Header / Hero Image -->
+        ${blog.thumbnail ? `
+        <div style="width: 100%; height: 200px; overflow: hidden; background-color: #f3f4f6;">
+          <img src="${blog.thumbnail}" alt="${blog.title}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        ` : `
+        <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">New Update from UrbanSetu</h1>
+        </div>
+        `}
+
+        <div style="padding: 32px 24px;">
+          <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">Hello ${username},</p>
+          
+          <h2 style="color: #111827; font-size: 24px; font-weight: 700; margin: 0 0 16px 0; line-height: 1.3;">
+            ${blog.title}
+          </h2>
+
+          <div style="margin-bottom: 24px;">
+            <span style="background-color: #eff6ff; color: #2563eb; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+              ${blog.category || 'Blog'}
+            </span>
+          </div>
+
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
+            ${blog.excerpt || 'We have just published a new article that might interest you. Click the button below to read the full story.'}
+          </p>
+
+          <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${blogLink}" style="display: inline-block; background-color: #2563eb; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: background-color 0.2s;">
+              Read Full Article
+            </a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 0 0 32px 0;">
+
+          <!-- Footer -->
+          <div style="text-align: center;">
+            <p style="color: #9ca3af; font-size: 13px; margin: 0 0 8px 0;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+            <p style="color: #9ca3af; font-size: 13px; margin: 0;">
+              You received this email because you are a registered member of the UrbanSetu community.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    // We use a shorter timeout/retries for bulk notifications to avoid clogging
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'new_blog_notification') :
+      createErrorResponse(new Error(result.error), 'new_blog_notification');
+  } catch (error) {
+    return createErrorResponse(error, 'new_blog_notification');
+  }
+};
