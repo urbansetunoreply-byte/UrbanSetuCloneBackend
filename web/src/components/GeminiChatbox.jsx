@@ -4514,7 +4514,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <FaTimes className="w-5 h-5 text-white drop-shadow-lg" />
                             ) : (
                                 <div className="relative">
-                                    <FaComments className="w-5 h-5 text-white drop-shadow-lg" />
+                                    <FaRobot className="w-5 h-5 text-white drop-shadow-lg" />
                                     <FaStar className="absolute -top-1 -right-1 w-3 h-3 text-yellow-300 animate-pulse" />
                                 </div>
                             )}
