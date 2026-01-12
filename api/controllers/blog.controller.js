@@ -357,7 +357,7 @@ export const createBlog = async (req, res, next) => {
             // Run asynchronously to not block the response
             (async () => {
                 try {
-                    const users = await User.find({ isVerified: true }).select('email username');
+                    const users = await User.find({ status: 'active' }).select('email username');
                     console.log(`Starting blog notification for "${blog.title}" to ${users.length} users...`);
 
                     // Send in chunks or sequentially to respect rate limits
@@ -455,7 +455,7 @@ export const updateBlog = async (req, res, next) => {
             // Run asynchronously to not block the response
             (async () => {
                 try {
-                    const users = await User.find({ isVerified: true }).select('email username');
+                    const users = await User.find({ status: 'active' }).select('email username');
                     console.log(`Starting blog notification for "${blog.title}" to ${users.length} users...`);
 
                     for (const user of users) {
