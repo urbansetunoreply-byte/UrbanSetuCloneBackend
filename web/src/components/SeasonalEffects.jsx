@@ -171,10 +171,10 @@ const SeasonalEffects = ({ className }) => {
                                 height={p.isCut ? "150" : "1000"}
                                 viewBox={p.isCut ? "0 0 40 150" : "0 0 400 1000"}
                                 style={{
-                                    top: '50%',
+                                    top: p.isSolid ? '70%' : '50%',
                                     left: '50%',
                                     transform: 'translateX(0)', // Thread starts at center
-                                    marginTop: '5px',
+                                    marginTop: p.isSolid ? '0px' : '5px',
                                     zIndex: 0,
                                     overflow: 'visible',
                                     opacity: p.isCut ? 0.8 : 0.6
