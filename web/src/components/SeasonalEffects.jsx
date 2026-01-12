@@ -173,7 +173,7 @@ const SeasonalEffects = ({ className }) => {
                                 style={{
                                     top: p.isSolid ? '70%' : '50%',
                                     left: '50%',
-                                    transform: 'translateX(0)', // Thread starts at center
+                                    transform: 'translateX(-50%)', // align center
                                     marginTop: p.isSolid ? '0px' : '5px',
                                     zIndex: 0,
                                     overflow: 'visible',
@@ -189,9 +189,9 @@ const SeasonalEffects = ({ className }) => {
                                     />
                                 ) : (
                                     // Unified Long angled thread: Straight diagonal line (~45 deg tilt)
-                                    // Start (20,0) -> End (Straight line to bottom-right)
+                                    // Start (200,0) [Center] -> End
                                     <path
-                                        d="M20,0 L300,800"
+                                        d="M200,0 L450,1000"
                                         stroke="var(--seasonal-thread)"
                                         strokeWidth="1.5"
                                         fill="none"
