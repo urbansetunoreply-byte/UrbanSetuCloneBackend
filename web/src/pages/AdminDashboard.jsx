@@ -894,7 +894,7 @@ export default function AdminDashboard() {
           <div className="relative z-10">
             <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
               Welcome back, {currentUser.username}! 👋
-              {theme && <span className="text-2xl animate-spin-slow" title={theme.name}>{theme.icon}</span>}
+              {theme && <span className="text-2xl" title={theme.name}>{theme.icon}</span>}
             </h1>
             <p className="text-blue-100 text-lg max-w-2xl">
               {theme?.greeting ? theme.greeting : "Here's what's happening with your platform today."} Check your analytics and manage listings efficiently.
