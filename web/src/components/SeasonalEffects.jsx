@@ -34,7 +34,8 @@ const SeasonalEffects = ({ className }) => {
             // Specific to kites
             sway: Math.random() > 0.5 ? 1 : -1,
             startX: Math.random() * 100 + 'vw',
-            isCut: theme.effect === 'kite' ? Math.random() < 0.4 : false // 40% are cut (pench), 60% flying
+            isCut: theme.effect === 'kite' ? Math.random() < 0.4 : false, // 40% are cut (pench), 60% flying
+            hue: Math.random() * 360 // Random color
         }));
 
         setParticles(newParticles);
@@ -46,6 +47,11 @@ const SeasonalEffects = ({ className }) => {
         <div className={`fixed inset-0 pointer-events-none overflow-hidden ${className || 'z-0'}`} aria-hidden="true">
             <style>
                 {`
+          :root { --seasonal-thread: #4b5563; } /* Gray-600 */
+          .dark { --seasonal-thread: #cbd5e1; } /* Slate-300 */
+          @media (prefers-color-scheme: dark) {
+            :root:not(.light) { --seasonal-thread: #cbd5e1; }
+          }
           @keyframes seasonal-fall {
             0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
             10% { opacity: 1; }
@@ -63,22 +69,22 @@ const SeasonalEffects = ({ className }) => {
             }
             10% {
                 opacity: 1;
-                transform: translate(calc(var(--sx) + (10vw * var(--sway))), 90vh) rotate(calc(15deg * var(--sway))) scale(0.6);
+                transform: translate(calc(var(--sx) + (3vw * var(--sway))), 90vh) rotate(calc(5deg * var(--sway))) scale(0.6);
             }
             30% {
-                transform: translate(calc(var(--sx) - (15vw * var(--sway))), 70vh) rotate(calc(-10deg * var(--sway))) scale(0.7);
+                transform: translate(calc(var(--sx) - (4vw * var(--sway))), 70vh) rotate(calc(-3deg * var(--sway))) scale(0.7);
             }
             50% {
-                transform: translate(calc(var(--sx) + (20vw * var(--sway))), 50vh) rotate(calc(20deg * var(--sway))) scale(0.8);
+                transform: translate(calc(var(--sx) + (5vw * var(--sway))), 50vh) rotate(calc(6deg * var(--sway))) scale(0.8);
             }
             70% {
-                transform: translate(calc(var(--sx) - (10vw * var(--sway))), 30vh) rotate(calc(-5deg * var(--sway))) scale(0.9);
+                transform: translate(calc(var(--sx) - (3vw * var(--sway))), 30vh) rotate(calc(-2deg * var(--sway))) scale(0.9);
             }
             90% {
                 opacity: 1;
             }
             100% { 
-                transform: translate(calc(var(--sx) + (30vw * var(--sway))), -20vh) rotate(calc(10deg * var(--sway))) scale(1); 
+                transform: translate(calc(var(--sx) + (6vw * var(--sway))), -20vh) rotate(calc(3deg * var(--sway))) scale(1); 
                 opacity: 0; 
             }
           }
@@ -114,6 +120,8 @@ const SeasonalEffects = ({ className }) => {
                             fontSize: content ? p.size : 0,
                             opacity: p.opacity,
                             animation: `${animationName} ${p.animationDuration} ease-in-out ${p.animationDelay} infinite`,
+                            // Hue rotation for kite colors
+                            filter: isKite ? `hue-rotate(${p.hue}deg)` : 'none',
                             // Custom properties for kite physics
                             '--sx': p.startX || p.left,
                             '--sway': p.sway || 1
@@ -134,22 +142,21 @@ const SeasonalEffects = ({ className }) => {
                                     marginTop: '5px',
                                     zIndex: 0,
                                     overflow: 'visible',
-                                    opacity: p.isCut ? 0.8 : 0.4
+                                    opacity: p.isCut ? 0.8 : 0.6
                                 }}
                             >
                                 {p.isCut ? (
                                     <path
                                         d="M20,0 C20,20 25,40 15,60 C5,80 35,100 20,150"
-                                        stroke="white"
-                                        strokeWidth="1"
+                                        stroke="var(--seasonal-thread)"
+                                        strokeWidth="1.5"
                                         fill="none"
-                                        opacity="0.9"
                                     />
                                 ) : (
                                     <path
                                         d="M50,0 Q53,400 47,800"
-                                        stroke="white"
-                                        strokeWidth="0.8"
+                                        stroke="var(--seasonal-thread)"
+                                        strokeWidth="1"
                                         fill="none"
                                     />
                                 )}
