@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaTimes, FaExternalLinkAlt, FaThumbsUp, FaThumbsDown, FaQuestionCircle } from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -271,16 +272,16 @@ const AdminFAQs = () => {
       });
 
       if (response.ok) {
-        alert(editingFAQ ? 'FAQ updated successfully!' : 'FAQ created successfully!');
+        toast.success(editingFAQ ? 'FAQ updated successfully!' : 'FAQ created successfully!');
         setShowModal(false);
         fetchFAQs();
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message || 'Failed to save FAQ'}`);
+        toast.error(errorData.message || 'Failed to save FAQ');
       }
     } catch (error) {
       console.error('Error saving FAQ:', error);
-      alert('Error: Failed to save FAQ. Please try again.');
+      toast.error('Failed to save FAQ. Please try again.');
     }
   };
 
@@ -298,11 +299,15 @@ const AdminFAQs = () => {
       });
 
       if (response.ok) {
+        toast.success('FAQ deleted successfully');
         fetchFAQs();
         setDeleteModal({ show: false, id: null });
+      } else {
+        toast.error('Failed to delete FAQ');
       }
     } catch (error) {
       console.error('Error deleting FAQ:', error);
+      toast.error('Failed to delete FAQ');
     }
   };
 
@@ -330,13 +335,14 @@ const AdminFAQs = () => {
             f._id === faq._id ? { ...f, isActive: !f.isActive } : f
           )
         );
+        toast.success(`FAQ ${!faq.isActive ? 'activated' : 'deactivated'} successfully`);
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message || 'Failed to toggle FAQ status'}`);
+        toast.error(errorData.message || 'Failed to toggle FAQ status');
       }
     } catch (error) {
       console.error('❌ Error toggling FAQ status:', error);
-      alert('Error: Failed to toggle FAQ status. Please try again.');
+      toast.error('Failed to toggle FAQ status. Please try again.');
     }
   };
 

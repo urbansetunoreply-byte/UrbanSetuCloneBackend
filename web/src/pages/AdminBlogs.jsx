@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import AdminBlogsSkeleton from '../components/skeletons/AdminBlogsSkeleton';
 import {
   Plus, Edit, Trash, Search, Filter, Globe, Home, Eye, EyeOff,
@@ -250,16 +251,16 @@ const AdminBlogs = () => {
       });
 
       if (response.ok) {
-        alert(editingBlog ? 'Blog updated successfully!' : 'Blog created successfully!');
+        toast.success(editingBlog ? 'Blog updated successfully!' : 'Blog created successfully!');
         setShowModal(false);
         fetchBlogs();
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message || 'Failed to save blog'}`);
+        toast.error(errorData.message || 'Failed to save blog');
       }
     } catch (error) {
       console.error('Error saving blog:', error);
-      alert('Error: Failed to save blog. Please try again.');
+      toast.error('Failed to save blog. Please try again.');
     }
   };
 
@@ -277,12 +278,16 @@ const AdminBlogs = () => {
       });
 
       if (response.ok) {
+        toast.success('Blog deleted successfully');
         fetchBlogs();
         setShowDeleteModal(false);
         setBlogToDelete(null);
+      } else {
+        toast.error('Failed to delete blog');
       }
     } catch (error) {
       console.error('Error deleting blog:', error);
+      toast.error('Failed to delete blog');
     }
   };
 
@@ -305,10 +310,14 @@ const AdminBlogs = () => {
       });
 
       if (response.ok) {
+        toast.success(`Blog ${!blog.published ? 'published' : 'unpublished'} successfully`);
         fetchBlogs();
+      } else {
+        toast.error('Failed to update blog status');
       }
     } catch (error) {
       console.error('Error toggling blog status:', error);
+      toast.error('Failed to update blog status');
     }
   };
 
