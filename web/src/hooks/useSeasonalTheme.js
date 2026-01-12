@@ -360,7 +360,7 @@ export const useSeasonalTheme = () => {
                 icon: '🪁',
                 secondaryIcon: '🌾',
                 greeting: 'Happy Makar Sankranti / Pongal!',
-                effect: 'none',
+                effect: 'kite',
                 textGradient: 'bg-gradient-to-r from-yellow-500 via-orange-500 to-green-600',
                 logoDecoration: 'kite'
             };

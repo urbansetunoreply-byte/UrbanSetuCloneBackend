@@ -11,22 +11,29 @@ const SeasonalEffects = ({ className }) => {
             return;
         }
 
-        // Generate particles only once on mount/theme change to avoid re-renders
-        const particleCount = theme.effect === 'snow' ? 50 : (theme.effect === 'confetti' || theme.effect === 'tricolor') ? 40 : 20;
+        // Generate particles only once on mount/theme change
+        const particleCount = theme.effect === 'snow' ? 50
+            : (theme.effect === 'confetti' || theme.effect === 'tricolor') ? 40
+                : theme.effect === 'kite' ? 15 // Fewer kites as they are larger
+                    : 20;
+
         const newParticles = Array.from({ length: particleCount }).map((_, i) => ({
             id: i,
             left: Math.random() * 100 + 'vw',
-            animationDuration: Math.random() * 3 + 2 + 's', // 2-5s
+            animationDuration: theme.effect === 'kite' ? Math.random() * 5 + 8 + 's' : Math.random() * 3 + 2 + 's', // Slower for kites (8-13s)
             animationDelay: Math.random() * 5 + 's',
             opacity: Math.random() * 0.5 + 0.3,
-            size: Math.random() * 10 + 5 + 'px',
+            size: theme.effect === 'kite' ? Math.random() * 20 + 30 + 'px' : Math.random() * 10 + 5 + 'px', // Larger kites
             color: theme.effect === 'confetti'
                 ? ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][Math.floor(Math.random() * 5)]
                 : theme.effect === 'tricolor'
-                    ? ['#FF9933', '#FFFFFF', '#138808'][Math.floor(Math.random() * 3)] // India Saffron, White, Green
+                    ? ['#FF9933', '#FFFFFF', '#138808'][Math.floor(Math.random() * 3)]
                     : theme.effect === 'snow'
                         ? 'var(--snow-color)'
-                        : '#FFF'
+                        : '#FFF',
+            // Specific to kites for randomness
+            sway: Math.random() > 0.5 ? 1 : -1,
+            startX: Math.random() * 100 + 'vw'
         }));
 
         setParticles(newParticles);
@@ -48,22 +55,40 @@ const SeasonalEffects = ({ className }) => {
             10% { opacity: 0.8; }
             100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
           }
-          @keyframes kite-fly {
-            0% { transform: translate(50vw, 100vh) rotate(-10deg) scale(0.5); opacity: 0; }
-            20% { opacity: 1; }
-            50% { transform: translate(var(--kx), 50vh) rotate(10deg) scale(0.8); }
-            100% { transform: translate(var(--dx), -20vh) rotate(-5deg) scale(1); opacity: 0; }
+          @keyframes kite-fly-real {
+            0% { 
+                transform: translate(var(--sx), 110vh) rotate(0deg) scale(0.5); 
+                opacity: 0; 
+            }
+            10% {
+                opacity: 1;
+                transform: translate(calc(var(--sx) + (10vw * var(--sway))), 90vh) rotate(calc(15deg * var(--sway))) scale(0.6);
+            }
+            30% {
+                transform: translate(calc(var(--sx) - (15vw * var(--sway))), 70vh) rotate(calc(-10deg * var(--sway))) scale(0.7);
+            }
+            50% {
+                transform: translate(calc(var(--sx) + (20vw * var(--sway))), 50vh) rotate(calc(20deg * var(--sway))) scale(0.8);
+            }
+            70% {
+                transform: translate(calc(var(--sx) - (10vw * var(--sway))), 30vh) rotate(calc(-5deg * var(--sway))) scale(0.9);
+            }
+            90% {
+                opacity: 1;
+            }
+            100% { 
+                transform: translate(calc(var(--sx) + (30vw * var(--sway))), -20vh) rotate(calc(10deg * var(--sway))) scale(1); 
+                opacity: 0; 
+            }
           }
         `}
             </style>
 
             {particles.map((p) => {
-                // Determine animation name based on theme effect
                 let animationName = 'seasonal-fall';
                 if (theme.effect === 'hearts' || theme.effect === 'float-up') animationName = 'seasonal-float-up';
-                else if (theme.effect === 'kite') animationName = 'kite-fly';
+                else if (theme.effect === 'kite') animationName = 'kite-fly-real';
 
-                // Determine content based on theme effect
                 let content = '';
                 if (theme.effect === 'hearts') content = '❤️';
                 else if (theme.effect === 'kite') content = '🪁';
@@ -72,25 +97,23 @@ const SeasonalEffects = ({ className }) => {
                 else if (theme.effect === 'moon') content = '🌙';
                 else if (theme.effect === 'lantern') content = '🏮';
                 else if (theme.effect === 'mango') content = '🥭';
-                else if (theme.effect === 'snow') content = ''; // Snow is CSS shape
-                else if (theme.effect === 'confetti') content = ''; // Confetti is CSS shape
-                else if (theme.effect === 'tricolor') content = ''; // Tricolor is CSS shape (Rect)
 
                 return (
                     <div
                         key={p.id}
                         className="absolute top-0"
                         style={{
-                            left: p.left,
-                            width: content ? 'auto' : (theme.effect === 'snow' ? p.size : p.size),
+                            left: 0, // Using translate for positioning now
+                            width: content ? 'auto' : p.size,
                             height: content ? 'auto' : p.size,
                             backgroundColor: content ? 'transparent' : p.color,
                             borderRadius: theme.effect === 'snow' ? '50%' : '0%',
                             fontSize: content ? p.size : 0,
                             opacity: p.opacity,
-                            animation: `${animationName} ${p.animationDuration} linear ${p.animationDelay} infinite`,
-                            '--kx': `${Math.random() * 20 - 10}vw`,
-                            '--dx': `${Math.random() * 100 - 50}vw`
+                            animation: `${animationName} ${p.animationDuration} ease-in-out ${p.animationDelay} infinite`,
+                            // Custom properties for kite physics
+                            '--sx': p.startX || p.left,
+                            '--sway': p.sway || 1
                         }}
                     >
                         {content}
