@@ -95,13 +95,23 @@ export const getFAQs = async (req, res, next) => {
         // Get FAQs with pagination
         const faqs = await FAQ.find(query)
             .populate('propertyId', 'name city state')
-            .populate('createdBy', 'username')
+            .populate('createdBy', 'username email')
             .sort({ priority: -1, createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));
 
         console.log('  - Found FAQs:', faqs.length);
-        console.log('  - FAQ statuses:', faqs.map(f => ({ id: f._id, isActive: f.isActive, question: f.question.substring(0, 20) + '...' })));
+
+        // Transform FAQs to hide sensitive info for non-rootadmins
+        const transformedFaqs = faqs.map(faq => {
+            const faqObj = faq.toObject();
+            if (!req.user || req.user.role !== 'rootadmin') {
+                if (faqObj.createdBy) {
+                    delete faqObj.createdBy.email;
+                }
+            }
+            return faqObj;
+        });
 
         // Get total count for pagination
         const total = await FAQ.countDocuments(query);
@@ -109,7 +119,7 @@ export const getFAQs = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            data: faqs,
+            data: transformedFaqs,
             pagination: {
                 current: parseInt(page),
                 pages: Math.ceil(total / parseInt(limit)),
@@ -129,7 +139,7 @@ export const getFAQ = async (req, res, next) => {
 
         const faq = await FAQ.findById(id)
             .populate('propertyId', 'name city state')
-            .populate('createdBy', 'username');
+            .populate('createdBy', 'username email');
 
         if (!faq) {
             return res.status(404).json({
@@ -142,9 +152,16 @@ export const getFAQ = async (req, res, next) => {
         faq.views += 1;
         await faq.save();
 
+        const faqObj = faq.toObject();
+        if (!req.user || req.user.role !== 'rootadmin') {
+            if (faqObj.createdBy) {
+                delete faqObj.createdBy.email;
+            }
+        }
+
         res.status(200).json({
             success: true,
-            data: faq
+            data: faqObj
         });
     } catch (error) {
         next(error);
@@ -193,13 +210,20 @@ export const createFAQ = async (req, res, next) => {
         // Populate the created FAQ
         await faq.populate([
             { path: 'propertyId', select: 'name city state' },
-            { path: 'createdBy', select: 'username' }
+            { path: 'createdBy', select: 'username email' }
         ]);
+
+        const faqObj = faq.toObject();
+        if (!req.user || req.user.role !== 'rootadmin') {
+            if (faqObj.createdBy) {
+                delete faqObj.createdBy.email;
+            }
+        }
 
         res.status(201).json({
             success: true,
             message: 'FAQ created successfully',
-            data: faq
+            data: faqObj
         });
     } catch (error) {
         next(error);
@@ -257,14 +281,21 @@ export const updateFAQ = async (req, res, next) => {
         // Populate the updated FAQ
         await faq.populate([
             { path: 'propertyId', select: 'name city state' },
-            { path: 'createdBy', select: 'username' }
+            { path: 'createdBy', select: 'username email' }
         ]);
+
+        const faqObj = faq.toObject();
+        if (!req.user || req.user.role !== 'rootadmin') {
+            if (faqObj.createdBy) {
+                delete faqObj.createdBy.email;
+            }
+        }
 
         console.log('  - Sending response - FAQ isActive:', faq.isActive);
         res.status(200).json({
             success: true,
             message: 'FAQ updated successfully',
-            data: faq
+            data: faqObj
         });
     } catch (error) {
         next(error);

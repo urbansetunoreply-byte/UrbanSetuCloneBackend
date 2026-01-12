@@ -532,6 +532,11 @@ const AdminBlogs = () => {
                               <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
                                 {blog.author?.username || 'Unknown'}
                               </span>
+                              {blog.author?.email && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {blog.author.email}
+                                </span>
+                              )}
                               <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
                                 {blog.author?.role || 'User'}
                               </span>

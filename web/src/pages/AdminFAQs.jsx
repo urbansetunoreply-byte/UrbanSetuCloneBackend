@@ -531,6 +531,11 @@ const AdminFAQs = () => {
                               <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
                                 {faq.createdBy?.username || 'Unknown'}
                               </span>
+                              {faq.createdBy?.email && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {faq.createdBy.email}
+                                </span>
+                              )}
                               <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
                                 Admin
                               </span>

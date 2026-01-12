@@ -183,7 +183,7 @@ export const getBlogs = async (req, res, next) => {
         // Get blogs with pagination
         const blogs = await Blog.find(query)
             .populate('propertyId', 'name city state')
-            .populate('author', 'username role')
+            .populate('author', 'username role email')
             .sort({ publishedAt: -1, createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));
@@ -195,8 +195,12 @@ export const getBlogs = async (req, res, next) => {
         // Transform author names for admin/rootadmin users
         const transformedBlogs = blogs.map(blog => {
             const blogObj = blog.toObject();
-            if (blogObj.author && (blogObj.author.role === 'admin' || blogObj.author.role === 'rootadmin')) {
-                blogObj.author.username = 'UrbanSetuBlogManagement';
+            // Only mask for non-rootadmin users
+            if (!req.user || req.user.role !== 'rootadmin') {
+                if (blogObj.author && (blogObj.author.role === 'admin' || blogObj.author.role === 'rootadmin')) {
+                    blogObj.author.username = 'UrbanSetuBlogManagement';
+                    delete blogObj.author.email; // Hide email for non-rootadmins
+                }
             }
             return blogObj;
         });
@@ -230,7 +234,7 @@ export const getBlog = async (req, res, next) => {
             // Try to find by ID first
             blog = await Blog.findById(id)
                 .populate('propertyId', 'name city state')
-                .populate('author', 'username role')
+                .populate('author', 'username role email')
                 .populate('comments.user', 'username role');
         }
 
@@ -238,7 +242,7 @@ export const getBlog = async (req, res, next) => {
             // Try to find by slug
             blog = await Blog.findOne({ slug: id })
                 .populate('propertyId', 'name city state')
-                .populate('author', 'username role')
+                .populate('author', 'username role email')
                 .populate('comments.user', 'username role');
         }
 
@@ -270,8 +274,12 @@ export const getBlog = async (req, res, next) => {
 
         // Transform author and comment user names for admin/rootadmin users
         const blogObj = blog.toObject();
-        if (blogObj.author && (blogObj.author.role === 'admin' || blogObj.author.role === 'rootadmin')) {
-            blogObj.author.username = 'UrbanSetuBlogManagement';
+        // Only mask for non-rootadmin users
+        if (!req.user || req.user.role !== 'rootadmin') {
+            if (blogObj.author && (blogObj.author.role === 'admin' || blogObj.author.role === 'rootadmin')) {
+                blogObj.author.username = 'UrbanSetuBlogManagement';
+                delete blogObj.author.email; // Hide email for non-rootadmins
+            }
         }
 
         // Transform comment user names for admin/rootadmin users
