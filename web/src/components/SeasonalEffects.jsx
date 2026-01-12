@@ -62,21 +62,21 @@ const SeasonalEffects = ({ className }) => {
             10% { opacity: 0.8; }
             100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
           }
-          /* Flying Up (Active Kites) */
+          /* Flying Up (Active Kites) - Kite Face Upright */
           @keyframes kite-fly-up {
             0% { 
-                transform: translate(var(--sx), 110vh) rotate(-45deg) scale(0.5); 
+                transform: translate(var(--sx), 110vh) rotate(0deg) scale(0.5); 
                 opacity: 0; 
             }
             10% {
                 opacity: 1;
-                transform: translate(calc(var(--sx) - 3vw), 90vh) rotate(-50deg) scale(0.6);
+                transform: translate(calc(var(--sx) - 3vw), 90vh) rotate(-5deg) scale(0.6);
             }
             50% {
-                transform: translate(calc(var(--sx) - 5vw), 50vh) rotate(-55deg) scale(0.8);
+                transform: translate(calc(var(--sx) - 5vw), 50vh) rotate(5deg) scale(0.8);
             }
             100% { 
-                transform: translate(calc(var(--sx) - 8vw), -20vh) rotate(-45deg) scale(1); 
+                transform: translate(calc(var(--sx) - 8vw), -20vh) rotate(0deg) scale(1); 
                 opacity: 0; 
             }
           }
