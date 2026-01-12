@@ -1,9 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 
 export default function ThemeDetailModal({ theme, isOpen, onClose }) {
+    const { currentUser } = useSelector((state) => state.user);
     if (!isOpen || !theme) return null;
+
+    const userName = currentUser?.firstName || currentUser?.username || currentUser?.name || '';
 
     return (
         <AnimatePresence>
@@ -48,7 +52,7 @@ export default function ThemeDetailModal({ theme, isOpen, onClose }) {
                         </h3>
 
                         <p className="text-xl text-gray-700 dark:text-gray-200 font-medium mb-4">
-                            "{theme.greeting}"
+                            "{theme.greeting} {userName && <span className="text-blue-600 dark:text-blue-400">{userName}!</span>}"
                         </p>
 
                         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 mb-4">
