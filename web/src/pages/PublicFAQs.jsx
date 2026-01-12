@@ -432,8 +432,8 @@ const PublicFAQs = () => {
                           Last updated: {new Date(faq.updatedAt).toLocaleDateString()}
                         </div>
 
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Was this helpful?</span>
+                        <div className="flex items-center gap-3 ml-auto">
+                          <span className="text-sm font-medium text-gray-500 dark:text-gray-400 hidden sm:inline">Was this helpful?</span>
 
                           <button
                             onClick={(e) => handleRating(faq._id, 'like', e)}
