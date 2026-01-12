@@ -110,18 +110,17 @@ const PublicFAQs = () => {
 
   const checkAuthStatus = async () => {
     try {
-      // Try to check reaction status for the first FAQ to determine if user is authenticated
-      if (faqs.length > 0) {
-        const response = await fetch(`${API_BASE_URL}/api/faqs/${faqs[0]._id}/reaction-status`, {
-          credentials: 'include'
-        });
-        if (response.ok) {
-          setIsLoggedIn(true);
-        } else if (response.status === 401) {
-          setIsLoggedIn(false);
-        }
+      const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
       }
     } catch (error) {
+      console.error('Auth check error:', error);
       setIsLoggedIn(false);
     }
   };
