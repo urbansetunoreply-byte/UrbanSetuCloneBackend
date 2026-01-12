@@ -21,6 +21,8 @@ const PublicFAQs = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userReactions, setUserReactions] = useState({});
   const [reactionLoading, setReactionLoading] = useState({});
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
@@ -41,6 +43,12 @@ const PublicFAQs = () => {
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      if (searchTerm.trim().length > 0) {
+        fetchSuggestions();
+      } else {
+        setSuggestions([]);
+      }
+
       if (pagination.current === 1) {
         fetchFAQs(false); // Don't show loading for search
       } else {
@@ -50,6 +58,17 @@ const PublicFAQs = () => {
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
+
+  // Click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.relative.z-50')) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Immediate filter effect for category changes
   useEffect(() => {
@@ -89,6 +108,25 @@ const PublicFAQs = () => {
       console.error('Error fetching FAQs:', error);
     } finally {
       if (showLoading) setLoading(false);
+    }
+  };
+
+  const fetchSuggestions = async () => {
+    try {
+      const params = new URLSearchParams({
+        isGlobal: 'true',
+        isActive: 'true',
+        search: searchTerm,
+        limit: 5
+      });
+
+      const response = await fetch(`${API_BASE_URL}/api/faqs?${params}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
     }
   };
 
@@ -233,21 +271,60 @@ const PublicFAQs = () => {
           {/* Search Bar in Hero */}
           <div className="max-w-2xl mx-auto relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-purple-400 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
-            <form onSubmit={handleSearch} className="relative">
-              <input
-                type="text"
-                placeholder="Search for answers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-5 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-white/20 dark:border-gray-700 rounded-2xl text-lg text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-2xl focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all"
-              />
-              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-6 h-6" />
-              <button
-                type="submit"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-700 transition-colors shadow-lg"
-              >
-                <ArrowRight className="w-5 h-5" />
-              </button>
+            <form onSubmit={handleSearch} className="relative z-50">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search for answers..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  className="w-full pl-14 pr-6 py-5 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-white/20 dark:border-gray-700 rounded-2xl text-lg text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-2xl focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all"
+                />
+                <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-6 h-6" />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-700 transition-colors shadow-lg"
+                >
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Search Suggestions Panel */}
+              {showSuggestions && searchTerm.trim().length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-slide-up-sm">
+                  {suggestions.length > 0 ? (
+                    <ul className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                      {suggestions.map((suggestion) => (
+                        <li key={suggestion._id}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSearchTerm(suggestion.question);
+                              setShowSuggestions(false);
+                              setPagination(prev => ({ ...prev, current: 1 }));
+                              // Trigger search immediately via effect
+                            }}
+                            className="w-full px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-center justify-between group"
+                          >
+                            <span className="text-gray-700 dark:text-gray-200 font-medium line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              {suggestion.question}
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                      No suggestions found
+                    </div>
+                  )}
+                </div>
+              )}
             </form>
           </div>
         </div>

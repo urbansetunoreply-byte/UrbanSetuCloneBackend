@@ -20,6 +20,8 @@ const AdminFAQs = () => {
   const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
   const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -76,6 +78,12 @@ const AdminFAQs = () => {
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      if (searchTerm.trim().length > 0) {
+        fetchSuggestions();
+      } else {
+        setSuggestions([]);
+      }
+
       if (pagination.current === 1) {
         fetchFAQs(false);
       } else {
@@ -85,6 +93,17 @@ const AdminFAQs = () => {
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
+
+  // Click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.search-container')) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Immediate filter effects
   useEffect(() => {
@@ -154,6 +173,28 @@ const AdminFAQs = () => {
       }
     } catch (error) {
       console.error('Error fetching properties for FAQ:', error);
+    }
+  };
+
+  const fetchSuggestions = async () => {
+    try {
+      const params = new URLSearchParams({
+        isAdmin: 'true',
+        includeInactive: 'true',
+        search: searchTerm,
+        limit: 5
+      });
+
+      const response = await fetch(`${API_BASE_URL}/api/faqs?${params}`, {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
     }
   };
 
@@ -340,15 +381,52 @@ const AdminFAQs = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="relative group">
               <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest ml-1">Search Keywords</label>
-              <div className="relative">
+              <div className="relative search-container z-50">
                 <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                 <input
                   type="text"
                   placeholder="Find questions..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
                   className="w-full pl-12 pr-4 py-4 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-2xl focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:border-orange-500 dark:focus:border-orange-400 transition-all font-bold placeholder-gray-400 shadow-sm"
                 />
+
+                {/* Search Suggestions Panel */}
+                {showSuggestions && searchTerm.trim().length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 animate-fade-in">
+                    {suggestions.length > 0 ? (
+                      <ul className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                        {suggestions.map((suggestion) => (
+                          <li key={suggestion._id}>
+                            <button
+                              onClick={() => {
+                                setSearchTerm(suggestion.question);
+                                setShowSuggestions(false);
+                                setPagination(prev => ({ ...prev, current: 1 }));
+                              }}
+                              className="w-full px-5 py-3 text-left hover:bg-orange-50 dark:hover:bg-gray-700/50 transition-colors flex flex-col group"
+                            >
+                              <span className="text-sm font-bold text-gray-800 dark:text-gray-200 line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-400">
+                                {suggestion.question}
+                              </span>
+                              <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+                                {suggestion.category}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="p-4 text-center text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-wider">
+                        No matches found
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
