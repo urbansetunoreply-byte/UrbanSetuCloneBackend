@@ -1075,7 +1075,7 @@ export default function AdminDashboard() {
                           style={{ height: `${Math.max(10, height)}%` }}
                           title={`${date.toLocaleDateString()}: ${stat.count} visitors`}
                         />
-                        <div className="text-xs text-gray-500 mt-2">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                           {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </div>
                       </div>
@@ -1101,11 +1101,11 @@ export default function AdminDashboard() {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Total Reviews:</span>
+                  <span className="text-gray-500 dark:text-gray-400">Total Reviews:</span>
                   <span className="font-semibold text-yellow-600">{analytics.totalReviews}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Avg Rating:</span>
+                  <span className="text-gray-500 dark:text-gray-400">Avg Rating:</span>
                   <span className="font-semibold text-yellow-600">{analytics.averageRating.toFixed(1)} ⭐</span>
                 </div>
               </div>
@@ -1129,15 +1129,15 @@ export default function AdminDashboard() {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Accepted:</span>
+                  <span className="text-gray-500 dark:text-gray-400">Accepted:</span>
                   <span className="font-semibold text-green-600">{bookingStats.accepted}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Pending:</span>
+                  <span className="text-gray-500 dark:text-gray-400">Pending:</span>
                   <span className="font-semibold text-orange-600">{bookingStats.pending}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Rejected:</span>
+                  <span className="text-gray-500 dark:text-gray-400">Rejected:</span>
                   <span className="font-semibold text-red-600">{bookingStats.rejected}</span>
                 </div>
               </div>
@@ -1346,7 +1346,7 @@ export default function AdminDashboard() {
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-blue-600 mr-2" /> Market Price Trends</h3>
             {analytics.marketInsights.monthlyAvgPrices.length === 0 ? (
-              <p className="text-sm text-gray-500">Not enough data yet.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Not enough data yet.</p>
             ) : (
               <div className="space-y-2">
                 {analytics.marketInsights.monthlyAvgPrices.map(mp => (
@@ -1374,7 +1374,7 @@ export default function AdminDashboard() {
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Demand by City</h3>
             {analytics.marketInsights.demandByCity.length === 0 ? (
-              <p className="text-sm text-gray-500">Not enough data yet.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Not enough data yet.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {analytics.marketInsights.demandByCity.map((d, idx) => (
@@ -1436,7 +1436,7 @@ export default function AdminDashboard() {
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
             {analytics.performance.topOwnersByRating.length === 0 ? (
-              <p className="text-sm text-gray-500">Not enough data yet.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Not enough data yet.</p>
             ) : (
               <div className="space-y-2">
                 {analytics.performance.topOwnersByRating.map((o, idx) => (
@@ -1511,7 +1511,7 @@ export default function AdminDashboard() {
         <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaEye className="text-cyan-600 mr-2" /> Top Viewed Properties</h3>
           {analytics.propertyPerformance.topViewedProperties.length === 0 ? (
-            <p className="text-sm text-gray-500">No view data available yet.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">No view data available yet.</p>
           ) : (
             <div className="space-y-2">
               {analytics.propertyPerformance.topViewedProperties.map((property, idx) => (
@@ -1529,7 +1529,7 @@ export default function AdminDashboard() {
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-emerald-600 mr-2" /> State Distribution</h3>
             {Object.keys(analytics.geographic.stateDistribution).length === 0 ? (
-              <p className="text-sm text-gray-500">No geographic data available.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">No geographic data available.</p>
             ) : (
               <div className="space-y-2">
                 {Object.entries(analytics.geographic.stateDistribution)
@@ -1601,7 +1601,7 @@ export default function AdminDashboard() {
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaRupeeSign className="text-teal-600 mr-2" /> Regional Price Analysis</h3>
             {analytics.geographic.regionalPriceVariation.length === 0 ? (
-              <p className="text-sm text-gray-500">No regional price data available.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">No regional price data available.</p>
             ) : (
               <div className="space-y-2">
                 {analytics.geographic.regionalPriceVariation.slice(0, 5).map((region, idx) => (
@@ -1628,7 +1628,7 @@ export default function AdminDashboard() {
             </div>
             <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Quick Actions</h2>
           </div>
-          <span className="text-sm text-gray-500 hidden sm:block">(Direct Access to Management Pages)</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">(Direct Access to Management Pages)</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
           <button
@@ -1751,7 +1751,7 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{property.city}, {property.state}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {property.reviewCount} review{property.reviewCount !== 1 ? 's' : ''}
                     </p>
                   </div>
@@ -1934,7 +1934,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Property Listings</h2>
             </div>
-            <span className="text-xs sm:text-sm text-gray-500">(Recent Activity & Management)</span>
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">(Recent Activity & Management)</span>
           </div>
         </div>
 
@@ -1999,7 +1999,7 @@ export default function AdminDashboard() {
       {showReasonModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <form onSubmit={handleReasonSubmit} className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 border border-white/20 dark:border-gray-700 transform animate-scale-in">
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaTrash /> Reason for Deletion</h3>
+            <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaTrash /> Reason for Deletion</h3>
             <textarea
               className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-xl p-4 w-full text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               placeholder="Enter reason for deleting this property"
@@ -2020,7 +2020,7 @@ export default function AdminDashboard() {
       {showPasswordModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 border border-white/20 dark:border-gray-700 transform animate-scale-in">
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+            <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaLock /> Confirm Password</h3>
             <input
               type="password"
               className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-xl p-4 w-full text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
