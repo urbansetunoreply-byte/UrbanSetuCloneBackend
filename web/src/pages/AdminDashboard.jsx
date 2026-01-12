@@ -1284,15 +1284,15 @@ export default function AdminDashboard() {
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-green-600 mr-2" /> Price Statistics</h3>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-sm text-gray-500">Min</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Min</p>
                   <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 break-all">₹{analytics.priceStats.min.toLocaleString('en-IN')}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Avg</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Avg</p>
                   <p className="text-xl sm:text-2xl font-bold text-blue-700 break-all">₹{analytics.priceStats.avg.toLocaleString('en-IN')}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Max</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Max</p>
                   <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 break-all">₹{analytics.priceStats.max.toLocaleString('en-IN')}</p>
                 </div>
               </div>
@@ -1304,7 +1304,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {Object.entries(analytics.bedroomsDistribution).sort((a, b) => Number(a[0]) - Number(b[0])).map(([beds, count]) => (
                   <div key={beds} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center">
-                    <p className="text-sm text-gray-500">{beds} bed{Number(beds) === 1 ? '' : 's'}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{beds} bed{Number(beds) === 1 ? '' : 's'}</p>
                     <p className="text-xl font-bold text-purple-700">{count}</p>
                     {/* Simple bar viz */}
                     <div className="h-2 bg-gray-100 rounded mt-2">
@@ -1351,7 +1351,7 @@ export default function AdminDashboard() {
               <div className="space-y-2">
                 {analytics.marketInsights.monthlyAvgPrices.map(mp => (
                   <div key={mp.month} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{mp.month}</span>
+                    <span className="text-gray-600 dark:text-gray-300">{mp.month}</span>
                     <span className="font-semibold text-gray-800 dark:text-gray-200">₹{mp.avg.toLocaleString('en-IN')}</span>
                   </div>
                 ))}
@@ -1363,7 +1363,7 @@ export default function AdminDashboard() {
                     return (
                       <div key={mp.month} className="flex flex-col items-center" title={`${mp.month}: ₹${mp.avg.toLocaleString('en-IN')}`}>
                         <div className="w-3 bg-blue-500 rounded-t" style={{ height: `${h}px` }} />
-                        <div className="mt-1 text-[10px] text-gray-500 rotate-0">{mp.month.split('-')[1]}</div>
+                        <div className="mt-1 text-[10px] text-gray-500 dark:text-gray-400 rotate-0">{mp.month.split('-')[1]}</div>
                       </div>
                     );
                   })}
@@ -1379,7 +1379,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {analytics.marketInsights.demandByCity.map((d, idx) => (
                   <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 flex items-center justify-between">
-                    <span className="text-sm text-gray-600">{d.city}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">{d.city}</span>
                     <span className="text-base font-bold text-indigo-700">{d.count}</span>
                   </div>
                 ))}
@@ -1401,10 +1401,10 @@ export default function AdminDashboard() {
                             const colors = ['#6366f1', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b'];
                             const pct = Math.round((x.count / total) * 100);
                             return (
-                              <div key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                              <div key={i} className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
                                 <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: colors[i % colors.length] }} />
                                 <span>{x.city}</span>
-                                <span className="text-gray-500">({pct}% - {x.count})</span>
+                                <span className="text-gray-500 dark:text-gray-400">({pct}% - {x.count})</span>
                               </div>
                             );
                           })}
@@ -1457,7 +1457,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Neutral</p>
-                <p className="text-2xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
+                <p className="text-2xl font-bold text-gray-600 dark:text-gray-300">{analytics.sentiment.neutral}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Negative</p>
@@ -1516,7 +1516,7 @@ export default function AdminDashboard() {
             <div className="space-y-2">
               {analytics.propertyPerformance.topViewedProperties.map((property, idx) => (
                 <div key={idx} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 truncate flex-1 mr-2">{property.name}</span>
+                  <span className="text-gray-600 dark:text-gray-300 truncate flex-1 mr-2">{property.name}</span>
                   <span className="font-semibold text-cyan-600">{property.viewCount || 0} views</span>
                 </div>
               ))}
@@ -1537,7 +1537,7 @@ export default function AdminDashboard() {
                   .slice(0, 5)
                   .map(([state, count]) => (
                     <div key={state} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">{state}</span>
+                      <span className="text-gray-600 dark:text-gray-300">{state}</span>
                       <div className="flex items-center gap-2">
                         <div className="w-16 bg-gray-200 rounded-full h-2">
                           <div
@@ -1561,7 +1561,7 @@ export default function AdminDashboard() {
                 .sort((a, b) => b[1] - a[1])
                 .map(([type, count]) => (
                   <div key={type} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-center">
-                    <p className="text-sm text-gray-500 capitalize">{type}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{type}</p>
                     <p className="text-xl font-bold text-orange-600">{count}</p>
                     <div className="h-2 bg-gray-100 rounded mt-2">
                       <div
@@ -1585,14 +1585,14 @@ export default function AdminDashboard() {
                 .sort((a, b) => b[1] - a[1])
                 .map(([emotion, count]) => (
                   <div key={emotion} className="text-center">
-                    <p className="text-sm text-gray-500 capitalize">{emotion}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{emotion}</p>
                     <p className="text-lg font-bold text-pink-600">{count}</p>
                   </div>
                 ))}
             </div>
             <div className="mt-4 p-3 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Review Quality Score</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Review Quality Score</span>
                 <span className="text-lg font-bold text-pink-600">{analytics.advancedSentiment.reviewQuality}%</span>
               </div>
             </div>
@@ -1606,9 +1606,9 @@ export default function AdminDashboard() {
               <div className="space-y-2">
                 {analytics.geographic.regionalPriceVariation.slice(0, 5).map((region, idx) => (
                   <div key={idx} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{region.state}</span>
+                    <span className="text-gray-600 dark:text-gray-300">{region.state}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">({region.count} listings)</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">({region.count} listings)</span>
                       <span className="font-semibold text-teal-600">₹{region.avgPrice.toLocaleString('en-IN')}</span>
                     </div>
                   </div>
@@ -1691,7 +1691,7 @@ export default function AdminDashboard() {
               <div>
                 <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Fraud Watch</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Monitor and manage fraud detections</p>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   <span className="font-semibold text-red-600">{fraudStats.suspiciousListings}</span> suspicious •
                   <span className="font-semibold text-red-600 ml-1">{fraudStats.suspectedFakeReviews}</span> fake reviews
                 </div>
@@ -1826,8 +1826,8 @@ export default function AdminDashboard() {
                             </span>
                             <h5 className="font-semibold text-gray-800 dark:text-gray-200 truncate">{property.name}</h5>
                           </div>
-                          <p className="text-sm text-gray-600 mb-1">{property.city}, {property.state}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{property.city}, {property.state}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {property.type} • {property.bedrooms} bed{property.bedrooms !== 1 ? 's' : ''}
                           </p>
                         </div>
@@ -1835,13 +1835,13 @@ export default function AdminDashboard() {
                           <span className="text-lg font-bold text-indigo-600">
                             {property.watchCount}
                           </span>
-                          <span className="text-xs text-gray-500">watchers</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">watchers</span>
                         </div>
                       </div>
 
                       {/* Watch count visualization */}
                       <div className="mt-3">
-                        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                           <span>Watch popularity</span>
                           <span>{property.watchCount} watchers</span>
                         </div>
