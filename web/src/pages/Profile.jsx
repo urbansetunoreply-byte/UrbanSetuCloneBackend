@@ -922,7 +922,21 @@ export default function Profile() {
       });
 
       if (!verifyRes.ok) {
-        // Password verification failed
+        let errorMsg = "Incorrect password";
+        try {
+          const errData = await verifyRes.json();
+          if (errData.message) errorMsg = errData.message;
+        } catch (e) { }
+
+        // If status is NOT 401 (Unauthorized), it might be 400 (No password set) or 500 (Server Error)
+        // In these cases, show the error but DO NOT increment the attempt counter or sign out the user.
+        if (verifyRes.status !== 401) {
+          setUpdatePasswordError(errorMsg);
+          setLoading(false);
+          return;
+        }
+
+        // Password verification failed (401 Unauthorized) only then we count attempts
         const previousAttempts = parseInt(localStorage.getItem(PROFILE_PASSWORD_ATTEMPT_KEY) || '0');
         const nextAttempts = previousAttempts + 1;
         localStorage.setItem(PROFILE_PASSWORD_ATTEMPT_KEY, String(nextAttempts));

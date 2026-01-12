@@ -177,6 +177,12 @@ router.post('/verify-password', verifyToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    // Safety check: existing password? (e.g. Google login users have no password)
+    if (!user.password) {
+      return res.status(400).json({ success: false, message: 'No password set for this account (Social Login).' });
+    }
+
     const isMatch = await bcryptjs.compare(password, user.password);
     if (isMatch) {
       return res.json({ success: true });
@@ -184,6 +190,7 @@ router.post('/verify-password', verifyToken, async (req, res) => {
       return res.status(401).json({ success: false, message: 'Incorrect password' });
     }
   } catch (err) {
+    console.error("verify-password error:", err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
