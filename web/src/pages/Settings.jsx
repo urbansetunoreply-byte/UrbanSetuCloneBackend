@@ -889,11 +889,9 @@ export default function Settings() {
       setTransferResendTimer(0);
       setTransferPasswordAttempts(0);
       // Force fresh session with updated roles
-      await signout({
-        showToast: false,
-        navigateTo: "/sign-in",
-        delay: 0
-      });
+      // Refresh the page to update permissions and reflect the role change
+      // Since 'isDefaultAdmin' status has changed, a refresh is safer than just state update.
+      window.location.reload();
     } catch (e) {
       setTransferError('Failed to transfer rights.');
     } finally {

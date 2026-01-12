@@ -9,7 +9,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 
 import { reconnectSocket } from "../utils/socket";
 import { FaEye, FaEyeSlash, FaEdit } from "react-icons/fa";
-import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/auth';
+import { areCookiesEnabled, createAuthenticatedFetchOptions, isAuthenticated } from '../utils/auth';
 import { focusWithoutKeyboard, isMobileDevice } from '../utils/mobileUtils';
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 import { LogIn, Mail, Lock } from "lucide-react";
