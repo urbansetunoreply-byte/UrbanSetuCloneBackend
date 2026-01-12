@@ -522,7 +522,7 @@ const AdminBlogs = () => {
                             </div>
                             <div>
                               <div className="font-bold text-gray-800 dark:text-white line-clamp-1 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">{blog.title}</div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{new Date(blog.createdAt).toLocaleDateString()}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{new Date(blog.createdAt).toLocaleDateString('en-GB')}</div>
                             </div>
                           </div>
                         </td>

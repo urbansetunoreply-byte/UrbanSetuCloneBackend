@@ -8,28 +8,6 @@ export const getFAQs = async (req, res, next) => {
     try {
         const { propertyId, isGlobal, category, search, page = 1, limit = 10 } = req.query;
 
-        // Try to authenticate user if not already set
-        if (!req.user) {
-            try {
-                const jwt = require('jsonwebtoken');
-                const accessToken = req.cookies.access_token;
-
-                if (accessToken) {
-                    const decoded = jwt.verify(accessToken, process.env.JWT_TOKEN);
-                    const user = await User.findById(decoded.id).select('-password');
-                    if (user) {
-                        req.user = user;
-                        console.log('  - Authentication successful via cookie:', user.role);
-                    }
-                } else {
-                    console.log('  - No access token found in cookies');
-                }
-            } catch (error) {
-                console.log('  - Authentication failed:', error.message);
-                req.user = null;
-            }
-        }
-
         // Debug logging
         console.log('🔍 getFAQs Debug Info:');
         console.log('  - req.user:', req.user ? { id: req.user.id, role: req.user.role } : 'null');
