@@ -32,7 +32,7 @@ const SeasonalEffects = ({ className }) => {
                         ? 'var(--snow-color)'
                         : '#FFF',
             // Specific to kites
-            sway: Math.random() > 0.5 ? 1 : -1,
+            sway: -1, // Unify direction: all fly towards left (wind from right)
             startX: Math.random() * 100 + 'vw',
             isCut: theme.effect === 'kite' ? Math.random() < 0.4 : false, // 40% are cut (pench), 60% flying
             hue: Math.random() * 360 // Random color
@@ -62,29 +62,40 @@ const SeasonalEffects = ({ className }) => {
             10% { opacity: 0.8; }
             100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
           }
-          @keyframes kite-fly-real {
+          /* Flying Up (Active Kites) */
+          @keyframes kite-fly-up {
             0% { 
-                transform: translate(var(--sx), 110vh) rotate(calc(45deg * var(--sway))) scale(0.5); 
+                transform: translate(var(--sx), 110vh) rotate(-45deg) scale(0.5); 
                 opacity: 0; 
             }
             10% {
                 opacity: 1;
-                transform: translate(calc(var(--sx) + (3vw * var(--sway))), 90vh) rotate(calc(50deg * var(--sway))) scale(0.6);
-            }
-            30% {
-                transform: translate(calc(var(--sx) - (2vw * var(--sway))), 70vh) rotate(calc(40deg * var(--sway))) scale(0.7);
+                transform: translate(calc(var(--sx) - 3vw), 90vh) rotate(-50deg) scale(0.6);
             }
             50% {
-                transform: translate(calc(var(--sx) + (3vw * var(--sway))), 50vh) rotate(calc(55deg * var(--sway))) scale(0.8);
-            }
-            70% {
-                transform: translate(calc(var(--sx) - (2vw * var(--sway))), 30vh) rotate(calc(42deg * var(--sway))) scale(0.9);
-            }
-            90% {
-                opacity: 1;
+                transform: translate(calc(var(--sx) - 5vw), 50vh) rotate(-55deg) scale(0.8);
             }
             100% { 
-                transform: translate(calc(var(--sx) + (4vw * var(--sway))), -20vh) rotate(calc(48deg * var(--sway))) scale(1); 
+                transform: translate(calc(var(--sx) - 8vw), -20vh) rotate(-45deg) scale(1); 
+                opacity: 0; 
+            }
+          }
+
+          /* Falling Down (Cut Kites) */
+          @keyframes kite-fall-down {
+            0% { 
+                transform: translate(var(--sx), -20vh) rotate(-30deg) scale(0.8); 
+                opacity: 0; 
+            }
+            10% {
+                opacity: 1;
+                transform: translate(calc(var(--sx) - 2vw), 10vh) rotate(-40deg) scale(0.8);
+            }
+            50% {
+                transform: translate(calc(var(--sx) - 5vw), 60vh) rotate(-60deg) scale(0.7);
+            }
+            100% { 
+                transform: translate(calc(var(--sx) - 8vw), 120vh) rotate(-80deg) scale(0.6); 
                 opacity: 0; 
             }
           }
@@ -94,7 +105,10 @@ const SeasonalEffects = ({ className }) => {
             {particles.map((p) => {
                 let animationName = 'seasonal-fall';
                 if (theme.effect === 'hearts' || theme.effect === 'float-up') animationName = 'seasonal-float-up';
-                else if (theme.effect === 'kite') animationName = 'kite-fly-real';
+                else if (theme.effect === 'kite') {
+                    // Logic: Cut kites (short thread) fall down. Flying kites (long thread) fly up.
+                    animationName = p.isCut ? 'kite-fall-down' : 'kite-fly-up';
+                }
 
                 let content = '';
                 if (theme.effect === 'hearts') content = '❤️';
@@ -122,12 +136,15 @@ const SeasonalEffects = ({ className }) => {
                             animation: `${animationName} ${p.animationDuration} ease-in-out ${p.animationDelay} infinite`,
                             // Hue rotation for kite colors
                             filter: isKite ? `hue-rotate(${p.hue}deg)` : 'none',
-                            // Custom properties for kite physics
-                            '--sx': p.startX || p.left,
-                            '--sway': p.sway || 1
+                            // Custom properties for kite physics (all left-leaning now)
+                            '--sx': p.startX || p.left
                         }}
                     >
-                        <div style={{ zIndex: 10, transform: `scaleX(${p.sway})` }}>{content}</div>
+                        {/* ScaleX(-1) implies facing left if original is right-facing, but emoji is usually left-facing or distinct. 
+                            Let's force a consistent transform. Emoji 🪁 usually points top-left.
+                            If we want them all to point uniform, we keep scaleX(1).
+                         */}
+                        <div style={{ zIndex: 10 }}>{content}</div>
 
                         {isKite && (
                             <svg
@@ -138,7 +155,7 @@ const SeasonalEffects = ({ className }) => {
                                 style={{
                                     top: '50%',
                                     left: '50%',
-                                    transform: 'translateX(-10%)', // Align thread start with kite bottom center roughly
+                                    transform: 'translateX(0)', // Thread starts at center
                                     marginTop: '5px',
                                     zIndex: 0,
                                     overflow: 'visible',
@@ -147,15 +164,17 @@ const SeasonalEffects = ({ className }) => {
                             >
                                 {p.isCut ? (
                                     <path
-                                        d="M20,0 C20,20 25,40 15,60 C5,80 35,100 20,150"
+                                        d="M20,0 C20,20 40,50 60,100"
                                         stroke="var(--seasonal-thread)"
                                         strokeWidth="1.5"
                                         fill="none"
                                     />
                                 ) : (
-                                    // Long curved thread for flying kites
+                                    // Unified Long angled thread: Trail down and to the RIGHT (since kite leans/flies LEFT)
+                                    // M20,0 (start) -> Q(control) -> End
+                                    // Start (20,0) -> Control(Near right) -> End (Far bottom right)
                                     <path
-                                        d={p.sway > 0 ? "M20,0 Q50,400 -200,1000" : "M20,0 Q-10,400 200,1000"}
+                                        d="M20,0 Q60,400 250,1000"
                                         stroke="var(--seasonal-thread)"
                                         strokeWidth="1"
                                         fill="none"
