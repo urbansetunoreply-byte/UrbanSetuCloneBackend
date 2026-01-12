@@ -28,13 +28,16 @@ const SeasonalEffects = ({ className }) => {
                 ? ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][Math.floor(Math.random() * 5)]
                 : theme.effect === 'tricolor'
                     ? ['#FF9933', '#FFFFFF', '#138808'][Math.floor(Math.random() * 3)]
-                    : theme.effect === 'snow'
-                        ? 'var(--snow-color)'
-                        : '#FFF',
+                    : theme.effect === 'kite'
+                        ? ['#FF2D55', '#5856D6', '#FF9500', '#FFCC00', '#4CD964', '#5AC8FA', '#007AFF', '#FF3B30'][Math.floor(Math.random() * 8)]
+                        : theme.effect === 'snow'
+                            ? 'var(--snow-color)'
+                            : '#FFF',
             // Specific to kites
             sway: -1, // Unify direction: all fly towards left (wind from right)
             startX: Math.random() * 100 + 'vw',
             isCut: theme.effect === 'kite' ? Math.random() < 0.4 : false, // 40% are cut (pench), 60% flying
+            isSolid: theme.effect === 'kite' ? Math.random() > 0.4 : false, // 60% are solid color SVG, 40% are emoji
             hue: Math.random() * 360 // Random color
         }));
 
@@ -112,7 +115,13 @@ const SeasonalEffects = ({ className }) => {
 
                 let content = '';
                 if (theme.effect === 'hearts') content = '❤️';
-                else if (theme.effect === 'kite') content = '🪁';
+                else if (theme.effect === 'kite') {
+                    content = p.isSolid ? (
+                        <svg width="100%" height="100%" viewBox="0 0 50 60" style={{ overflow: 'visible', filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' }}>
+                            <path d="M25,0 L50,20 L25,55 L0,20 Z" fill={p.color} />
+                        </svg>
+                    ) : '🪁';
+                }
                 else if (theme.effect === 'leaf') content = '🍃';
                 else if (theme.effect === 'flower') content = '🌺';
                 else if (theme.effect === 'moon') content = '🌙';
@@ -128,14 +137,14 @@ const SeasonalEffects = ({ className }) => {
                         style={{
                             left: 0,
                             width: content ? 'auto' : p.size,
-                            height: content ? 'auto' : p.size,
-                            backgroundColor: content ? 'transparent' : p.color,
+                            height: (content && typeof content === 'string') ? 'auto' : p.size, // SVG needs height
+                            backgroundColor: (content && typeof content === 'string') ? 'transparent' : (isKite && p.isSolid) ? 'transparent' : p.color,
                             borderRadius: theme.effect === 'snow' ? '50%' : '0%',
-                            fontSize: content ? p.size : 0,
+                            fontSize: (content && typeof content === 'string') ? p.size : 0,
                             opacity: p.opacity,
                             animation: `${animationName} ${p.animationDuration} ease-in-out ${p.animationDelay} infinite`,
-                            // Hue rotation for kite colors
-                            filter: isKite ? `hue-rotate(${p.hue}deg)` : 'none',
+                            // Hue rotation for kite colors (only for emoji kites)
+                            filter: (isKite && !p.isSolid) ? `hue-rotate(${p.hue}deg)` : 'none',
                             // Custom properties for kite physics (all left-leaning now)
                             '--sx': p.startX || p.left
                         }}
@@ -144,7 +153,7 @@ const SeasonalEffects = ({ className }) => {
                             Let's force a consistent transform. Emoji 🪁 usually points top-left.
                             If we want them all to point uniform, we keep scaleX(1).
                          */}
-                        <div style={{ zIndex: 10 }}>{content}</div>
+                        <div style={{ zIndex: 10, width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{content}</div>
 
                         {isKite && (
                             <svg
