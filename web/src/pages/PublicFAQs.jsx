@@ -257,7 +257,7 @@ const PublicFAQs = () => {
           <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-500 blur-3xl animate-pulse" style={{ animationDelay: "2s" }}></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 pt-20 pb-24 relative z-10 text-center">
+        <div className="max-w-7xl mx-auto px-4 pt-20 pb-24 relative z-30 text-center">
           <span className="inline-block py-1 px-3 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-sm font-semibold mb-6 backdrop-blur-md">
             Help Center
           </span>

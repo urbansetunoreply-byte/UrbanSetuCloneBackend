@@ -157,7 +157,23 @@ export const getBlogs = async (req, res, next) => {
         }
 
         if (search) {
-            query.$text = { $search: search };
+            const searchRegex = { $regex: search, $options: 'i' };
+            const searchQuery = [
+                { title: searchRegex },
+                { content: searchRegex },
+                { tags: searchRegex }
+            ];
+
+            if (query.$or) {
+                // If $or already exists (e.g. from propertyId logic), combine with $and
+                query.$and = [
+                    { $or: query.$or },
+                    { $or: searchQuery }
+                ];
+                delete query.$or;
+            } else {
+                query.$or = searchQuery;
+            }
         }
 
         // Calculate pagination
