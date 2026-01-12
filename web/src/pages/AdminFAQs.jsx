@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaTimes, FaExternalLinkAlt, FaThumbsUp, FaThumbsDown, FaQuestionCircle } from 'react-icons/fa';
@@ -8,6 +9,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 const AdminFAQs = () => {
   // Set page title
   usePageTitle("FAQs - Admin Panel");
+  const { currentUser } = useSelector((state) => state.user);
 
   const navigate = useNavigate();
   const [faqs, setFaqs] = useState([]);
@@ -492,6 +494,7 @@ const AdminFAQs = () => {
                   <thead>
                     <tr className="bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
                       <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Question & Metadata</th>
+                      {currentUser?.role === 'rootadmin' && <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Author</th>}
                       <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Scope</th>
                       <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Property Link</th>
                       <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Engagement</th>
@@ -522,6 +525,18 @@ const AdminFAQs = () => {
                             </div>
                           </div>
                         </td>
+                        {currentUser?.role === 'rootadmin' && (
+                          <td className="px-8 py-6">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                                {faq.createdBy?.username || 'Unknown'}
+                              </span>
+                              <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+                                Admin
+                              </span>
+                            </div>
+                          </td>
+                        )}
                         <td className="px-8 py-6">
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border ${faq.isGlobal
                             ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'
