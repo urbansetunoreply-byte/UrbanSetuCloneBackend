@@ -188,24 +188,6 @@ const app = express();
 app.set('trust proxy', true);
 
 // Security middleware
-app.use(helmet());
-app.use(globalRateLimiter);
-
-// Increase payload size limit for large file uploads
-app.use((req, res, next) => {
-  if (req.url.includes('/api/deployment/upload') || req.url.includes('/api/upload')) {
-    req.setTimeout(600000); // 10 minutes timeout for file uploads
-    res.setTimeout(600000);
-  }
-  next();
-});
-
-// Configure body parsers with appropriate limits for large file uploads
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ limit: '100mb', extended: true }));
-app.use(cookieParser());
-
-
 const allowedOrigins = [
   'https://urbansetu.vercel.app',
   'https://urbansetuglobal.onrender.com',
@@ -229,6 +211,26 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-CSRF-Token', 'x-csrf-token', 'X-Csrf-Token', 'x-session-id', 'X-Session-Id']
 }));
+
+app.use(helmet());
+app.use(globalRateLimiter);
+
+// Increase payload size limit for large file uploads
+app.use((req, res, next) => {
+  if (req.url.includes('/api/deployment/upload') || req.url.includes('/api/upload')) {
+    req.setTimeout(600000); // 10 minutes timeout for file uploads
+    res.setTimeout(600000);
+  }
+  next();
+});
+
+// Configure body parsers with appropriate limits for large file uploads
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
+app.use(cookieParser());
+
+
+
 
 // Health check endpoint for Render
 app.get('/api/health', (req, res) => {
