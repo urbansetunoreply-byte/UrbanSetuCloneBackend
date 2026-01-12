@@ -210,8 +210,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 // Utility function to normalize route based on role
 function normalizeRoute(path, role) {
-  // Remove trailing slash for consistency
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+
+  // Redirect authenticated users away from auth pages
+  if (role !== "public" && ["/sign-in", "/sign-up", "/forgot-password", "/oauth"].includes(path)) {
+    return role === "admin" ? "/admin" : "/user";
+  }
 
   // List of base routes that have public-facing versions
   const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community"];
