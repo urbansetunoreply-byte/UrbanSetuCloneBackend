@@ -208,12 +208,15 @@ const LoadingSpinner = () => (
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
+import { isAuthenticated } from "./utils/auth";
+
 // Utility function to normalize route based on role
 function normalizeRoute(path, role) {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
   // Redirect authenticated users away from auth pages
-  if (role !== "public" && ["/sign-in", "/sign-up", "/forgot-password", "/oauth"].includes(path)) {
+  // We check isAuthenticated() to avoid redirect loops if Redux state is stale (user executing signout or token expired)
+  if (role !== "public" && isAuthenticated() && ["/sign-in", "/sign-up", "/forgot-password", "/oauth"].includes(path)) {
     return role === "admin" ? "/admin" : "/user";
   }
 

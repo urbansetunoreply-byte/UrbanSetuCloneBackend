@@ -9,7 +9,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 
 import { reconnectSocket } from "../utils/socket";
 import { FaEye, FaEyeSlash, FaEdit } from "react-icons/fa";
-import { areCookiesEnabled, createAuthenticatedFetchOptions, isAuthenticated } from '../utils/auth';
+import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/auth';
 import { focusWithoutKeyboard, isMobileDevice } from '../utils/mobileUtils';
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 import { LogIn, Mail, Lock } from "lucide-react";
@@ -206,23 +206,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
     }, [otpSent]);
 
-    // Block access if already signed in
-    useEffect(() => {
-        if (bootstrapped && sessionChecked && currentUser && !showLoader) {
-            // Validate token exists/is valid before redirecting to prevent loops
-            if (isAuthenticated()) {
-                if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
-                    if (currentUser.isDefaultAdmin) {
-                        navigate('/admin', { replace: true });
-                    } else {
-                        navigate('/admin', { replace: true });
-                    }
-                } else {
-                    navigate('/user', { replace: true });
-                }
-            }
-        }
-    }, [bootstrapped, sessionChecked, currentUser, navigate]);
+
 
     // Timer effect for resend OTP
     useEffect(() => {
