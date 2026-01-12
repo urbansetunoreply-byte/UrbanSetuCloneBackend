@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaEdit, FaPhone, FaMobileAlt, FaAndroid, FaDownload, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -480,11 +481,21 @@ export default function AdminAbout() {
                         <FaChevronDown className="text-blue-600 dark:text-blue-400" />
                       )}
                     </button>
-                    {expandedFaq === idx && (
-                      <div className="p-6 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 transition-colors">
-                        <p className="text-slate-700 dark:text-gray-300 leading-relaxed">{faq.answer}</p>
-                      </div>
-                    )}
+                    <AnimatePresence>
+                      {expandedFaq === idx && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="p-6 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 transition-colors">
+                            <p className="text-slate-700 dark:text-gray-300 leading-relaxed">{faq.answer}</p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 ))}
               </div>
