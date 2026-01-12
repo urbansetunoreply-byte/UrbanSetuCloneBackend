@@ -540,7 +540,11 @@ export default function Settings() {
     if (!deleteOtp || deleteOtp.length !== 6) { setDeleteOtpError('Enter 6-digit OTP'); return; }
     try {
       setDeleteDeleting(true);
-      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentUser.email, otp: deleteOtp })
+      });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'account_deletion') {
         const att = deleteOtpAttempts + 1; setDeleteOtpAttempts(att);
@@ -676,7 +680,11 @@ export default function Settings() {
     if (!transferOtp || transferOtp.length !== 6) { setTransferOtpError('Enter 6-digit OTP'); return; }
     try {
       setTransferDeleteDeleting(true);
-      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentUser.email, otp: transferOtp })
+      });
       const vData = await vRes.json();
       // Backend marks this OTP as 'transfer_rights'
       if (!vRes.ok || vData.success === false || vData.type !== 'transfer_rights') {
@@ -835,7 +843,11 @@ export default function Settings() {
 
     try {
       setTransferTransferring(true);
-      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentUser.email, otp: transferOtp })
+      });
       const vData = await vRes.json();
       // Backend marks this OTP as 'transfer_rights'
       if (!vRes.ok || vData.success === false || vData.type !== 'transfer_rights') {
