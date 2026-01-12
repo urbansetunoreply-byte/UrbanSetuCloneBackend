@@ -187,6 +187,17 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     }
   }, [location]);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (currentUser && sessionChecked) {
+      if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/user', { replace: true });
+      }
+    }
+  }, [currentUser, sessionChecked, navigate]);
+
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData({

@@ -122,6 +122,23 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
     }, [location.search]);
 
+    // Redirect if already logged in
+    useEffect(() => {
+        if (currentUser && sessionChecked) {
+            const searchParams = new URLSearchParams(location.search);
+            const redirectUrl = searchParams.get('redirect');
+            if (redirectUrl && redirectUrl.startsWith('/')) {
+                navigate(redirectUrl, { replace: true });
+            } else {
+                if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
+                    navigate('/admin', { replace: true });
+                } else {
+                    navigate('/user', { replace: true });
+                }
+            }
+        }
+    }, [currentUser, sessionChecked, navigate, location.search]);
+
     // Sync state with URL parameters
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
