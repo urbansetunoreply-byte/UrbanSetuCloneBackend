@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaShieldAlt, FaHandshake, FaComments, FaPhone, FaHome,
     FaStar, FaUserShield, FaExclamationTriangle, FaCheckCircle,
@@ -270,25 +271,36 @@ export default function CommunityGuidelines() {
                                         </p>
                                     </div>
                                 </div>
-                                {expandedSection === section.id ? (
-                                    <FaChevronUp className="text-2xl text-gray-600 dark:text-gray-400" />
-                                ) : (
+                                <motion.div
+                                    animate={{ rotate: expandedSection === section.id ? 180 : 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
                                     <FaChevronDown className="text-2xl text-gray-600 dark:text-gray-400" />
-                                )}
+                                </motion.div>
                             </button>
 
-                            {expandedSection === section.id && (
-                                <div className="p-6 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 transition-colors">
-                                    <ul className="space-y-3">
-                                        {section.rules.map((rule, ruleIndex) => (
-                                            <li key={ruleIndex} className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
-                                                <FaCheckCircle className={`text-${section.color}-500 mt-1 flex-shrink-0`} />
-                                                <span className="leading-relaxed">{rule}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
+                            <AnimatePresence>
+                                {expandedSection === section.id && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="p-6 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 transition-colors">
+                                            <ul className="space-y-3">
+                                                {section.rules.map((rule, ruleIndex) => (
+                                                    <li key={ruleIndex} className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+                                                        <FaCheckCircle className={`text-${section.color}-500 mt-1 flex-shrink-0`} />
+                                                        <span className="leading-relaxed">{rule}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     ))}
                 </div>

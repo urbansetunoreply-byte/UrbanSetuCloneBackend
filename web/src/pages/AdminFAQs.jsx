@@ -604,7 +604,7 @@ const AdminFAQs = () => {
                     type="text"
                     value={formData.question}
                     onChange={(e) => setFormData(prev => ({ ...prev, question: e.target.value }))}
-                    className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white rounded-[25px] focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:border-orange-500 dark:focus:border-orange-500 transition-all font-black text-lg placeholder-gray-300 dark:placeholder-gray-700"
+                    className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded-[25px] focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:border-orange-500 dark:focus:border-orange-500 transition-all font-black text-lg placeholder-gray-300 dark:placeholder-gray-500"
                     placeholder="Wording your inquiry..."
                     required
                   />
@@ -616,7 +616,7 @@ const AdminFAQs = () => {
                     value={formData.answer}
                     onChange={(e) => setFormData(prev => ({ ...prev, answer: e.target.value }))}
                     rows={6}
-                    className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white rounded-[25px] focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:border-orange-500 dark:focus:border-orange-500 transition-all font-bold text-base placeholder-gray-300 dark:placeholder-gray-700 resize-none"
+                    className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded-[25px] focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-900/30 focus:border-orange-500 dark:focus:border-orange-500 transition-all font-bold text-base placeholder-gray-300 dark:placeholder-gray-500 resize-none"
                     placeholder="Crafting the definitive answer..."
                     required
                   />
@@ -629,7 +629,7 @@ const AdminFAQs = () => {
                       <select
                         value={formData.category}
                         onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                        className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white rounded-[25px] focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-500 font-black appearance-none"
+                        className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded-[25px] focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-500 font-black appearance-none"
                       >
                         {categories.map(category => (
                           <option key={category} value={category}>{category}</option>
@@ -643,7 +643,7 @@ const AdminFAQs = () => {
                       type="number"
                       value={formData.priority}
                       onChange={(e) => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) || 0 }))}
-                      className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white rounded-[25px] focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-500 font-black"
+                      className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded-[25px] focus:ring-4 focus:ring-orange-100 dark:focus:ring-orange-500 font-black"
                     />
                   </div>
                 </div>
@@ -665,7 +665,7 @@ const AdminFAQs = () => {
                         propertyId: e.target.value,
                         isGlobal: e.target.value === ''
                       }))}
-                      className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white rounded-[25px] font-black focus:ring-4 focus:ring-orange-500"
+                      className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded-[25px] font-black focus:ring-4 focus:ring-orange-500"
                     >
                       <option value="">MARK AS GLOBAL (ALL ASSETS)</option>
                       {properties

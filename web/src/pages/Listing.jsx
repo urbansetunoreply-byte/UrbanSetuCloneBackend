@@ -7,6 +7,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
 import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar, FaRobot, FaBan, FaExclamationTriangle } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
@@ -3376,57 +3377,67 @@ export default function Listing() {
                             <h4 className="text-lg font-semibold text-gray-900 dark:text-white pr-4">
                               {faq.question}
                             </h4>
-                            <div className="flex-shrink-0">
-                              {expandedFAQ === faq._id ? (
-                                <FaChevronUp className="text-gray-400" />
-                              ) : (
-                                <FaChevronDown className="text-gray-400" />
-                              )}
-                            </div>
+                            <motion.div
+                              animate={{ rotate: expandedFAQ === faq._id ? 180 : 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="flex-shrink-0"
+                            >
+                              <FaChevronDown className="text-gray-400" />
+                            </motion.div>
                           </div>
                         </button>
-                        {expandedFAQ === faq._id && (
-                          <div className="px-6 pb-4 border-t border-gray-100 dark:border-gray-700">
-                            <div className="pt-4">
-                              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                                {faq.answer}
-                              </p>
+                        <AnimatePresence>
+                          {expandedFAQ === faq._id && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-6 pb-4 border-t border-gray-100 dark:border-gray-700">
+                                <div className="pt-4">
+                                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                                    {faq.answer}
+                                  </p>
 
-                              {/* FAQ Rating Section */}
-                              <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Was this helpful?</span>
-                                <div className="flex items-center space-x-2">
-                                  <button
-                                    onClick={() => handleFAQReaction(faq._id, 'like')}
-                                    disabled={faqReactionLoading[faq._id]}
-                                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'like'
-                                      ? 'text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-800'
-                                      : 'text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 border-green-200 dark:border-green-800'
-                                      } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                  >
-                                    {userFAQReactions[faq._id] === 'like' ? <FaThumbsUp /> : <FaRegThumbsUp />}
-                                    <span>
-                                      {faqReactionLoading[faq._id] ? 'Updating...' : 'Yes'} ({faq.helpful || 0})
-                                    </span>
-                                  </button>
-                                  <button
-                                    onClick={() => handleFAQReaction(faq._id, 'dislike')}
-                                    disabled={faqReactionLoading[faq._id]}
-                                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'dislike'
-                                      ? 'text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800'
-                                      : 'text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border-red-200 dark:border-red-800'
-                                      } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                  >
-                                    {userFAQReactions[faq._id] === 'dislike' ? <FaThumbsDown /> : <FaRegThumbsDown />}
-                                    <span>
-                                      {faqReactionLoading[faq._id] ? 'Updating...' : 'No'} ({faq.notHelpful || 0})
-                                    </span>
-                                  </button>
+                                  {/* FAQ Rating Section */}
+                                  <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Was this helpful?</span>
+                                    <div className="flex items-center space-x-2">
+                                      <button
+                                        onClick={() => handleFAQReaction(faq._id, 'like')}
+                                        disabled={faqReactionLoading[faq._id]}
+                                        className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'like'
+                                          ? 'text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-800'
+                                          : 'text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 border-green-200 dark:border-green-800'
+                                          } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      >
+                                        {userFAQReactions[faq._id] === 'like' ? <FaThumbsUp /> : <FaRegThumbsUp />}
+                                        <span>
+                                          {faqReactionLoading[faq._id] ? 'Updating...' : 'Yes'} ({faq.helpful || 0})
+                                        </span>
+                                      </button>
+                                      <button
+                                        onClick={() => handleFAQReaction(faq._id, 'dislike')}
+                                        disabled={faqReactionLoading[faq._id]}
+                                        className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'dislike'
+                                          ? 'text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800'
+                                          : 'text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border-red-200 dark:border-red-800'
+                                          } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      >
+                                        {userFAQReactions[faq._id] === 'dislike' ? <FaThumbsDown /> : <FaRegThumbsDown />}
+                                        <span>
+                                          {faqReactionLoading[faq._id] ? 'Updating...' : 'No'} ({faq.notHelpful || 0})
+                                        </span>
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </div>
-                        )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     ))
                   )}
