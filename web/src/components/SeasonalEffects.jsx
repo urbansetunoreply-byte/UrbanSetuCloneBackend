@@ -98,12 +98,14 @@ const SeasonalEffects = ({ className }) => {
                 else if (theme.effect === 'lantern') content = '🏮';
                 else if (theme.effect === 'mango') content = '🥭';
 
+                const isKite = theme.effect === 'kite';
+
                 return (
                     <div
                         key={p.id}
-                        className="absolute top-0"
+                        className="absolute top-0 flex justify-center"
                         style={{
-                            left: 0, // Using translate for positioning now
+                            left: 0,
                             width: content ? 'auto' : p.size,
                             height: content ? 'auto' : p.size,
                             backgroundColor: content ? 'transparent' : p.color,
@@ -116,7 +118,32 @@ const SeasonalEffects = ({ className }) => {
                             '--sway': p.sway || 1
                         }}
                     >
-                        {content}
+                        <div style={{ zIndex: 10 }}>{content}</div>
+
+                        {isKite && (
+                            <svg
+                                className="absolute pointer-events-none"
+                                width="40"
+                                height="150"
+                                viewBox="0 0 40 150"
+                                style={{
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    marginTop: '5px',
+                                    zIndex: 0,
+                                    overflow: 'visible'
+                                }}
+                            >
+                                <path
+                                    d="M20,0 C20,20 25,40 15,60 C5,80 35,100 20,150"
+                                    stroke="white"
+                                    strokeWidth="1"
+                                    fill="none"
+                                    opacity="0.8"
+                                />
+                            </svg>
+                        )}
                     </div>
                 );
             })}
