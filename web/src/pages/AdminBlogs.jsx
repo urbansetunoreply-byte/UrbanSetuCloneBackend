@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import AdminBlogsSkeleton from '../components/skeletons/AdminBlogsSkeleton';
 import {
@@ -13,6 +14,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 const AdminBlogs = () => {
   // Set page title
   usePageTitle("Blogs - Admin Panel");
+  const { currentUser } = useSelector((state) => state.user);
 
   const navigate = useNavigate();
   const [blogs, setBlogs] = useState([]);
@@ -486,6 +488,7 @@ const AdminBlogs = () => {
                   <thead className="bg-gray-50/80 dark:bg-gray-700/80 text-gray-500 dark:text-gray-400 text-xs uppercase font-bold tracking-wider">
                     <tr>
                       <th className="px-6 py-4 text-left">Article</th>
+                      {currentUser?.role === 'rootadmin' && <th className="px-6 py-4 text-left">Author</th>}
                       <th className="px-6 py-4 text-left">Type</th>
                       <th className="px-6 py-4 text-left">Category</th>
                       <th className="px-6 py-4 text-left">Property</th>
@@ -514,6 +517,18 @@ const AdminBlogs = () => {
                             </div>
                           </div>
                         </td>
+                        {currentUser?.role === 'rootadmin' && (
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                                {blog.author?.username || 'Unknown'}
+                              </span>
+                              <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+                                {blog.author?.role || 'User'}
+                              </span>
+                            </div>
+                          </td>
+                        )}
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${!blog.propertyId
                             ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-800'
