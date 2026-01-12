@@ -64,27 +64,27 @@ const SeasonalEffects = ({ className }) => {
           }
           @keyframes kite-fly-real {
             0% { 
-                transform: translate(var(--sx), 110vh) rotate(0deg) scale(0.5); 
+                transform: translate(var(--sx), 110vh) rotate(calc(45deg * var(--sway))) scale(0.5); 
                 opacity: 0; 
             }
             10% {
                 opacity: 1;
-                transform: translate(calc(var(--sx) + (3vw * var(--sway))), 90vh) rotate(calc(5deg * var(--sway))) scale(0.6);
+                transform: translate(calc(var(--sx) + (3vw * var(--sway))), 90vh) rotate(calc(50deg * var(--sway))) scale(0.6);
             }
             30% {
-                transform: translate(calc(var(--sx) - (4vw * var(--sway))), 70vh) rotate(calc(-3deg * var(--sway))) scale(0.7);
+                transform: translate(calc(var(--sx) - (2vw * var(--sway))), 70vh) rotate(calc(40deg * var(--sway))) scale(0.7);
             }
             50% {
-                transform: translate(calc(var(--sx) + (5vw * var(--sway))), 50vh) rotate(calc(6deg * var(--sway))) scale(0.8);
+                transform: translate(calc(var(--sx) + (3vw * var(--sway))), 50vh) rotate(calc(55deg * var(--sway))) scale(0.8);
             }
             70% {
-                transform: translate(calc(var(--sx) - (3vw * var(--sway))), 30vh) rotate(calc(-2deg * var(--sway))) scale(0.9);
+                transform: translate(calc(var(--sx) - (2vw * var(--sway))), 30vh) rotate(calc(42deg * var(--sway))) scale(0.9);
             }
             90% {
                 opacity: 1;
             }
             100% { 
-                transform: translate(calc(var(--sx) + (6vw * var(--sway))), -20vh) rotate(calc(3deg * var(--sway))) scale(1); 
+                transform: translate(calc(var(--sx) + (4vw * var(--sway))), -20vh) rotate(calc(48deg * var(--sway))) scale(1); 
                 opacity: 0; 
             }
           }
@@ -127,18 +127,18 @@ const SeasonalEffects = ({ className }) => {
                             '--sway': p.sway || 1
                         }}
                     >
-                        <div style={{ zIndex: 10 }}>{content}</div>
+                        <div style={{ zIndex: 10, transform: `scaleX(${p.sway})` }}>{content}</div>
 
                         {isKite && (
                             <svg
                                 className="absolute pointer-events-none"
-                                width={p.isCut ? "40" : "100"}
-                                height={p.isCut ? "150" : "800"}
-                                viewBox={p.isCut ? "0 0 40 150" : "0 0 100 800"}
+                                width={p.isCut ? "40" : "400"}
+                                height={p.isCut ? "150" : "1000"}
+                                viewBox={p.isCut ? "0 0 40 150" : "0 0 400 1000"}
                                 style={{
                                     top: '50%',
                                     left: '50%',
-                                    transform: 'translateX(-50%)',
+                                    transform: 'translateX(-10%)', // Align thread start with kite bottom center roughly
                                     marginTop: '5px',
                                     zIndex: 0,
                                     overflow: 'visible',
@@ -153,8 +153,9 @@ const SeasonalEffects = ({ className }) => {
                                         fill="none"
                                     />
                                 ) : (
+                                    // Long curved thread for flying kites
                                     <path
-                                        d="M50,0 Q53,400 47,800"
+                                        d={p.sway > 0 ? "M20,0 Q50,400 -200,1000" : "M20,0 Q-10,400 200,1000"}
                                         stroke="var(--seasonal-thread)"
                                         strokeWidth="1"
                                         fill="none"
