@@ -332,7 +332,7 @@ export default function Listing() {
 
     if (faqReactionLoading[faqId]) return;
 
-    setFaqReactionLoading(prev => ({ ...prev, [faqId]: true }));
+    setFaqReactionLoading(prev => ({ ...prev, [faqId]: type }));
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/faqs/${faqId}/react`, {
@@ -376,7 +376,7 @@ export default function Listing() {
       console.error('Error rating FAQ:', error);
       alert('Error rating FAQ');
     } finally {
-      setFaqReactionLoading(prev => ({ ...prev, [faqId]: false }));
+      setFaqReactionLoading(prev => ({ ...prev, [faqId]: null }));
     }
   };
 
@@ -3407,7 +3407,7 @@ export default function Listing() {
                                     <div className="flex items-center space-x-2">
                                       <button
                                         onClick={() => handleFAQReaction(faq._id, 'like')}
-                                        disabled={faqReactionLoading[faq._id]}
+                                        disabled={!!faqReactionLoading[faq._id]}
                                         className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'like'
                                           ? 'text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-800'
                                           : 'text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 border-green-200 dark:border-green-800'
@@ -3415,12 +3415,12 @@ export default function Listing() {
                                       >
                                         {userFAQReactions[faq._id] === 'like' ? <FaThumbsUp /> : <FaRegThumbsUp />}
                                         <span>
-                                          {faqReactionLoading[faq._id] ? 'Updating...' : 'Yes'} ({faq.helpful || 0})
+                                          {faqReactionLoading[faq._id] === 'like' ? 'Updating...' : 'Yes'} ({faq.helpful || 0})
                                         </span>
                                       </button>
                                       <button
                                         onClick={() => handleFAQReaction(faq._id, 'dislike')}
-                                        disabled={faqReactionLoading[faq._id]}
+                                        disabled={!!faqReactionLoading[faq._id]}
                                         className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'dislike'
                                           ? 'text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800'
                                           : 'text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border-red-200 dark:border-red-800'
@@ -3428,7 +3428,7 @@ export default function Listing() {
                                       >
                                         {userFAQReactions[faq._id] === 'dislike' ? <FaThumbsDown /> : <FaRegThumbsDown />}
                                         <span>
-                                          {faqReactionLoading[faq._id] ? 'Updating...' : 'No'} ({faq.notHelpful || 0})
+                                          {faqReactionLoading[faq._id] === 'dislike' ? 'Updating...' : 'No'}
                                         </span>
                                       </button>
                                     </div>
