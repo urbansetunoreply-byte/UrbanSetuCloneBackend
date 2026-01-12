@@ -14,7 +14,7 @@ const SeasonalEffects = ({ className }) => {
         // Generate particles only once on mount/theme change
         const particleCount = theme.effect === 'snow' ? 50
             : (theme.effect === 'confetti' || theme.effect === 'tricolor') ? 40
-                : theme.effect === 'kite' ? 15 // Fewer kites as they are larger
+                : theme.effect === 'kite' ? 8 // Reduced for less clutter
                     : 20;
 
         const newParticles = Array.from({ length: particleCount }).map((_, i) => ({
@@ -23,7 +23,7 @@ const SeasonalEffects = ({ className }) => {
             animationDuration: theme.effect === 'kite' ? Math.random() * 5 + 8 + 's' : Math.random() * 3 + 2 + 's', // Slower for kites (8-13s)
             animationDelay: Math.random() * 5 + 's',
             opacity: Math.random() * 0.5 + 0.3,
-            size: theme.effect === 'kite' ? Math.random() * 20 + 30 + 'px' : Math.random() * 10 + 5 + 'px', // Larger kites
+            size: theme.effect === 'kite' ? Math.random() * 40 + 60 + 'px' : Math.random() * 10 + 5 + 'px', // Much Larger kites (60-100px)
             color: theme.effect === 'confetti'
                 ? ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][Math.floor(Math.random() * 5)]
                 : theme.effect === 'tricolor'
@@ -170,13 +170,12 @@ const SeasonalEffects = ({ className }) => {
                                         fill="none"
                                     />
                                 ) : (
-                                    // Unified Long angled thread: Trail down and to the RIGHT (since kite leans/flies LEFT)
-                                    // M20,0 (start) -> Q(control) -> End
-                                    // Start (20,0) -> Control(Near right) -> End (Far bottom right)
+                                    // Unified Long angled thread: Straight diagonal line (~45 deg tilt)
+                                    // Start (20,0) -> End (Straight line to bottom-right)
                                     <path
-                                        d="M20,0 Q60,400 250,1000"
+                                        d="M20,0 L300,800"
                                         stroke="var(--seasonal-thread)"
-                                        strokeWidth="1"
+                                        strokeWidth="1.5"
                                         fill="none"
                                     />
                                 )}
