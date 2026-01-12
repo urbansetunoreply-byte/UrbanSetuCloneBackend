@@ -401,7 +401,6 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
             if (loginRes.ok) {
               setSuccess("Account created! Logging you in...");
-              dispatch(signInSuccess(loginData));
               setPendingLoginData(loginData);
               setShowLoader(true);
             } else {
@@ -426,6 +425,14 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
   const finalizeLogin = async () => {
     if (pendingLoginData) {
+      if (pendingLoginData.token) {
+        localStorage.setItem('accessToken', pendingLoginData.token);
+        if (pendingLoginData.sessionId) localStorage.setItem('sessionId', pendingLoginData.sessionId);
+        if (pendingLoginData.refreshToken) localStorage.setItem('refreshToken', pendingLoginData.refreshToken);
+        localStorage.setItem('login', Date.now());
+      }
+      dispatch(signInSuccess(pendingLoginData));
+
       // Reconnect socket with new token
       reconnectSocket();
 

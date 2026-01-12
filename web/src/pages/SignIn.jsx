@@ -530,19 +530,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 return;
             }
 
-            if (data.token) {
-                localStorage.setItem('accessToken', data.token);
-                if (data.sessionId) localStorage.setItem('sessionId', data.sessionId);
-                if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-                localStorage.setItem('login', Date.now()); // Notify other tabs
-            }
-
             // Trigger Loading Animation
             setPendingLoginData(data);
             setShowLoader(true);
 
-            // Dispatch success to update Redux state
-            dispatch(signInSuccess(data));
+            // Dispatch success deferred to finalizeLogin
 
         } catch (error) {
             dispatch(signInFailure(error.message));
@@ -644,19 +636,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             setRecaptchaToken(null);
             setRecaptchaError("");
 
-            if (data.token) {
-                localStorage.setItem('accessToken', data.token);
-                if (data.sessionId) localStorage.setItem('sessionId', data.sessionId);
-                if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-                localStorage.setItem('login', Date.now()); // Notify other tabs
-            }
-
             // Trigger Loading Animation
             setPendingLoginData(data);
             setShowLoader(true);
 
-            // Dispatch success to update Redux state
-            dispatch(signInSuccess(data));
+            // Dispatch success deferred to finalizeLogin
 
         } catch (error) {
             dispatch(signInFailure(error.message));
@@ -669,6 +653,14 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         if (!pendingLoginData) return;
 
         const data = pendingLoginData;
+
+        if (data.token) {
+            localStorage.setItem('accessToken', data.token);
+            if (data.sessionId) localStorage.setItem('sessionId', data.sessionId);
+            if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+            localStorage.setItem('login', Date.now()); // Notify other tabs
+        }
+        dispatch(signInSuccess(data));
 
         // Reconnect socket with new token
         reconnectSocket();
