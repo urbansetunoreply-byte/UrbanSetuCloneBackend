@@ -26,6 +26,8 @@ const AdminBlogs = () => {
   const [filterStatus, setFilterStatus] = useState('all'); // all, published, draft
   const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Delete Confirmation State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -58,6 +60,12 @@ const AdminBlogs = () => {
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      if (searchTerm.trim().length > 0) {
+        fetchSuggestions();
+      } else {
+        setSuggestions([]);
+      }
+
       if (pagination.current === 1) {
         fetchBlogs(false);
       } else {
@@ -67,6 +75,17 @@ const AdminBlogs = () => {
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
+
+  // Click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.search-container')) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Immediate filter effects
   useEffect(() => {
@@ -123,6 +142,27 @@ const AdminBlogs = () => {
       console.error('Error fetching blogs:', error);
     } finally {
       if (showLoading) setLoading(false);
+    }
+  };
+
+  const fetchSuggestions = async () => {
+    try {
+      const params = new URLSearchParams({
+        published: 'all', // Admin should see all
+        search: searchTerm,
+        limit: 5
+      });
+
+      const response = await fetch(`${API_BASE_URL}/api/blogs?${params}`, {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching blog suggestions:', error);
     }
   };
 
@@ -311,7 +351,7 @@ const AdminBlogs = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
             {/* Search */}
-            <div className="relative group lg:col-span-1">
+            <div className="relative group lg:col-span-1 search-container z-50">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors" />
               </div>
@@ -319,9 +359,49 @@ const AdminBlogs = () => {
                 type="text"
                 placeholder="Search blogs..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
                 className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50 focus:border-blue-400 dark:focus:border-blue-500 transition-all font-medium"
               />
+
+              {/* Suggestions Panel */}
+              {showSuggestions && searchTerm.trim().length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 animate-fade-in">
+                  {suggestions.length > 0 ? (
+                    <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                      {suggestions.map((suggestion) => (
+                        <li key={suggestion._id}>
+                          <button
+                            onClick={() => {
+                              setSearchTerm(suggestion.title);
+                              setShowSuggestions(false);
+                              setPagination(prev => ({ ...prev, current: 1 }));
+                            }}
+                            className="w-full px-5 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex flex-col group"
+                          >
+                            <span className="text-sm font-bold text-gray-800 dark:text-gray-200 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                              {suggestion.title}
+                            </span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded ${suggestion.published ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                }`}>
+                                {suggestion.published ? 'Published' : 'Draft'}
+                              </span>
+                            </div>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="p-4 text-center text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-wider">
+                      No matches found
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Type Filter */}

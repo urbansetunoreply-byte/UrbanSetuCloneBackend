@@ -21,6 +21,8 @@ const PublicBlogs = () => {
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
   const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
@@ -34,6 +36,12 @@ const PublicBlogs = () => {
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      if (searchTerm.trim().length > 0) {
+        fetchSuggestions();
+      } else {
+        setSuggestions([]);
+      }
+
       if (pagination.current === 1) {
         fetchBlogs(false); // Don't show loading for search
       } else {
@@ -43,6 +51,17 @@ const PublicBlogs = () => {
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
+
+  // Click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.search-container')) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Immediate filter effects for category and tag changes
   useEffect(() => {
@@ -82,6 +101,25 @@ const PublicBlogs = () => {
       console.error('Error fetching blogs:', error);
     } finally {
       if (showLoading) setLoading(false);
+    }
+  };
+
+  const fetchSuggestions = async () => {
+    try {
+      const params = new URLSearchParams({
+        published: 'true',
+        search: searchTerm,
+        limit: 5
+      });
+
+      const response = await fetch(`${API_BASE_URL}/api/blogs?${params}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
     }
   };
 
@@ -166,7 +204,7 @@ const PublicBlogs = () => {
           {/* Search Bar in Hero */}
           <div className="max-w-3xl mx-auto relative group">
             <form onSubmit={handleSearch}>
-              <div className="relative">
+              <div className="relative search-container">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                   <SearchIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
@@ -174,12 +212,53 @@ const PublicBlogs = () => {
                   type="text"
                   placeholder="Search articles, topics, or keywords..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
                   className="block w-full pl-12 pr-4 py-4 border-none rounded-2xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 shadow-2xl transition-all text-lg relative"
                 />
                 <button type="submit" className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl font-medium transition-colors shadow-md z-10">
                   Search
                 </button>
+
+                {/* Suggestions Dropdown */}
+                {showSuggestions && searchTerm.trim().length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 animate-fade-in-up">
+                    {suggestions.length > 0 ? (
+                      <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                        {suggestions.map((suggestion) => (
+                          <li key={suggestion._id}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSearchTerm(suggestion.title);
+                                setShowSuggestions(false);
+                                setPagination(prev => ({ ...prev, current: 1 }));
+                              }}
+                              className="w-full px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-center justify-between group"
+                            >
+                              <div>
+                                <h4 className="font-bold text-gray-800 dark:text-gray-200 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                  {suggestion.title}
+                                </h4>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">
+                                  {suggestion.category}
+                                </span>
+                              </div>
+                              <ArrowRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                        No articles found matching "{searchTerm}"
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </form>
           </div>
