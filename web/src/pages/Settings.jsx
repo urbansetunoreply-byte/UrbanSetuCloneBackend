@@ -501,7 +501,11 @@ export default function Settings() {
     setDeleteOtpSent(false);
     try {
       setDeleteProcessing(true);
-      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentUser.email })
+      });
       const sendData = await sendRes.json();
       if (!sendRes.ok || sendData.success === false) {
         setDeleteError(sendData.message || 'Failed to send OTP');
@@ -518,7 +522,11 @@ export default function Settings() {
   const resendDeleteOtp = async () => {
     try {
       setDeleteResending(true);
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentUser.email })
+      });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -625,6 +633,7 @@ export default function Settings() {
       setTransferDeletePasswordAttempts(0);
       const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: currentUser.email })
       });
       const sendData = await sendRes.json();
@@ -648,7 +657,11 @@ export default function Settings() {
     try {
       setTransferResending(true);
       setTransferDeleteResending(true);
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentUser.email })
+      });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -788,6 +801,7 @@ export default function Settings() {
       setTransferPasswordAttempts(0);
       const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: currentUser.email })
       });
       const sendData = await sendRes.json();
@@ -1139,6 +1153,7 @@ export default function Settings() {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/user/export-data`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           password: exportPassword,
           selectedModules: selectedExportModules
