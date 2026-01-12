@@ -457,8 +457,20 @@ export default function Settings() {
     setDeleteError("");
     if (!deletePassword) { setDeleteError('Password is required'); return; }
     setDeleteVerifying(true);
-    const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, { method: 'POST', body: JSON.stringify({ password: deletePassword }) });
+    const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: deletePassword })
+    });
     if (!res.ok) {
+      if (res.status === 400 || res.status >= 500) {
+        let msg = 'Invalid password';
+        try { const d = await res.json(); if (d.message) msg = d.message; } catch (e) { }
+        setDeleteError(msg);
+        setDeleteVerifying(false);
+        return;
+      }
+
       const attempts = deletePasswordAttempts + 1;
       setDeletePasswordAttempts(attempts);
       if (attempts >= 3) {
@@ -585,9 +597,17 @@ export default function Settings() {
       setTransferLoading(true);
       const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: transferDeletePassword })
       });
       if (!verifyRes.ok) {
+        if (verifyRes.status === 400 || verifyRes.status >= 500) {
+          let msg = 'Invalid password';
+          try { const d = await verifyRes.json(); if (d.message) msg = d.message; } catch (e) { }
+          setTransferDeleteError(msg);
+          setTransferLoading(false);
+          return;
+        }
         const attempts = transferDeletePasswordAttempts + 1;
         setTransferDeletePasswordAttempts(attempts);
         if (attempts >= 3) {
@@ -740,9 +760,17 @@ export default function Settings() {
     try {
       const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: transferPassword })
       });
       if (!verifyRes.ok) {
+        if (verifyRes.status === 400 || verifyRes.status >= 500) {
+          let msg = 'Invalid password';
+          try { const d = await verifyRes.json(); if (d.message) msg = d.message; } catch (e) { }
+          setTransferError(msg);
+          setTransferSubmitting(false);
+          return;
+        }
         const attempts = transferPasswordAttempts + 1;
         setTransferPasswordAttempts(attempts);
         if (attempts >= 3) {
@@ -1066,9 +1094,18 @@ export default function Settings() {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: exportPassword })
       });
       if (!res.ok) {
+        if (res.status === 400 || res.status >= 500) {
+          let msg = 'Invalid password';
+          try { const d = await res.json(); if (d.message) msg = d.message; } catch (e) { }
+          setExportPasswordError(msg);
+          setExportPasswordVerifying(false);
+          return;
+        }
+
         const attempts = exportPasswordAttempts + 1;
         setExportPasswordAttempts(attempts);
         if (attempts >= 3) {
