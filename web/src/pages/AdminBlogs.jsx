@@ -347,7 +347,7 @@ const AdminBlogs = () => {
       <div className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-10 relative z-10 pb-20">
 
         {/* Filters Card */}
-        <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 mb-8 animate-fade-in-up transition-all">
+        <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 mb-8 animate-fade-in-up transition-all relative z-40">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
             {/* Search */}
