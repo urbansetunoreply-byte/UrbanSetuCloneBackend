@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { useSelector } from "react-redux";
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
+import { isAuthenticated } from '../utils/auth';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { UserPlus, Mail, Lock, User, Phone } from "lucide-react";
 import PrimaryButton from "../components/ui/PrimaryButton";
@@ -451,10 +452,12 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
   useEffect(() => {
     if (bootstrapped && sessionChecked && currentUser && !showLoader) {
-      if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate('/user', { replace: true });
+      if (isAuthenticated()) {
+        if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
+          navigate('/admin', { replace: true });
+        } else {
+          navigate('/user', { replace: true });
+        }
       }
     }
   }, [bootstrapped, sessionChecked, currentUser, navigate, showLoader]);
