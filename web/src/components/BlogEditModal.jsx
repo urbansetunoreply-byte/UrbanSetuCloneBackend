@@ -262,51 +262,66 @@ const BlogEditModal = ({
               <div className="space-y-4">
                 <label className="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">🖼️ Main Thumbnail</label>
                 <div className="flex flex-col gap-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleThumbnailUpload}
-                    className="hidden"
-                    id="thumbnail-upload"
-                  />
-                  {!formData.thumbnail ? (
-                    <label htmlFor="thumbnail-upload" className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-3xl hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all group">
-                      <FaCloudUploadAlt className="text-4xl text-gray-300 dark:text-gray-600 group-hover:text-blue-500 transition-colors mb-2" />
-                      <span className="text-sm font-bold text-gray-500 dark:text-gray-400">Upload Featured Image</span>
+                  {/* Input Row */}
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder="Paste Thumbnail URL..."
+                      value={formData.thumbnail || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, thumbnail: e.target.value }))}
+                      className="flex-1 px-4 py-3 border dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors text-sm font-medium border-gray-200"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleThumbnailUpload}
+                      className="hidden"
+                      id="thumbnail-upload"
+                    />
+                    <label
+                      htmlFor="thumbnail-upload"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl cursor-pointer transition-colors shadow-sm flex items-center gap-2"
+                    >
+                      {uploading ? <span className="animate-spin">⏳</span> : <FaCloudUploadAlt />}
+                      <span className="hidden sm:inline text-xs font-bold uppercase">Upload</span>
                     </label>
-                  ) : (
+                    {formData.thumbnail && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, thumbnail: '' }))}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl transition-colors shadow-sm"
+                        title="Remove thumbnail"
+                      >
+                        <FaTimes />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Preview Area */}
+                  {formData.thumbnail && (
                     <div
-                      className="relative group overflow-hidden rounded-2xl shadow-xl aspect-video bg-gray-200 dark:bg-gray-800 cursor-pointer"
+                      className="relative group overflow-hidden rounded-2xl shadow-xl aspect-video bg-gray-200 dark:bg-gray-800 cursor-pointer border border-gray-200 dark:border-gray-700"
                       onClick={() => setPreviewImage(formData.thumbnail)}
                     >
                       <img
                         src={formData.thumbnail}
                         alt="Thumbnail preview"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                        <label
-                          htmlFor="thumbnail-upload"
-                          className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 cursor-pointer transition-colors pointer-events-auto"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <FaCloudUploadAlt className="text-xl" />
-                        </label>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFormData(prev => ({ ...prev, thumbnail: '' }));
-                          }}
-                          className="p-3 bg-red-500/80 backdrop-blur-md rounded-full text-white hover:bg-red-600 ml-3 transition-colors pointer-events-auto"
-                        >
-                          <FaTimes className="text-xl" />
-                        </button>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
+                        {/* Simple visual cue on hover */}
                       </div>
                     </div>
                   )}
+
+                  {/* Empty State Placeholder (only if no thumbnail) */}
+                  {!formData.thumbnail && (
+                    <div className="p-8 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-2xl flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/50">
+                      <FaImage className="text-3xl mb-2 opacity-50" />
+                      <span className="text-xs font-bold uppercase tracking-wider">No Thumbnail Selected</span>
+                    </div>
+                  )}
                 </div>
-                {uploading && formData.thumbnail && <div className="text-blue-500 font-bold animate-pulse text-sm mt-2 text-center">Uploading new thumbnail...</div>}
               </div>
 
               {/* Additional Media */}
