@@ -117,7 +117,7 @@ const SeasonalEffects = ({ className }) => {
                 if (theme.effect === 'hearts') content = '❤️';
                 else if (theme.effect === 'kite') {
                     content = p.isSolid ? (
-                        <svg width="100%" height="100%" viewBox="0 0 50 60" style={{ overflow: 'visible', filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' }}>
+                        <svg width="100%" height="100%" viewBox="0 0 50 85" style={{ overflow: 'visible', filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' }}>
                             {/* Kite Body */}
                             <path d="M25,0 L50,20 L25,60 L0,20 Z" fill={p.color} />
                             {/* Vertical Spar */}
@@ -126,6 +126,8 @@ const SeasonalEffects = ({ className }) => {
                             <path d="M0,20 Q25,28 50,20" stroke="rgba(0,0,0,0.3)" strokeWidth="0.5" fill="none" />
                             {/* Decorative Icon */}
                             <path d="M25,18 L32,25 L25,32 L18,25 Z" fill="rgba(255,255,255,0.6)" />
+                            {/* Ribbon Tail */}
+                            <path d="M25,60 Q15,70 35,75 T25,85" stroke={p.color} strokeWidth="3" fill="none" strokeLinecap="round" />
                         </svg>
                     ) : '🪁';
                 }
