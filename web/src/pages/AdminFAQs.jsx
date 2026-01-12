@@ -176,7 +176,7 @@ const AdminFAQs = () => {
       answer: '',
       category: 'General',
       propertyId: '',
-      isGlobal: false,
+      isGlobal: true, // Default to Global
       tags: [],
       priority: 0,
       isActive: true
@@ -216,7 +216,8 @@ const AdminFAQs = () => {
 
       const requestBody = {
         ...formData,
-        propertyId: formData.propertyId || null
+        propertyId: formData.propertyId || null,
+        isGlobal: !formData.propertyId // Ensure isGlobal is correct based on propertyId
       };
 
       const response = await fetch(url, {
@@ -687,7 +688,7 @@ const AdminFAQs = () => {
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         propertyId: e.target.value,
-                        isGlobal: e.target.value === ''
+                        isGlobal: !e.target.value // If propertyId is empty/null, isGlobal should be true
                       }))}
                       className="w-full px-6 py-5 border-2 border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded-[25px] font-black focus:ring-4 focus:ring-orange-500"
                     >

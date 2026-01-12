@@ -70,6 +70,7 @@ const PublicFAQs = () => {
       if (showLoading) setLoading(true);
       const params = new URLSearchParams({
         isGlobal: 'true',
+        isActive: 'true',
         page: pagination.current,
         limit: 10
       });
