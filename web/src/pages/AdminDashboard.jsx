@@ -31,6 +31,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import DailyQuote from "../components/DailyQuote";
 import SeasonalEffects from "../components/SeasonalEffects";
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
+import ThemeDetailModal from "../components/ThemeDetailModal";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminDashboard() {
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);
   const [appointmentCount, setAppointmentCount] = useState(0);
+  const [showThemeInfo, setShowThemeInfo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sentimentSummary, setSentimentSummary] = useState({ positive: 0, negative: 0, neutral: 0, topWords: [] });
 
@@ -894,7 +896,15 @@ export default function AdminDashboard() {
           <div className="relative z-10">
             <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
               Welcome back, {currentUser.username}! 👋
-              {theme && <span className="text-2xl" title={theme.name}>{theme.icon}</span>}
+              {theme && (
+                <span
+                  className="text-2xl cursor-pointer hover:scale-110 transition-transform filter drop-shadow-md animate-bounce"
+                  title={theme.name}
+                  onClick={() => setShowThemeInfo(true)}
+                >
+                  {theme.icon}
+                </span>
+              )}
             </h1>
             <p className="text-blue-100 text-lg max-w-2xl">
               {theme?.greeting ? theme.greeting : "Here's what's happening with your platform today."} Check your analytics and manage listings efficiently.
@@ -2037,6 +2047,11 @@ export default function AdminDashboard() {
           </form>
         </div>
       )}
+      <ThemeDetailModal
+        theme={theme}
+        isOpen={showThemeInfo}
+        onClose={() => setShowThemeInfo(false)}
+      />
     </div>
   );
 } 
