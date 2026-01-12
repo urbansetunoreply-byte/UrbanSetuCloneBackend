@@ -510,7 +510,14 @@ const AdminFAQs = () => {
 
               {/* Mobile List View */}
               <div className="lg:hidden p-4 space-y-4">
-                {faqs.map((faq) => (
+                {faqs.length === 0 ? (
+                  <div className="p-20 text-center">
+                    <div className="opacity-20 flex flex-col items-center">
+                      <FaQuestionCircle className="text-8xl mb-4 text-gray-400 dark:text-gray-600" />
+                      <p className="text-xl font-black text-gray-500 dark:text-gray-400">NO QUESTIONS FOUND</p>
+                    </div>
+                  </div>
+                ) : faqs.map((faq) => (
                   <div key={faq._id} className={`rounded-3xl shadow-xl p-6 border-l-8 transition-all duration-300 transform active:scale-95 ${!faq.isActive
                     ? 'bg-white dark:bg-gray-800 border-rose-500 dark:border-rose-600'
                     : 'bg-white dark:bg-gray-800 border-orange-500 dark:border-orange-600'}`}>
