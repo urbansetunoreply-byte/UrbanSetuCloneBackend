@@ -21,6 +21,7 @@ import AdHighperformanceBanner from "../components/AdHighperformanceBanner";
 import SeasonalEffects from "../components/SeasonalEffects";
 import DailyQuote from "../components/DailyQuote";
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
+import ThemeDetailModal from "../components/ThemeDetailModal";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -37,6 +38,7 @@ export default function PublicHome() {
   const [stats, setStats] = useState({ properties: 0, users: 0, transactions: 0, satisfaction: 0 });
   const swiperRef = useRef(null);
   const navigate = useNavigate();
+  const [showThemeInfo, setShowThemeInfo] = useState(false);
 
   const [loading, setLoading] = useState(true);
 
@@ -184,7 +186,11 @@ export default function PublicHome() {
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
               </span>
               {theme ? (
-                <span className="flex items-center gap-2">
+                <span
+                  className="flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => setShowThemeInfo(true)}
+                  title={theme.name}
+                >
                   {theme.icon} {theme.greeting}
                 </span>
               ) : (
@@ -511,6 +517,11 @@ export default function PublicHome() {
 
       <ContactSupportWrapper />
       <GeminiAIWrapper />
+      <ThemeDetailModal
+        theme={theme}
+        isOpen={showThemeInfo}
+        onClose={() => setShowThemeInfo(false)}
+      />
     </div>
   );
 }

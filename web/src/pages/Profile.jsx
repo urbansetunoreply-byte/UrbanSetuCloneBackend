@@ -34,6 +34,53 @@ import avataaarsSchema from '../data/dicebear-avataaars-schema.json';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSignout } from '../hooks/useSignout';
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
+import ThemeDetailModal from "../components/ThemeDetailModal";
+
+const THEME_DECORATIONS = {
+  'santa-hat': { icon: '🎅', animate: 'animate-wiggle', size: 'text-2xl', pos: '-top-3 -right-2' },
+  'party-hat': { icon: '🎉', animate: 'animate-wiggle', size: 'text-2xl', pos: '-top-4 -right-2' },
+  'kite': { icon: '🪁', animate: 'animate-sway', size: 'text-2xl', pos: '-top-4 -right-3' },
+  'flag': { icon: '🇮🇳', animate: 'animate-wiggle-slow', size: 'text-2xl', pos: '-top-3 -right-2' },
+  'heart': { icon: '❤️', animate: 'animate-grow-shrink', size: 'text-xl', pos: '-top-3 -right-2' },
+  'pumpkin': { icon: '🎃', animate: 'animate-bounce', size: 'text-xl', pos: '-top-3 -right-2' },
+  'colors': { icon: '🎨', animate: 'animate-spin-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'mango': { icon: '🥭', animate: 'animate-wiggle-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'moon': { icon: '🌙', animate: 'animate-pulse', size: 'text-xl', pos: '-top-3 -right-2' },
+  'bow': { icon: '🏹', animate: 'animate-pulse -rotate-45', size: 'text-xl', pos: '-top-3 -right-2' },
+  'rakhi': { icon: '🧵', animate: 'animate-wiggle', size: 'text-xl', pos: '-top-3 -right-2' },
+  'modak': { icon: '🥟', animate: 'animate-bounce', size: 'text-xl', pos: '-top-3 -right-2' },
+  'flower': { icon: '🌺', animate: 'animate-spin', size: 'text-xl', pos: '-top-3 -right-2', style: { animationDuration: '8s' } },
+  'marigold': { icon: '🌼', animate: 'animate-spin-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'diya': { icon: '🪔', animate: 'animate-flicker', size: 'text-2xl', pos: '-top-3 -right-2' },
+  'snow-cap': { icon: '❄️', animate: 'animate-spin-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'clover': { icon: '☘️', animate: 'animate-wiggle', size: 'text-xl', pos: '-top-3 -right-2' },
+  'leaf': { icon: '🌱', animate: 'animate-grow-shrink', size: 'text-xl', pos: '-top-3 -right-2' },
+  'glasses': { icon: '👓', animate: 'animate-wiggle-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'turkey': { icon: '🦃', animate: 'animate-bounce', size: 'text-xl', pos: '-top-3 -right-2' },
+  'dragon': { icon: '🐉', animate: 'animate-sway', size: 'text-xl', pos: '-top-3 -right-2' },
+  'trident': { icon: '🔱', animate: 'animate-pulse', size: 'text-xl', pos: '-top-3 -right-2' },
+  'mace': { icon: '🙏', animate: 'animate-wiggle', size: 'text-xl', pos: '-top-3 -right-2' },
+  'cross': { icon: '✝️', animate: 'animate-pulse', size: 'text-xl', pos: '-top-3 -right-2' },
+  'egg': { icon: '🥚', animate: 'animate-bounce', size: 'text-xl', pos: '-top-3 -right-2' },
+  'lantern': { icon: '🕌', animate: 'animate-flicker', size: 'text-xl', pos: '-top-3 -right-2' },
+  'chariot': { icon: '🎡', animate: 'animate-spin-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'flute': { icon: '🪈', animate: 'animate-wiggle', size: 'text-xl', pos: '-top-3 -right-2' },
+  'torch': { icon: '🔥', animate: 'animate-flicker', size: 'text-2xl', pos: '-top-3 -right-2' },
+  'atom': { icon: '⚛️', animate: 'animate-spin-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'lotus': { icon: '🪷', animate: 'animate-grow-shrink', size: 'text-xl', pos: '-top-3 -right-2' },
+  'book': { icon: '📚', animate: 'animate-wiggle-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'balloon': { icon: '🎈', animate: 'animate-fly', size: 'text-2xl', pos: '-top-3 -right-2' },
+  'building': { icon: '🏗️', animate: '', size: 'text-xl', pos: '-top-3 -right-2' },
+  'rocket': { icon: '🚀', animate: 'animate-fly', size: 'text-2xl', pos: '-top-3 -right-2' },
+  'bonfire': { icon: '🔥', animate: 'animate-flicker', size: 'text-2xl', pos: '-top-3 -right-2' },
+  'peace': { icon: '☮️', animate: 'animate-spin-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'harvest': { icon: '🌾', animate: 'animate-sway', size: 'text-xl', pos: '-top-3 -right-2' },
+  'tie': { icon: '👔', animate: '', size: 'text-xl', pos: '-top-3 -right-2' },
+  'khanda': { icon: '☬', animate: 'animate-pulse', size: 'text-xl', pos: '-top-3 -right-2' },
+  'gudi': { icon: '🪁', animate: 'animate-sway', size: 'text-2xl', pos: '-top-4 -right-3' },
+  'sun': { icon: '☀️', animate: 'animate-spin-slow', size: 'text-xl', pos: '-top-3 -right-2' },
+  'venus': { icon: '♀️', animate: 'animate-pulse', size: 'text-xl', pos: '-top-3 -right-2' },
+};
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Animation CSS classes
@@ -308,6 +355,7 @@ export default function Profile() {
   const [statsAnimated, setStatsAnimated] = useState(false);
 
   const navigate = useNavigate();
+  const [showThemeInfo, setShowThemeInfo] = useState(false);
 
   // SetuCoins State
   const [coinData, setCoinData] = useState({ balance: 0, streak: 0, expiryDate: null, frozenCoins: 0, loading: true });
@@ -1317,53 +1365,33 @@ export default function Profile() {
                       {currentUser.username}
                     </span>
                     {/* Seasonal Animated Icon */}
-                    {theme?.logoDecoration === 'santa-hat' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle" title={theme.name}>🎅</span>}
-                    {theme?.logoDecoration === 'party-hat' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle" title={theme.name}>🎉</span>}
-                    {theme?.logoDecoration === 'kite' && <span className="text-3xl ml-2 filter drop-shadow-md animate-sway" title={theme.name}>🪁</span>}
-                    {theme?.logoDecoration === 'flag' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle-slow" title={theme.name}>🇮🇳</span>}
-                    {theme?.logoDecoration === 'heart' && <span className="text-3xl ml-2 filter drop-shadow-md animate-grow-shrink" title={theme.name}>❤️</span>}
-                    {theme?.logoDecoration === 'pumpkin' && <span className="text-3xl ml-2 filter drop-shadow-md animate-bounce" title={theme.name}>🎃</span>}
-                    {theme?.logoDecoration === 'colors' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin-slow" title={theme.name}>🎨</span>}
-                    {theme?.logoDecoration === 'mango' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle-slow" title={theme.name}>🥭</span>}
-                    {theme?.logoDecoration === 'moon' && <span className="text-3xl ml-2 filter drop-shadow-md animate-pulse" title={theme.name}>🌙</span>}
-                    {theme?.logoDecoration === 'bow' && <span className="text-3xl ml-2 filter drop-shadow-md -rotate-45 animate-pulse" title={theme.name}>🏹</span>}
-                    {theme?.logoDecoration === 'rakhi' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle" title={theme.name}>🧵</span>}
-                    {theme?.logoDecoration === 'modak' && <span className="text-3xl ml-2 filter drop-shadow-md animate-bounce" title={theme.name}>🥟</span>}
-                    {theme?.logoDecoration === 'flower' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin" style={{ animationDuration: '8s' }} title={theme.name}>🌺</span>}
-                    {theme?.logoDecoration === 'marigold' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin-slow" title={theme.name}>🌼</span>}
-                    {theme?.logoDecoration === 'diya' && <span className="text-3xl ml-2 filter drop-shadow-md animate-flicker" title={theme.name}>🪔</span>}
-                    {theme?.logoDecoration === 'snow-cap' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin-slow" title={theme.name}>❄️</span>}
-                    {theme?.logoDecoration === 'clover' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle" title={theme.name}>☘️</span>}
-                    {theme?.logoDecoration === 'leaf' && <span className="text-3xl ml-2 filter drop-shadow-md animate-grow-shrink" title={theme.name}>🌱</span>}
-                    {theme?.logoDecoration === 'glasses' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle-slow" title={theme.name}>👓</span>}
-                    {theme?.logoDecoration === 'turkey' && <span className="text-3xl ml-2 filter drop-shadow-md animate-bounce" title={theme.name}>🦃</span>}
-                    {theme?.logoDecoration === 'dragon' && <span className="text-3xl ml-2 filter drop-shadow-md animate-sway" title={theme.name}>🐉</span>}
-                    {theme?.logoDecoration === 'trident' && <span className="text-3xl ml-2 filter drop-shadow-md animate-pulse" title={theme.name}>🔱</span>}
-                    {theme?.logoDecoration === 'mace' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle" title={theme.name}>🙏</span>}
-                    {theme?.logoDecoration === 'cross' && <span className="text-3xl ml-2 filter drop-shadow-md animate-pulse" title={theme.name}>✝️</span>}
-                    {theme?.logoDecoration === 'egg' && <span className="text-3xl ml-2 filter drop-shadow-md animate-bounce" title={theme.name}>🥚</span>}
-                    {theme?.logoDecoration === 'lantern' && <span className="text-3xl ml-2 filter drop-shadow-md animate-flicker" title={theme.name}>🕌</span>}
-                    {theme?.logoDecoration === 'chariot' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin-slow" title={theme.name}>🎡</span>}
-                    {theme?.logoDecoration === 'flute' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle" title={theme.name}>🪈</span>}
-                    {theme?.logoDecoration === 'torch' && <span className="text-3xl ml-2 filter drop-shadow-md animate-flicker" title={theme.name}>🔥</span>}
-                    {theme?.logoDecoration === 'atom' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin-slow" title={theme.name}>⚛️</span>}
-                    {theme?.logoDecoration === 'lotus' && <span className="text-3xl ml-2 filter drop-shadow-md animate-grow-shrink" title={theme.name}>🪷</span>}
-                    {theme?.logoDecoration === 'book' && <span className="text-3xl ml-2 filter drop-shadow-md animate-wiggle-slow" title={theme.name}>📚</span>}
-                    {theme?.logoDecoration === 'balloon' && <span className="text-3xl ml-2 filter drop-shadow-md animate-fly" title={theme.name}>🎈</span>}
-                    {theme?.logoDecoration === 'building' && <span className="text-3xl ml-2 filter drop-shadow-md" title={theme.name}>🏗️</span>}
-                    {theme?.logoDecoration === 'rocket' && <span className="text-3xl ml-2 filter drop-shadow-md animate-fly" title={theme.name}>🚀</span>}
-                    {theme?.logoDecoration === 'bonfire' && <span className="text-3xl ml-2 filter drop-shadow-md animate-flicker" title={theme.name}>🔥</span>}
-                    {theme?.logoDecoration === 'peace' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin-slow" title={theme.name}>☮️</span>}
-                    {theme?.logoDecoration === 'harvest' && <span className="text-3xl ml-2 filter drop-shadow-md animate-sway" title={theme.name}>🌾</span>}
-                    {theme?.logoDecoration === 'tie' && <span className="text-3xl ml-2 filter drop-shadow-md" title={theme.name}>👔</span>}
-                    {theme?.logoDecoration === 'khanda' && <span className="text-3xl ml-2 filter drop-shadow-md animate-pulse" title={theme.name}>☬</span>}
-                    {theme?.logoDecoration === 'gudi' && <span className="text-3xl ml-2 filter drop-shadow-md animate-sway" title={theme.name}>🪁</span>}
-                    {theme?.logoDecoration === 'sun' && <span className="text-3xl ml-2 filter drop-shadow-md animate-spin-slow" title={theme.name}>☀️</span>}
-                    {theme?.logoDecoration === 'venus' && <span className="text-3xl ml-2 filter drop-shadow-md animate-pulse" title={theme.name}>♀️</span>}
-
-                    {/* Fallback for when no specific logoDecoration is matched but icon exists */}
+                    {theme?.logoDecoration && THEME_DECORATIONS[theme.logoDecoration] && (
+                      <span
+                        className={`text-3xl ml-2 filter drop-shadow-md ${THEME_DECORATIONS[theme.logoDecoration].animate} cursor-pointer hover:scale-110 transition-transform`}
+                        style={THEME_DECORATIONS[theme.logoDecoration].style || {}}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setShowThemeInfo(true);
+                        }}
+                        title={theme.name}
+                      >
+                        {THEME_DECORATIONS[theme.logoDecoration].icon}
+                      </span>
+                    )}
+                    {/* Fallback */}
                     {theme?.icon && !theme?.logoDecoration && (
-                      <span className="text-3xl ml-2 filter drop-shadow-md animate-bounce" title={theme.name}>{theme.icon}</span>
+                      <span
+                        className="text-3xl ml-2 filter drop-shadow-md animate-bounce cursor-pointer hover:scale-110 transition-transform"
+                        title={theme.name}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setShowThemeInfo(true);
+                        }}
+                      >
+                        {theme.icon}
+                      </span>
                     )}
                     {currentUser.role === 'admin' && (
                       <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-sm px-3 py-1 rounded-full font-medium transform transition-all duration-300 hover:scale-110 hover:bg-purple-200 dark:hover:bg-purple-800 flex items-center gap-1">
@@ -2503,6 +2531,11 @@ export default function Profile() {
 
       {/* Contact Support Wrapper */}
       <ContactSupportWrapper />
+      <ThemeDetailModal
+        theme={theme}
+        isOpen={showThemeInfo}
+        onClose={() => setShowThemeInfo(false)}
+      />
     </div>
   );
 }

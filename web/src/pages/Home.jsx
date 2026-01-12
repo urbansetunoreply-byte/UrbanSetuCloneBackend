@@ -21,6 +21,7 @@ import AdsterraBanner from "../components/AdsterraBanner";
 import SeasonalEffects from "../components/SeasonalEffects";
 import DailyQuote from "../components/DailyQuote";
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
+import ThemeDetailModal from "../components/ThemeDetailModal";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -40,6 +41,7 @@ export default function Home() {
   const [stats, setStats] = useState({ properties: 0, users: 0, transactions: 0, satisfaction: 0 });
   const swiperRef = useRef(null);
   const navigate = useNavigate();
+  const [showThemeInfo, setShowThemeInfo] = useState(false);
 
   // Helper to determine if we are in user dashboard context for links
   const isUser = true; // Since this is Home.jsx, it usually implies a logged-in user context or main entry. 
@@ -211,7 +213,8 @@ export default function Home() {
                     const name = currentUser.firstName || currentUser.username || currentUser.name || currentUser.fullName || 'Friend';
                     const hour = new Date().getHours();
                     const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-                    const emoji = hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙';
+                    // Use seasonal icon if available, otherwise time-based emoji
+                    const emoji = theme ? theme.icon : (hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙');
 
                     return (
                       <span className="text-lg sm:text-xl font-bold flex items-center gap-2">
@@ -219,7 +222,11 @@ export default function Home() {
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
                           {name}!
                         </span>
-                        <span className="animate-bounce inline-block ml-1 text-2xl filter drop-shadow-md">
+                        <span
+                          className={`animate-bounce inline-block ml-1 text-2xl filter drop-shadow-md ${theme ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}
+                          onClick={() => theme && setShowThemeInfo(true)}
+                          title={theme ? theme.name : "Greetings"}
+                        >
                           {emoji}
                         </span>
                       </span>
@@ -602,6 +609,11 @@ export default function Home() {
 
       <ContactSupportWrapper />
       <GeminiAIWrapper />
+      <ThemeDetailModal
+        theme={theme}
+        isOpen={showThemeInfo}
+        onClose={() => setShowThemeInfo(false)}
+      />
     </div>
   );
 }
