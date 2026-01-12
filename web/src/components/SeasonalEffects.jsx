@@ -31,9 +31,10 @@ const SeasonalEffects = ({ className }) => {
                     : theme.effect === 'snow'
                         ? 'var(--snow-color)'
                         : '#FFF',
-            // Specific to kites for randomness
+            // Specific to kites
             sway: Math.random() > 0.5 ? 1 : -1,
-            startX: Math.random() * 100 + 'vw'
+            startX: Math.random() * 100 + 'vw',
+            isCut: theme.effect === 'kite' ? Math.random() < 0.4 : false // 40% are cut (pench), 60% flying
         }));
 
         setParticles(newParticles);
@@ -123,25 +124,35 @@ const SeasonalEffects = ({ className }) => {
                         {isKite && (
                             <svg
                                 className="absolute pointer-events-none"
-                                width="40"
-                                height="150"
-                                viewBox="0 0 40 150"
+                                width={p.isCut ? "40" : "100"}
+                                height={p.isCut ? "150" : "800"}
+                                viewBox={p.isCut ? "0 0 40 150" : "0 0 100 800"}
                                 style={{
                                     top: '50%',
                                     left: '50%',
                                     transform: 'translateX(-50%)',
                                     marginTop: '5px',
                                     zIndex: 0,
-                                    overflow: 'visible'
+                                    overflow: 'visible',
+                                    opacity: p.isCut ? 0.8 : 0.4
                                 }}
                             >
-                                <path
-                                    d="M20,0 C20,20 25,40 15,60 C5,80 35,100 20,150"
-                                    stroke="white"
-                                    strokeWidth="1"
-                                    fill="none"
-                                    opacity="0.8"
-                                />
+                                {p.isCut ? (
+                                    <path
+                                        d="M20,0 C20,20 25,40 15,60 C5,80 35,100 20,150"
+                                        stroke="white"
+                                        strokeWidth="1"
+                                        fill="none"
+                                        opacity="0.9"
+                                    />
+                                ) : (
+                                    <path
+                                        d="M50,0 Q53,400 47,800"
+                                        stroke="white"
+                                        strokeWidth="0.8"
+                                        fill="none"
+                                    />
+                                )}
                             </svg>
                         )}
                     </div>
