@@ -380,7 +380,6 @@ const PublicFAQs = () => {
                               }`}
                           >
                             <ThumbsDown className={`w-4 h-4 ${userReactions[faq._id] === 'dislike' ? 'fill-current' : ''}`} />
-                            <span>{faq.notHelpful || 0}</span>
                           </button>
                         </div>
                       </div>
