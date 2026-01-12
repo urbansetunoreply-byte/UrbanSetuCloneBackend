@@ -426,14 +426,14 @@ const PublicFAQs = () => {
                         {faq.answer}
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
                         <div className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 transition-colors">
                           <Info className="w-3 h-3" />
                           Last updated: {new Date(faq.updatedAt).toLocaleDateString()}
                         </div>
 
-                        <div className="flex items-center gap-3 ml-auto">
-                          <span className="text-sm font-medium text-gray-500 dark:text-gray-400 hidden sm:inline">Was this helpful?</span>
+                        <div className="flex items-center gap-3 self-end sm:self-auto">
+                          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Was this helpful?</span>
 
                           <button
                             onClick={(e) => handleRating(faq._id, 'like', e)}
