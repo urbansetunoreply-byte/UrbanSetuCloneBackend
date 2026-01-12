@@ -1,14 +1,16 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { socket } from './utils/socket';
 import { toast } from 'react-toastify';
+import { signoutUserSuccess } from './redux/user/userSlice';
 
 const WishlistContext = createContext();
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const WishlistProvider = ({ children }) => {
+  const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -39,8 +41,8 @@ const WishlistProvider = ({ children }) => {
         setWishlist(listings);
       } else if (response.status === 401) {
         setWishlist([]);
-        toast.error('Session expired or unauthorized. Please sign in again.');
-        window.location.href = '/sign-in';
+        dispatch(signoutUserSuccess());
+        // toast.error('Session expired. Please sign in again.'); // Optional: avoid spamming toasts on auto-logout
       } else {
         console.error('Failed to fetch wishlist');
         setWishlist([]);

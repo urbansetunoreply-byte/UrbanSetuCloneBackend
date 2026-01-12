@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
+import { signoutUserSuccess } from '../redux/user/userSlice';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -16,6 +17,7 @@ export const useImageFavorites = () => {
 };
 
 export const ImageFavoritesProvider = ({ children }) => {
+    const dispatch = useDispatch();
     const { currentUser } = useSelector(state => state.user);
     const [favorites, setFavorites] = useState(new Set());
     const [loading, setLoading] = useState(false);
@@ -49,7 +51,9 @@ export const ImageFavoritesProvider = ({ children }) => {
             }
         } catch (error) {
             console.error('Failed to load favorites:', error);
-            if (error.response?.status !== 401) {
+            if (error.response?.status === 401) {
+                dispatch(signoutUserSuccess());
+            } else if (error.response?.status !== 401) {
                 toast.error('Failed to load favorites');
             }
         } finally {
@@ -140,7 +144,7 @@ export const ImageFavoritesProvider = ({ children }) => {
         } catch (error) {
             console.error('Failed to toggle favorite:', error);
             const errorMessage = error.response?.data?.message || 'Failed to update favorites';
-            
+
             if (error.response?.status === 400 && errorMessage.includes('already')) {
                 // Handle duplicate case
                 if (!isFav) {
@@ -216,7 +220,7 @@ export const ImageFavoritesProvider = ({ children }) => {
 
         try {
             const imageIds = imageUrls.map(url => generateImageId(url)).filter(Boolean);
-            
+
             const response = await axios.post(`${API_BASE_URL}/api/image-favorites/bulk/remove`, {
                 imageIds
             }, {
