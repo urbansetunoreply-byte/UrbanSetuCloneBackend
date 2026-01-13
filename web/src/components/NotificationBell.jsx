@@ -1717,12 +1717,18 @@ export default function NotificationBell({ mobile = false }) {
           background: rgba(0,0,0,0.1);
           border-radius: 10px;
         }
+        :global(.dark) .notification-scroll-area-mobile::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.2);
+        }
         
         .notification-scroll-area-desktop {
           max-height: 480px;
           overflow-y: auto;
           scrollbar-width: thin;
           scrollbar-color: rgba(0,0,0,0.1) transparent;
+        }
+        :global(.dark) .notification-scroll-area-desktop {
+          scrollbar-color: rgba(255,255,255,0.2) transparent;
         }
         
         .notification-scroll-area-desktop::-webkit-scrollbar {
@@ -1732,6 +1738,9 @@ export default function NotificationBell({ mobile = false }) {
         .notification-scroll-area-desktop::-webkit-scrollbar-thumb {
           background: rgba(0,0,0,0.1);
           border-radius: 10px;
+        }
+        :global(.dark) .notification-scroll-area-desktop::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.2);
         }
 
         .tab-button {
