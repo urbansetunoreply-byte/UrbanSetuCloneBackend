@@ -207,7 +207,7 @@ export default function Home() {
             {currentUser && (
               <div className="mb-8 animate-fade-in flex justify-center">
                 <div
-                  className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg border border-white/50 dark:border-gray-700 transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                  className="w-[90%] sm:w-auto max-w-2xl inline-flex flex-col sm:flex-row items-center justify-center gap-2 px-6 py-4 sm:py-3 rounded-2xl sm:rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg border border-white/50 dark:border-gray-700 transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
                 >
                   {(() => {
                     const name = currentUser.firstName || currentUser.username || currentUser.name || currentUser.fullName || 'Friend';
@@ -217,9 +217,9 @@ export default function Home() {
                     const emoji = theme ? theme.icon : (hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙');
 
                     return (
-                      <span className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                      <span className="text-lg sm:text-xl font-bold flex flex-wrap items-center justify-center text-center gap-x-2 gap-y-1">
                         <span className="text-gray-700 dark:text-gray-200">{theme?.greeting || greet},</span>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 break-words max-w-[200px] sm:max-w-none truncate">
                           {name}!
                         </span>
                         <span
