@@ -35,6 +35,7 @@ export default function NotificationBell({ mobile = false }) {
   const [notificationFilter, setNotificationFilter] = useState('all'); // 'all', 'unread', 'read'
   const [showFilters, setShowFilters] = useState(false);
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [showMarkAllConfirmation, setShowMarkAllConfirmation] = useState(false);
 
   // Separate state for "Send to All Users" form
   const [allUsersTitle, setAllUsersTitle] = useState('');
@@ -732,13 +733,34 @@ export default function NotificationBell({ mobile = false }) {
                         <div className="flex items-center justify-between pt-1">
                           <div className="flex items-center gap-4">
                             {unreadCount > 0 && (
-                              <button
-                                onClick={markAllAsRead}
-                                className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1.5"
-                              >
-                                <FaCheck className="w-3 h-3" />
-                                Mark Read
-                              </button>
+                              showMarkAllConfirmation ? (
+                                <div className="flex items-center gap-2 animate-fadeIn bg-gray-50 dark:bg-gray-800 p-1.5 rounded-lg">
+                                  <span className="text-[10px] font-bold text-gray-500">Confirm?</span>
+                                  <button
+                                    onClick={() => {
+                                      markAllAsRead();
+                                      setShowMarkAllConfirmation(false);
+                                    }}
+                                    className="text-[10px] font-bold text-emerald-500 hover:text-emerald-600 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-lg"
+                                  >
+                                    Yes
+                                  </button>
+                                  <button
+                                    onClick={() => setShowMarkAllConfirmation(false)}
+                                    className="text-[10px] font-bold text-gray-400 hover:text-gray-600 transition-colors bg-white dark:bg-gray-700 px-2 py-1 rounded-lg shadow-sm"
+                                  >
+                                    No
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setShowMarkAllConfirmation(true)}
+                                  className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1.5"
+                                >
+                                  <FaCheck className="w-3 h-3" />
+                                  Mark Read
+                                </button>
+                              )
                             )}
                             <button
                               onClick={() => fetchNotifications(true)}
@@ -1228,13 +1250,34 @@ export default function NotificationBell({ mobile = false }) {
                             <FaFilter className="w-3.5 h-3.5" />
                           </button>
                           {unreadCount > 0 && (
-                            <button
-                              onClick={markAllAsRead}
-                              className="p-2.5 bg-gray-50 dark:bg-gray-800 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all"
-                              title="Mark all as read"
-                            >
-                              <FaCheck className="w-3.5 h-3.5" />
-                            </button>
+                            showMarkAllConfirmation ? (
+                              <div className="flex items-center gap-2 animate-fadeIn bg-gray-50 dark:bg-gray-800 p-1.5 rounded-xl">
+                                <span className="text-[10px] font-bold text-gray-500 hidden sm:inline">Confirm?</span>
+                                <button
+                                  onClick={() => {
+                                    markAllAsRead();
+                                    setShowMarkAllConfirmation(false);
+                                  }}
+                                  className="text-[10px] font-bold text-emerald-500 hover:text-emerald-600 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-lg"
+                                >
+                                  Yes
+                                </button>
+                                <button
+                                  onClick={() => setShowMarkAllConfirmation(false)}
+                                  className="text-[10px] font-bold text-gray-400 hover:text-gray-600 transition-colors bg-white dark:bg-gray-700 px-2 py-1 rounded-lg shadow-sm"
+                                >
+                                  No
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setShowMarkAllConfirmation(true)}
+                                className="p-2.5 bg-gray-50 dark:bg-gray-800 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all"
+                                title="Mark all as read"
+                              >
+                                <FaCheck className="w-3.5 h-3.5" />
+                              </button>
+                            )
                           )}
                           {allNotifications.length > 0 && (
                             showClearConfirmation ? (
