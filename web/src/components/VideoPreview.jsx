@@ -45,6 +45,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [autoScale, setAutoScale] = useState(1);
+  const [videoBlobUrl, setVideoBlobUrl] = useState(null); // State for Blob URL
 
   // Transform States
   const [scale, setScale] = useState(1);
@@ -111,15 +112,16 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
 
 
-  // Initialize
+  // Initialize and Fetch Blob
   useEffect(() => {
     if (isOpen) {
       setCurrentIndex(initialIndex || 0);
-      document.body.style.overflow = isMiniMode ? '' : 'hidden'; // Lock only if not in mini mode
+      document.body.style.overflow = isMiniMode ? '' : 'hidden';
       // Reset states
       setIsLoading(true);
       setIsPlaying(true);
       setDuration(0);
+      setVideoBlobUrl(null);
 
       setProgress(0);
       setLoadedProgress(0);
@@ -130,12 +132,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       setShowControls(true);
       setShowSettings(false);
       setShowCloseConfirm(false);
-      setShowCloseConfirm(false);
     } else {
       document.body.style.overflow = '';
       setIsPlaying(false);
-      setIsMiniMode(false); // Reset mini mode on close
-      setMiniSize({ width: 320, height: 192 }); // Reset size
+      setIsMiniMode(false);
+      setMiniSize({ width: 320, height: 192 });
+      setVideoBlobUrl(null);
     }
     return () => {
       document.body.style.overflow = '';
@@ -147,6 +149,54 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       }
     };
   }, [isOpen, initialIndex]);
+
+  // Fetch Blob Effect
+  useEffect(() => {
+    let active = true;
+    let objectUrl = null;
+
+    const loadVideo = async () => {
+      if (!currentVideoUrl || !isOpen) return;
+
+      // If already a blob (local preview), just use it
+      if (currentVideoUrl.startsWith('blob:')) {
+        setVideoBlobUrl(currentVideoUrl);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await fetch(currentVideoUrl);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const blob = await response.blob();
+
+        if (active) {
+          objectUrl = URL.createObjectURL(blob);
+          setVideoBlobUrl(objectUrl);
+          // Don't auto-hide loading here, let video events handle it (onCanPlay etc)
+          // But since we have the blob, it should load fast. 
+          // However, <video> still needs to buffer/parse the blob data.
+        }
+      } catch (err) {
+        console.error("Failed to load video blob:", err);
+        if (active) {
+          // Fallback to direct URL
+          setVideoBlobUrl(currentVideoUrl);
+        }
+      }
+    };
+
+    if (isOpen) {
+      loadVideo();
+    }
+
+    return () => {
+      active = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [currentVideoUrl, isOpen]);
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -421,8 +471,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   };
 
   const handleVideoError = () => {
+    // Only show error if we aren't loading (sometimes error triggers during blob fetch switch)
+    // But generally, if <video> errors, it's real.
+    console.error("Video playback error");
     toast.error("Unable to play video.");
     setIsPlaying(false);
+    setIsLoading(false); // Stop spinner
   };
 
   const togglePlay = (e) => {
@@ -1152,7 +1206,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
         <video
           ref={videoRef}
           key={currentIndex}
-          src={currentVideoUrl}
+          src={videoBlobUrl || ""}
           className={`w-full h-full object-contain transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
           playsInline
           preload="auto"
