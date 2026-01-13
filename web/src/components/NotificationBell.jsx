@@ -754,7 +754,10 @@ export default function NotificationBell({ mobile = false }) {
                                 </div>
                               ) : (
                                 <button
-                                  onClick={() => setShowMarkAllConfirmation(true)}
+                                  onClick={() => {
+                                    setShowMarkAllConfirmation(true);
+                                    setShowClearConfirmation(false);
+                                  }}
                                   className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1.5"
                                 >
                                   <FaCheck className="w-3 h-3" />
@@ -799,7 +802,10 @@ export default function NotificationBell({ mobile = false }) {
                               </div>
                             ) : (
                               <button
-                                onClick={() => setShowClearConfirmation(true)}
+                                onClick={() => {
+                                  setShowClearConfirmation(true);
+                                  setShowMarkAllConfirmation(false);
+                                }}
                                 className="text-xs font-bold text-red-500/80 hover:text-red-600 transition-colors flex items-center gap-1.5"
                               >
                                 <FaTrash className="w-3 h-3" />
@@ -1271,7 +1277,10 @@ export default function NotificationBell({ mobile = false }) {
                               </div>
                             ) : (
                               <button
-                                onClick={() => setShowMarkAllConfirmation(true)}
+                                onClick={() => {
+                                  setShowMarkAllConfirmation(true);
+                                  setShowClearConfirmation(false);
+                                }}
                                 className="p-2.5 bg-gray-50 dark:bg-gray-800 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all"
                                 title="Mark all as read"
                               >
@@ -1308,7 +1317,10 @@ export default function NotificationBell({ mobile = false }) {
                               </div>
                             ) : (
                               <button
-                                onClick={() => setShowClearConfirmation(true)}
+                                onClick={() => {
+                                  setShowClearConfirmation(true);
+                                  setShowMarkAllConfirmation(false);
+                                }}
                                 className="p-2.5 bg-gray-50 dark:bg-gray-800 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all flex items-center gap-1.5"
                                 title="Clear all notifications"
                               >
