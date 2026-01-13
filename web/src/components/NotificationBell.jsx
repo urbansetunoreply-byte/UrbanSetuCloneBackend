@@ -836,7 +836,7 @@ export default function NotificationBell({ mobile = false }) {
                                   layout
                                   initial={{ opacity: 0, scale: 0.9, marginBottom: -40 }}
                                   animate={{ opacity: 1, scale: 1, marginBottom: 0 }}
-                                  exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                  exit={{ opacity: 0, x: 300, transition: { duration: 0.2 } }}
                                   transition={{ duration: 0.2 }}
                                   key={notification._id}
                                   className={`notification-card p-4 rounded-2xl border ${!notification.isRead
@@ -1369,7 +1369,7 @@ export default function NotificationBell({ mobile = false }) {
                                   layout
                                   initial={{ opacity: 0, scale: 0.9 }}
                                   animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                  exit={{ opacity: 0, x: 300, transition: { duration: 0.2 } }}
                                   transition={{ duration: 0.2 }}
                                   key={n._id}
                                   className={`notification-card group p-3.5 rounded-2xl border cursor-default ${!n.isRead
