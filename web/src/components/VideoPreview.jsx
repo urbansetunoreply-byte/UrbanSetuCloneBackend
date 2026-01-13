@@ -34,6 +34,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isMiniMode, setIsMiniMode] = useState(false);
+  const [duration, setDuration] = useState(0);
 
   const [playbackRate, setPlaybackRate] = useState(1);
   const [brightness, setBrightness] = useState(1);
@@ -118,6 +119,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
       // Reset states
       setIsLoading(true);
       setIsPlaying(true);
+      setDuration(0);
 
       setProgress(0);
       setLoadedProgress(0);
@@ -454,7 +456,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       const current = videoRef.current.currentTime;
-      const total = videoRef.current.duration || 1;
+      const total = duration || videoRef.current.duration || 1;
       setProgress((current / total) * 100);
 
       // Update Buffer
@@ -1158,6 +1160,8 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           onLoadStart={() => setIsLoading(true)}
           onWaiting={() => setIsLoading(true)}
           onLoadedData={() => setIsLoading(false)}
+          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+          onDurationChange={(e) => setDuration(e.currentTarget.duration)}
           onCanPlay={() => setIsLoading(false)}
           onPlaying={() => setIsLoading(false)}
           onError={handleVideoError}
@@ -1271,7 +1275,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
                 </div>
 
                 <span className="text-xs font-mono opacity-80 select-none">
-                  {formatTime(videoRef.current?.currentTime)} / {formatTime(videoRef.current?.duration)}
+                  {formatTime(videoRef.current?.currentTime)} / {formatTime(duration || videoRef.current?.duration)}
                 </span>
               </div>
 
