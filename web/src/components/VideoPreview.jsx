@@ -88,6 +88,25 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const gestureTimeoutRef = useRef(null);
   const [activeGesture, setActiveGesture] = useState(null);
 
+  // Helper to optimize Cloudinary URLs
+  const optimizeVideoUrl = (url) => {
+    if (!url) return '';
+    // Check if it's a Cloudinary URL
+    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+      // If no transformations exist (simplified check), or ensuring we add q_auto
+      let newUrl = url;
+      if (!newUrl.includes('q_auto')) {
+        newUrl = newUrl.replace('/upload/', '/upload/q_auto/');
+      }
+      return newUrl;
+    }
+    return url;
+  };
+
+  const currentVideoUrl = optimizeVideoUrl(videos[currentIndex]);
+
+
+
   // Initialize
   useEffect(() => {
     if (isOpen) {
@@ -1123,10 +1142,12 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           </div>
         )}
 
+
+
         <video
           ref={videoRef}
           key={currentIndex}
-          src={videos[currentIndex]}
+          src={currentVideoUrl}
           className={`w-full h-full object-contain transition-transform duration-100 ${isDragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-pointer'}`}
           playsInline
           preload="auto"
