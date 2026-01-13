@@ -11,15 +11,15 @@ export default function StepIndicator({ steps = [], current = 0, className = "" 
             <div
               className={
                 `h-2.5 w-2.5 rounded-full ` +
-                (active ? "bg-blue-600" : done ? "bg-green-500" : "bg-gray-300")
+                (active ? "bg-blue-600 dark:bg-blue-500" : done ? "bg-green-500 dark:bg-green-400" : "bg-gray-300 dark:bg-gray-600")
               }
               title={label}
             />
-            <span className={`text-xs ${active ? "text-gray-800 font-semibold" : "text-gray-500"}`}>
+            <span className={`text-xs ${active ? "text-gray-800 dark:text-white font-semibold" : "text-gray-500 dark:text-gray-400"}`}>
               {label}
             </span>
             {idx !== steps.length - 1 && (
-              <div className="h-px w-6 bg-gray-300" />
+              <div className="h-px w-6 bg-gray-300 dark:bg-gray-600" />
             )}
           </div>
         );

@@ -27,7 +27,7 @@ const FormField = forwardRef(function FormField(
 ) {
   const hasStart = !!startIcon;
   const baseInput =
-    "w-full py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500";
+    "w-full py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400";
   const paddings = hasStart ? " pl-10 pr-4" : " px-4";
 
   return (
