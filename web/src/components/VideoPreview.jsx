@@ -93,10 +93,13 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     if (!url) return '';
     // Check if it's a Cloudinary URL
     if (url.includes('cloudinary.com') && url.includes('/upload/')) {
-      // If no transformations exist (simplified check), or ensuring we add q_auto
       let newUrl = url;
+      // Inject f_auto,q_auto if not present
       if (!newUrl.includes('q_auto')) {
-        newUrl = newUrl.replace('/upload/', '/upload/q_auto/');
+        // f_auto: Format Auto (WebM for Chrome/FF, MP4 for others)
+        // q_auto: Quality Auto
+        // vc_auto: Video Codec Auto (Often helps with ensuring streamable profile)
+        newUrl = newUrl.replace('/upload/', '/upload/f_auto,q_auto,vc_auto/');
       }
       return newUrl;
     }
