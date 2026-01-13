@@ -830,88 +830,94 @@ export default function NotificationBell({ mobile = false }) {
                           </div>
                         ) : (
                           <div className="space-y-3 pb-6">
-                            {notifications.map((notification, index) => (
-                              <div
-                                key={notification._id}
-                                className={`notification-card p-4 rounded-2xl border transition-all duration-300 animate-fadeInNotification ${!notification.isRead
-                                  ? 'bg-white dark:bg-gray-800 border-blue-100 dark:border-blue-900/30 shadow-sm ring-1 ring-blue-50 dark:ring-blue-900/20 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                  : 'bg-white/80 dark:bg-gray-800/60 border-gray-100 dark:border-gray-700/50 hover:bg-gray-100/60 dark:hover:bg-gray-800/60'
-                                  }`}
-                                style={{ animationDelay: `${index * 0.05}s` }}
-                              >
-                                <div className="flex gap-4">
-                                  {getNotificationIcon(notification.type)}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <h4 className={`text-sm font-bold truncate ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
-                                        {notification.title}
-                                      </h4>
-                                      <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full whitespace-nowrap">
-                                        {formatDate(notification.createdAt)}
-                                      </span>
-                                    </div>
-                                    <p className={`text-xs mt-1 leading-relaxed ${!notification.isRead ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
-                                      {notification.link ? (
-                                        <button
-                                          onClick={() => {
-                                            markAsRead(notification._id);
-                                            if (notification.link.startsWith('http')) {
-                                              window.open(notification.link, '_blank');
-                                            } else {
-                                              setIsOpen(false);
-                                              setTimeout(() => navigate(notification.link), 0);
-                                            }
-                                          }}
-                                          className="text-left hover:text-blue-600 transition-colors underline decoration-blue-200 underline-offset-2"
-                                        >
-                                          {notification.message}
-                                        </button>
-                                      ) : (
-                                        <span>{notification.message}</span>
-                                      )}
-                                    </p>
-
-                                    <div className="flex items-center justify-between mt-3">
-                                      <div className="flex items-center gap-2">
-                                        {notification.adminId && (
-                                          <span className="text-[10px] font-black text-blue-500 uppercase tracking-tighter">
-                                            Admin
-                                          </span>
-                                        )}
+                            <AnimatePresence mode="popLayout">
+                              {notifications.map((notification, index) => (
+                                <motion.div
+                                  layout
+                                  initial={{ opacity: 0, scale: 0.9, marginBottom: -40 }}
+                                  animate={{ opacity: 1, scale: 1, marginBottom: 0 }}
+                                  exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                  transition={{ duration: 0.2 }}
+                                  key={notification._id}
+                                  className={`notification-card p-4 rounded-2xl border ${!notification.isRead
+                                    ? 'bg-white dark:bg-gray-800 border-blue-100 dark:border-blue-900/30 shadow-sm ring-1 ring-blue-50 dark:ring-blue-900/20 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    : 'bg-white/80 dark:bg-gray-800/60 border-gray-100 dark:border-gray-700/50 hover:bg-gray-100/60 dark:hover:bg-gray-800/60'
+                                    }`}
+                                >
+                                  <div className="flex gap-4">
+                                    {getNotificationIcon(notification.type)}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <h4 className={`text-sm font-bold truncate ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
+                                          {notification.title}
+                                        </h4>
+                                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                          {formatDate(notification.createdAt)}
+                                        </span>
                                       </div>
-                                      <div className="flex items-center gap-1">
-                                        <button
-                                          onClick={() => {
-                                            navigator.clipboard.writeText(`${notification.title}\n${notification.message}`);
-                                            toast.success('Copied');
-                                          }}
-                                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
-                                          title="Copy"
-                                        >
-                                          <FaCopy className="w-3 h-3" />
-                                        </button>
-                                        {!notification.isRead && (
+                                      <p className={`text-xs mt-1 leading-relaxed ${!notification.isRead ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
+                                        {notification.link ? (
                                           <button
-                                            onClick={() => markAsRead(notification._id)}
-                                            className="p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all"
-                                            title="Mark Read"
+                                            onClick={() => {
+                                              markAsRead(notification._id);
+                                              if (notification.link.startsWith('http')) {
+                                                window.open(notification.link, '_blank');
+                                              } else {
+                                                setIsOpen(false);
+                                                setTimeout(() => navigate(notification.link), 0);
+                                              }
+                                            }}
+                                            className="text-left hover:text-blue-600 transition-colors underline decoration-blue-200 underline-offset-2"
                                           >
-                                            <FaCheck className="w-3 h-3" />
+                                            {notification.message}
                                           </button>
+                                        ) : (
+                                          <span>{notification.message}</span>
                                         )}
-                                        <button
-                                          onClick={() => deleteNotification(notification._id)}
-                                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
-                                          title="Delete"
-                                        >
-                                          <FaTrash className="w-3 h-3" />
-                                        </button>
+                                      </p>
+
+                                      <div className="flex items-center justify-between mt-3">
+                                        <div className="flex items-center gap-2">
+                                          {notification.adminId && (
+                                            <span className="text-[10px] font-black text-blue-500 uppercase tracking-tighter">
+                                              Admin
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(`${notification.title}\n${notification.message}`);
+                                              toast.success('Copied');
+                                            }}
+                                            className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
+                                            title="Copy"
+                                          >
+                                            <FaCopy className="w-3 h-3" />
+                                          </button>
+                                          {!notification.isRead && (
+                                            <button
+                                              onClick={() => markAsRead(notification._id)}
+                                              className="p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all"
+                                              title="Mark Read"
+                                            >
+                                              <FaCheck className="w-3 h-3" />
+                                            </button>
+                                          )}
+                                          <button
+                                            onClick={() => deleteNotification(notification._id)}
+                                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
+                                            title="Delete"
+                                          >
+                                            <FaTrash className="w-3 h-3" />
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              </div>
-                            ))}
+                                </motion.div>
+                              ))}
+                            </AnimatePresence>
                           </div>
                         )}
                       </div>
@@ -1357,85 +1363,91 @@ export default function NotificationBell({ mobile = false }) {
                           </div>
                         ) : (
                           <div className="space-y-3 pb-6">
-                            {notifications.map((n, i) => (
-                              <div
-                                key={n._id}
-                                className={`notification-card group p-3.5 rounded-2xl border transition-all cursor-default ${!n.isRead
-                                  ? 'bg-white dark:bg-gray-800 border-blue-50 dark:border-blue-900/30 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700'
-                                  : 'bg-white/60 dark:bg-gray-800/50 border-transparent hover:bg-gray-50/50 dark:hover:bg-gray-800/60'
-                                  }`}
-                                style={{ animationDelay: `${i * 0.05}s` }}
-                              >
-                                <div className="flex gap-4">
-                                  {getNotificationIcon(n.type)}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <h4 className={`text-xs font-black truncate leading-tight ${!n.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
-                                        {n.title}
-                                      </h4>
-                                      <span className="text-[9px] font-black text-gray-300 dark:text-gray-600 uppercase whitespace-nowrap">
-                                        {formatDate(n.createdAt)}
-                                      </span>
-                                    </div>
-                                    <p className={`text-[11px] mt-1.5 leading-relaxed ${!n.isRead ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
-                                      {n.link ? (
-                                        <button
-                                          onClick={() => {
-                                            markAsRead(n._id);
-                                            if (n.link.startsWith('http')) {
-                                              window.open(n.link, '_blank');
-                                            } else {
-                                              setIsOpen(false);
-                                              setTimeout(() => navigate(n.link), 0);
-                                            }
-                                          }}
-                                          className="text-left hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline decoration-blue-100 dark:decoration-blue-900 underline-offset-4"
-                                        >
-                                          {n.message}
-                                        </button>
-                                      ) : (
-                                        <span>{n.message}</span>
-                                      )}
-                                    </p>
-
-                                    <div className="flex items-center justify-between mt-3">
-                                      <div className="flex gap-2">
-                                        {n.adminId && (
-                                          <span className="text-[9px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-tighter bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">
-                                            Official • STAFF
-                                          </span>
-                                        )}
+                            <AnimatePresence mode="popLayout">
+                              {notifications.map((n, i) => (
+                                <motion.div
+                                  layout
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                  transition={{ duration: 0.2 }}
+                                  key={n._id}
+                                  className={`notification-card group p-3.5 rounded-2xl border cursor-default ${!n.isRead
+                                    ? 'bg-white dark:bg-gray-800 border-blue-50 dark:border-blue-900/30 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    : 'bg-white/60 dark:bg-gray-800/50 border-transparent hover:bg-gray-50/50 dark:hover:bg-gray-800/60'
+                                    }`}
+                                >
+                                  <div className="flex gap-4">
+                                    {getNotificationIcon(n.type)}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <h4 className={`text-xs font-black truncate leading-tight ${!n.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
+                                          {n.title}
+                                        </h4>
+                                        <span className="text-[9px] font-black text-gray-300 dark:text-gray-600 uppercase whitespace-nowrap">
+                                          {formatDate(n.createdAt)}
+                                        </span>
                                       </div>
-                                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                          onClick={() => {
-                                            navigator.clipboard.writeText(`${n.title}\n${n.message}`);
-                                            toast.success('Copied');
-                                          }}
-                                          className="p-1 text-gray-300 hover:text-blue-500 transition-all"
-                                        >
-                                          <FaCopy className="w-3 h-3" />
-                                        </button>
-                                        {!n.isRead && (
+                                      <p className={`text-[11px] mt-1.5 leading-relaxed ${!n.isRead ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
+                                        {n.link ? (
                                           <button
-                                            onClick={() => markAsRead(n._id)}
-                                            className="p-1 text-gray-300 hover:text-emerald-500 transition-all"
+                                            onClick={() => {
+                                              markAsRead(n._id);
+                                              if (n.link.startsWith('http')) {
+                                                window.open(n.link, '_blank');
+                                              } else {
+                                                setIsOpen(false);
+                                                setTimeout(() => navigate(n.link), 0);
+                                              }
+                                            }}
+                                            className="text-left hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline decoration-blue-100 dark:decoration-blue-900 underline-offset-4"
                                           >
-                                            <FaCheck className="w-3 h-3" />
+                                            {n.message}
                                           </button>
+                                        ) : (
+                                          <span>{n.message}</span>
                                         )}
-                                        <button
-                                          onClick={() => deleteNotification(n._id)}
-                                          className="p-1 text-gray-300 hover:text-red-500 transition-all"
-                                        >
-                                          <FaTrash className="w-3 h-3" />
-                                        </button>
+                                      </p>
+
+                                      <div className="flex items-center justify-between mt-3">
+                                        <div className="flex gap-2">
+                                          {n.adminId && (
+                                            <span className="text-[9px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-tighter bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">
+                                              Official • STAFF
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <button
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(`${n.title}\n${n.message}`);
+                                              toast.success('Copied');
+                                            }}
+                                            className="p-1 text-gray-300 hover:text-blue-500 transition-all"
+                                          >
+                                            <FaCopy className="w-3 h-3" />
+                                          </button>
+                                          {!n.isRead && (
+                                            <button
+                                              onClick={() => markAsRead(n._id)}
+                                              className="p-1 text-gray-300 hover:text-emerald-500 transition-all"
+                                            >
+                                              <FaCheck className="w-3 h-3" />
+                                            </button>
+                                          )}
+                                          <button
+                                            onClick={() => deleteNotification(n._id)}
+                                            className="p-1 text-gray-300 hover:text-red-500 transition-all"
+                                          >
+                                            <FaTrash className="w-3 h-3" />
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              </div>
-                            ))}
+                                </motion.div>
+                              ))}
+                            </AnimatePresence>
                           </div>
                         )}
                       </div>
