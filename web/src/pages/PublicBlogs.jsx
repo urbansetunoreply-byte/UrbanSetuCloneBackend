@@ -16,8 +16,8 @@ const PublicBlogs = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedTag, setSelectedTag] = useState('all');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
   const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
@@ -70,12 +70,40 @@ const PublicBlogs = () => {
     } else {
       setPagination(prev => ({ ...prev, current: 1 }));
     }
-  }, [selectedCategory, selectedTag]);
+  }, [selectedCategories, selectedTags]);
 
   // Pagination effect
   useEffect(() => {
     fetchBlogs();
   }, [pagination.current]);
+
+  const toggleCategory = (category) => {
+    if (category === 'all') {
+      setSelectedCategories([]);
+      return;
+    }
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+  };
+
+  const toggleTag = (tag) => {
+    if (tag === 'all') {
+      setSelectedTags([]);
+      return;
+    }
+    setSelectedTags(prev => {
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      } else {
+        return [...prev, tag];
+      }
+    });
+  };
 
   const fetchBlogs = async (showLoading = true) => {
     try {
@@ -87,8 +115,12 @@ const PublicBlogs = () => {
       });
 
       if (searchTerm) params.append('search', searchTerm);
-      if (selectedCategory !== 'all') params.append('category', selectedCategory);
-      if (selectedTag !== 'all') params.append('tag', selectedTag);
+      if (selectedCategories.length > 0) {
+        params.append('category', selectedCategories.join(','));
+      }
+      if (selectedTags.length > 0) {
+        params.append('tag', selectedTags.join(','));
+      }
 
       const response = await fetch(`${API_BASE_URL}/api/blogs?${params}`);
 
@@ -279,8 +311,8 @@ const PublicBlogs = () => {
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setSelectedCategory('all')}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === 'all'
+                  onClick={() => toggleCategory('all')}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategories.length === 0
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/40'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                     }`}
@@ -290,8 +322,8 @@ const PublicBlogs = () => {
                 {categories.map(category => (
                   <button
                     key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === category
+                    onClick={() => toggleCategory(category)}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategories.includes(category)
                       ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/40'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                       }`}
@@ -310,8 +342,8 @@ const PublicBlogs = () => {
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setSelectedTag('all')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${selectedTag === 'all'
+                  onClick={() => toggleTag('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${selectedTags.length === 0
                     ? 'bg-green-600 text-white shadow-md shadow-green-200 dark:shadow-green-900/40'
                     : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40'
                     }`}
@@ -321,8 +353,8 @@ const PublicBlogs = () => {
                 {tags.slice(0, 10).map(tag => (
                   <button
                     key={tag}
-                    onClick={() => setSelectedTag(tag)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${selectedTag === tag
+                    onClick={() => toggleTag(tag)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${selectedTags.includes(tag)
                       ? 'bg-green-600 text-white shadow-md shadow-green-200 dark:shadow-green-900/40'
                       : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40'
                       }`}
@@ -348,8 +380,8 @@ const PublicBlogs = () => {
             <button
               onClick={() => {
                 setSearchTerm('');
-                setSelectedCategory('all');
-                setSelectedTag('all');
+                setSelectedCategories([]);
+                setSelectedTags([]);
               }}
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
             >

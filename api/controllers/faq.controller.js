@@ -42,7 +42,11 @@ export const getFAQs = async (req, res, next) => {
         }
 
         if (category) {
-            query.category = category;
+            // Support multi-select categories (comma-separated)
+            const categories = category.split(',').map(c => c.trim()).filter(Boolean);
+            if (categories.length > 0) {
+                query.category = { $in: categories };
+            }
         }
 
         if (search) {

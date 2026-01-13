@@ -14,7 +14,7 @@ const PublicFAQs = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [categories, setCategories] = useState([]);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
@@ -77,12 +77,26 @@ const PublicFAQs = () => {
     } else {
       setPagination(prev => ({ ...prev, current: 1 }));
     }
-  }, [selectedCategory]);
+  }, [selectedCategories]);
 
   // Pagination effect
   useEffect(() => {
     fetchFAQs();
   }, [pagination.current]);
+
+  const toggleCategory = (category) => {
+    if (category === 'all') {
+      setSelectedCategories([]);
+      return;
+    }
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+  };
 
   const fetchFAQs = async (showLoading = true) => {
     try {
@@ -95,7 +109,9 @@ const PublicFAQs = () => {
       });
 
       if (searchTerm) params.append('search', searchTerm);
-      if (selectedCategory !== 'all') params.append('category', selectedCategory);
+      if (selectedCategories.length > 0) {
+        params.append('category', selectedCategories.join(','));
+      }
 
       const response = await fetch(`${API_BASE_URL}/api/faqs?${params}`);
 
@@ -341,8 +357,8 @@ const PublicFAQs = () => {
             </div>
             <div className="flex flex-wrap gap-2 w-full">
               <button
-                onClick={() => setSelectedCategory('all')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === 'all'
+                onClick={() => toggleCategory('all')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategories.length === 0
                   ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md transform scale-105'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
@@ -352,8 +368,8 @@ const PublicFAQs = () => {
               {categories.map(category => (
                 <button
                   key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === category
+                  onClick={() => toggleCategory(category)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategories.includes(category)
                     ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md transform scale-105'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                     }`}
@@ -374,13 +390,13 @@ const PublicFAQs = () => {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">No results found</h3>
               <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto transition-colors">
-                {searchTerm || selectedCategory !== 'all'
+                {searchTerm || selectedCategories.length > 0
                   ? 'We couldn\'t find any FAQs matching your search criteria. Try adjusting your filters.'
                   : 'No FAQs are universally available at the moment.'
                 }
               </p>
               <button
-                onClick={() => { setSearchTerm(''); setSelectedCategory('all'); }}
+                onClick={() => { setSearchTerm(''); setSelectedCategories([]); }}
                 className="mt-6 px-6 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-semibold rounded-xl hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all"
               >
                 Clear Filters

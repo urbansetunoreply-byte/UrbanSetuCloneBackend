@@ -149,11 +149,19 @@ export const getBlogs = async (req, res, next) => {
         }
 
         if (category) {
-            query.category = category;
+            // Support multi-select categories
+            const categories = category.split(',').map(c => c.trim()).filter(Boolean);
+            if (categories.length > 0) {
+                query.category = { $in: categories };
+            }
         }
 
         if (tag) {
-            query.tags = { $in: [tag] };
+            // Support multi-select tags
+            const tags = tag.split(',').map(t => t.trim()).filter(Boolean);
+            if (tags.length > 0) {
+                query.tags = { $in: tags };
+            }
         }
 
         if (search) {
