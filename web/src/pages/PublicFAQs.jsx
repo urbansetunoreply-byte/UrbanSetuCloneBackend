@@ -273,19 +273,19 @@ const PublicFAQs = () => {
           <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-500 blur-3xl animate-pulse" style={{ animationDelay: "2s" }}></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 pt-20 pb-24 relative z-30 text-center">
-          <span className="inline-block py-1 px-3 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-sm font-semibold mb-6 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 pt-20 pb-24 relative z-30 text-center pointer-events-none">
+          <span className="pointer-events-auto inline-block py-1 px-3 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-sm font-semibold mb-6 backdrop-blur-md">
             Help Center
           </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100 drop-shadow-sm">
+          <h1 className="pointer-events-auto text-4xl md:text-6xl font-extrabold mb-6 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100 drop-shadow-sm">
             Frequently Asked Questions
           </h1>
-          <p className="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="pointer-events-auto text-lg md:text-xl text-blue-100 max-w-2xl mx-auto mb-10 leading-relaxed">
             Everything you need to know about UrbanSetu, properties, and managing your real estate journey.
           </p>
 
           {/* Search Bar in Hero */}
-          <div className="max-w-2xl mx-auto relative group">
+          <div className="pointer-events-auto max-w-2xl mx-auto relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-purple-400 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
             <form onSubmit={handleSearch} className="relative z-50">
               <div className="relative">
