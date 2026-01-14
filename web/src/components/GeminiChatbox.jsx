@@ -459,6 +459,40 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         // Get voices if not already available (sometimes they load async)
         let voices = synth.getVoices();
 
+        const cleanTextForSpeech = (rawText) => {
+            if (!rawText) return '';
+            let cleaned = rawText;
+
+            // Remove Markdown links ([Text](url) -> Text)
+            cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+
+            // Remove long visual separators (====, ----, ____, ~~~~)
+            // Replaces 3+ sequence with a pause-like string or space
+            cleaned = cleaned.replace(/([=\-_~*]){3,}/g, ' ');
+
+            // Remove Markdown headers (### Header -> Header)
+            cleaned = cleaned.replace(/^#+\s+/gm, '');
+
+            // Remove code block delimiters (```javascript -> )
+            cleaned = cleaned.replace(/```[\w-]*\n?/g, '');
+            cleaned = cleaned.replace(/```/g, '');
+
+            // Remove inline code formatting (`const` -> const)
+            cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
+
+            // Remove bold/italic markers (**text** -> text)
+            cleaned = cleaned.replace(/(\*\*|__)(.*?)\1/g, '$2');
+            cleaned = cleaned.replace(/(\*|_)(.*?)\1/g, '$2');
+
+            // Remove blockquotes (> text -> text)
+            cleaned = cleaned.replace(/^>\s+/gm, '');
+
+            // Remove list markers
+            cleaned = cleaned.replace(/^\s*[-*+]\s+/gm, '');
+
+            return cleaned;
+        };
+
         // Chunking function to split long text into sentences/phrases
         // This avoids the browser's ~15s limit on speech synthesis
         const chunkText = (str) => {
@@ -467,7 +501,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             return chunks.map(c => c.trim()).filter(c => c.length > 0);
         };
 
-        const chunks = chunkText(text);
+        const cleanedText = cleanTextForSpeech(text);
+        const chunks = chunkText(cleanedText);
         let currentChunkIndex = 0;
 
         const speakNextChunk = () => {

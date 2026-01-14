@@ -1003,7 +1003,7 @@ export default function AdminDashboard() {
               )}
             </h1>
             <p className="text-blue-100 text-lg max-w-2xl">
-              {theme?.greeting ? theme.greeting : "Here's what's happening with your platform today."} Check your analytics and manage listings efficiently.
+              {theme?.greeting ? theme.greeting : "Here's what's happening with your platform today."} Check analytics and manage listings efficiently.
             </p>
           </div>
           <div className="flex gap-3 relative z-10 w-full md:w-auto">
