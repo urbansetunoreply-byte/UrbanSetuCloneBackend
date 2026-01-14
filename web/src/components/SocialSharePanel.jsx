@@ -86,7 +86,7 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
 
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 md:top-6 md:right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white"
+            className="absolute top-4 right-4 md:top-6 md:right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white z-50 cursor-pointer"
           >
             <FaTimes size={16} />
           </button>
