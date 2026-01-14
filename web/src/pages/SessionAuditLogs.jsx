@@ -438,8 +438,7 @@ const SessionAuditLogs = () => {
     if (!selectedVisitor) return;
     setIsRefreshingVisitor(true);
     try {
-      // Re-fetch all visitors (or implement a single visitor fetch if available API-wise)
-      // Since we rely on the list, we'll fetch the list and find the updated record.
+      // Re-fetch all visitors to get updated data
       const params = new URLSearchParams({
         limit: 1000,
         dateRange: visitorFilters.dateRange,
@@ -447,7 +446,7 @@ const SessionAuditLogs = () => {
       });
 
       // Simple fetch of all recent visitors to get updated data
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all?limit=2000`, { // Fetch enough to likely include current
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all?limit=2000`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -459,9 +458,8 @@ const SessionAuditLogs = () => {
         const updated = data.visitors.find(v => v._id === selectedVisitor._id);
         if (updated) {
           setSelectedVisitor(updated);
-          // Also update the main list if needed
-          setAllVisitors(data.visitors);
-          // setVisitors is derived from allVisitors via pagination effect, so it will update automatically
+          // Update the main list as well so the background table reflects changes
+          setVisitors(prevVisitors => prevVisitors.map(v => v._id === updated._id ? updated : v));
           toast.success("Visitor details updated");
         } else {
           toast.warn("Visitor not found in recent logs");
