@@ -52,7 +52,7 @@ export default function ThemeDetailModal({ theme, isOpen, onClose }) {
                         </h3>
 
                         <p className="text-xl text-gray-700 dark:text-gray-200 font-medium mb-4">
-                            "{theme.greeting} {userName && <span className="text-blue-600 dark:text-blue-400">{userName}!</span>}"
+                            "{theme.greeting} {userName && <span className="text-blue-600 dark:text-blue-400 break-all">{userName}!</span>}"
                         </p>
 
                         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 mb-4">
