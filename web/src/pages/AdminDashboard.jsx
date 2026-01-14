@@ -180,6 +180,9 @@ export default function AdminDashboard() {
     pending: 0,
     rejected: 0
   });
+  // Audit logs state for dashboard summary
+  const [auditLogs, setAuditLogs] = useState([]);
+
   const [fraudTimeline, setFraudTimeline] = useState([]);
   const [visitorStats, setVisitorStats] = useState({
     totalVisitors: 0,
@@ -216,6 +219,94 @@ export default function AdminDashboard() {
 
   const navigate = useNavigate();
 
+  const getVisitorEntryValue = (entry) => {
+    if (!entry) return 0;
+    return entry.count ?? entry.total ?? entry.visits ?? entry.value ?? 0;
+  };
+
+  const formatVisitorDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString('en-IN', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const visitorInsights = React.useMemo(() => {
+    const dailyRaw = Array.isArray(visitorStats?.dailyStats) ? visitorStats.dailyStats : [];
+    const deviceStats = Array.isArray(visitorStats?.deviceStats) ? visitorStats.deviceStats : [];
+    const locationStats = Array.isArray(visitorStats?.locationStats) ? visitorStats.locationStats : [];
+
+    // Fill gaps for last 30 days to ensure accurate trend/avg calculation
+    const daysWindow = 30; // Matching the query default
+    const filledDaily = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const statsMap = new Map();
+    dailyRaw.forEach(item => {
+      const d = new Date(item.date || item._id);
+      d.setHours(0, 0, 0, 0);
+      statsMap.set(d.getTime(), getVisitorEntryValue(item));
+    });
+
+    for (let i = daysWindow - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const val = statsMap.get(d.getTime()) || 0;
+      filledDaily.push({ date: d, count: val, value: val }); // standardized format
+    }
+
+    const totalWindow = filledDaily.reduce((sum, entry) => sum + entry.count, 0);
+
+    // Calculate 7-day stats
+    const last7 = filledDaily.slice(-7);
+    const last7Total = last7.reduce((sum, entry) => sum + entry.count, 0);
+
+    // Calculate previous 7-day stats for trend
+    const prev7 = filledDaily.slice(-14, -7);
+    const prev7Total = prev7.reduce((sum, entry) => sum + entry.count, 0);
+
+    const trendPercentage = prev7Total > 0 ? ((last7Total - prev7Total) / prev7Total) * 100 : (last7Total > 0 ? 100 : 0);
+
+    // Avg Daily: Total / Window (30) ensures we count zero-days
+    const avgDaily = totalWindow / daysWindow;
+
+    const topDevice = deviceStats.reduce((max, entry) => {
+      if (!max) return entry;
+      return (entry.count || 0) > (max.count || 0) ? entry : max;
+    }, null);
+
+    const topLocation = locationStats.reduce((max, entry) => {
+      if (!max) return entry;
+      return (entry.count || 0) > (max.count || 0) ? entry : max;
+    }, null);
+
+    return {
+      avgDaily,
+      last7Total,
+      trendPercentage,
+      topDevice,
+      topLocation
+    };
+  }, [visitorStats]);
+
+  const fetchAuditLogs = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/session-management/admin/audit-logs?limit=100`, {
+        withCredentials: true
+      });
+      if (res.data.success) {
+        setAuditLogs(res.data.logs);
+      }
+    } catch (error) {
+      console.error('Failed to fetch audit logs:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchAllData = async () => {
       try {
@@ -227,7 +318,8 @@ export default function AdminDashboard() {
           fetchBookingStats(),
           fetchAnalytics(),
           fetchSecurityStats(),
-          fetchVisitorStats()
+          fetchVisitorStats(),
+          fetchAuditLogs()
         ]);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -241,12 +333,16 @@ export default function AdminDashboard() {
     // Auto-refresh visitor stats every 30 seconds for real-time updates
     const visitorStatsInterval = setInterval(() => {
       fetchVisitorStats();
+      fetchAuditLogs();
     }, 30 * 1000);
 
     return () => {
       clearInterval(visitorStatsInterval);
     };
   }, []);
+
+  // ... (rest of the existing fetch functions) 
+
 
   const fetchOfferListings = async () => {
     try {
@@ -923,6 +1019,85 @@ export default function AdminDashboard() {
         {/* Daily Quote Section */}
         <div className="mb-8 rounded-2xl overflow-hidden shadow-sm">
           <DailyQuote className="bg-white dark:bg-gray-800 border-none" />
+        </div>
+
+        {/* Traffic & Security Insights (New Section) */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
+              <FaShieldAlt className="text-white text-xl" />
+            </div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Traffic & Security Insights</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Visitor Stats */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Visitors</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{visitorStats.totalVisitors?.toLocaleString()}</h3>
+                </div>
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-lg">
+                  <FaUsers className="text-xl" />
+                </div>
+              </div>
+              <div className="flex items-center text-sm">
+                <span className={`font-medium ${visitorInsights.trendPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {visitorInsights.trendPercentage >= 0 ? '▲' : '▼'} {Math.abs(visitorInsights.trendPercentage).toFixed(1)}%
+                </span>
+                <span className="text-gray-400 ml-1">vs last week</span>
+              </div>
+            </div>
+
+            {/* Avg Daily */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Daily Traffic</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{Math.round(visitorInsights.avgDaily || 0).toLocaleString()}</h3>
+                </div>
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-lg">
+                  <FaChartLine className="text-xl" />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                Peak: <span className="font-medium text-gray-700 dark:text-gray-300">{visitorInsights.topDevice?.count || 0}</span> on {visitorInsights.topDevice?.device || 'Unknown'}
+              </p>
+            </div>
+
+            {/* Security - Logins */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Successful Logins</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                    {auditLogs.filter(l => l.action === 'login').length}
+                  </h3>
+                </div>
+                <div className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-lg">
+                  <FaCheckCircle className="text-xl" />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Last 100 events</p>
+            </div>
+
+            {/* Security - Suspicious */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Suspicious Events</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                    {auditLogs.filter(l => l.isSuspicious).length}
+                  </h3>
+                </div>
+                <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-lg">
+                  <FaExclamationTriangle className="text-xl" />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Requires attention</p>
+            </div>
+          </div>
         </div>
 
         {/* Critical Operations - Most Urgent for Admin Daily Tasks */}
