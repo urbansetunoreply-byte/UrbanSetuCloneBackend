@@ -435,6 +435,15 @@ export default function Profile() {
     if (currentUser) {
       setOriginalEmail(currentUser.email || "");
       setOriginalMobile(currentUser.mobileNumber || "");
+      // Pre-fill form data with current user details
+      setFormData(prev => ({
+        ...prev,
+        username: currentUser.username || "",
+        email: currentUser.email || "",
+        mobileNumber: currentUser.mobileNumber || "",
+        avatar: currentUser.avatar || prev.avatar || ""
+      }));
+
       // Set initial email validation state to show green tick for current email
       if (currentUser.email) {
         setEmailValidation({ loading: false, message: "", available: true });
@@ -761,7 +770,7 @@ export default function Profile() {
     setOtpError("");
 
     try {
-      const requestBody = { email: formData.email };
+      const requestBody = { email: formData.email.trim() };
 
       // Include reCAPTCHA token if required
       if (profileRequiresCaptcha && profileRecaptchaToken) {
@@ -770,6 +779,9 @@ export default function Profile() {
 
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-profile-email-otp`, {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(requestBody),
       });
 
@@ -835,9 +847,12 @@ export default function Profile() {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          email: formData.email,
-          otp: otp
+          email: formData.email.trim(),
+          otp: otp.trim()
         }),
       });
 
