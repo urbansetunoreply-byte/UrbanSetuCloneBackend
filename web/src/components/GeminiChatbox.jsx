@@ -463,34 +463,59 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             if (!rawText) return '';
             let cleaned = rawText;
 
-            // Remove Markdown links ([Text](url) -> Text)
+            // 1. Handle Images: ![Alt](url) -> "Image: Alt"
+            cleaned = cleaned.replace(/!\[([^\]]*)\]\([^)]+\)/g, 'Image: $1');
+
+            // 2. Handle Markdown Links: [Text](url) -> "Text"
             cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
 
-            // Remove long visual separators (====, ----, ____, ~~~~)
-            // Replaces 3+ sequence with a pause-like string or space
-            cleaned = cleaned.replace(/([=\-_~*]){3,}/g, ' ');
+            // 3. Handle Raw URLs: https://... -> "Link" (unless it was part of a markdown link handled above)
+            cleaned = cleaned.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, 'Link');
 
-            // Remove Markdown headers (### Header -> Header)
-            cleaned = cleaned.replace(/^#+\s+/gm, '');
+            // 4. Remove Visual Separators (===, ---, ***) - replace with pause
+            cleaned = cleaned.replace(/^[=\-_~*]{3,}\s*$/gm, '. '); // Full line separators
+            cleaned = cleaned.replace(/([=\-_~*]){3,}/g, ' '); // Inline separators
 
-            // Remove code block delimiters (```javascript -> )
-            cleaned = cleaned.replace(/```[\w-]*\n?/g, '');
-            cleaned = cleaned.replace(/```/g, '');
+            // 5. Headings: ### Title -> Title. (Add period for pause)
+            cleaned = cleaned.replace(/^(#+)\s+(.*)$/gm, '$2. ');
 
-            // Remove inline code formatting (`const` -> const)
+            // 6. Tables:
+            // Remove separator rows: |---|---|
+            cleaned = cleaned.replace(/^\|?[\s-]+\|[\s-]+\|?$/gm, '');
+            // Replace pipes with commas for flow in data rows
+            cleaned = cleaned.replace(/\|/g, ', ');
+
+            // 7. Code Blocks:
+            // Remove fencing completely.
+            cleaned = cleaned.replace(/```[\w-]*\n?/g, ' ');
+            cleaned = cleaned.replace(/```/g, ' ');
+
+            // 8. Inline Code: `text` -> text
             cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
 
-            // Remove bold/italic markers (**text** -> text)
+            // 9. Bold/Italic: **text** -> text
             cleaned = cleaned.replace(/(\*\*|__)(.*?)\1/g, '$2');
             cleaned = cleaned.replace(/(\*|_)(.*?)\1/g, '$2');
 
-            // Remove blockquotes (> text -> text)
+            // 10. Blockquotes: > text -> text
             cleaned = cleaned.replace(/^>\s+/gm, '');
 
-            // Remove list markers
-            cleaned = cleaned.replace(/^\s*[-*+]\s+/gm, '');
+            // 11. Lists:
+            // Unordered: - Item or * Item -> Item. (Add period for pause)
+            cleaned = cleaned.replace(/^[\s-]*[-*+]\s+(.*)$/gm, '$1. ');
 
-            return cleaned;
+            // 12. HTML Tags: <div> -> ""
+            cleaned = cleaned.replace(/<[^>]*>/g, '');
+
+            // 13. Collapse multiple spaces/newlines to single space/pause
+            cleaned = cleaned.replace(/\n+/g, '. '); // Turn newlines into full stops for pauses
+            cleaned = cleaned.replace(/\s+/g, ' ');
+
+            // 14. Fix double punctuation (.. -> .)
+            cleaned = cleaned.replace(/\.\s*\./g, '.');
+            cleaned = cleaned.replace(/,\s*,/g, ',');
+
+            return cleaned.trim();
         };
 
         // Chunking function to split long text into sentences/phrases
