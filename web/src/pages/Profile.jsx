@@ -1375,8 +1375,8 @@ export default function Profile() {
               <div className={`mt-4 sm:mt-0 w-full ${isVisible ? animationClasses.fadeInLeft + ' animation-delay-300' : 'opacity-0 -translate-x-8'}`}>
                 {/* Name and Role Section */}
                 <div className="text-center sm:text-left mb-4">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-1 transition-colors duration-300 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-1 transition-colors duration-300 flex flex-col sm:flex-row sm:items-center justify-center sm:justify-start gap-2">
+                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent break-all line-clamp-2">
                       {currentUser.username}
                     </span>
                     {/* Seasonal Animated Icon */}
