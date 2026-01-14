@@ -107,12 +107,21 @@ const AdminBlogDetail = () => {
 
   const fetchRelatedBlogs = async (category, currentBlogId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=3`, {
+      // Fetch more items to ensure we have enough to randomize
+      const response = await fetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=10`, {
         credentials: 'include'
       });
       if (response.ok) {
         const data = await response.json();
-        const related = data.data.filter(blog => blog._id !== currentBlogId);
+        // Filter out current blog
+        let related = data.data.filter(blog => blog._id !== currentBlogId);
+
+        // Shuffle the array to show random related blogs
+        for (let i = related.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [related[i], related[j]] = [related[j], related[i]];
+        }
+
         setRelatedBlogs(related.slice(0, 3));
       }
     } catch (error) {
