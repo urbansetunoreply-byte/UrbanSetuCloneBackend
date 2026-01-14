@@ -515,6 +515,102 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             cleaned = cleaned.replace(/\.\s*\./g, '.');
             cleaned = cleaned.replace(/,\s*,/g, ',');
 
+            // 15. Comprehensive Abbreviation Expansion
+            const abbreviations = {
+                // General & Academic
+                "e.g.": "for example,",
+                "i.e.": "that is,",
+                "etc.": "et cetera",
+                "et al.": "and others",
+                "vs.": "versus",
+                "viz.": "namely",
+                "cf.": "compare",
+                "n.b.": "note well",
+                "p.s.": "postscript",
+                "approx.": "approximately",
+
+                // Technical & Development
+                "repo": "repository",
+                "config": "configuration",
+                "specs": "specifications",
+                "dev": "developer",
+                "env": "environment",
+                "dir": "directory",
+                "lib": "library",
+                "src": "source",
+                "dest": "destination",
+                "pr": "pull request",
+                "api": "A P I",
+                "url": "URL",
+                "gui": "G U I",
+                "cli": "command line interface",
+                "ssl": "S S L",
+                "msg": "message",
+                "err": "error",
+                "std": "standard",
+
+                // Business & Math
+                "avg.": "average",
+                "max.": "maximum",
+                "min.": "minimum",
+                "no.": "number",
+                "vol.": "volume",
+                "inc.": "incorporated",
+                "ltd.": "limited",
+                "corp.": "corporation",
+                "co.": "company",
+                "dept.": "department",
+                "govt.": "government",
+                "w.r.t.": "with respect to",
+
+                // Common Shortforms
+                "w/o": "without",
+                "w/": "with",
+                "b/w": "between",
+                "n/a": "not applicable",
+                "aka": "also known as",
+                "faq": "frequently asked questions",
+                "diy": "do it yourself",
+                "asap": "as soon as possible",
+                "tldr": "summary",
+                "tl;dr": "summary",
+
+                // Casual / Chat
+                "btw": "by the way",
+                "fyi": "for your information",
+                "imo": "in my opinion",
+                "imho": "in my humble opinion",
+                "tbh": "to be honest",
+                "idk": "I don't know",
+                "brb": "be right back",
+                "gtg": "got to go",
+                "afk": "away from keyboard",
+                "rn": "right now",
+                "dm": "direct message"
+            };
+
+            // Apply expansions safely
+            Object.keys(abbreviations).forEach(key => {
+                // Escape special regex chars
+                const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+                // Special handling for terms with slashes like w/o to ensure correct boundary matching
+                let pattern;
+                if (key.includes('/') || key.includes(';')) {
+                    // Lookbehind/Lookahead for whitespace or start/end of string
+                    pattern = new RegExp(`(^|\\s)(${escapedKey})(?=\\s|$)`, 'gi');
+                    cleaned = cleaned.replace(pattern, `$1${abbreviations[key]}`);
+                } else {
+                    // Standard word boundary
+                    pattern = new RegExp(`\\b${escapedKey}\\b`, 'gi');
+                    pattern = key.endsWith('.')
+                        ? new RegExp(`\\b${escapedKey}`, 'gi') // If ends with dot, don't force \b after dot
+                        : new RegExp(`\\b${escapedKey}\\b`, 'gi');
+
+                    cleaned = cleaned.replace(pattern, abbreviations[key]);
+                }
+            });
+
             return cleaned.trim();
         };
 
