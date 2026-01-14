@@ -232,8 +232,12 @@ export const chatWithGemini = async (req, res) => {
             }
 
             const PROJECT_KNOWLEDGE = `
-            PLATFORM: UrbanSetu (https://urbansetu.vercel.app)
+            PLATFORM: UrbanSetu
             TYPE: Advanced AI-First Real Estate Management Platform (MERN Stack)
+            ACCESS POINTS (Dual Frontend):
+            1. Primary (Vercel): https://urbansetu.vercel.app
+            2. Global Mirror (Render): https://urbansetuglobal.onrender.com
+            *Both URLs provide full access to the platform.*
             
             ${aboutContext}
 
@@ -304,7 +308,8 @@ export const chatWithGemini = async (req, res) => {
 
             const ROUTE_MAP = `
             SUGGESTED LINKS (Always use absolute URLs):
-            - Home: https://urbansetu.vercel.app/
+            - Home (Primary): https://urbansetu.vercel.app/
+            - Home (Global Mirror): https://urbansetuglobal.onrender.com/
             - Login: https://urbansetu.vercel.app/sign-in
             - Sign Up: https://urbansetu.vercel.app/sign-up
             - Search: https://urbansetu.vercel.app/search
