@@ -14,31 +14,37 @@ const SeasonalEffects = ({ className }) => {
         // Generate particles only once on mount/theme change
         const particleCount = theme.effect === 'snow' ? 50
             : (theme.effect === 'confetti' || theme.effect === 'tricolor') ? 40
-                : theme.effect === 'kite' ? 8 // Reduced for less clutter
+                : theme.effect === 'kite' ? 12 // A few more kites
                     : 20;
+
+        const kiteColors = ['#FF2D55', '#5856D6', '#FF9500', '#FFCC00', '#4CD964', '#5AC8FA', '#007AFF', '#FF3B30', '#8E44AD', '#E74C3C', '#2ECC71', '#F1C40F'];
 
         const newParticles = Array.from({ length: particleCount }).map((_, i) => ({
             id: i,
             left: Math.random() * 100 + 'vw',
-            animationDuration: theme.effect === 'kite' ? Math.random() * 5 + 8 + 's' : Math.random() * 3 + 2 + 's', // Slower for kites (8-13s)
+            animationDuration: theme.effect === 'kite' ? Math.random() * 5 + 8 + 's' : Math.random() * 3 + 2 + 's',
             animationDelay: Math.random() * 5 + 's',
             opacity: Math.random() * 0.5 + 0.3,
-            size: theme.effect === 'kite' ? Math.random() * 40 + 60 + 'px' : Math.random() * 10 + 5 + 'px', // Much Larger kites (60-100px)
+            size: theme.effect === 'kite' ? Math.random() * 40 + 60 + 'px' : Math.random() * 10 + 5 + 'px',
             color: theme.effect === 'confetti'
                 ? ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][Math.floor(Math.random() * 5)]
                 : theme.effect === 'tricolor'
                     ? ['#FF9933', '#FFFFFF', '#138808'][Math.floor(Math.random() * 3)]
                     : theme.effect === 'kite'
-                        ? ['#FF2D55', '#5856D6', '#FF9500', '#FFCC00', '#4CD964', '#5AC8FA', '#007AFF', '#FF3B30'][Math.floor(Math.random() * 8)]
+                        ? kiteColors[Math.floor(Math.random() * kiteColors.length)] // Primary color (fallback)
                         : theme.effect === 'snow'
                             ? 'var(--snow-color)'
                             : '#FFF',
+            // Generate 4 random colors for the 4 segments of the kite
+            colors: theme.effect === 'kite'
+                ? Array.from({ length: 4 }).map(() => kiteColors[Math.floor(Math.random() * kiteColors.length)])
+                : null,
             // Specific to kites
-            sway: -1, // Unify direction: all fly towards left (wind from right)
+            sway: -1,
             startX: Math.random() * 100 + 'vw',
-            isCut: theme.effect === 'kite' ? Math.random() < 0.4 : false, // 40% are cut (pench), 60% flying
-            isSolid: theme.effect === 'kite' ? Math.random() > 0.4 : false, // 60% are solid color SVG, 40% are emoji
-            hue: Math.random() * 360 // Random color
+            isCut: theme.effect === 'kite' ? Math.random() < 0.4 : false,
+            isSolid: theme.effect === 'kite' ? true : false, // Always true for kites to show SVGs
+            hue: Math.random() * 360
         }));
 
         setParticles(newParticles);
@@ -116,45 +122,31 @@ const SeasonalEffects = ({ className }) => {
                 let content = '';
                 if (theme.effect === 'hearts') content = '❤️';
                 else if (theme.effect === 'kite') {
-                    // Always render the custom Tricolor SVG
-                    content = (
+                    // Multi-colored segmented kite
+                    const c = p.colors || [p.color, p.color, p.color, p.color]; // Fallback
+                    content = p.isSolid ? (
                         <svg width="100%" height="100%" viewBox="0 0 50 85" style={{ overflow: 'visible', filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' }}>
-                            {/* Tricolor Kite Body */}
-                            <defs>
-                                <clipPath id={`kite-clip-${p.id}`}>
-                                    <path d="M25,0 L50,20 L25,60 L0,20 Z" />
-                                </clipPath>
-                            </defs>
-                            <g clipPath={`url(#kite-clip-${p.id})`}>
-                                {/* Saffron (Top) */}
-                                <rect x="0" y="0" width="50" height="20" fill="#FF9933" />
-                                {/* White (Middle) */}
-                                <rect x="0" y="20" width="50" height="20" fill="#FFFFFF" />
-                                {/* Green (Bottom) */}
-                                <path d="M0,40 L50,40 L25,60 Z" fill="#138808" />
-                                {/* Fill rest of bottom with Green to cover diamond tip */}
-                                <rect x="0" y="40" width="50" height="20" fill="#138808" />
-                            </g>
+                            {/* Segment 1: Top Left - Triangle */}
+                            <path d="M25,0 L0,20 L25,20 Z" fill={c[0]} />
 
-                            {/* Ashoka Chakra (Blue Wheel in Center) - Simplified */}
-                            <circle cx="25" cy="30" r="4" fill="none" stroke="#000080" strokeWidth="1" />
-                            <circle cx="25" cy="30" r="1.5" fill="#000080" />
-                            <g stroke="#000080" strokeWidth="0.5">
-                                <line x1="25" y1="26" x2="25" y2="34" />
-                                <line x1="21" y1="30" x2="29" y2="30" />
-                                <line x1="22.2" y1="27.2" x2="27.8" y2="32.8" />
-                                <line x1="22.2" y1="32.8" x2="27.8" y2="27.2" />
-                            </g>
+                            {/* Segment 2: Top Right - Triangle */}
+                            <path d="M25,0 L50,20 L25,20 Z" fill={c[1]} />
+
+                            {/* Segment 3: Bottom Left - Triangle */}
+                            <path d="M25,20 L0,20 L25,60 Z" fill={c[2]} />
+
+                            {/* Segment 4: Bottom Right - Triangle */}
+                            <path d="M25,20 L50,20 L25,60 Z" fill={c[3]} />
 
                             {/* Vertical Spar */}
                             <path d="M25,0 L25,60" stroke="rgba(0,0,0,0.2)" strokeWidth="0.5" />
                             {/* Horizontal Spar (Curved) */}
                             <path d="M0,20 Q25,28 50,20" stroke="rgba(0,0,0,0.2)" strokeWidth="0.5" fill="none" />
 
-                            {/* Ribbon Tail (Green) */}
-                            <path d="M25,60 Q15,70 35,75 T25,85" stroke="#138808" strokeWidth="3" fill="none" strokeLinecap="round" />
+                            {/* Ribbon Tail (matches bottom-left color) */}
+                            <path d="M25,60 Q15,70 35,75 T25,85" stroke={c[2]} strokeWidth="3" fill="none" strokeLinecap="round" />
                         </svg>
-                    );
+                    ) : '🪁';
                 }
                 else if (theme.effect === 'leaf') content = '🍃';
                 else if (theme.effect === 'flower') content = '🌺';
