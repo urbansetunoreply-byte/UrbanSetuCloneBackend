@@ -6402,7 +6402,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     : 'bg-white border-gray-300 text-gray-900'
                                                     }`}
                                                 style={{ minHeight: '40px', maxHeight: '150px' }}
-                                                disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
+                                                disabled={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                             />
                                             {inputMessage.length > 1800 && (
                                                 <div className={`absolute right-3 bottom-3 text-xs font-medium ${inputMessage.length > 2000 ? 'text-red-500 font-bold' : 'text-orange-500'}`}>
