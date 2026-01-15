@@ -1,0 +1,119 @@
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { getAuth, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import { signInSuccess } from '../redux/user/userSlice';
+import { authenticatedFetch } from '../utils/csrf';
+import { API_BASE_URL } from '../config/api';
+import { reconnectSocket } from "../utils/socket";
+
+const GoogleOneTap = () => {
+    const { currentUser } = useSelector((state) => state.user);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [scriptLoaded, setScriptLoaded] = useState(false);
+
+    // Load Google Identity Services script
+    useEffect(() => {
+        if (currentUser) return;
+
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => setScriptLoaded(true);
+        document.body.appendChild(script);
+
+        return () => {
+            if (document.body.contains(script)) {
+                document.body.removeChild(script);
+            }
+        };
+    }, [currentUser]);
+
+    // Initialize One Tap
+    useEffect(() => {
+        if (!scriptLoaded || currentUser) return;
+
+        const handleCredentialResponse = async (response) => {
+            try {
+                // 1. Get ID Token from the One Tap response
+                const idToken = response.credential;
+                if (!idToken) return;
+
+                // 2. Create a Firebase credential from the token
+                const credential = GoogleAuthProvider.credential(idToken);
+                const auth = getAuth();
+
+                // 3. Sign in to Firebase with the credential
+                const result = await signInWithCredential(auth, credential);
+                const user = result.user;
+
+                // 4. Send the user details to your backend (same logic as Oauth.jsx)
+                const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/google`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: user.displayName,
+                        email: user.email,
+                        photo: user.photoURL,
+                        referredBy: new URLSearchParams(location.search).get('ref') || localStorage.getItem('urbansetu_ref')
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success === false) {
+                    console.error('Backend auth failed:', data.message);
+                    return;
+                }
+
+                if (data.token) {
+                    localStorage.setItem('accessToken', data.token);
+                    if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+                    localStorage.setItem('login', Date.now()); // Notify other tabs
+                }
+
+                // 5. Update Redux state and Redirect
+                dispatch(signInSuccess(data));
+                reconnectSocket();
+
+                if (data.role === "admin" || data.role === "rootadmin") {
+                    navigate("/admin");
+                } else {
+                    navigate("/user");
+                }
+
+            } catch (error) {
+                console.error('Google One Tap Error:', error);
+            }
+        };
+
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+        if (window.google && clientId) {
+            window.google.accounts.id.initialize({
+                client_id: clientId,
+                callback: handleCredentialResponse,
+                auto_select: false,
+                cancel_on_tap_outside: false
+            });
+
+            // Display the One Tap prompt
+            window.google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed()) {
+                    console.log('One Tap not displayed:', notification.getNotDisplayedReason());
+                } else if (notification.isSkippedMoment()) {
+                    console.log('One Tap skipped:', notification.getSkippedReason());
+                }
+            });
+        }
+    }, [scriptLoaded, currentUser, dispatch, navigate, location.search]);
+
+    return null; // Component does not render any visible DOM elements itself
+};
+
+export default GoogleOneTap;

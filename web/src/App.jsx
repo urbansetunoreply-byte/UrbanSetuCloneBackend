@@ -141,6 +141,7 @@ const LockAccount = lazy(() => import('./pages/security/LockAccount'));
 const UnlockAccount = lazy(() => import('./pages/security/UnlockAccount'));
 const CommunityGuidelines = lazy(() => import('./pages/CommunityGuidelines'));
 const Downloads = lazy(() => import('./pages/Downloads'));
+const GoogleOneTap = lazy(() => import('./components/GoogleOneTap'));
 
 
 // Loading component
@@ -777,6 +778,7 @@ function AppRoutes({ bootstrapped }) {
       <NetworkStatus />
       <CookieConsent />
       <VisitorTracker />
+      <GoogleOneTap />
       {!hideHeaderRoutes.includes(location.pathname) && !location.pathname.includes('/year/') && isHeaderVisible && (
         currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
           ? <AdminHeader />
