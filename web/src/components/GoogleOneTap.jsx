@@ -19,9 +19,12 @@ const GoogleOneTap = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isNewUser, setIsNewUser] = useState(false);
 
+    // Don't show One Tap on auth pages (avoid conflict with Oauth.jsx and redundant UI)
+    const isAuthPage = ['/sign-in', '/sign-up'].includes(location.pathname);
+
     // Load Google Identity Services script
     useEffect(() => {
-        if (currentUser) return;
+        if (currentUser || isAuthPage) return;
 
         const script = document.createElement('script');
         script.src = 'https://accounts.google.com/gsi/client';
@@ -39,7 +42,7 @@ const GoogleOneTap = () => {
 
     // Initialize One Tap
     useEffect(() => {
-        if (!scriptLoaded || currentUser || isLoading) return;
+        if (!scriptLoaded || currentUser || isLoading || isAuthPage) return;
 
         const handleCredentialResponse = async (response) => {
             try {
@@ -131,7 +134,7 @@ const GoogleOneTap = () => {
                 }
             });
         }
-    }, [scriptLoaded, currentUser, dispatch, navigate, location.search, isLoading]);
+    }, [scriptLoaded, currentUser, dispatch, navigate, location.search, isLoading, isAuthPage]);
 
     if (isLoading) {
         return <PremiumLoader mode={isNewUser ? 'signup' : 'signin'} />;
