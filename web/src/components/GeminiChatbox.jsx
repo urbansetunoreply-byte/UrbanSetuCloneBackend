@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaUser, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH, FaShareAlt, FaBan } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaUser, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH, FaEllipsisV, FaShareAlt, FaBan } from 'react-icons/fa';
 import EqualizerButton from './EqualizerButton';
 import ShareChatModal from './ShareChatModal';
 import VideoPreview from './VideoPreview';
@@ -422,6 +422,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // State for managing which message's "more options" menu is open
     const [openMessageMenuIndex, setOpenMessageMenuIndex] = useState(null);
+    const [showInputOptions, setShowInputOptions] = useState(false);
+    const inputOptionsRef = useRef(null);
 
     // Close menus when clicking outside
     useEffect(() => {
@@ -429,12 +431,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             if (openMessageMenuIndex !== null && !event.target.closest('.message-menu-container')) {
                 setOpenMessageMenuIndex(null);
             }
+            if (showInputOptions && inputOptionsRef.current && !inputOptionsRef.current.contains(event.target)) {
+                setShowInputOptions(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [openMessageMenuIndex]);
+    }, [openMessageMenuIndex, showInputOptions]);
 
     // Speech Synthesis State
     const [speakingMessageIndex, setSpeakingMessageIndex] = useState(null);
@@ -6268,7 +6273,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <div className="flex-1 relative">
                                     {/* Voice Meter / Input Box Toggle */}
                                     {(isListening || isProcessingVoice) ? (
-                                        <div className={`w-full h-10 px-4 flex items-center justify-center border rounded-full ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}>
+                                        <div className={`w-full h-10 px-4 flex items-center justify-between border rounded-full ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}>
                                             <div className="flex items-center gap-1 h-5">
                                                 {/* Simulated Audio Visualizer Bars */}
                                                 {[...Array(5)].map((_, i) => (
@@ -6286,24 +6291,66 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     {isProcessingVoice ? 'Processing...' : 'Listening...'}
                                                 </span>
                                             </div>
+                                            {/* Stop Button inside Visualizer */}
+                                            <button
+                                                type="button"
+                                                onClick={toggleVoiceInput}
+                                                className={`p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-red-500 transition-colors`}
+                                                title="Stop Recording"
+                                            >
+                                                <FaStop size={14} />
+                                            </button>
                                         </div>
                                     ) : (
                                         <>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    if (!currentUser) {
-                                                        toast.info('Please login to upload files');
-                                                        return;
-                                                    }
-                                                    setShowFileUpload(true);
-                                                }}
-                                                className={`absolute left-2 bottom-2 p-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-600'}`}
-                                                title="Attach files (Images, PDF, Documents)"
-                                                disabled={isListening || isProcessingVoice}
-                                            >
-                                                <FaPaperclip size={16} />
-                                            </button>
+                                            <div ref={inputOptionsRef} className="relative inline-block">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowInputOptions(!showInputOptions)}
+                                                    className={`absolute left-2 bottom-2 p-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-600'}`}
+                                                    title="More options"
+                                                    disabled={isListening || isProcessingVoice}
+                                                >
+                                                    <FaEllipsisV size={16} />
+                                                </button>
+
+                                                {/* Options Menu */}
+                                                {showInputOptions && (
+                                                    <div className={`absolute bottom-10 left-0 w-48 rounded-lg shadow-xl border overflow-hidden z-50 transform origin-bottom-left transition-all duration-200 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (!currentUser) {
+                                                                    toast.info('Please login to upload files');
+                                                                    return;
+                                                                }
+                                                                setShowFileUpload(true);
+                                                                setShowInputOptions(false);
+                                                            }}
+                                                            className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-50 text-gray-700'}`}
+                                                        >
+                                                            <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                                                                <FaPaperclip size={14} />
+                                                            </div>
+                                                            <span className="text-sm font-medium">Upload File</span>
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                toggleVoiceInput();
+                                                                setShowInputOptions(false);
+                                                            }}
+                                                            className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-50 text-gray-700'}`}
+                                                        >
+                                                            <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600'}`}>
+                                                                <FaMicrophone size={14} />
+                                                            </div>
+                                                            <span className="text-sm font-medium">Voice Input</span>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                             <textarea
                                                 ref={inputRef}
                                                 value={inputMessage}
@@ -6429,23 +6476,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     )}
                                 </div>
 
-                                {/* Voice Input Button */}
-                                <button
-                                    type="button"
-                                    onClick={toggleVoiceInput}
-                                    className={`px-3 py-2 ${isListening ? 'bg-red-500 text-white animate-pulse' : themeColors.secondary + ' ' + themeColors.accent} hover:opacity-80 rounded-full transition-all duration-200 flex items-center justify-center`}
-                                    title={isListening ? "Stop Listening" : "Start Voice Input"}
-                                    disabled={isProcessingVoice}
-                                    style={{ height: '40px' }}
-                                >
-                                    {isProcessingVoice ? (
-                                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    ) : isListening ? (
-                                        <FaStop size={14} />
-                                    ) : (
-                                        <FaMicrophone size={14} />
-                                    )}
-                                </button>
+
 
                                 {/* File Upload Button Removed (Moved to input left) */}
 
