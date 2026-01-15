@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { isMobileDevice } from '../utils/mobileUtils';
 import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog, FaFileContract, FaGavel, FaMoneyCheckAlt } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
+import EncryptedText from "../components/ui/EncryptedText";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import SetuCoinCard from "../components/SetuCoins/SetuCoinCard";
 import AdminCoinCard from "../components/SetuCoins/AdminCoinCard";
@@ -1406,7 +1407,7 @@ export default function Profile() {
                 <div className="text-center sm:text-left mb-4">
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-1 transition-colors duration-300 flex flex-col sm:flex-row sm:items-center justify-center sm:justify-start gap-2">
                     <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent break-all line-clamp-2">
-                      {currentUser.username}
+                      <EncryptedText text={currentUser.username} />
                     </span>
                     {/* Seasonal Animated Icon */}
                     {theme?.logoDecoration && THEME_DECORATIONS[theme.logoDecoration] && (
