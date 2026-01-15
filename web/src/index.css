@@ -4,7 +4,8 @@
 
 @layer base {
   :root {
-    --snow-color: #94a3b8; /* Slate-400 for visibility on light backgrounds */
+    --snow-color: #94a3b8;
+    /* Slate-400 for visibility on light backgrounds */
   }
 
   .dark {
@@ -1698,5 +1699,34 @@ body.modal-open {
 
   100% {
     transform: scale(1);
+  }
+}
+
+@layer utilities {
+  .animate-flag-wave {
+    animation: flagWave 3s ease-in-out infinite;
+    transform-origin: left center;
+  }
+}
+
+@keyframes flagWave {
+  0% {
+    transform: perspective(500px) rotateY(0deg) skewY(0deg);
+  }
+
+  25% {
+    transform: perspective(500px) rotateY(5deg) skewY(2deg);
+  }
+
+  50% {
+    transform: perspective(500px) rotateY(0deg) skewY(0deg);
+  }
+
+  75% {
+    transform: perspective(500px) rotateY(-5deg) skewY(-2deg);
+  }
+
+  100% {
+    transform: perspective(500px) rotateY(0deg) skewY(0deg);
   }
 }

@@ -47,7 +47,7 @@ const THEME_DECORATIONS = {
         </g>
       </svg>
     ),
-    animate: 'animate-wiggle-slow',
+    animate: 'animate-flag-wave',
     size: 'text-2xl',
     pos: '-top-3 -right-2'
   },

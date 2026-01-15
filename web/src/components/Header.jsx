@@ -324,7 +324,7 @@ export default function Header() {
                     <span className="absolute -top-4 -right-3 text-2xl filter drop-shadow-md animate-sway">🪁</span>
                   )}
                   {theme?.logoDecoration === 'flag' && (
-                    <span className="absolute -top-3 -right-2 text-2xl filter drop-shadow-md animate-wiggle-slow">
+                    <span className="absolute -top-3 -right-2 text-2xl filter drop-shadow-md animate-flag-wave">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" className="w-full h-full rounded-sm shadow-sm overflow-hidden inline-block align-middle" style={{ width: '1.2em', height: '0.8em', verticalAlign: 'middle' }}>
                         <path fill="#FF9933" d="M0 0h900v200H0z" />
                         <path fill="#FFF" d="M0 200h900v200H0z" />
