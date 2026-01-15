@@ -8,9 +8,9 @@ import { getAnalytics, isSupported } from "firebase/analytics";
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: "urbansetu-76c8c.firebaseapp.com",
-  projectId: "urbansetu-76c8c",
-  storageBucket: "urbansetu-76c8c.firebasestorage.app",
+  authDomain: "urbansetu-cce72.firebaseapp.com",
+  projectId: "urbansetu-cce72",
+  storageBucket: "urbansetu-cce72.firebasestorage.app",
   messagingSenderId: "1085933309814",
   appId: "1:1085933309814:web:39232deaaee1f69272b457",
   measurementId: "G-M3EL8W29W9"
