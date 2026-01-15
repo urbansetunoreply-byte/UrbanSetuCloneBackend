@@ -2252,6 +2252,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
 
         setInputMessage('');
+        // Reset height
+        if (inputRef.current) {
+            inputRef.current.style.height = 'auto';
+            // Keep focus after sending
+            setTimeout(() => {
+                inputRef.current?.focus();
+            }, 50);
+        }
         setSelectedProperties([]); // Clear selected properties after sending
         setMessages(prev => {
             const currentMessages = Array.isArray(prev) ? prev : [];
@@ -6259,25 +6267,42 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             >
                                                 <FaPaperclip size={16} />
                                             </button>
-                                            <input
+                                            <textarea
                                                 ref={inputRef}
-                                                type="text"
                                                 value={inputMessage}
-                                                onChange={handleInputChange}
-                                                onKeyPress={handleKeyPress}
-                                                onKeyDown={handleKeyDown}
+                                                onChange={(e) => {
+                                                    handleInputChange(e);
+                                                    // Auto-resize
+                                                    e.target.style.height = 'auto';
+                                                    e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    // Handle Enter to send, Ctrl+Enter or Shift+Enter for new line
+                                                    if (e.key === 'Enter') {
+                                                        if (e.shiftKey || e.ctrlKey) {
+                                                            // Allow default behavior (new line)
+                                                            return;
+                                                        } else {
+                                                            e.preventDefault();
+                                                            handleSubmit(e);
+                                                        }
+                                                    }
+                                                    handleKeyDown(e);
+                                                }}
                                                 placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
                                                 aria-label="Type your message"
                                                 aria-describedby="input-help"
                                                 role="textbox"
-                                                className={`w-full pl-10 pr-24 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
+                                                rows={1}
+                                                className={`w-full pl-10 pr-24 py-2 border rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
                                                     ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                                                     : 'bg-white border-gray-300 text-gray-900'
                                                     }`}
+                                                style={{ minHeight: '40px', maxHeight: '150px' }}
                                                 disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                             />
                                             {inputMessage.length > 1800 && (
-                                                <div className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium ${inputMessage.length > 2000 ? 'text-red-500 font-bold' : 'text-orange-500'}`}>
+                                                <div className={`absolute right-3 bottom-3 text-xs font-medium ${inputMessage.length > 2000 ? 'text-red-500 font-bold' : 'text-orange-500'}`}>
                                                     {inputMessage.length}/2000
                                                 </div>
                                             )}
