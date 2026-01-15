@@ -11,9 +11,9 @@ const firebaseConfig = {
   authDomain: "urbansetu-cce72.firebaseapp.com",
   projectId: "urbansetu-cce72",
   storageBucket: "urbansetu-cce72.firebasestorage.app",
-  messagingSenderId: "1085933309814",
-  appId: "1:1085933309814:web:39232deaaee1f69272b457",
-  measurementId: "G-M3EL8W29W9"
+  messagingSenderId: "687584735858",
+  appId: "1:687584735858:web:9dc0b4c6c5366fc8d9c8eb",
+  measurementId: "G-XEM5X816TY"
 };
 
 // Initialize Firebase
