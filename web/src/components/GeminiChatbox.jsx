@@ -6499,6 +6499,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 ) : (
                                     <button
                                         type="submit"
+                                        onMouseDown={(e) => e.preventDefault()}
                                         disabled={!inputMessage.trim() || inputMessage.length > 2000 || isListening || isProcessingVoice || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                         className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95`}
                                         aria-label="Send message"
