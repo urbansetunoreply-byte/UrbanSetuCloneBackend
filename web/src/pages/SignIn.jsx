@@ -211,7 +211,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
     // Focus password field when email step is completed (desktop only)
     useEffect(() => {
-        if (!isMobileDevice() && emailStep && passwordInputRef.current) {
+        if (emailStep && passwordInputRef.current) {
             focusWithoutKeyboard(passwordInputRef.current);
         }
     }, [emailStep]);
@@ -819,11 +819,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             // Password Sign In Form
                             <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-5 relative z-10">
                                 <div className="animate-fade-in delay-100">
-                                    {!emailStep && (
-                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
-                                            Email Address
-                                        </label>
-                                    )}
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                                        Email Address
+                                    </label>
                                     <FormField
                                         label={undefined}
                                         id="email"
