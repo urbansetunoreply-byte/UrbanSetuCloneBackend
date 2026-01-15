@@ -6279,11 +6279,29 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 onKeyDown={(e) => {
                                                     // Handle Enter to send, Ctrl+Enter or Shift+Enter for new line
                                                     if (e.key === 'Enter') {
-                                                        if (e.shiftKey || e.ctrlKey) {
-                                                            // Allow default behavior (Insert new line)
+                                                        if (e.shiftKey) {
+                                                            // Shift+Enter handles itself natively (new line)
                                                             return;
+                                                        } else if (e.ctrlKey) {
+                                                            // Ctrl+Enter needs manual handling to act as new line
+                                                            e.preventDefault();
+                                                            const start = e.target.selectionStart;
+                                                            const end = e.target.selectionEnd;
+                                                            const value = inputMessage;
+                                                            const newValue = value.substring(0, start) + '\n' + value.substring(end);
+
+                                                            setInputMessage(newValue);
+
+                                                            // Restore cursor position and resize after state update
+                                                            setTimeout(() => {
+                                                                if (inputRef.current) {
+                                                                    inputRef.current.selectionStart = inputRef.current.selectionEnd = start + 1;
+                                                                    inputRef.current.style.height = 'auto';
+                                                                    inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
+                                                                }
+                                                            }, 0);
                                                         } else {
-                                                            // Send message
+                                                            // Enter alone sends message
                                                             e.preventDefault();
                                                             handleSubmit(e);
                                                         }
