@@ -118,7 +118,7 @@ const GoogleOneTap = () => {
                 callback: handleCredentialResponse,
                 auto_select: false,
                 cancel_on_tap_outside: false,
-                use_fedcm_for_prompt: false,
+                use_fedcm_for_prompt: true,
                 context: 'use'
             });
 
