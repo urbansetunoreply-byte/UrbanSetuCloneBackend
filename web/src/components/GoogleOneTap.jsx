@@ -99,7 +99,9 @@ const GoogleOneTap = () => {
                 client_id: clientId,
                 callback: handleCredentialResponse,
                 auto_select: false,
-                cancel_on_tap_outside: false
+                cancel_on_tap_outside: false,
+                use_fedcm_for_prompt: false, // Fix for "FedCM request failed" / NetworkError
+                context: 'use'
             });
 
             // Display the One Tap prompt
