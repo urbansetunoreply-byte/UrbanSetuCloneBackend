@@ -3348,6 +3348,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     };
 
     // Handle keyboard shortcuts for editing
+    // Handle keyboard shortcuts for editing
     const handleEditKeyDown = (e, messageIndex) => {
         if (showEditPropertySuggestions) {
             switch (e.key) {
@@ -3375,9 +3376,37 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
         }
 
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault();
-            submitEditedMessage(messageIndex);
+        // Standard Chat Behavior for Editing:
+        // Enter -> Submit
+        // Ctrl+Enter -> New Line
+        if (e.key === 'Enter') {
+            if (e.shiftKey) {
+                // Shift+Enter handles itself natively (new line)
+                return;
+            } else if (e.ctrlKey) {
+                // Ctrl+Enter needs manual handling to act as new line
+                e.preventDefault();
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                const value = editingMessageContent; // Use the editing state variable
+                const newValue = value.substring(0, start) + '\n' + value.substring(end);
+
+                setEditingMessageContent(newValue);
+
+                // Restore cursor position and resize
+                setTimeout(() => {
+                    const textarea = document.getElementById(`edit-textarea-${messageIndex}`);
+                    if (textarea) {
+                        textarea.selectionStart = textarea.selectionEnd = start + 1;
+                        textarea.style.height = 'auto';
+                        textarea.style.height = textarea.scrollHeight + 'px';
+                    }
+                }, 0);
+            } else {
+                // Enter alone submits
+                e.preventDefault();
+                submitEditedMessage(messageIndex);
+            }
         } else if (e.key === 'Escape') {
             e.preventDefault();
             cancelEditingMessage();
@@ -5797,14 +5826,24 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     <div className="space-y-2">
                                                         <div className="relative">
                                                             <textarea
+                                                                id={`edit-textarea-${index}`} // Added ID for ref access
                                                                 value={editingMessageContent}
-                                                                onChange={handleEditInputChange}
+                                                                onChange={(e) => {
+                                                                    handleEditInputChange(e);
+                                                                    e.target.style.height = 'auto'; // Auto-resize
+                                                                    e.target.style.height = e.target.scrollHeight + 'px';
+                                                                }}
                                                                 onKeyDown={(e) => handleEditKeyDown(e, index)}
-                                                                className={`w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} placeholder-gray-500`}
-                                                                rows={3}
-                                                                placeholder="Edit your message... (Ctrl+Enter to send, Esc to cancel)"
+                                                                className={`w-full p-3 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} placeholder-gray-500 shadow-inner ${editingMessageContent.length > 1800 ? 'pr-20' : ''}`}
+                                                                style={{ minHeight: '100px', overflowY: 'hidden' }} // Ensure visibility
+                                                                placeholder="Edit your message..."
                                                             // Removed autoFocus - don't auto-focus input
                                                             />
+                                                            {editingMessageContent.length > 1800 && (
+                                                                <div className={`absolute right-3 bottom-2 text-xs font-medium ${editingMessageContent.length > 2000 ? 'text-red-500 font-bold' : 'text-orange-500'}`}>
+                                                                    {editingMessageContent.length}/2000
+                                                                </div>
+                                                            )}
 
                                                             {/* Edit Mode Property Suggestions */}
                                                             {showEditPropertySuggestions && (
@@ -5825,20 +5864,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div className="flex gap-2 justify-end">
+                                                        <div className="flex gap-2 justify-end mt-2">
                                                             <button
                                                                 onClick={() => cancelEditingMessage()}
-                                                                className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                                                                className="px-4 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
                                                             >
-                                                                <FaTimesCircle size={10} className="inline mr-1" />
                                                                 Cancel
                                                             </button>
                                                             <button
                                                                 onClick={() => submitEditedMessage(index)}
-                                                                disabled={!editingMessageContent.trim() || isLoading}
-                                                                className={`px-3 py-1 text-xs bg-gradient-to-r ${themeColors.primary} text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                                                                disabled={!editingMessageContent.trim() || isLoading || editingMessageContent.length > 2000}
+                                                                className={`px-4 py-1.5 text-xs font-medium bg-gradient-to-r ${themeColors.primary} text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm`}
                                                             >
-                                                                <FaCheckCircle size={10} className="inline mr-1" />
                                                                 Send
                                                             </button>
                                                         </div>
