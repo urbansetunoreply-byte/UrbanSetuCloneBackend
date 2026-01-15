@@ -5473,7 +5473,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             aria-describedby={screenReaderSupport ? `message-${index}-content` : undefined}
                                         >
                                             <div
-                                                className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${message.isRestricted
+                                                className={`${editingMessageIndex === index ? 'w-full max-w-[90%]' : 'max-w-[85%]'} ${getMessageDensityClass()} rounded-2xl break-words relative group ${message.isRestricted
                                                     ? `${isDarkMode ? 'bg-red-900/20 text-red-300 border border-red-700' : 'bg-red-50 text-red-900 border border-red-300 shadow-sm'}`
                                                     : message.role === 'user'
                                                         ? `bg-gradient-to-r ${themeColors.primary} text-white`
