@@ -6227,7 +6227,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit} className="flex space-x-2">
+                            <form onSubmit={handleSubmit} className="flex space-x-2 items-end">
                                 <div className="flex-1 relative">
                                     {/* Voice Meter / Input Box Toggle */}
                                     {(isListening || isProcessingVoice) ? (
@@ -6261,7 +6261,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     }
                                                     setShowFileUpload(true);
                                                 }}
-                                                className={`absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-600'}`}
+                                                className={`absolute left-2 bottom-2 p-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-600'}`}
                                                 title="Attach files (Images, PDF, Documents)"
                                                 disabled={isListening || isProcessingVoice}
                                             >
@@ -6280,9 +6280,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     // Handle Enter to send, Ctrl+Enter or Shift+Enter for new line
                                                     if (e.key === 'Enter') {
                                                         if (e.shiftKey || e.ctrlKey) {
-                                                            // Allow default behavior (new line)
+                                                            // Allow default behavior (Insert new line)
                                                             return;
                                                         } else {
+                                                            // Send message
                                                             e.preventDefault();
                                                             handleSubmit(e);
                                                         }
@@ -6308,7 +6309,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             )}
                                             {screenReaderSupport && (
                                                 <div id="input-help" className="sr-only">
-                                                    Press Enter to send your message, or use the voice input and file upload buttons for additional options.
+                                                    Press Enter to send your message, or Shift+Enter for a new line.
                                                 </div>
                                             )}
                                         </>
@@ -6380,6 +6381,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     className={`px-3 py-2 ${isListening ? 'bg-red-500 text-white animate-pulse' : themeColors.secondary + ' ' + themeColors.accent} hover:opacity-80 rounded-full transition-all duration-200 flex items-center justify-center`}
                                     title={isListening ? "Stop Listening" : "Start Voice Input"}
                                     disabled={isProcessingVoice}
+                                    style={{ height: '40px' }}
                                 >
                                     {isProcessingVoice ? (
                                         <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
