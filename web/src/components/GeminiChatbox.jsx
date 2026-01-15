@@ -399,6 +399,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const recordingChunksRef = useRef([]);
     const [editingMessageIndex, setEditingMessageIndex] = useState(null);
     const [editingMessageContent, setEditingMessageContent] = useState('');
+    const [copiedMessageIndex, setCopiedMessageIndex] = useState(null);
 
     // Reporting State
     const [showReportModal, setShowReportModal] = useState(false);
@@ -5611,17 +5612,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
                                                             {/* Copy icon for all messages */}
                                                             <button
-                                                                onClick={() => copyToClipboard(message.isRestricted ? "This content may violate our usage policies." : message.content)}
+                                                                onClick={async () => {
+                                                                    await copyToClipboard(message.isRestricted ? "This content may violate our usage policies." : message.content);
+                                                                    setCopiedMessageIndex(index);
+                                                                    setTimeout(() => setCopiedMessageIndex(null), 2000);
+                                                                }}
                                                                 className={`p-1 rounded transition-all duration-200 ${message.isRestricted
                                                                     ? 'text-red-700 hover:text-red-900 hover:bg-red-200/50'
                                                                     : message.role === 'user'
                                                                         ? 'text-white/80 hover:text-white hover:bg-white/20'
                                                                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
                                                                     }`}
-                                                                title="Copy message"
-                                                                aria-label="Copy message"
+                                                                title={copiedMessageIndex === index ? "Copied!" : "Copy message"}
+                                                                aria-label={copiedMessageIndex === index ? "Copied!" : "Copy message"}
                                                             >
-                                                                <FaCopy size={10} />
+                                                                {copiedMessageIndex === index ? <FaCheck size={10} /> : <FaCopy size={10} />}
                                                             </button>
 
                                                             {/* Edit button for user messages */}
