@@ -7,12 +7,17 @@ import { authenticatedFetch } from '../utils/csrf';
 import { API_BASE_URL } from '../config/api';
 import { reconnectSocket } from "../utils/socket";
 
+import PremiumLoader from './ui/PremiumLoader';
+import { app } from '../firebase'; // Import initialized Firebase app
+
 const GoogleOneTap = () => {
     const { currentUser } = useSelector((state) => state.user);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
     const [scriptLoaded, setScriptLoaded] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isNewUser, setIsNewUser] = useState(false);
 
     // Load Google Identity Services script
     useEffect(() => {
@@ -34,7 +39,7 @@ const GoogleOneTap = () => {
 
     // Initialize One Tap
     useEffect(() => {
-        if (!scriptLoaded || currentUser) return;
+        if (!scriptLoaded || currentUser || isLoading) return;
 
         const handleCredentialResponse = async (response) => {
             try {
@@ -42,15 +47,17 @@ const GoogleOneTap = () => {
                 const idToken = response.credential;
                 if (!idToken) return;
 
+                setIsLoading(true); // Start loading
+
                 // 2. Create a Firebase credential from the token
                 const credential = GoogleAuthProvider.credential(idToken);
-                const auth = getAuth();
+                const auth = getAuth(app); // Pass initialized app
 
                 // 3. Sign in to Firebase with the credential
                 const result = await signInWithCredential(auth, credential);
                 const user = result.user;
 
-                // 4. Send the user details to your backend (same logic as Oauth.jsx)
+                // 4. Send the user details to your backend
                 const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/google`, {
                     method: "POST",
                     headers: {
@@ -68,7 +75,13 @@ const GoogleOneTap = () => {
 
                 if (data.success === false) {
                     console.error('Backend auth failed:', data.message);
+                    setIsLoading(false);
                     return;
+                }
+
+                // Determine if new user based on backend response (if available)
+                if (data.isNewUser) {
+                    setIsNewUser(true);
                 }
 
                 if (data.token) {
@@ -81,14 +94,19 @@ const GoogleOneTap = () => {
                 dispatch(signInSuccess(data));
                 reconnectSocket();
 
-                if (data.role === "admin" || data.role === "rootadmin") {
-                    navigate("/admin");
-                } else {
-                    navigate("/user");
-                }
+                // Small delay to show the loader success state
+                setTimeout(() => {
+                    if (data.role === "admin" || data.role === "rootadmin") {
+                        navigate("/admin");
+                    } else {
+                        navigate("/user");
+                    }
+                    setIsLoading(false);
+                }, 1500);
 
             } catch (error) {
                 console.error('Google One Tap Error:', error);
+                setIsLoading(false);
             }
         };
 
@@ -100,7 +118,7 @@ const GoogleOneTap = () => {
                 callback: handleCredentialResponse,
                 auto_select: false,
                 cancel_on_tap_outside: false,
-                use_fedcm_for_prompt: false, // Fix for "FedCM request failed" / NetworkError
+                use_fedcm_for_prompt: false,
                 context: 'use'
             });
 
@@ -113,9 +131,13 @@ const GoogleOneTap = () => {
                 }
             });
         }
-    }, [scriptLoaded, currentUser, dispatch, navigate, location.search]);
+    }, [scriptLoaded, currentUser, dispatch, navigate, location.search, isLoading]);
 
-    return null; // Component does not render any visible DOM elements itself
+    if (isLoading) {
+        return <PremiumLoader mode={isNewUser ? 'signup' : 'signin'} />;
+    }
+
+    return null;
 };
 
 export default GoogleOneTap;
