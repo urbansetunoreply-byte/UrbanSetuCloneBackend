@@ -5919,7 +5919,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                                                     {/* Action buttons - hidden when editing */}
                                                     {editingMessageIndex !== index && (
-                                                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                                        <div className="flex gap-1 transition-all duration-200">
                                                             {/* Copy icon for all messages */}
                                                             <button
                                                                 onClick={async () => {
