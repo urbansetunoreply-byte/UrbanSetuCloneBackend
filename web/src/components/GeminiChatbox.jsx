@@ -5834,7 +5834,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     e.target.style.height = e.target.scrollHeight + 'px';
                                                                 }}
                                                                 onKeyDown={(e) => handleEditKeyDown(e, index)}
-                                                                className={`w-full p-3 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} placeholder-gray-500 shadow-inner ${editingMessageContent.length > 1800 ? 'pr-20' : ''}`}
+                                                                className={`w-full min-w-[300px] p-3 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} placeholder-gray-500 shadow-inner ${editingMessageContent.length > 1800 ? 'pr-20' : ''}`}
                                                                 style={{ minHeight: '100px', overflowY: 'hidden' }} // Ensure visibility
                                                                 placeholder="Edit your message..."
                                                             // Removed autoFocus - don't auto-focus input
