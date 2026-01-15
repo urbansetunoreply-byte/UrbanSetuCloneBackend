@@ -2220,6 +2220,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             return;
         }
 
+        // Check character limit
+        if (inputMessage.length > 2000) {
+            toast.error('Message is too long. Please shorten it to under 2000 characters.');
+            return;
+        }
+
         // Check rate limit
         console.log('Frontend - Rate limit check:', { remaining: rateLimitInfo.remaining, role: rateLimitInfo.role, limit: rateLimitInfo.limit });
         if (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') {
@@ -6264,14 +6270,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 aria-label="Type your message"
                                                 aria-describedby="input-help"
                                                 role="textbox"
-                                                className={`w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
+                                                className={`w-full pl-10 pr-24 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
                                                     ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                                                     : 'bg-white border-gray-300 text-gray-900'
                                                     }`}
                                                 disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                             />
                                             {inputMessage.length > 1800 && (
-                                                <div className="absolute -top-6 right-0 text-xs text-orange-600">
+                                                <div className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium ${inputMessage.length > 2000 ? 'text-red-500 font-bold' : 'text-orange-500'}`}>
                                                     {inputMessage.length}/2000
                                                 </div>
                                             )}
@@ -6380,7 +6386,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 ) : (
                                     <button
                                         type="submit"
-                                        disabled={!inputMessage.trim() || isListening || isProcessingVoice || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
+                                        disabled={!inputMessage.trim() || inputMessage.length > 2000 || isListening || isProcessingVoice || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                         className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95`}
                                         aria-label="Send message"
                                         title="Send message"
