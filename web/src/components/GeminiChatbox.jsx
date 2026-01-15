@@ -6390,6 +6390,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             handleSubmit(e);
                                                         }
                                                     }
+
+                                                    // Ctrl+Z to restore last sent message (Undo send clear)
+                                                    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !inputMessage) {
+                                                        e.preventDefault();
+                                                        if (lastUserMessageRef.current) {
+                                                            setInputMessage(lastUserMessageRef.current);
+                                                            // Auto-resize after restore
+                                                            setTimeout(() => {
+                                                                if (inputRef.current) {
+                                                                    inputRef.current.style.height = 'auto';
+                                                                    inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
+                                                                }
+                                                            }, 0);
+                                                        }
+                                                        return;
+                                                    }
+
                                                     handleKeyDown(e);
                                                 }}
                                                 placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
