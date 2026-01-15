@@ -116,20 +116,45 @@ const SeasonalEffects = ({ className }) => {
                 let content = '';
                 if (theme.effect === 'hearts') content = '❤️';
                 else if (theme.effect === 'kite') {
-                    content = p.isSolid ? (
+                    // Always render the custom Tricolor SVG
+                    content = (
                         <svg width="100%" height="100%" viewBox="0 0 50 85" style={{ overflow: 'visible', filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' }}>
-                            {/* Kite Body */}
-                            <path d="M25,0 L50,20 L25,60 L0,20 Z" fill={p.color} />
+                            {/* Tricolor Kite Body */}
+                            <defs>
+                                <clipPath id={`kite-clip-${p.id}`}>
+                                    <path d="M25,0 L50,20 L25,60 L0,20 Z" />
+                                </clipPath>
+                            </defs>
+                            <g clipPath={`url(#kite-clip-${p.id})`}>
+                                {/* Saffron (Top) */}
+                                <rect x="0" y="0" width="50" height="20" fill="#FF9933" />
+                                {/* White (Middle) */}
+                                <rect x="0" y="20" width="50" height="20" fill="#FFFFFF" />
+                                {/* Green (Bottom) */}
+                                <path d="M0,40 L50,40 L25,60 Z" fill="#138808" />
+                                {/* Fill rest of bottom with Green to cover diamond tip */}
+                                <rect x="0" y="40" width="50" height="20" fill="#138808" />
+                            </g>
+
+                            {/* Ashoka Chakra (Blue Wheel in Center) - Simplified */}
+                            <circle cx="25" cy="30" r="4" fill="none" stroke="#000080" strokeWidth="1" />
+                            <circle cx="25" cy="30" r="1.5" fill="#000080" />
+                            <g stroke="#000080" strokeWidth="0.5">
+                                <line x1="25" y1="26" x2="25" y2="34" />
+                                <line x1="21" y1="30" x2="29" y2="30" />
+                                <line x1="22.2" y1="27.2" x2="27.8" y2="32.8" />
+                                <line x1="22.2" y1="32.8" x2="27.8" y2="27.2" />
+                            </g>
+
                             {/* Vertical Spar */}
-                            <path d="M25,0 L25,60" stroke="rgba(0,0,0,0.3)" strokeWidth="0.5" />
+                            <path d="M25,0 L25,60" stroke="rgba(0,0,0,0.2)" strokeWidth="0.5" />
                             {/* Horizontal Spar (Curved) */}
-                            <path d="M0,20 Q25,28 50,20" stroke="rgba(0,0,0,0.3)" strokeWidth="0.5" fill="none" />
-                            {/* Decorative Icon */}
-                            <path d="M25,18 L32,25 L25,32 L18,25 Z" fill="rgba(255,255,255,0.6)" />
-                            {/* Ribbon Tail */}
-                            <path d="M25,60 Q15,70 35,75 T25,85" stroke={p.color} strokeWidth="3" fill="none" strokeLinecap="round" />
+                            <path d="M0,20 Q25,28 50,20" stroke="rgba(0,0,0,0.2)" strokeWidth="0.5" fill="none" />
+
+                            {/* Ribbon Tail (Green) */}
+                            <path d="M25,60 Q15,70 35,75 T25,85" stroke="#138808" strokeWidth="3" fill="none" strokeLinecap="round" />
                         </svg>
-                    ) : '🪁';
+                    );
                 }
                 else if (theme.effect === 'leaf') content = '🍃';
                 else if (theme.effect === 'flower') content = '🌺';
