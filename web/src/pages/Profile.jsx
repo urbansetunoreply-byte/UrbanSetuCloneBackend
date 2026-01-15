@@ -40,7 +40,36 @@ const THEME_DECORATIONS = {
   'santa-hat': { icon: '🎅', animate: 'animate-wiggle', size: 'text-2xl', pos: '-top-3 -right-2' },
   'party-hat': { icon: '🎉', animate: 'animate-wiggle', size: 'text-2xl', pos: '-top-4 -right-2' },
   'kite': { icon: '🪁', animate: 'animate-sway', size: 'text-2xl', pos: '-top-4 -right-3' },
-  'flag': { icon: '🇮🇳', animate: 'animate-wiggle-slow', size: 'text-2xl', pos: '-top-3 -right-2' },
+  'flag': {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" className="w-full h-full rounded-sm shadow-sm overflow-hidden inline-block align-middle" style={{ width: '1.2em', height: '0.8em', verticalAlign: 'middle' }}>
+        <path fill="#FF9933" d="M0 0h900v200H0z" />
+        <path fill="#FFF" d="M0 200h900v200H0z" />
+        <path fill="#138808" d="M0 400h900v200H0z" />
+        <g transform="translate(450 300)">
+          <circle r="92.5" fill="none" stroke="#000080" strokeWidth="15" />
+          <circle r="16" fill="#000080" />
+          <g id="d">
+            <g id="c">
+              <g id="b">
+                <g id="a" fill="#000080">
+                  <path d="M0-92.5L5.5-8.5l-11 0z" />
+                </g>
+                <use href="#a" transform="rotate(15)" />
+              </g>
+              <use href="#b" transform="rotate(30)" />
+            </g>
+            <use href="#c" transform="rotate(60)" />
+          </g>
+          <use href="#d" transform="rotate(120)" />
+          <use href="#d" transform="rotate(240)" />
+        </g>
+      </svg>
+    ),
+    animate: 'animate-wiggle-slow',
+    size: 'text-2xl',
+    pos: '-top-3 -right-2'
+  },
   'heart': { icon: '❤️', animate: 'animate-grow-shrink', size: 'text-xl', pos: '-top-3 -right-2' },
   'pumpkin': { icon: '🎃', animate: 'animate-bounce', size: 'text-xl', pos: '-top-3 -right-2' },
   'colors': { icon: '🎨', animate: 'animate-spin-slow', size: 'text-xl', pos: '-top-3 -right-2' },

@@ -324,7 +324,31 @@ export default function Header() {
                     <span className="absolute -top-4 -right-3 text-2xl filter drop-shadow-md animate-sway">🪁</span>
                   )}
                   {theme?.logoDecoration === 'flag' && (
-                    <span className="absolute -top-3 -right-2 text-2xl filter drop-shadow-md animate-wiggle-slow">🇮🇳</span>
+                    <span className="absolute -top-3 -right-2 text-2xl filter drop-shadow-md animate-wiggle-slow">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" className="w-full h-full rounded-sm shadow-sm overflow-hidden inline-block align-middle" style={{ width: '1.2em', height: '0.8em', verticalAlign: 'middle' }}>
+                        <path fill="#FF9933" d="M0 0h900v200H0z" />
+                        <path fill="#FFF" d="M0 200h900v200H0z" />
+                        <path fill="#138808" d="M0 400h900v200H0z" />
+                        <g transform="translate(450 300)">
+                          <circle r="92.5" fill="none" stroke="#000080" strokeWidth="15" />
+                          <circle r="16" fill="#000080" />
+                          <g id="d">
+                            <g id="c">
+                              <g id="b">
+                                <g id="a" fill="#000080">
+                                  <path d="M0-92.5L5.5-8.5l-11 0z" />
+                                </g>
+                                <use href="#a" transform="rotate(15)" />
+                              </g>
+                              <use href="#b" transform="rotate(30)" />
+                            </g>
+                            <use href="#c" transform="rotate(60)" />
+                          </g>
+                          <use href="#d" transform="rotate(120)" />
+                          <use href="#d" transform="rotate(240)" />
+                        </g>
+                      </svg>
+                    </span>
                   )}
                   {theme?.logoDecoration === 'heart' && (
                     <span className="absolute -top-3 -right-2 text-xl filter drop-shadow-md animate-grow-shrink">❤️</span>
@@ -463,7 +487,35 @@ export default function Header() {
                     )}
                   </h1>
                   <p className="text-xs text-white/70 font-medium tracking-wider uppercase flex items-center gap-1">
-                    Real Estate Excellence {theme?.secondaryIcon && <span className="opacity-80">{theme.secondaryIcon}</span>}
+                    Real Estate Excellence {theme?.secondaryIcon && (
+                      <span className="opacity-80">
+                        {theme.secondaryIcon === '🇮🇳' ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" className="inline-block align-baseline" style={{ width: '1em', height: '0.67em', transform: 'translateY(2px)' }}>
+                            <path fill="#FF9933" d="M0 0h900v200H0z" />
+                            <path fill="#FFF" d="M0 200h900v200H0z" />
+                            <path fill="#138808" d="M0 400h900v200H0z" />
+                            <g transform="translate(450 300)">
+                              <circle r="92.5" fill="none" stroke="#000080" strokeWidth="15" />
+                              <circle r="16" fill="#000080" />
+                              <g id="d">
+                                <g id="c">
+                                  <g id="b">
+                                    <g id="a" fill="#000080">
+                                      <path d="M0-92.5L5.5-8.5l-11 0z" />
+                                    </g>
+                                    <use href="#a" transform="rotate(15)" />
+                                  </g>
+                                  <use href="#b" transform="rotate(30)" />
+                                </g>
+                                <use href="#c" transform="rotate(60)" />
+                              </g>
+                              <use href="#d" transform="rotate(120)" />
+                              <use href="#d" transform="rotate(240)" />
+                            </g>
+                          </svg>
+                        ) : theme.secondaryIcon}
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
