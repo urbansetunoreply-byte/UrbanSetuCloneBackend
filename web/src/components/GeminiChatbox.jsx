@@ -397,6 +397,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [recordingDuration, setRecordingDuration] = useState(0);
     const [recordedAudioType, setRecordedAudioType] = useState('audio/webm');
     const recordingChunksRef = useRef([]);
+    const messageHistoryRef = useRef([]);
+    const historyIndexRef = useRef(-1);
     const [editingMessageIndex, setEditingMessageIndex] = useState(null);
     const [editingMessageContent, setEditingMessageContent] = useState('');
     const [copiedMessageIndex, setCopiedMessageIndex] = useState(null);
@@ -2270,6 +2272,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const currentMessages = Array.isArray(prev) ? prev : [];
             return [...currentMessages, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }];
         });
+        // Add to history stack for Ctrl+Z retrieval
+        messageHistoryRef.current.push(userMessage);
+        historyIndexRef.current = -1;
         lastUserMessageRef.current = userMessage;
 
         // Set loading state to show cancel button
@@ -6391,11 +6396,25 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         }
                                                     }
 
-                                                    // Ctrl+Z to restore last sent message (Undo send clear)
-                                                    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !inputMessage) {
-                                                        e.preventDefault();
-                                                        if (lastUserMessageRef.current) {
-                                                            setInputMessage(lastUserMessageRef.current);
+                                                    // Ctrl+Z to restore previously sent messages (History navigation)
+                                                    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                                                        const history = messageHistoryRef.current;
+                                                        if (history.length > 0) {
+                                                            // If input is empty, start from the latest
+                                                            if (!inputMessage) {
+                                                                e.preventDefault();
+                                                                historyIndexRef.current = history.length - 1;
+                                                                setInputMessage(history[historyIndexRef.current]);
+                                                            }
+                                                            // If currently viewing a history message, go back one more
+                                                            else if (historyIndexRef.current !== -1 && inputMessage === history[historyIndexRef.current]) {
+                                                                e.preventDefault();
+                                                                const nextIndex = historyIndexRef.current - 1;
+                                                                if (nextIndex >= 0) {
+                                                                    historyIndexRef.current = nextIndex;
+                                                                    setInputMessage(history[nextIndex]);
+                                                                }
+                                                            }
                                                             // Auto-resize after restore
                                                             setTimeout(() => {
                                                                 if (inputRef.current) {
@@ -6404,7 +6423,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 }
                                                             }, 0);
                                                         }
-                                                        return;
                                                     }
 
                                                     handleKeyDown(e);
