@@ -375,7 +375,7 @@ export default function MyListings() {
 
                       {/* Verification Status - For All Properties */}
                       {!listing.isVerified ? (
-                        <div className="mb-3 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                        <div className="mb-3 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-3 rounded transition-colors">
                           <div className="flex items-start gap-2">
                             <div className="flex-shrink-0 mt-0.5">
                               <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -383,8 +383,9 @@ export default function MyListings() {
                               </svg>
                             </div>
                             <div className="flex-1">
-                              <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-400 mb-1 transition-colors">Not Published</p>
-                              <p className="text-xs text-yellow-700 dark:text-yellow-500/80 transition-colors">Complete verification to make this property visible to buyers</p>
+                              <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-200 mb-1 transition-colors">Not Published</p>
+                              <p className="text-xs text-yellow-700 dark:text-yellow-300 transition-colors">Complete verification to make this property visible to buyers</p>
+
                               <button
                                 onClick={() => navigate(`/user/property-verification?listingId=${listing._id}`)}
                                 className="mt-2 px-3 py-1.5 bg-yellow-600 text-white rounded text-xs font-semibold hover:bg-yellow-700 transition flex items-center gap-1"
