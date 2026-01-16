@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { FaUsers, FaUser, FaMapMarkerAlt, FaBullhorn, FaShieldAlt, FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch, FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaLeaf, FaCamera, FaTrash, FaCheckCircle, FaExclamationTriangle, FaCalendar, FaTimesCircle, FaEdit, FaSmile } from 'react-icons/fa';
+import { FaUsers, FaUser, FaMapMarkerAlt, FaBullhorn, FaShieldAlt, FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch, FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaLeaf, FaCamera, FaTrash, FaCheckCircle, FaExclamationTriangle, FaCalendar, FaTimesCircle, FaEdit, FaSmile, FaFire } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
 import CommunitySkeleton from '../components/skeletons/CommunitySkeleton';
@@ -69,6 +69,25 @@ export default function Community() {
     });
     const [expandedComments, setExpandedComments] = useState({});
     const [commentText, setCommentText] = useState({});
+
+    const sortedPosts = useMemo(() => {
+        if (!posts) return [];
+        return [...posts].sort((a, b) => {
+            // 1. Pinned
+            if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+
+            // 2. Trending Rank
+            const trendIndexA = stats.trendingTopics ? stats.trendingTopics.findIndex(t => t._id === a._id) : -1;
+            const trendIndexB = stats.trendingTopics ? stats.trendingTopics.findIndex(t => t._id === b._id) : -1;
+
+            if (trendIndexA !== -1 && trendIndexB !== -1) return trendIndexA - trendIndexB;
+            if (trendIndexA !== -1) return -1;
+            if (trendIndexB !== -1) return 1;
+
+            // 3. Created Date (Newest first)
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+    }, [posts, stats.trendingTopics]);
 
     // Property Mention State
     const [propertySuggestions, setPropertySuggestions] = useState([]);
@@ -1102,7 +1121,7 @@ export default function Community() {
                                 </button>
                             </div>
                         ) : (
-                            posts.map((post, index) => (
+                            sortedPosts.map((post, index) => (
                                 <div
                                     key={post._id}
                                     className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 hover:shadow-xl dark:shadow-blue-900/10 transition-all duration-300 animate-fade-in-up"

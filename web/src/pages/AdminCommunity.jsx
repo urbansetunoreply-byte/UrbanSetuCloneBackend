@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
     FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt,
     FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch,
-    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaExclamationTriangle, FaEdit, FaSmile, FaUserTimes
+    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaExclamationTriangle, FaEdit, FaSmile, FaUserTimes, FaFire
 } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
@@ -80,6 +80,25 @@ export default function AdminCommunity() {
     const [replyingTo, setReplyingTo] = useState(null); // { postId, commentId }
     const [replyText, setReplyText] = useState('');
     const [expandedReplies, setExpandedReplies] = useState({}); // { commentId: boolean }
+
+    const sortedPosts = useMemo(() => {
+        if (!posts) return [];
+        return [...posts].sort((a, b) => {
+            // 1. Pinned
+            if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+
+            // 2. Trending Rank
+            const trendIndexA = stats.trendingTopics ? stats.trendingTopics.findIndex(t => t._id === a._id) : -1;
+            const trendIndexB = stats.trendingTopics ? stats.trendingTopics.findIndex(t => t._id === b._id) : -1;
+
+            if (trendIndexA !== -1 && trendIndexB !== -1) return trendIndexA - trendIndexB;
+            if (trendIndexA !== -1) return -1;
+            if (trendIndexB !== -1) return 1;
+
+            // 3. Created Date (Newest first)
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+    }, [posts, stats.trendingTopics]);
 
     // Emoji Picker State
     const [showEmojiPicker, setShowEmojiPicker] = useState({ show: false, type: null, id: null });
@@ -1140,7 +1159,7 @@ export default function AdminCommunity() {
                                 </button>
                             </div>
                         ) : (
-                            posts.map((post, index) => (
+                            sortedPosts.map((post, index) => (
                                 <div
                                     key={post._id}
                                     className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl dark:hover:shadow-blue-900/10 transition-all duration-300 animate-fade-in-up"
