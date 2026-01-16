@@ -587,9 +587,14 @@ export const chatWithGemini = async (req, res) => {
                                 max_completion_tokens: 20,
                                 temperature: 0.5
                             });
+                            console.log('[DEBUG] Title Gen Response (Streaming):', JSON.stringify(titleResponse));
                             const generatedTitle = titleResponse.choices[0]?.message?.content?.trim();
+                            console.log('[DEBUG] Extracted Title (Streaming):', generatedTitle);
+
                             if (generatedTitle && generatedTitle.length > 2) {
+                                console.log('[DEBUG] Saving new title (Streaming):', generatedTitle);
                                 chatHistory.name = generatedTitle.replace(/^"|"$/g, '');
+                                await chatHistory.save();
                             }
                         } catch (titleError) {
                             console.error("Failed to auto-generate chat title (Streaming):", titleError);
@@ -636,9 +641,20 @@ export const chatWithGemini = async (req, res) => {
                                 max_completion_tokens: 20,
                                 temperature: 0.5
                             });
+                            // Log the full response to debug
+                            console.log('[DEBUG] Title Gen Response:', JSON.stringify(titleResponse));
+
                             const generatedTitle = titleResponse.choices[0]?.message?.content?.trim();
+                            console.log('[DEBUG] Extracted Title:', generatedTitle);
+
                             if (generatedTitle && generatedTitle.length > 2) {
+                                console.log('[DEBUG] Saving new title (Std):', generatedTitle);
                                 chatHistory.name = generatedTitle.replace(/^"|"$/g, '');
+                                // FORCE SAVE name immediately to verify persistence
+                                await chatHistory.save();
+                                console.log('[DEBUG] Name saved immediately.');
+                            } else {
+                                console.log('[DEBUG] Title too short or empty.');
                             }
                         } catch (titleError) {
                             console.error("Failed to auto-generate chat title (Standard):", titleError);
