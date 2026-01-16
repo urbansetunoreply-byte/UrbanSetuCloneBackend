@@ -57,7 +57,7 @@ const ThirdPartyCookieBanner = () => {
                 {/* Header with Color Strip */}
                 <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
 
-                <div className="p-5">
+                <div className="p-4 md:p-5">
                     <div className="flex items-start gap-4">
                         <div className="flex-shrink-0 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-full">
                             <FaCookieBite className="text-blue-600 dark:text-blue-400 text-xl" />
@@ -78,12 +78,6 @@ const ThirdPartyCookieBanner = () => {
                                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
                                 >
                                     How to Enable <FaExternalLinkAlt size={10} />
-                                </button>
-                                <button
-                                    onClick={handleDismiss}
-                                    className="px-4 py-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                >
-                                    Dismiss
                                 </button>
                             </div>
                         </div>
