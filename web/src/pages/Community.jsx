@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FaUsers, FaUser, FaMapMarkerAlt, FaBullhorn, FaShieldAlt, FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch, FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaLeaf, FaCamera, FaTrash, FaCheckCircle, FaExclamationTriangle, FaCalendar, FaTimesCircle, FaEdit, FaSmile } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
@@ -15,6 +15,7 @@ export default function Community() {
     usePageTitle("Community Hub - Neighborhood Forum");
     const { currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
+    const { postId } = useParams();
 
     // Keyframes for inline styles
     const styles = `
@@ -125,7 +126,7 @@ export default function Community() {
             }
         };
         loadData();
-    }, [activeTab, searchTerm, showMyPosts]);
+    }, [activeTab, searchTerm, showMyPosts, postId]);
 
     const fetchPosts = async () => {
         try {
@@ -133,6 +134,7 @@ export default function Community() {
             if (activeTab !== 'All') params.append('category', activeTab);
             if (searchTerm) params.append('searchTerm', searchTerm);
             if (showMyPosts && currentUser) params.append('userId', currentUser._id);
+            if (postId) params.append('postId', postId);
             // Auto-filter by user's location if available (optional enhancement)
 
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${params.toString()}`);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
     FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt,
     FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch,
@@ -17,6 +17,7 @@ export default function AdminCommunity() {
     usePageTitle("Admin Dashboard - Community Moderation");
     const { currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
+    const { postId } = useParams();
 
     // Keyframes for inline styles
     const styles = `
@@ -130,7 +131,7 @@ export default function AdminCommunity() {
             }
         };
         loadData();
-    }, [activeTab, searchTerm]);
+    }, [activeTab, searchTerm, postId]);
 
     const fetchPosts = async () => {
         try {
@@ -139,6 +140,7 @@ export default function AdminCommunity() {
             const params = new URLSearchParams();
             if (activeTab !== 'All') params.append('category', activeTab);
             if (searchTerm) params.append('searchTerm', searchTerm);
+            if (postId) params.append('postId', postId);
 
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${params.toString()}`);
             const data = await res.json();
@@ -579,7 +581,7 @@ export default function AdminCommunity() {
             title: isPinned ? 'Unpin Discussion' : 'Pin Discussion',
             message: isPinned
                 ? 'Are you sure you want to unpin this discussion? It will no longer appear at the top of the feed.'
-                : 'Are you sure you want to pin this discussion? It will appear at the top of the feed for better visibility.',
+                : 'Are you sure you want to pin this discussion? It will appear at the top of the feed for better visibility and if any previously pinned discussions will be unpinned.',
             confirmText: isPinned ? 'Unpin' : 'Pin',
             isDestructive: false,
             onConfirm: async () => {

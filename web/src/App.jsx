@@ -807,6 +807,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
             <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
             <Route path="/community" element={currentUser ? <Navigate to="/user/community" /> : <Community />} />
+            <Route path="/community/post/:postId" element={currentUser ? <Navigate to="/user/community" /> : <Community />} />
             <Route path="/community-guidelines" element={currentUser ? <NotFound /> : <CommunityGuidelines />} />
             <Route path="/restore-account/:token" element={<AccountRevocation />} />
             <Route path="/restore-property" element={<RestoreProperty />} />
@@ -866,6 +867,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/view/:documentId" element={<ViewDocument />} />
               <Route path="/user/view-chat/preview" element={<ViewChatDocument />} />
               <Route path="/user/community" element={<Community />} />
+              <Route path="/user/community/post/:postId" element={<Community />} />
               <Route path="/user/rewards" element={<Rewards />} />
               <Route path="/user/leaderboard" element={<Leaderboard />} />
               <Route path="/user/year/:year" element={<YearInReview />} />
@@ -932,6 +934,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/view/preview" element={<ViewDocument />} />
               <Route path="/admin/view-chat/preview" element={<ViewChatDocument />} />
               <Route path="/admin/community" element={<AdminCommunity />} />
+              <Route path="/admin/community/post/:postId" element={<AdminCommunity />} />
               <Route path="/admin/setu-coins" element={<AdminCoinStats />} />
               <Route path="/contact" element={<Navigate to="/admin/support" />} />
               <Route path="/support" element={<Navigate to="/admin/support" />} />
