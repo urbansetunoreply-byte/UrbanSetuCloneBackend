@@ -10,6 +10,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import { socket } from '../utils/socket';
 import ReportModal from '../components/ReportModal';
 import UserAvatar from '../components/UserAvatar';
+import SocialSharePanel from '../components/SocialSharePanel';
 
 export default function Community() {
     usePageTitle("Community Hub - Neighborhood Forum");
@@ -48,6 +49,7 @@ export default function Community() {
         isDestructive: false
     });
     const [reportModal, setReportModal] = useState({ isOpen: false, type: 'post', id: null, commentId: null, replyId: null });
+    const [shareModal, setShareModal] = useState({ isOpen: false, url: '', title: '', description: '' });
     const [activeReplyInput, setActiveReplyInput] = useState(null); // ID of comment or reply being replied to
     const [editingContent, setEditingContent] = useState({ type: null, id: null, content: '' });
     const [editingPost, setEditingPost] = useState(null); // State for editing main post content
@@ -826,17 +828,17 @@ export default function Community() {
     };
 
     const handleShare = (post) => {
-        const shareData = {
-            title: post.title,
-            text: `Check out this interesting discussion on UrbanSetu!\n\n${post.title}\n"${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}"\n\nJoin the conversation here:`,
-            url: window.location.href,
-        };
-        if (navigator.share) {
-            navigator.share(shareData).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-            toast.success('Link copied to clipboard!');
+        const baseUrl = window.location.origin;
+        let path = `/community/post/${post._id}`;
+        if (currentUser) {
+            path = `/user/community/post/${post._id}`;
         }
+        setShareModal({
+            isOpen: true,
+            url: `${baseUrl}${path}`,
+            title: post.title,
+            description: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : '')
+        });
     };
 
 
@@ -1012,7 +1014,10 @@ export default function Community() {
                         {categories.map((cat) => (
                             <button
                                 key={cat.id}
-                                onClick={() => setActiveTab(cat.id)}
+                                onClick={() => {
+                                    setActiveTab(cat.id);
+                                    if (postId) navigate(currentUser ? '/user/community' : '/community');
+                                }}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${activeTab === cat.id
                                     ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-lg'
                                     : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
@@ -2106,6 +2111,13 @@ export default function Community() {
                     isOpen={reportModal.isOpen}
                     onClose={() => setReportModal({ isOpen: false, type: 'post', id: null, commentId: null, replyId: null })}
                     onReport={(reason) => handleReport(reason)}
+                />
+                <SocialSharePanel
+                    isOpen={shareModal.isOpen}
+                    onClose={() => setShareModal({ ...shareModal, isOpen: false })}
+                    url={shareModal.url}
+                    title={shareModal.title}
+                    description={shareModal.description}
                 />
             </div>
         </div >

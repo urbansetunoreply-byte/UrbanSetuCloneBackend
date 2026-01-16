@@ -12,6 +12,7 @@ import CommunitySkeleton from '../components/skeletons/CommunitySkeleton';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { socket } from '../utils/socket';
+import SocialSharePanel from '../components/SocialSharePanel';
 
 export default function AdminCommunity() {
     usePageTitle("Admin Dashboard - Community Moderation");
@@ -51,6 +52,7 @@ export default function AdminCommunity() {
         onConfirm: () => { },
         isDestructive: false
     });
+    const [shareModal, setShareModal] = useState({ isOpen: false, url: '', title: '', description: '' });
 
     // New state for suggestions
     const [suggestions, setSuggestions] = useState([]);
@@ -888,17 +890,14 @@ export default function AdminCommunity() {
     };
 
     const handleShare = (post) => {
-        const shareData = {
+        const baseUrl = window.location.origin;
+        const path = `/admin/community/post/${post._id}`;
+        setShareModal({
+            isOpen: true,
+            url: `${baseUrl}${path}`,
             title: post.title,
-            text: `Check out this interesting discussion on UrbanSetu!\n\n${post.title}\n"${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}"\n\nJoin the conversation here:`,
-            url: window.location.href,
-        };
-        if (navigator.share) {
-            navigator.share(shareData).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-            toast.success('Link copied to clipboard!');
-        }
+            description: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : '')
+        });
     };
 
     // Property Mention Logic
@@ -1053,7 +1052,10 @@ export default function AdminCommunity() {
                         {categories.map((cat) => (
                             <button
                                 key={cat.id}
-                                onClick={() => setActiveTab(cat.id)}
+                                onClick={() => {
+                                    setActiveTab(cat.id);
+                                    if (postId) navigate('/admin/community');
+                                }}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${activeTab === cat.id
                                     ? 'bg-blue-600 text-white shadow-lg'
                                     : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
@@ -2146,6 +2148,13 @@ export default function AdminCommunity() {
                 message={confirmModal.message}
                 confirmText={confirmModal.confirmText}
                 isDestructive={confirmModal.isDestructive}
+            />
+            <SocialSharePanel
+                isOpen={shareModal.isOpen}
+                onClose={() => setShareModal({ ...shareModal, isOpen: false })}
+                url={shareModal.url}
+                title={shareModal.title}
+                description={shareModal.description}
             />
         </div>
     );
