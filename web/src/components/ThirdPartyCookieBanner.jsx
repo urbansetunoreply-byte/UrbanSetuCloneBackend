@@ -1,0 +1,84 @@
+import React, { useState, useEffect } from 'react';
+import { FaCookieBite, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
+
+const ThirdPartyCookieBanner = () => {
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        // Check if previously dismissed
+        const dismissed = localStorage.getItem('thirdPartyCookieDismissed');
+        if (!dismissed) {
+            // Delay appearance slightly for better UX
+            const timer = setTimeout(() => setIsVisible(true), 1500);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
+    const handleDismiss = () => {
+        setIsVisible(false);
+        localStorage.setItem('thirdPartyCookieDismissed', 'true');
+    };
+
+    if (!isVisible) return null;
+
+    return (
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:bottom-6 z-[8000] max-w-md w-full animate-slide-up">
+            <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                {/* Header with Color Strip */}
+                <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+
+                <div className="p-5">
+                    <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-full">
+                            <FaCookieBite className="text-blue-600 dark:text-blue-400 text-xl" />
+                        </div>
+
+                        <div className="flex-1">
+                            <h3 className="font-bold text-gray-900 dark:text-white text-base mb-1">
+                                Login Requirement
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-3">
+                                To sign in, please <strong>enable Third-Party Cookies</strong> (or Cross-Site Tracking) in your browser.
+                                <br /><span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Required because our secure backend is on a separate domain.</span>
+                            </p>
+
+                            <div className="flex items-center gap-3 mt-2">
+                                <button
+                                    onClick={() => window.open('https://support.google.com/accounts/answer/61416?hl=en', '_blank')}
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
+                                >
+                                    How to Enable <FaExternalLinkAlt size={10} />
+                                </button>
+                                <button
+                                    onClick={handleDismiss}
+                                    className="px-4 py-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                >
+                                    Dismiss
+                                </button>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleDismiss}
+                            className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                        >
+                            <FaTimes />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <style>{`
+                @keyframes slide-up {
+                    from { transform: translateY(20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                .animate-slide-up {
+                    animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+            `}</style>
+        </div>
+    );
+};
+
+export default ThirdPartyCookieBanner;

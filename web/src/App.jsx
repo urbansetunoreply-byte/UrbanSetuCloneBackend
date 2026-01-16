@@ -15,6 +15,7 @@ import { CallProvider, useCallContext } from "./contexts/CallContext";
 import ContactSupportWrapper from "./components/ContactSupportWrapper";
 import NetworkStatus from "./components/NetworkStatus";
 import CookieConsent from "./components/CookieConsent";
+import ThirdPartyCookieBanner from "./components/ThirdPartyCookieBanner";
 import VisitorTracker from "./components/VisitorTracker";
 import Footer from "./components/Footer";
 import GlobalCallModals from "./components/GlobalCallModals";
@@ -776,6 +777,7 @@ function AppRoutes({ bootstrapped }) {
   return (
     <>
       <NetworkStatus />
+      <ThirdPartyCookieBanner />
       <CookieConsent />
       <VisitorTracker />
       <GoogleOneTap />
