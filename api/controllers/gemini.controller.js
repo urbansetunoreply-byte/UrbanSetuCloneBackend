@@ -569,8 +569,13 @@ export const chatWithGemini = async (req, res) => {
                 if (userId) {
                     const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
 
-                    // Auto-generate title if not present (First message)
-                    if (!chatHistory.name) {
+                    // Auto-generate title if not present or is generic/short
+                    // We check for "Chat " prefix (generic) or very short names (e.g. "Hi")
+                    const isGenericName = !chatHistory.name ||
+                        chatHistory.name.startsWith('Chat ') ||
+                        chatHistory.name.trim().length <= 3;
+
+                    if (isGenericName) {
                         try {
                             const titleResponse = await groq.chat.completions.create({
                                 messages: [
@@ -582,18 +587,15 @@ export const chatWithGemini = async (req, res) => {
                                 temperature: 0.5
                             });
                             const generatedTitle = titleResponse.choices[0]?.message?.content?.trim();
-                            if (generatedTitle) {
+                            if (generatedTitle && generatedTitle.length > 2) {
                                 chatHistory.name = generatedTitle.replace(/^"|"$/g, '');
                             }
                         } catch (titleError) {
                             console.error("Failed to auto-generate chat title (Streaming):", titleError);
                         }
                     }
-
                     await chatHistory.addMessage('user', message);
-                    await chatHistory.addMessage('assistant', fullResponse); // Just the final text
-                    // Note: We are skipping saving the intermediate tool calls to DB for simplicity, 
-                    // but ideally they should be saved for context continuity.
+                    await chatHistory.addMessage('assistant', fullResponse);
                     await chatHistory.save();
                 }
 
@@ -615,8 +617,12 @@ export const chatWithGemini = async (req, res) => {
                 try {
                     const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
 
-                    // Auto-generate title if not present (First message)
-                    if (!chatHistory.name) {
+                    // Auto-generate title if not present or is generic/short
+                    const isGenericName = !chatHistory.name ||
+                        chatHistory.name.startsWith('Chat ') ||
+                        chatHistory.name.trim().length <= 3;
+
+                    if (isGenericName) {
                         try {
                             const titleResponse = await groq.chat.completions.create({
                                 messages: [
@@ -628,7 +634,7 @@ export const chatWithGemini = async (req, res) => {
                                 temperature: 0.5
                             });
                             const generatedTitle = titleResponse.choices[0]?.message?.content?.trim();
-                            if (generatedTitle) {
+                            if (generatedTitle && generatedTitle.length > 2) {
                                 chatHistory.name = generatedTitle.replace(/^"|"$/g, '');
                             }
                         } catch (titleError) {
