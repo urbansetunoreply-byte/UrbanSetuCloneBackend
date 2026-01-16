@@ -14,6 +14,7 @@ import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
 import BlogDetailSkeleton from '../components/skeletons/BlogDetailSkeleton';
 import ConfirmationModal from '../components/ConfirmationModal';
+import SocialSharePanel from '../components/SocialSharePanel';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -49,6 +50,7 @@ const PublicBlogDetail = () => {
     isDestructive: false,
     confirmText: 'Confirm'
   });
+  const [shareModal, setShareModal] = useState({ isOpen: false, url: '', title: '', description: '' });
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
@@ -283,21 +285,13 @@ const PublicBlogDetail = () => {
     }
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: blog.title,
-          text: blog.excerpt,
-          url: window.location.href
-        });
-      } catch (error) {
-        console.log('Error sharing:', error);
-      }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success('Link copied to clipboard!');
-    }
+  const handleShare = () => {
+    setShareModal({
+      isOpen: true,
+      url: window.location.href,
+      title: blog.title,
+      description: blog.excerpt || blog.title
+    });
   };
 
   const formatDate = (dateString) => {
@@ -715,6 +709,13 @@ const PublicBlogDetail = () => {
         onConfirm={confirmModal.onConfirm}
         confirmText={confirmModal.confirmText}
         isDestructive={confirmModal.isDestructive}
+      />
+      <SocialSharePanel
+        isOpen={shareModal.isOpen}
+        onClose={() => setShareModal({ ...shareModal, isOpen: false })}
+        url={shareModal.url}
+        title={shareModal.title}
+        description={shareModal.description}
       />
     </div>
   );
