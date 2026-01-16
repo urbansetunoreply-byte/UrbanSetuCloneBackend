@@ -8,7 +8,7 @@ const ThirdPartyCookieBanner = () => {
     useEffect(() => {
         const checkThirdPartyCookies = async () => {
             // Check if previously dismissed (using v2 key to ensure it shows again for debugging/new logic)
-            if (localStorage.getItem('thirdPartyCookieDismissed_v2')) return;
+            // We no longer check localStorage, ensuring prompt appears if issue persists.
 
             try {
                 // Step 1: Set test cookie (SameSite=None; Secure)
@@ -50,8 +50,8 @@ const ThirdPartyCookieBanner = () => {
     }, []);
 
     const handleDismiss = () => {
+        // Only dismiss for the current session info
         setIsVisible(false);
-        localStorage.setItem('thirdPartyCookieDismissed_v2', 'true');
     };
 
     if (!isVisible) return null;
