@@ -438,6 +438,7 @@ export default function Profile() {
   // Hide My Appointments button in admin context
   const isAdminProfile = window.location.pathname.startsWith('/admin');
   const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
+  const isProfileIncomplete = currentUser && currentUser.role === 'user' && (!currentUser.gender || !currentUser.address || !currentUser.mobileNumber);
 
   // Add custom animations to head
   useEffect(() => {
@@ -1560,7 +1561,7 @@ export default function Profile() {
                 </div>
 
                 {/* Profile Completion Status */}
-                {currentUser.role === 'user' && (!currentUser.gender || !currentUser.address || !currentUser.mobileNumber) && (
+                {isProfileIncomplete && (
                   <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-3">
                     <p className="text-sm text-amber-700 dark:text-amber-400 font-medium text-center sm:text-left">
                       ⚠️ Complete your profile & earn 20 SetuCoins to unlock rewards!
@@ -1580,10 +1581,10 @@ export default function Profile() {
             <div className="mt-6 md:mt-0 flex justify-end">
               <button
                 onClick={() => setIsEditing(!isEditing)}
-                className={`bg-gradient-to-r from-blue-500 to-purple-500 text-white px-5 sm:px-4 py-4 sm:py-2 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 hover:rotate-1 shadow-lg font-semibold flex items-center gap-2 sm:gap-2 text-base sm:text-sm w-full sm:w-auto justify-center group ${isVisible ? animationClasses.fadeInRight + ' animation-delay-450' : 'opacity-0 translate-x-8'}`}
+                className={`bg-gradient-to-r ${!isEditing && isProfileIncomplete ? 'from-amber-400 to-yellow-600 shadow-yellow-500/50' : 'from-blue-500 to-purple-500'} text-white px-5 sm:px-4 py-4 sm:py-2 rounded-lg ${!isEditing && isProfileIncomplete ? 'hover:from-amber-500 hover:to-yellow-700' : 'hover:from-blue-600 hover:to-purple-600'} transition-all transform hover:scale-105 hover:rotate-1 shadow-lg font-semibold flex items-center gap-2 sm:gap-2 text-base sm:text-sm w-full sm:w-auto justify-center group ${isVisible ? animationClasses.fadeInRight + ' animation-delay-450' : 'opacity-0 translate-x-8'}`}
               >
                 <FaEdit className={`w-5 h-5 transition-transform duration-300 ${isEditing ? 'rotate-180' : ''} group-hover:${animationClasses.wiggle}`} />
-                {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+                {isEditing ? 'Cancel Edit' : (isProfileIncomplete ? 'Complete Profile' : 'Edit Profile')}
               </button>
             </div>
           </div>
