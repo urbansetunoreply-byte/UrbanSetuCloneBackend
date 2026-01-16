@@ -17,6 +17,7 @@ export default function SharedChatView() {
     const [loading, setLoading] = useState(true);
     const [importing, setImporting] = useState(false);
     const [importedSessionId, setImportedSessionId] = useState(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
     const [error, setError] = useState(null);
     const [inputToken, setInputToken] = useState('');
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
@@ -49,12 +50,7 @@ export default function SharedChatView() {
 
     const handleImportChat = async () => {
         if (!currentUser) {
-            // Check if we have a sign-in route
-            if (window.confirm("You need to be logged in to import this chat. Proceed to login?")) {
-                // Use encodeURIComponent to handle special characters in the path
-                const returnUrl = encodeURIComponent(window.location.pathname);
-                navigate(`/sign-in?redirect=${returnUrl}`);
-            }
+            setShowAuthModal(true);
             return;
         }
 
@@ -206,7 +202,13 @@ export default function SharedChatView() {
                     <div className="flex items-center gap-2">
                         {importedSessionId ? (
                             <button
-                                onClick={() => navigate('/ai')}
+                                onClick={() => {
+                                    if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+                                        navigate(`/admin/ai?session=${importedSessionId}`);
+                                    } else {
+                                        navigate(`/user/ai?session=${importedSessionId}`);
+                                    }
+                                }}
                                 className="hidden sm:flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 px-4 py-2 rounded-lg transition-colors"
                             >
                                 <FaArrowRight size={14} />
@@ -272,6 +274,58 @@ export default function SharedChatView() {
                     </a>
                 </div>
             </footer>
+
+            {/* Authentication Modal */}
+            {showAuthModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)} />
+                    <div className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 transform transition-all animate-scaleIn border dark:border-gray-700">
+                        <div className="text-center">
+                            <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <FaUser size={24} className="text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                                Sign In Required
+                            </h3>
+                            <p className="text-gray-600 dark:text-gray-400 mb-6">
+                                Please sign in to import this chat to your history.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowAuthModal(false)}
+                                    className="flex-1 px-4 py-2 rounded-xl text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const returnUrl = encodeURIComponent(window.location.pathname);
+                                        navigate(`/sign-in?redirect=${returnUrl}`);
+                                    }}
+                                    className="flex-1 px-4 py-2 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-medium transition-colors shadow-lg shadow-blue-500/30"
+                                >
+                                    Sign In
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <style>
+                {`
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+                    @keyframes scaleIn {
+                        from { opacity: 0; transform: scale(0.95); }
+                        to { opacity: 1; transform: scale(1); }
+                    }
+                    .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
+                    .animate-scaleIn { animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+                `}
+            </style>
 
             <GeminiAIWrapper />
             <ContactSupportWrapper />

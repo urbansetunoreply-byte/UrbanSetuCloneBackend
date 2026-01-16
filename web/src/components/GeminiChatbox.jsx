@@ -1765,13 +1765,35 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // Initialize session and load history when component mounts or user changes
     useEffect(() => {
-        const currentSessionId = getOrCreateSessionId();
-        if (currentUser && currentSessionId && !isHistoryLoaded) {
-            loadChatHistory(currentSessionId);
-            // Load ratings for current session
-            loadMessageRatings(currentSessionId);
-            // Load bookmarks for current session
-            loadBookmarkedMessages(currentSessionId);
+        // Check for session ID in URL param (e.g. from shared chat import)
+        const params = new URLSearchParams(location.search);
+        const urlSessionId = params.get('session');
+
+        // If URL has session, use it. Otherwise use existing or create new.
+        let currentSessionId;
+
+        if (urlSessionId) {
+            console.log('Detected session in URL:', urlSessionId);
+            currentSessionId = urlSessionId;
+            setSessionId(urlSessionId);
+            localStorage.setItem('gemini_session_id', urlSessionId);
+
+            // If we are switching sessions via URL, force reload history even if loaded
+            if (sessionId !== urlSessionId) {
+                setIsHistoryLoaded(false);
+            }
+        } else {
+            currentSessionId = getOrCreateSessionId();
+        }
+
+        if (currentUser && currentSessionId) {
+            // Only load if not loaded OR if we just switched via URL
+            if (!isHistoryLoaded || (urlSessionId && sessionId !== urlSessionId)) {
+                console.log('Loading history for session:', currentSessionId);
+                loadChatHistory(currentSessionId);
+                loadMessageRatings(currentSessionId);
+                loadBookmarkedMessages(currentSessionId);
+            }
         } else if (!currentUser) {
             setIsHistoryLoaded(true);
             // Load public history from localStorage
@@ -1801,7 +1823,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         // Fetch rate limit status
         fetchRateLimitStatus();
-    }, [currentUser, isHistoryLoaded]);
+    }, [currentUser, isHistoryLoaded, location.search]);
 
     // Initialize Prism.js highlighting
     useEffect(() => {
