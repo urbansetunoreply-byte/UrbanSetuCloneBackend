@@ -206,16 +206,19 @@ export default function AdminCommunity() {
         };
 
         const handlePostUpdated = (updatedPost) => {
-            setPosts(prev => prev.map(p => {
-                if (p._id === updatedPost._id) {
-                    return {
-                        ...updatedPost,
-                        comments: p.comments, // Preserve comments
-                        author: updatedPost.author || p.author
-                    };
-                }
-                return p;
-            }));
+            setPosts(prev => {
+                const updated = prev.map(p => {
+                    if (p._id === updatedPost._id) {
+                        return {
+                            ...updatedPost,
+                            comments: p.comments, // Preserve comments
+                            author: updatedPost.author || p.author
+                        };
+                    }
+                    return p;
+                });
+                return updated.sort((a, b) => (b.isPinned === a.isPinned ? 0 : b.isPinned ? 1 : -1) || new Date(b.createdAt) - new Date(a.createdAt));
+            });
         };
 
         const handleCommentAdded = ({ postId, comment }) => {
@@ -587,7 +590,10 @@ export default function AdminCommunity() {
                     });
                     if (res.ok) {
                         const updatedPost = await res.json();
-                        setPosts(posts.map(p => p._id === postId ? { ...p, isPinned: updatedPost.isPinned } : p));
+                        setPosts(prev => {
+                            const updated = prev.map(p => p._id === postId ? { ...p, isPinned: updatedPost.isPinned } : p);
+                            return updated.sort((a, b) => (b.isPinned === a.isPinned ? 0 : b.isPinned ? 1 : -1) || new Date(b.createdAt) - new Date(a.createdAt));
+                        });
                         toast.success(updatedPost.isPinned ? 'Post pinned successfully' : 'Post unpinned successfully');
                     }
                 } catch (error) {

@@ -200,16 +200,19 @@ export default function Community() {
         };
 
         const handlePostUpdated = (updatedPost) => {
-            setPosts(prev => prev.map(p => {
-                if (p._id === updatedPost._id) {
-                    return {
-                        ...updatedPost,
-                        author: updatedPost.author || p.author,
-                        comments: updatedPost.comments || p.comments
-                    };
-                }
-                return p;
-            }));
+            setPosts(prev => {
+                const updated = prev.map(p => {
+                    if (p._id === updatedPost._id) {
+                        return {
+                            ...updatedPost,
+                            author: updatedPost.author || p.author,
+                            comments: updatedPost.comments || p.comments
+                        };
+                    }
+                    return p;
+                });
+                return updated.sort((a, b) => (b.isPinned === a.isPinned ? 0 : b.isPinned ? 1 : -1) || new Date(b.createdAt) - new Date(a.createdAt));
+            });
         };
 
         const handleCommentAdded = ({ postId, comment }) => {

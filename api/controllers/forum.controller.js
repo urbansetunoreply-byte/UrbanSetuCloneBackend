@@ -108,7 +108,7 @@ export const getPosts = async (req, res, next) => {
             query.category = category;
         }
 
-        const sortOption = sort === 'popular' ? { 'likes': -1, createdAt: -1 } : { createdAt: -1 };
+        const sortOption = sort === 'popular' ? { isPinned: -1, 'likes': -1, createdAt: -1 } : { isPinned: -1, createdAt: -1 };
 
         const posts = await ForumPost.find(query)
             .populate('author', 'username avatar email type isVerified profileVisibility')
