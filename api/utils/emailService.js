@@ -14233,7 +14233,7 @@ export const sendCommunityPostConfirmationEmail = async (email, username, postTi
     to: email,
     subject: 'Your Discussion is Live! 💬 - UrbanSetu Community',
     html: `
-  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
         <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
           <h2 style="color: #0f766e; margin: 0; font-size: 24px;">UrbanSetu Community</h2>
         </div>
@@ -14258,7 +14258,7 @@ export const sendCommunityPostConfirmationEmail = async (email, username, postTi
             <p>© ${new Date().getFullYear()} UrbanSetu Community Team</p>
           </div>
         </div>
-      </div >
+      </div>
   `
   };
   return sendEmailWithRetry(mailOptions);
@@ -14272,7 +14272,7 @@ export const sendCommunityReportAcknowledgementEmail = async (email, username, i
     to: email,
     subject: 'Report Received - UrbanSetu Community Safety 🛡️',
     html: `
-  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
+  <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
          <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
           <h2 style="color: #2563eb; margin: 0; font-size: 24px;">Community Safety</h2>
         </div>
@@ -14292,7 +14292,7 @@ export const sendCommunityReportAcknowledgementEmail = async (email, username, i
             <p>© ${new Date().getFullYear()} UrbanSetu Trust & Safety</p>
           </div>
         </div>
-      </div >
+      </div>
   `
   };
   return sendEmailWithRetry(mailOptions);
@@ -14304,7 +14304,7 @@ export const sendSearchAlertEmail = async (email, username, searchCriteria, newP
 
   // Generate preview cards for up to 3 properties
   const propertyCards = newProperties.slice(0, 3).map(prop => `
-  < div style = "background-color: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 15px; overflow: hidden; display: flex;" >
+  <div style="background-color: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 15px; overflow: hidden; display: flex;">
       <div style="width: 120px; height: 100px; background-color: #f3f4f6; flex-shrink: 0;">
         <img src="${prop.image || 'https://via.placeholder.com/120x100?text=Property'}" alt="${prop.title}" style="width: 100%; height: 100%; object-fit: cover;">
       </div>
@@ -14313,7 +14313,7 @@ export const sendSearchAlertEmail = async (email, username, searchCriteria, newP
         <p style="margin: 0 0 5px; color: #4b5563; font-size: 14px;">${prop.location}</p>
         <p style="margin: 0; color: #059669; font-weight: 600;">₹${prop.price.toLocaleString('en-IN')}/mo</p>
       </div>
-    </div >
+    </div>
   `).join('');
 
   const mailOptions = {
@@ -14321,7 +14321,7 @@ export const sendSearchAlertEmail = async (email, username, searchCriteria, newP
     to: email,
     subject: `New Homes in ${searchCriteria.location} match your search! 🏠`,
     html: `
-  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
+  <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
         <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
           <h2 style="color: #2563eb; margin: 0; font-size: 24px;">UrbanSetu Alerts</h2>
         </div>
@@ -14348,7 +14348,7 @@ export const sendSearchAlertEmail = async (email, username, searchCriteria, newP
             <p>© ${new Date().getFullYear()} UrbanSetu Real Estate</p>
           </div>
         </div>
-      </div >
+      </div>
   `
   };
   return sendEmailWithRetry(mailOptions);
@@ -14364,7 +14364,7 @@ export const sendLeaseRenewalReminderEmail = async (email, username, contractDet
     to: email,
     subject: `${isUrgent ? '📅 Action Required:' : '🔔 Reminder:'} Lease Expiring in ${daysRemaining} Days`,
     html: `
-  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
+  <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
         <div style="background-color: ${isUrgent ? '#fef2f2' : '#f0f9ff'}; padding: 20px; text-align: center; border-bottom: 2px solid ${isUrgent ? '#fee2e2' : '#e0f2fe'};">
           <h2 style="color: ${isUrgent ? '#dc2626' : '#0284c7'}; margin: 0; font-size: 24px;">Lease Renewal</h2>
         </div>
@@ -14399,7 +14399,7 @@ export const sendLeaseRenewalReminderEmail = async (email, username, contractDet
             <p>© ${new Date().getFullYear()} UrbanSetu Legal Team</p>
           </div>
         </div>
-      </div >
+      </div>
   `
   };
   return sendEmailWithRetry(mailOptions);
@@ -14414,7 +14414,7 @@ export const sendIncompleteListingOnboardingEmail = async (email, username, list
     to: email,
     subject: 'Almost there! Finish listing your property 🏡',
     html: `
-  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
+  <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
         <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
           <h2 style="color: #059669; margin: 0; font-size: 24px;">Finish Your Listing</h2>
         </div>
@@ -14444,7 +14444,7 @@ export const sendIncompleteListingOnboardingEmail = async (email, username, list
             <p>© ${new Date().getFullYear()} UrbanSetu Team</p>
           </div>
         </div>
-      </div >
+      </div>
   `
   };
   return sendEmailWithRetry(mailOptions);
