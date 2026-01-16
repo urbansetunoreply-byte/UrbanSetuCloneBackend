@@ -169,7 +169,7 @@ export default function Settings() {
 
   // Privacy Settings
   const [profileVisibility, setProfileVisibility] = useState(() => {
-    return currentUser?.profileVisibility || localStorage.getItem('profileVisibility') || 'public';
+    return currentUser?.profileVisibility || localStorage.getItem('profileVisibility') || 'friends';
   });
   const [showEmail, setShowEmail] = useState(() => {
     const saved = localStorage.getItem('showEmail');
