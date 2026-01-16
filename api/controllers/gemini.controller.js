@@ -570,10 +570,11 @@ export const chatWithGemini = async (req, res) => {
                     const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
 
                     // Auto-generate title if not present or is generic/short
-                    // We check for "Chat " prefix (generic) or very short names (e.g. "Hi")
+                    console.log('[DEBUG] Checking name stability. Current:', chatHistory.name);
                     const isGenericName = !chatHistory.name ||
-                        chatHistory.name.startsWith('Chat ') ||
+                        /^Chat \d/.test(chatHistory.name) ||
                         chatHistory.name.trim().length <= 3;
+                    console.log('[DEBUG] Is Generic/Overwritable?', isGenericName);
 
                     if (isGenericName) {
                         try {
@@ -618,9 +619,11 @@ export const chatWithGemini = async (req, res) => {
                     const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
 
                     // Auto-generate title if not present or is generic/short
+                    console.log('[DEBUG] Checking name stability (Std). Current:', chatHistory.name);
                     const isGenericName = !chatHistory.name ||
-                        chatHistory.name.startsWith('Chat ') ||
+                        /^Chat \d/.test(chatHistory.name) ||
                         chatHistory.name.trim().length <= 3;
+                    console.log('[DEBUG] Is Generic/Overwritable? (Std)', isGenericName);
 
                     if (isGenericName) {
                         try {
