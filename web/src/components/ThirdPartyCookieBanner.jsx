@@ -7,30 +7,35 @@ const ThirdPartyCookieBanner = () => {
 
     useEffect(() => {
         const checkThirdPartyCookies = async () => {
-            // Check if previously dismissed
-            if (localStorage.getItem('thirdPartyCookieDismissed')) return;
+            // Check if previously dismissed (using v2 key to ensure it shows again for debugging/new logic)
+            if (localStorage.getItem('thirdPartyCookieDismissed_v2')) return;
 
             try {
                 // Step 1: Set test cookie (SameSite=None; Secure)
                 await fetch(`${API_BASE_URL}/api/auth/cookie-test/set`, {
-                    credentials: 'include'
+                    credentials: 'include',
+                    method: 'GET'
                 });
 
                 // Step 2: Check if cookie persisted
                 const res = await fetch(`${API_BASE_URL}/api/auth/cookie-test/check`, {
-                    credentials: 'include'
+                    credentials: 'include',
+                    method: 'GET'
                 });
 
                 if (res.ok) {
                     const data = await res.json();
+                    console.log('[CookieCheck] Status:', data);
                     if (data.enabled === false) {
                         // Only show if cookies are NOT enabled (blocked)
                         setIsVisible(true);
                     }
                 }
             } catch (error) {
-                // If checking fails (e.g. network error), we assume it's fine or user will see other errors
-                console.warn('Cookie check failed:', error);
+                // If checking fails (e.g. network error, or request blocked by browser privacy tools), 
+                // it is likely that third-party access is restricted.
+                console.warn('[CookieCheck] Check failed, assuming blocked:', error);
+                setIsVisible(true);
             }
         };
 
@@ -41,7 +46,7 @@ const ThirdPartyCookieBanner = () => {
 
     const handleDismiss = () => {
         setIsVisible(false);
-        localStorage.setItem('thirdPartyCookieDismissed', 'true');
+        localStorage.setItem('thirdPartyCookieDismissed_v2', 'true');
     };
 
     if (!isVisible) return null;
