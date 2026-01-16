@@ -1141,6 +1141,11 @@ export default function Community() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
+                                            {stats.trendingTopics?.findIndex(t => t._id === post._id) !== -1 && (
+                                                <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1 animate-pulse">
+                                                    <FaFire className="text-[8px]" /> Trending #{stats.trendingTopics?.findIndex(t => t._id === post._id) + 1}
+                                                </span>
+                                            )}
                                             {post.isLocked && (
                                                 <span className="bg-gray-100 text-gray-500 p-1.5 rounded-full" title="Locked Discussion">
                                                     <FaLock size={12} />

@@ -1179,6 +1179,11 @@ export default function AdminCommunity() {
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 justify-end">
+                                            {stats.trendingTopics?.findIndex(t => t._id === post._id) !== -1 && (
+                                                <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1 animate-pulse">
+                                                    <FaFire className="text-[8px]" /> Trending #{stats.trendingTopics?.findIndex(t => t._id === post._id) + 1}
+                                                </span>
+                                            )}
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${post.category === 'Safety' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800' :
                                                 post.category === 'Events' ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800' :
                                                     post.category === 'Marketplace' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800' :
