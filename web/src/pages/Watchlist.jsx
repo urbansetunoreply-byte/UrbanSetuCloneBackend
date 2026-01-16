@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
 import SavedPropertiesSkeleton from '../components/skeletons/SavedPropertiesSkeleton';
+import SocialSharePanel from '../components/SocialSharePanel';
 import { toast } from 'react-toastify';
 import { socket } from '../utils/socket.js';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaFire, FaArrowDown, FaArrowUp, FaExclamationTriangle, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX } from 'react-icons/fa';
@@ -40,6 +41,7 @@ export default function Watchlist() {
     typeDistribution: {},
     cityDistribution: {}
   });
+  const [shareModal, setShareModal] = useState({ isOpen: false, url: '', title: '', description: '' });
 
   const fetchWatchlist = async () => {
     if (!currentUser?._id) return;
@@ -345,19 +347,12 @@ export default function Watchlist() {
   };
 
   const handleShareWatchlist = () => {
-    const shareText = `Check out my watchlist with ${items.length} properties!`;
-    const shareUrl = window.location.href;
-
-    if (navigator.share) {
-      navigator.share({
-        title: 'My Property Watchlist',
-        text: shareText,
-        url: shareUrl
-      });
-    } else {
-      navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      toast.success('Watchlist link copied to clipboard');
-    }
+    setShareModal({
+      isOpen: true,
+      url: window.location.href,
+      title: 'My Property Watchlist',
+      description: `Check out my watchlist with ${items.length} properties!`
+    });
   };
 
   // Filter and sort items
@@ -940,6 +935,13 @@ export default function Watchlist() {
           </div>
         </button>
       </div>
+      <SocialSharePanel
+        isOpen={shareModal.isOpen}
+        onClose={() => setShareModal({ ...shareModal, isOpen: false })}
+        url={shareModal.url}
+        title={shareModal.title}
+        description={shareModal.description}
+      />
     </div>
   );
 }

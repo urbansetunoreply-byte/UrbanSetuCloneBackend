@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
 import AdvancedAIRecommendations from '../components/AdvancedAIRecommendations';
 import SavedPropertiesSkeleton from '../components/skeletons/SavedPropertiesSkeleton';
+import SocialSharePanel from '../components/SocialSharePanel';
 import { toast } from 'react-toastify';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaArrowDown, FaArrowUp, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX, FaRobot } from 'react-icons/fa';
 
@@ -37,6 +38,7 @@ const WishList = () => {
   const [showStats, setShowStats] = useState(false);
   const [stats, setStats] = useState({ totalValue: 0, averagePrice: 0, priceRange: { min: 0, max: 0 }, typeDistribution: {}, cityDistribution: {} });
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
+  const [shareModal, setShareModal] = useState({ isOpen: false, url: '', title: '', description: '' });
 
   const fetchWishlist = async () => {
     if (!currentUser?._id) return;
@@ -243,14 +245,12 @@ const WishList = () => {
   };
 
   const handleShare = () => {
-    const shareText = `Check out my wishlist with ${items.length} properties!`;
-    const shareUrl = window.location.href;
-    if (navigator.share) {
-      navigator.share({ title: 'My Property Wishlist', text: shareText, url: shareUrl });
-    } else {
-      navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      toast.success('Wishlist link copied to clipboard');
-    }
+    setShareModal({
+      isOpen: true,
+      url: window.location.href,
+      title: 'My Property Wishlist',
+      description: `Check out my wishlist with ${items.length} properties!`
+    });
   };
 
   const filteredAndSortedItems = items
@@ -615,6 +615,13 @@ const WishList = () => {
           </div>
         </button>
       </div>
+      <SocialSharePanel
+        isOpen={shareModal.isOpen}
+        onClose={() => setShareModal({ ...shareModal, isOpen: false })}
+        url={shareModal.url}
+        title={shareModal.title}
+        description={shareModal.description}
+      />
     </div>
   );
 };
