@@ -92,12 +92,7 @@ export default function ThemeDetailModal({ theme, isOpen, onClose }) {
                             </div>
                         </div>
 
-                        <button
-                            onClick={onClose}
-                            className="w-full py-2.5 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-lg"
-                        >
-                            Close
-                        </button>
+
                     </div>
                 </motion.div>
             </div>
