@@ -1,5 +1,5 @@
 import express from 'express'
-import { SignUp, SignIn, Google, Signout, verifyAuth, forgotPassword, resetPassword, sendLoginOTP, verifyLoginOTP, lockAccountByToken, unlockAccountByToken, RefreshToken } from '../controllers/auth.controller.js'
+import { SignUp, SignIn, Google, Signout, verifyAuth, forgotPassword, resetPassword, sendLoginOTP, verifyLoginOTP, lockAccountByToken, unlockAccountByToken, RefreshToken, setCookieTest, checkCookieTest } from '../controllers/auth.controller.js'
 import { validateRecaptcha } from '../middleware/recaptcha.js';
 import OtpTracking from '../models/otpTracking.model.js';
 import bcryptjs from 'bcryptjs';
@@ -203,5 +203,7 @@ router.post('/verify-password', verifyToken, async (req, res) => {
 // Security Lock/Unlock routes
 router.post('/lock-account', lockAccountByToken);
 router.post('/unlock-account', unlockAccountByToken);
+router.get('/cookie-test/set', setCookieTest);
+router.get('/cookie-test/check', checkCookieTest);
 
 export default router

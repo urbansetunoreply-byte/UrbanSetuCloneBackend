@@ -3,15 +3,40 @@ import { FaCookieBite, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
 
 const ThirdPartyCookieBanner = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
     useEffect(() => {
-        // Check if previously dismissed
-        const dismissed = localStorage.getItem('thirdPartyCookieDismissed');
-        if (!dismissed) {
-            // Delay appearance slightly for better UX
-            const timer = setTimeout(() => setIsVisible(true), 1500);
-            return () => clearTimeout(timer);
-        }
+        const checkThirdPartyCookies = async () => {
+            // Check if previously dismissed
+            if (localStorage.getItem('thirdPartyCookieDismissed')) return;
+
+            try {
+                // Step 1: Set test cookie (SameSite=None; Secure)
+                await fetch(`${API_BASE_URL}/api/auth/cookie-test/set`, {
+                    credentials: 'include'
+                });
+
+                // Step 2: Check if cookie persisted
+                const res = await fetch(`${API_BASE_URL}/api/auth/cookie-test/check`, {
+                    credentials: 'include'
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.enabled === false) {
+                        // Only show if cookies are NOT enabled (blocked)
+                        setIsVisible(true);
+                    }
+                }
+            } catch (error) {
+                // If checking fails (e.g. network error), we assume it's fine or user will see other errors
+                console.warn('Cookie check failed:', error);
+            }
+        };
+
+        // Delay check slightly to avoid impact on initial load
+        const timer = setTimeout(checkThirdPartyCookies, 2000);
+        return () => clearTimeout(timer);
     }, []);
 
     const handleDismiss = () => {

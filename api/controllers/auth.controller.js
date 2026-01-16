@@ -1729,3 +1729,21 @@ export const RefreshToken = async (req, res, next) => {
         next(errorHandler(401, "Invalid refresh token"));
     }
 };
+
+export const setCookieTest = (req, res) => {
+    res.cookie('test_third_party', '1', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: 60 * 60 * 1000 // 1 hour
+    });
+    res.json({ success: true });
+};
+
+export const checkCookieTest = (req, res) => {
+    if (req.cookies && req.cookies.test_third_party === '1') {
+        res.json({ enabled: true });
+    } else {
+        res.json({ enabled: false });
+    }
+};
