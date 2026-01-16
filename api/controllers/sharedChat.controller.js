@@ -35,17 +35,24 @@ export const importSharedChat = async (req, res) => {
         const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Create new ChatHistory entry
+        // Filter out restricted/violation messages
+        const validMessages = sharedChat.messages.filter(m => !m.isRestricted);
+
+        if (validMessages.length === 0) {
+            return res.status(400).json({ success: false, message: 'This chat contains only restricted content and cannot be imported.' });
+        }
+
         const newChatHistory = new ChatHistory({
             userId,
             sessionId: newSessionId,
             name: `Imported: ${sharedChat.title}`, // Add prefix to distinguish
-            messages: sharedChat.messages.map(m => ({
+            messages: validMessages.map(m => ({
                 role: m.role,
                 content: m.content,
-                isRestricted: m.isRestricted || false,
+                isRestricted: false, // Ensure we don't import restricted flags as we filtered them
                 timestamp: m.timestamp || new Date()
             })),
-            totalMessages: sharedChat.messages.length
+            totalMessages: validMessages.length
         });
 
         await newChatHistory.save();
