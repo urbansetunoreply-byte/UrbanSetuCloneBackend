@@ -1138,6 +1138,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             By signing in, you agree to our <a href="/terms" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Privacy Policy</a>.
                         </p>
                     </div>
+
+                    <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 opacity-80">
+                        <Lock className="w-3 h-3" />
+                        <span>Secure & Encrypted Platform</span>
+                    </div>
                 </div>
             </div>
         </AuthFormLayout>

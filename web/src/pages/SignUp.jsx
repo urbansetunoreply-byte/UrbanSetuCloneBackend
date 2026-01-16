@@ -1006,6 +1006,11 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                     </Link>
                   </p>
                 </div>
+
+                <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 opacity-80">
+                  <Lock className="w-3 h-3" />
+                  <span>Secure & Encrypted Platform</span>
+                </div>
               </div>
             </div>
           )}
