@@ -5,7 +5,8 @@ import {
     getSharedChat,
     getShareInfo,
     updateSharedChat,
-    deleteSharedChat
+    deleteSharedChat,
+    importSharedChat
 } from '../controllers/sharedChat.controller.js';
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.get('/view/:shareToken', getSharedChat);
 
 // Protected Management routes
 router.post('/create', verifyToken, createSharedChat);
+router.post('/import/:shareToken', verifyToken, importSharedChat);
 router.get('/manage/:sessionId', verifyToken, getShareInfo);
 router.put('/:shareToken', verifyToken, updateSharedChat);
 router.delete('/:shareToken', verifyToken, deleteSharedChat);

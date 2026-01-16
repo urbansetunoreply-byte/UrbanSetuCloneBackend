@@ -6,6 +6,62 @@ import crypto from 'crypto';
 
 // ... (createSharedChat, getSharedChat, getShareInfo, updateSharedChat remain unchanged) ...
 
+// Import a shared chat into user's history
+export const importSharedChat = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { shareToken } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Authentication required to import chats' });
+        }
+
+        // Find the shared chat
+        const sharedChat = await SharedChat.findOne({ shareToken });
+        if (!sharedChat) {
+            return res.status(404).json({ success: false, message: 'Shared chat not found' });
+        }
+
+        // Check if active or expired? (Optional: Allow importing expired chats if valuable?)
+        // Let's enforce active only for now as per "View" logic
+        if (!sharedChat.isActive) {
+            return res.status(410).json({ success: false, message: 'Cannot import inactive shared chat' });
+        }
+        if (sharedChat.expiresAt && new Date() > new Date(sharedChat.expiresAt)) {
+            return res.status(410).json({ success: false, message: 'Cannot import expired shared chat' });
+        }
+
+        // Generate ID
+        const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        // Create new ChatHistory entry
+        const newChatHistory = new ChatHistory({
+            userId,
+            sessionId: newSessionId,
+            name: `Imported: ${sharedChat.title}`, // Add prefix to distinguish
+            messages: sharedChat.messages.map(m => ({
+                role: m.role,
+                content: m.content,
+                isRestricted: m.isRestricted || false,
+                timestamp: m.timestamp || new Date()
+            })),
+            totalMessages: sharedChat.messages.length
+        });
+
+        await newChatHistory.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Chat imported successfully',
+            sessionId: newSessionId
+        });
+
+    } catch (error) {
+        console.error('Error importing shared chat:', error);
+        res.status(500).json({ success: false, message: 'Failed to import chat' });
+    }
+};
+
 // Delete/Revoke completely
 export const deleteSharedChat = async (req, res) => {
     try {

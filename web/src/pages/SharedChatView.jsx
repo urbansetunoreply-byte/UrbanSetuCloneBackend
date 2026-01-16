@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaRobot, FaUser, FaClock, FaCalendar, FaExclamationTriangle, FaArrowRight } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { FaRobot, FaUser, FaClock, FaCalendar, FaExclamationTriangle, FaArrowRight, FaDownload } from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
@@ -10,9 +11,12 @@ import ContactSupportWrapper from '../components/ContactSupportWrapper';
 export default function SharedChatView() {
     const { shareToken } = useParams();
     const navigate = useNavigate();
+    const { currentUser } = useSelector((state) => state.user);
     const [chatData, setChatData] = useState(null);
     usePageTitle(chatData ? chatData.title : "Shared Chat", "SetuAI");
     const [loading, setLoading] = useState(true);
+    const [importing, setImporting] = useState(false);
+    const [importedSessionId, setImportedSessionId] = useState(null);
     const [error, setError] = useState(null);
     const [inputToken, setInputToken] = useState('');
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
@@ -42,6 +46,39 @@ export default function SharedChatView() {
         };
         fetchChat();
     }, [shareToken]);
+
+    const handleImportChat = async () => {
+        if (!currentUser) {
+            // Check if we have a sign-in route
+            if (window.confirm("You need to be logged in to import this chat. Proceed to login?")) {
+                navigate('/sign-in'); // or whatever route
+            }
+            return;
+        }
+
+        setImporting(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/shared-chat/import/${shareToken}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // Important for auth cookies
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                setImportedSessionId(data.sessionId);
+            } else {
+                alert(data.message || "Failed to import chat");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("An error occurred while importing");
+        } finally {
+            setImporting(false);
+        }
+    };
 
     // Simple text formatter to handle basic markdown-like syntax
     const formatText = (text) => {
@@ -164,9 +201,29 @@ export default function SharedChatView() {
                             </div>
                         </div>
                     </div>
-                    <a href="/ai" className="hidden sm:block text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-4 py-2 rounded-lg transition-colors">
-                        Try SetuAI
-                    </a>
+                    <div className="flex items-center gap-2">
+                        {importedSessionId ? (
+                            <button
+                                onClick={() => navigate('/ai')}
+                                className="hidden sm:flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 px-4 py-2 rounded-lg transition-colors"
+                            >
+                                <FaArrowRight size={14} />
+                                Open SetuAI
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleImportChat}
+                                disabled={importing}
+                                className="hidden sm:flex items-center gap-2 text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                                <FaDownload size={14} />
+                                {importing ? "Importing..." : "Import Chat"}
+                            </button>
+                        )}
+                        <a href="/ai" className="hidden sm:block text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-4 py-2 rounded-lg transition-colors">
+                            Try SetuAI
+                        </a>
+                    </div>
                 </div>
             </header>
 
