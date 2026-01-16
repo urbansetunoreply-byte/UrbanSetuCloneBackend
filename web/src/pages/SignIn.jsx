@@ -687,7 +687,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         const redirectUrl = searchParams.get('redirect');
 
         if (redirectUrl && redirectUrl.startsWith('/')) {
-            navigate(redirectUrl, { replace: true });
+            // Specific fix for shared chat redirection to enforce role-based paths
+            if (redirectUrl.startsWith('/ai/share/')) {
+                const prefix = (data.role === "admin" || data.role === "rootadmin") ? "/admin" : "/user";
+                navigate(`${prefix}${redirectUrl}`, { replace: true });
+            } else {
+                navigate(redirectUrl, { replace: true });
+            }
         } else {
             if (data.role === "admin" || data.role === "rootadmin") {
                 navigate("/admin");
