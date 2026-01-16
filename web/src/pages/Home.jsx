@@ -8,6 +8,7 @@ import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 import ListingItem from "../components/ListingItem";
 import { useSelector } from "react-redux";
+import EncryptedText from "../components/ui/EncryptedText";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -220,7 +221,7 @@ export default function Home() {
                       <span className="text-lg sm:text-xl font-bold flex flex-wrap items-center justify-center text-center gap-x-2 gap-y-1">
                         <span className="text-gray-700 dark:text-gray-200">{theme?.greeting || greet},</span>
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 break-words max-w-[200px] sm:max-w-none truncate">
-                          {name}!
+                          <EncryptedText text={`${name}!`} />
                         </span>
                         <span
                           className={`animate-bounce inline-block ml-1 text-2xl filter drop-shadow-md ${theme ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}

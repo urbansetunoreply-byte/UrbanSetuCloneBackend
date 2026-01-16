@@ -391,6 +391,7 @@ export default function Profile() {
   const [coinData, setCoinData] = useState({ balance: 0, streak: 0, expiryDate: null, frozenCoins: 0, loading: true });
   const [showCoinHistory, setShowCoinHistory] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
+  const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
 
   // Handle mobile state updates
   useEffect(() => {
@@ -1127,6 +1128,15 @@ export default function Profile() {
         // Ensure avatar is always a string (empty if deleted)
         // If mobile number changed, set isGeneratedMobile to false
         localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
+
+        // Check for profile completion bonus (20 SetuCoins)
+        if (data.updatedUser?.gamification?.hasReceivedProfileCompletionBonus && !currentUser?.gamification?.hasReceivedProfileCompletionBonus) {
+          toast.success("🎉 Congratulations! You earned 20 SetuCoins for completing your profile!");
+        }
+
+        // Trigger transaction history refresh
+        setHistoryRefreshTrigger(prev => prev + 1);
+
         const updatedUser = {
           ...data.updatedUser,
           avatar: data.updatedUser.avatar || "",
@@ -2198,7 +2208,7 @@ export default function Profile() {
               {/* Expandable History */}
               <div id="recent-transactions" className={`transition-all duration-500 ease-in-out overflow-hidden ${showCoinHistory ? 'max-h-[1000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-2">
-                  <CoinHistory initialOpen={true} />
+                  <CoinHistory initialOpen={true} refreshTrigger={historyRefreshTrigger} />
                 </div>
               </div>
             </>

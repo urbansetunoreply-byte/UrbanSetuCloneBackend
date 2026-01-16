@@ -3,7 +3,7 @@ import { FaArrowUp, FaArrowDown, FaExchangeAlt, FaHistory, FaCalendarAlt, FaChev
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-const CoinHistory = ({ initialOpen = false }) => {
+const CoinHistory = ({ initialOpen = false, refreshTrigger = 0 }) => {
     const navigate = useNavigate();
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ const CoinHistory = ({ initialOpen = false }) => {
             }
         };
         getHistory();
-    }, []);
+    }, [refreshTrigger]);
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
