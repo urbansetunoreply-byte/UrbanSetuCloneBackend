@@ -25,15 +25,10 @@ const ThirdPartyCookieBanner = () => {
 
                 if (res.ok) {
                     const data = await res.json();
-                    console.log('[CookieCheck] Status:', data);
 
                     if (data.enabled === false) {
                         // Only show if cookies are NOT enabled (blocked)
                         setIsVisible(true);
-                    } else {
-                        // Cookies are working!
-                        console.log('[CookieCheck] ✅ SUCCESS: Third-party cookie was successfully detected.');
-                        console.log('[CookieCheck] ℹ️ INFO: If your "Third-party cookies" setting shows as BLOCKED, but you see this success, it means you have an EXCEPTION (Whitelist) for this site.');
                     }
                 }
             } catch (error) {
