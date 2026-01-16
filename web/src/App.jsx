@@ -777,7 +777,6 @@ function AppRoutes({ bootstrapped }) {
   return (
     <>
       <NetworkStatus />
-      <ThirdPartyCookieBanner />
       <CookieConsent />
       <VisitorTracker />
       <GoogleOneTap />

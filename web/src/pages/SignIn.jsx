@@ -18,6 +18,7 @@ import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
 import PremiumLoader from "../components/ui/PremiumLoader";
 import SecureBadge from "../components/ui/SecureBadge";
+import ThirdPartyCookieBanner from "../components/ThirdPartyCookieBanner";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -1143,6 +1144,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     </div>
 
                     <SecureBadge />
+                    <ThirdPartyCookieBanner />
                 </div>
             </div>
         </AuthFormLayout>

@@ -16,6 +16,7 @@ import SelectField from "../components/ui/SelectField";
 import FormField from "../components/ui/FormField";
 import PremiumLoader from "../components/ui/PremiumLoader";
 import SecureBadge from "../components/ui/SecureBadge";
+import ThirdPartyCookieBanner from "../components/ThirdPartyCookieBanner";
 import { useDispatch } from "react-redux";
 import { signInSuccess } from "../redux/user/userSlice.js";
 import { reconnectSocket } from "../utils/socket";
@@ -1009,6 +1010,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 </div>
 
                 <SecureBadge />
+                <ThirdPartyCookieBanner />
               </div>
             </div>
           )}
