@@ -1986,7 +1986,11 @@ export default function AdminCommunity() {
                             <ul className="space-y-3 relative z-10">
                                 {stats.trendingTopics && stats.trendingTopics.length > 0 ? (
                                     stats.trendingTopics.map((topic, index) => (
-                                        <li key={topic._id} className="flex items-center cursor-pointer hover:bg-white/10 p-2 rounded-lg transition-colors group">
+                                        <li
+                                            key={topic._id}
+                                            onClick={() => navigate(`/admin/community/post/${topic._id}`)}
+                                            className="flex items-center cursor-pointer hover:bg-white/10 p-2 rounded-lg transition-colors group"
+                                        >
                                             <span className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-xs mr-3 group-hover:scale-110 transition-transform">#{index + 1}</span>
                                             <span className="font-medium truncate">{topic.title}</span>
                                         </li>

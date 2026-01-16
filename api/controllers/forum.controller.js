@@ -582,17 +582,87 @@ export const getCommunityStats = async (req, res, next) => {
         const activeMembers = await User.countDocuments();
 
         // Get top 3 trending topics based on likes + comments count
+        // Get top 3 trending topics based on comprehensive engagement including deeper interactions
         const trendingTopics = await ForumPost.aggregate([
             {
                 $addFields: {
-                    interactionCount: {
-                        $add: [{ $size: "$likes" }, { $size: "$comments" }]
+                    // Level 1: Post interactions
+                    postInteractions: { $add: [{ $size: { $ifNull: ["$likes", []] } }, { $size: { $ifNull: ["$dislikes", []] } }] },
+
+                    // Level 2: Direct comments count
+                    commentCount: { $size: { $ifNull: ["$comments", []] } },
+
+                    // Level 3: Nested replies count
+                    replyCount: {
+                        $sum: {
+                            $map: {
+                                input: { $ifNull: ["$comments", []] },
+                                as: "c",
+                                in: { $size: { $ifNull: ["$$c.replies", []] } }
+                            }
+                        }
+                    },
+
+                    // Level 4: Comment likes/dislikes
+                    commentInteractions: {
+                        $sum: {
+                            $map: {
+                                input: { $ifNull: ["$comments", []] },
+                                as: "c",
+                                in: {
+                                    $add: [
+                                        { $size: { $ifNull: ["$$c.likes", []] } },
+                                        { $size: { $ifNull: ["$$c.dislikes", []] } }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+
+                    // Level 5: Reply likes/dislikes
+                    replyInteractions: {
+                        $sum: {
+                            $map: {
+                                input: { $ifNull: ["$comments", []] },
+                                as: "c",
+                                in: {
+                                    $sum: {
+                                        $map: {
+                                            input: { $ifNull: ["$$c.replies", []] },
+                                            as: "r",
+                                            in: {
+                                                $add: [
+                                                    { $size: { $ifNull: ["$$r.likes", []] } },
+                                                    { $size: { $ifNull: ["$$r.dislikes", []] } }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
-            { $sort: { interactionCount: -1 } },
-            { $limit: 3 },
-            { $project: { title: 1, _id: 1 } }
+            {
+                $addFields: {
+                    // Weighted Score: Comments and Replies are worth more (3x), Interactions (1x), Views (0.1x)
+                    trendScore: {
+                        $add: [
+                            "$postInteractions",
+                            { $multiply: ["$commentCount", 3] },
+                            { $multiply: ["$replyCount", 3] },
+                            "$commentInteractions",
+                            "$replyInteractions",
+                            // Add a small factor for View Count to break ties
+                            { $multiply: [{ $ifNull: ["$viewCount", 0] }, 0.1] }
+                        ]
+                    }
+                }
+            },
+            { $sort: { trendScore: -1 } },
+            { $limit: 3 }, // Top 3
+            { $project: { title: 1, _id: 1, trendScore: 1 } }
         ]);
 
         res.status(200).json({
