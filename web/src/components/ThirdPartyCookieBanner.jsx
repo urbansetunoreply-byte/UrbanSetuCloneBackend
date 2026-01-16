@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FaCookieBite, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
 
 const ThirdPartyCookieBanner = () => {
@@ -51,7 +52,7 @@ const ThirdPartyCookieBanner = () => {
 
     if (!isVisible) return null;
 
-    return (
+    return createPortal(
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:bottom-6 z-[8000] max-w-md w-full animate-slide-up">
             <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
                 {/* Header with Color Strip */}
@@ -102,7 +103,7 @@ const ThirdPartyCookieBanner = () => {
                 }
             `}</style>
         </div>
-    );
+        , document.body);
 };
 
 export default ThirdPartyCookieBanner;
