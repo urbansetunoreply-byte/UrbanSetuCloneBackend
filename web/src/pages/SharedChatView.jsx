@@ -51,7 +51,9 @@ export default function SharedChatView() {
         if (!currentUser) {
             // Check if we have a sign-in route
             if (window.confirm("You need to be logged in to import this chat. Proceed to login?")) {
-                navigate('/sign-in'); // or whatever route
+                // Use encodeURIComponent to handle special characters in the path
+                const returnUrl = encodeURIComponent(window.location.pathname);
+                navigate(`/sign-in?redirect=${returnUrl}`);
             }
             return;
         }
