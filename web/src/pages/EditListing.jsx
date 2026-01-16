@@ -1052,17 +1052,19 @@ export default function EditListing() {
                   )}
                   {url && (
                     <div className="w-full rounded-lg overflow-hidden bg-black">
-                      <div className="absolute inset-0 w-full h-full bg-black cursor-pointer group" onClick={() => setPreviewVideo(url)}>
-                        <video
-                          src={url}
-                          className="w-full h-full object-contain"
-                          muted
-                          playsInline
-                          preload="metadata"
-                        />
-                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <FaPlay className="text-white text-xl ml-1" />
+                      <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+                        <div className="absolute inset-0 w-full h-full bg-black cursor-pointer group" onClick={() => setPreviewVideo(url)}>
+                          <video
+                            src={url}
+                            className="w-full h-full object-contain"
+                            muted
+                            playsInline
+                            preload="metadata"
+                          />
+                          <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <FaPlay className="text-white text-xl ml-1" />
+                            </div>
                           </div>
                         </div>
                       </div>
