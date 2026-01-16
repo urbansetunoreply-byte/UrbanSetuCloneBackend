@@ -15,6 +15,7 @@ import AuthFormLayout from "../components/ui/AuthFormLayout";
 import SelectField from "../components/ui/SelectField";
 import FormField from "../components/ui/FormField";
 import PremiumLoader from "../components/ui/PremiumLoader";
+import SecureBadge from "../components/ui/SecureBadge";
 import { useDispatch } from "react-redux";
 import { signInSuccess } from "../redux/user/userSlice.js";
 import { reconnectSocket } from "../utils/socket";
@@ -1007,10 +1008,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   </p>
                 </div>
 
-                <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 opacity-80">
-                  <Lock className="w-3 h-3" />
-                  <span>Secure & Encrypted Platform</span>
-                </div>
+                <SecureBadge />
               </div>
             </div>
           )}

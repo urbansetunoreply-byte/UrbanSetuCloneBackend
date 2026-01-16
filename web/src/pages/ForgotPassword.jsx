@@ -14,6 +14,7 @@ import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
 import FormField from "../components/ui/FormField";
 import StepIndicator from "../components/ui/StepIndicator";
+import SecureBadge from "../components/ui/SecureBadge";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ForgotPassword({ bootstrapped, sessionChecked }) {
@@ -804,10 +805,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 </p>
               </div>
 
-              <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 opacity-80">
-                <Lock className="w-3 h-3" />
-                <span>Secure & Encrypted Platform</span>
-              </div>
+              <SecureBadge />
             </div>
           </div>
         </div>
@@ -1122,10 +1120,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               </p>
             </div>
 
-            <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 opacity-80">
-              <Lock className="w-3 h-3" />
-              <span>Secure & Encrypted Platform</span>
-            </div>
+            <SecureBadge />
           </div>
         </div>
       </div>

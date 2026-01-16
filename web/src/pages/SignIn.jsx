@@ -17,6 +17,7 @@ import FormField from "../components/ui/FormField";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
 import PremiumLoader from "../components/ui/PremiumLoader";
+import SecureBadge from "../components/ui/SecureBadge";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -1133,16 +1134,15 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         </div>
                     </div>
 
+
+
                     <div className="mt-8 text-center">
                         <p className="text-xs text-gray-400 dark:text-gray-500">
                             By signing in, you agree to our <a href="/terms" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Privacy Policy</a>.
                         </p>
                     </div>
 
-                    <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 opacity-80">
-                        <Lock className="w-3 h-3" />
-                        <span>Secure & Encrypted Platform</span>
-                    </div>
+                    <SecureBadge />
                 </div>
             </div>
         </AuthFormLayout>
