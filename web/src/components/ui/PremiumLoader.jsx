@@ -1,23 +1,23 @@
 
 import React, { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 
 const PremiumLoader = ({ onComplete, mode = 'signin' }) => {
     const [currentStep, setCurrentStep] = useState(0);
 
     const signinSteps = [
-        "Signing you in...",
+        "Verifying credentials...",
+        "Establishing secure connection...",
         "Activating SetuIntelligence...",
-        "Analyzing User Preferences...",
-        "Finalizing Data...",
-        "Welcome to UrbanSetu."
+        "Loading your personalized dashboard...",
+        "Welcome back to UrbanSetu."
     ];
 
     const signupSteps = [
-        "Creating your account...",
-        "Setting up your personal space...",
+        "Creating your secure account...",
+        "Encrypting personal data...",
         "Activating SetuIntelligence...",
-        "Finalizing your profile...",
+        "Setting up your workspace...",
         "Welcome to the UrbanSetu community."
     ];
 
@@ -52,7 +52,7 @@ const PremiumLoader = ({ onComplete, mode = 'signin' }) => {
                 </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 animate-pulse mb-2 transition-all duration-300 transform">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 animate-pulse mb-2 transition-all duration-300 transform text-center px-4">
                 {steps[currentStep]}
             </h2>
 
@@ -63,7 +63,12 @@ const PremiumLoader = ({ onComplete, mode = 'signin' }) => {
                 ></div>
             </div>
 
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-4 font-medium tracking-wide">SECURE LOGIN</p>
+            <div className="flex items-center gap-2 mt-6 px-4 py-2 bg-gray-50 dark:bg-gray-900/50 rounded-full border border-gray-100 dark:border-gray-800 animate-fade-in">
+                <Lock className="w-3.5 h-3.5 text-green-500" />
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                    Secure & Encrypted {mode === 'signup' ? 'Registration' : 'Login'}
+                </span>
+            </div>
 
             {/* Skip Button */}
             <button
