@@ -22,8 +22,11 @@ import {
   FaSun,
   FaClone,
   FaWindowRestore,
-  FaTrashAlt
+  FaTrashAlt,
+  FaShareAlt
 } from 'react-icons/fa';
+
+import SocialSharePanel from './SocialSharePanel';
 
 const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   // Playback States
@@ -44,6 +47,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [showSharePanel, setShowSharePanel] = useState(false);
   const [autoScale, setAutoScale] = useState(1);
   const [videoBlobUrl, setVideoBlobUrl] = useState(null); // State for Blob URL
 
@@ -682,6 +686,18 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     setShowCloseConfirm(false);
     if (wasPlayingRef.current) {
       setIsPlaying(true);
+    }
+  };
+
+  const toggleShare = (e) => {
+    e?.stopPropagation();
+    setShowSharePanel(true);
+    if (videoRef.current && !videoRef.current.paused) {
+      wasPlayingRef.current = true; // Remember we were playing
+      videoRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      wasPlayingRef.current = false;
     }
   };
 
@@ -1355,6 +1371,10 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
                   <FaTachometerAlt size={14} /> {playbackRate}x
                 </button>
 
+                <button onClick={toggleShare} title="Share" className="hover:text-blue-400">
+                  <FaShareAlt size={18} />
+                </button>
+
 
                 <button onClick={handleDownload} title="Download" className="hover:text-blue-400">
                   <FaDownload size={18} />
@@ -1455,6 +1475,22 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
           </div>
         </div>
       )}
+
+      {/* Social Share Panel */}
+      <SocialSharePanel
+        isOpen={showSharePanel}
+        onClose={() => {
+          setShowSharePanel(false);
+          // Optionally auto-resume? User might want to stay paused.
+          // Let's explicitly check wasPlayingRef?
+          // Actually, usually users expect resume if it was auto-paused.
+          if (wasPlayingRef.current) {
+            setIsPlaying(true);
+          }
+        }}
+        url={videos[currentIndex] || ""}
+        title="Check out this video on UrbanSetu!"
+      />
     </div>
   );
 
