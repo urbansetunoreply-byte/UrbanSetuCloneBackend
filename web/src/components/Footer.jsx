@@ -148,6 +148,17 @@ const Footer = () => {
                   Route Planner
                 </Link>
               </li>
+              <li>
+                <Link to="/user/rental-contracts" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                  Rental Agreements
+                </Link>
+              </li>
+              <li>
+                <Link to="/user/property-verification" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                  Property Verification
+                </Link>
+              </li>
+
             </ul>
           </div>
 
