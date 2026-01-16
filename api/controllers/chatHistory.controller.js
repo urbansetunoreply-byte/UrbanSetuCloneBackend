@@ -265,7 +265,15 @@ export const updateChatSession = async (req, res) => {
             chatHistory.totalMessages = totalMessages || messages.length;
         }
         if (hasName) {
-            chatHistory.name = name.trim().slice(0, 80) || null;
+            const newName = name.trim().slice(0, 80) || null;
+            // logic to prevent overwriting custom titles with generic "Chat [Date]" placeholder
+            const isNewNameGeneric = /^Chat \d/.test(newName);
+            const isOldNameGeneric = !chatHistory.name || /^Chat \d/.test(chatHistory.name);
+
+            // only update if new name is custom OR if both are generic (or old is null)
+            if (!isNewNameGeneric || isOldNameGeneric) {
+                chatHistory.name = newName;
+            }
         }
         chatHistory.lastActivity = new Date();
 

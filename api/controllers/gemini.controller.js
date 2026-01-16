@@ -570,11 +570,9 @@ export const chatWithGemini = async (req, res) => {
                     const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
 
                     // Auto-generate title if not present or is generic/short
-                    console.log('[DEBUG] Checking name stability. Current:', chatHistory.name);
                     const isGenericName = !chatHistory.name ||
                         /^Chat \d/.test(chatHistory.name) ||
                         chatHistory.name.trim().length <= 3;
-                    console.log('[DEBUG] Is Generic/Overwritable?', isGenericName);
 
                     if (isGenericName) {
                         try {
@@ -587,12 +585,9 @@ export const chatWithGemini = async (req, res) => {
                                 max_completion_tokens: 20,
                                 temperature: 0.5
                             });
-                            console.log('[DEBUG] Title Gen Response (Streaming):', JSON.stringify(titleResponse));
                             const generatedTitle = titleResponse.choices[0]?.message?.content?.trim();
-                            console.log('[DEBUG] Extracted Title (Streaming):', generatedTitle);
 
                             if (generatedTitle && generatedTitle.length > 2) {
-                                console.log('[DEBUG] Saving new title (Streaming):', generatedTitle);
                                 chatHistory.name = generatedTitle.replace(/^"|"$/g, '');
                                 await chatHistory.save();
                             }
@@ -624,11 +619,9 @@ export const chatWithGemini = async (req, res) => {
                     const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
 
                     // Auto-generate title if not present or is generic/short
-                    console.log('[DEBUG] Checking name stability (Std). Current:', chatHistory.name);
                     const isGenericName = !chatHistory.name ||
                         /^Chat \d/.test(chatHistory.name) ||
                         chatHistory.name.trim().length <= 3;
-                    console.log('[DEBUG] Is Generic/Overwritable? (Std)', isGenericName);
 
                     if (isGenericName) {
                         try {
@@ -641,25 +634,17 @@ export const chatWithGemini = async (req, res) => {
                                 max_completion_tokens: 20,
                                 temperature: 0.5
                             });
-                            // Log the full response to debug
-                            console.log('[DEBUG] Title Gen Response:', JSON.stringify(titleResponse));
-
                             const generatedTitle = titleResponse.choices[0]?.message?.content?.trim();
-                            console.log('[DEBUG] Extracted Title:', generatedTitle);
 
                             if (generatedTitle && generatedTitle.length > 2) {
-                                console.log('[DEBUG] Saving new title (Std):', generatedTitle);
                                 chatHistory.name = generatedTitle.replace(/^"|"$/g, '');
-                                // FORCE SAVE name immediately to verify persistence
                                 await chatHistory.save();
-                                console.log('[DEBUG] Name saved immediately.');
-                            } else {
-                                console.log('[DEBUG] Title too short or empty.');
                             }
                         } catch (titleError) {
                             console.error("Failed to auto-generate chat title (Standard):", titleError);
                         }
                     }
+
 
                     await chatHistory.addMessage('user', message);
                     await chatHistory.addMessage('assistant', responseText);
