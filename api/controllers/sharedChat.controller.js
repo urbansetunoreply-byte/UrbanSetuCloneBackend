@@ -156,12 +156,14 @@ export const createSharedChat = async (req, res) => {
             // If the user is requesting a "Create", and one exists, we can perhaps just update the content validation
             // But if they clicked "Create Link" again, maybe they want a fresh snapshot.
             // Let's update the snapshot and reactivate.
-            sharedChat.messages = originalChat.messages.map(m => ({
-                role: m.role,
-                content: m.content,
-                timestamp: m.timestamp,
-                isRestricted: m.isRestricted
-            }));
+            sharedChat.messages = originalChat.messages
+                .filter(m => !m.isRestricted) // Filter out restricted content from share
+                .map(m => ({
+                    role: m.role,
+                    content: m.content,
+                    timestamp: m.timestamp,
+                    isRestricted: false // Should be false since we filtered them, but keeping schema consistent
+                }));
             sharedChat.title = title || originalChat.name || 'Shared Conversation';
             sharedChat.isActive = true;
             if (expiresType) sharedChat.expiresAt = expiresAt;
@@ -171,17 +173,24 @@ export const createSharedChat = async (req, res) => {
             await sharedChat.save();
         } else {
             // Create new
+            // Filter first
+            const validMessages = originalChat.messages.filter(m => !m.isRestricted);
+
+            if (validMessages.length === 0) {
+                return res.status(400).json({ success: false, message: 'Cannot share a chat with only restricted content' });
+            }
+
             sharedChat = new SharedChat({
                 userId,
                 originalChatId: originalChat._id,
                 originalSessionId: sessionId,
                 shareToken: shareToken,
                 title: title || originalChat.name || 'Shared Conversation',
-                messages: originalChat.messages.map(m => ({
+                messages: validMessages.map(m => ({
                     role: m.role,
                     content: m.content,
                     timestamp: m.timestamp,
-                    isRestricted: m.isRestricted
+                    isRestricted: false
                 })),
                 expiresAt: expiresAt
             });
@@ -334,8 +343,37 @@ export const updateSharedChat = async (req, res) => {
         // Check messages diff
         let messagesChanged = false;
         if (originalChat && originalChat.messages) {
-            if (JSON.stringify(sharedChat.messages) !== JSON.stringify(originalChat.messages)) {
-                sharedChat.messages = originalChat.messages;
+            // Apply filter to original messages
+            const validOriginalMessages = originalChat.messages.filter(m => !m.isRestricted).map(m => ({
+                role: m.role,
+                content: m.content,
+                timestamp: m.timestamp,
+                isRestricted: false // key point
+            }));
+
+            // Compare with current shared messages (simplistic comparison)
+            // JSON.stringify might fail if fields order differs or _id. 
+            // Ideally we should sanitize sharedChat.messages to plain objects for comparison or just overwrite if lengths differ significantly or just overwrite always if logic dictates sync.
+            // For now, let's just overwrite with filtered content to ensure consistency.
+            // But we need to check if it CHANGED to avoid unnecessary db writes/notifications? 
+            // The original logic was: if (JSON.stringify... !== ...)
+            // Let's mimic that but with validMessages.
+
+            // Note: sharedChat.messages are Mongoose docs, need toJSON or similar for fair comparison against mapped objects. 
+            // Simpler: Just overwrite. The check `messagesChanged` tracks if we need to return "Link updated" vs "Up to date".
+
+            // Let's just compare lengths or last message content to decide? 
+            // Or just stringify the mapped arrays.
+
+            const currentSharedJSON = JSON.stringify(sharedChat.messages.map(m => ({
+                role: m.role, content: m.content, timestamp: m.timestamp
+            })));
+            const newSharedJSON = JSON.stringify(validOriginalMessages.map(m => ({
+                role: m.role, content: m.content, timestamp: m.timestamp
+            })));
+
+            if (currentSharedJSON !== newSharedJSON) {
+                sharedChat.messages = validOriginalMessages;
                 messagesChanged = true;
             }
         }
