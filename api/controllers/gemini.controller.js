@@ -568,6 +568,28 @@ export const chatWithGemini = async (req, res) => {
                 // Save History
                 if (userId) {
                     const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
+
+                    // Auto-generate title if not present (First message)
+                    if (!chatHistory.name) {
+                        try {
+                            const titleResponse = await groq.chat.completions.create({
+                                messages: [
+                                    { role: "system", content: "Generate a very short, specific title (max 5 words) for a chat that starts with this user message. Do not use quotes." },
+                                    { role: "user", content: message }
+                                ],
+                                model: GROQ_MODEL,
+                                max_completion_tokens: 20,
+                                temperature: 0.5
+                            });
+                            const generatedTitle = titleResponse.choices[0]?.message?.content?.trim();
+                            if (generatedTitle) {
+                                chatHistory.name = generatedTitle.replace(/^"|"$/g, '');
+                            }
+                        } catch (titleError) {
+                            console.error("Failed to auto-generate chat title (Streaming):", titleError);
+                        }
+                    }
+
                     await chatHistory.addMessage('user', message);
                     await chatHistory.addMessage('assistant', fullResponse); // Just the final text
                     // Note: We are skipping saving the intermediate tool calls to DB for simplicity, 
@@ -592,6 +614,28 @@ export const chatWithGemini = async (req, res) => {
             if (userId) {
                 try {
                     const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
+
+                    // Auto-generate title if not present (First message)
+                    if (!chatHistory.name) {
+                        try {
+                            const titleResponse = await groq.chat.completions.create({
+                                messages: [
+                                    { role: "system", content: "Generate a very short, specific title (max 5 words) for a chat that starts with this user message. Do not use quotes." },
+                                    { role: "user", content: message }
+                                ],
+                                model: GROQ_MODEL,
+                                max_completion_tokens: 20,
+                                temperature: 0.5
+                            });
+                            const generatedTitle = titleResponse.choices[0]?.message?.content?.trim();
+                            if (generatedTitle) {
+                                chatHistory.name = generatedTitle.replace(/^"|"$/g, '');
+                            }
+                        } catch (titleError) {
+                            console.error("Failed to auto-generate chat title (Standard):", titleError);
+                        }
+                    }
+
                     await chatHistory.addMessage('user', message);
                     await chatHistory.addMessage('assistant', responseText);
                     await chatHistory.save();
