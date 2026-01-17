@@ -572,7 +572,11 @@ export default function RoutePlanner() {
       }
     } catch (error) {
       console.error('Route planning failed:', error);
-      toast.error('Route planning failed. Showing approximate itinerary.');
+      if (hasRestoredFromUrl) {
+        toast.error('Unable to calculate the shared route. The locations might be unreachable.');
+      } else {
+        toast.error('Route planning failed. Showing approximate itinerary.');
+      }
       setPlan(computePlanFallback());
     } finally {
       setOptimizing(false);
@@ -1092,9 +1096,17 @@ export default function RoutePlanner() {
           setHasRestoredFromUrl(true);
           // Using a loading toast that will be replaced by success toast in optimize()
           toast.info('Shared route found! Loading stops...', { autoClose: 2000 });
+        } else {
+          throw new Error('Invalid route data structure');
         }
       } catch (err) {
         console.error('Failed to parse shared route data:', err);
+        setHasRestoredFromUrl(true); // Stop further attempts
+        toast.error('The shared route link is invalid or has expired.');
+
+        // Optionally clear the invalid param from URL
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
       }
     }
   }, [hasRestoredFromUrl]);
