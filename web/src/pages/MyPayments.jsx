@@ -52,6 +52,21 @@ const MyPayments = () => {
     description: ''
   });
 
+  useEffect(() => {
+    // Check for paymentId in URL query params
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get('paymentId');
+    if (paymentId && allPayments.length > 0) {
+      const payment = allPayments.find(p => p.paymentId === paymentId);
+      if (payment) {
+        handlePaymentClick(payment);
+        // Clear search params after opening
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [allPayments]);
+
   useEffect(() => { fetchPayments(); }, [filters]);
 
   // Listen for payment status updates

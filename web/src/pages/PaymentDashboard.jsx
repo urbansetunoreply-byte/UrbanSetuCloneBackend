@@ -69,6 +69,21 @@ const PaymentDashboard = () => {
   const [exportPasswordLoading, setExportPasswordLoading] = useState(false);
 
   useEffect(() => {
+    // Check for paymentId in URL query params
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get('paymentId');
+    if (paymentId) {
+      const payment = [...allUsdPayments, ...allInrPayments].find(p => p.paymentId === paymentId);
+      if (payment) {
+        handlePaymentClick(payment);
+        // Clear search params after opening
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [allUsdPayments, allInrPayments]);
+
+  useEffect(() => {
     fetchPaymentStats();
     fetchAdminPayments();
   }, []);
