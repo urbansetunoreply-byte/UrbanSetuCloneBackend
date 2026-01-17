@@ -142,6 +142,7 @@ const UnlockAccount = lazy(() => import('./pages/security/UnlockAccount'));
 const CommunityGuidelines = lazy(() => import('./pages/CommunityGuidelines'));
 const Downloads = lazy(() => import('./pages/Downloads'));
 const GoogleOneTap = lazy(() => import('./components/GoogleOneTap'));
+const ClientErrorMonitoring = lazy(() => import('./pages/ClientErrorMonitoring'));
 
 
 // Loading component
@@ -882,6 +883,7 @@ function AppRoutes({ bootstrapped }) {
             {/* Admin Routes */}
             <Route element={<AdminRoute bootstrapped={bootstrapped} />}>
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/client-errors" element={<ClientErrorMonitoring />} />
               <Route path="/admin/appointments" element={<AdminAppointments />} />
               <Route path="/admin/appointments/chat/:chatId" element={<AdminAppointments />} />
               <Route path="/admin/call-history" element={<AdminCallHistory />} />

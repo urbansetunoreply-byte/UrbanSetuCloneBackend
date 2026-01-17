@@ -50,6 +50,7 @@ const EXPORT_MODULES = [
   { key: 'routes', label: 'Saved Routes', icon: FaMapMarkedAlt, color: 'text-blue-600' },
   { key: 'investments', label: 'Investment Calculations', icon: FaChartLine, color: 'text-emerald-500' },
   { key: 'referrals', label: 'Referrals', icon: FaUsers, color: 'text-yellow-600' },
+  { key: 'clientErrors', label: 'Client Errors', icon: FaExclamationTriangle, color: 'text-red-600' },
 ];
 
 
@@ -1558,6 +1559,14 @@ export default function Settings() {
               >
                 <FaClipboardList className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
                 {t('settings.audit_logs')}
+              </button>
+
+              <button
+                onClick={() => navigate('/admin/client-errors')}
+                className={`w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
+              >
+                <FaExclamationTriangle className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
+                Client Error Monitoring
               </button>
             </div>
           </SettingSection>

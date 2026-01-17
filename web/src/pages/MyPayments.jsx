@@ -63,6 +63,18 @@ const MyPayments = () => {
     }
   };
 
+  const copyPaymentLink = (link, details) => {
+    const textToCopy = `${details}\n\nLink: ${link}`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setCopySuccess(true);
+      toast.success('Payment details copied to clipboard!');
+      setTimeout(() => setCopySuccess(false), 2000);
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      toast.error('Failed to copy details');
+    });
+  };
+
   const closePreviewModal = () => {
     setShowPreviewModal(false);
     clearPaymentIdFromUrl();
@@ -504,17 +516,6 @@ const MyPayments = () => {
     setShowSharePanel(true);
   };
 
-  const copyPaymentLink = (link, details) => {
-    const textToCopy = `${details}\n\nLink: ${link}`;
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      setCopySuccess(true);
-      toast.success('Payment details copied to clipboard!');
-      setTimeout(() => setCopySuccess(false), 2000);
-    }).catch(err => {
-      console.error('Failed to copy: ', err);
-      toast.error('Failed to copy details');
-    });
-  };
 
   const statusBadge = (status) => {
     const cls = status === 'completed' ? 'bg-green-100 text-green-700' : status === 'failed' ? 'bg-red-100 text-red-700' : status === 'refunded' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700';

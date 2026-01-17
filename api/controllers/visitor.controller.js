@@ -513,3 +513,95 @@ export const clearOldVisitorLogs = async (req, res, next) => {
     next(error);
   }
 };
+
+// Get all client errors across all visitors (admin only)
+export const getClientErrors = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 50, search = '', dateRange = 'all' } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Build match stage for date filter
+    const matchStage = {
+      'pageViews.errorLogs': { $exists: true, $not: { $size: 0 } }
+    };
+
+    if (dateRange !== 'all') {
+      const today = getStartOfDay();
+      if (dateRange === 'today') {
+        matchStage.visitDate = today;
+      } else if (dateRange === 'yesterday') {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        matchStage.visitDate = yesterday;
+      } else if (dateRange === '7days') {
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        matchStage.visitDate = { $gte: sevenDaysAgo };
+      }
+    }
+
+    // Aggregation to flatten error logs and include visitor context
+    const pipeline = [
+      { $match: matchStage },
+      { $unwind: '$pageViews' },
+      { $unwind: '$pageViews.errorLogs' },
+      {
+        $project: {
+          _id: 0,
+          id: '$pageViews.errorLogs._id',
+          message: '$pageViews.errorLogs.message',
+          source: '$pageViews.errorLogs.source',
+          stack: '$pageViews.errorLogs.stack',
+          timestamp: '$pageViews.errorLogs.timestamp',
+          path: '$pageViews.path',
+          visitorId: '$_id',
+          ip: 1,
+          userAgent: 1,
+          location: 1,
+          device: 1,
+          browser: 1,
+          os: 1,
+          deviceType: 1
+        }
+      },
+      { $sort: { timestamp: -1 } }
+    ];
+
+    // Apply search if provided
+    if (search) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { message: { $regex: search, $options: 'i' } },
+            { path: { $regex: search, $options: 'i' } },
+            { ip: { $regex: search, $options: 'i' } },
+            { source: { $regex: search, $options: 'i' } }
+          ]
+        }
+      });
+    }
+
+    // Count total matches (for pagination)
+    const countPipeline = [...pipeline, { $count: 'total' }];
+    const countResult = await VisitorLog.aggregate(countPipeline);
+    const total = countResult.length > 0 ? countResult[0].total : 0;
+
+    // Apply pagination
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: parseInt(limit) });
+
+    const errors = await VisitorLog.aggregate(pipeline);
+
+    res.status(200).json({
+      success: true,
+      errors,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      pages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error('Error getting client errors:', error);
+    next(error);
+  }
+};
