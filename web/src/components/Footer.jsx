@@ -46,7 +46,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-8 md:gap-8">
           {/* Company Info */}
           <div className="col-span-2 md:col-span-1 space-y-3">
             <div className="flex items-center gap-2">
@@ -80,7 +80,16 @@ const Footer = () => {
             <h4 className="text-lg font-semibold dark:text-white">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link
+                  to={
+                    currentUser
+                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                        ? "/admin"
+                        : "/user"
+                      : "/"
+                  }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
+                >
                   Home
                 </Link>
               </li>
@@ -104,12 +113,30 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/search" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link
+                  to={
+                    currentUser
+                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                        ? "/admin/explore"
+                        : "/user/search"
+                      : "/search"
+                  }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
+                >
                   Search Properties
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link
+                  to={
+                    currentUser
+                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                        ? "/admin/about"
+                        : "/user/about"
+                      : "/about"
+                  }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
+                >
                   About Us
                 </Link>
               </li>
@@ -134,31 +161,112 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/user/appointment" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link to="/user/my-appointments" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Book Appointment
                 </Link>
               </li>
               <li>
-                <Link to="/user/ai" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link
+                  to={
+                    currentUser
+                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                        ? "/admin/ai-assistant"
+                        : "/user/ai-assistant"
+                      : "/ai-assistant"
+                  }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
+                >
                   AI Assistant
                 </Link>
               </li>
               <li>
-                <Link to="/user/route-planner" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link
+                  to={
+                    currentUser
+                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                        ? "/admin/route-planner"
+                        : "/user/route-planner"
+                      : "/route-planner"
+                  }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
+                >
                   Route Planner
                 </Link>
               </li>
               <li>
-                <Link to="/user/rental-contracts" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link
+                  to={
+                    currentUser
+                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                        ? "/admin/rental-agreements"
+                        : "/user/rental-agreements"
+                      : "/rental-agreements"
+                  }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
+                >
                   Rental Agreements
                 </Link>
               </li>
               <li>
-                <Link to="/user/property-verification" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link
+                  to={
+                    currentUser
+                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                        ? "/admin/property-verification"
+                        : "/user/property-verification"
+                      : "/property-verification"
+                  }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Property Verification
                 </Link>
               </li>
 
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div className="space-y-3">
+            <h4 className="text-lg font-semibold dark:text-white">Resources</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link
+                  to={
+                    currentUser
+                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                        ? "/admin/blogs"
+                        : "/user/blogs"
+                      : "/blogs"
+                  }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
+                >
+                  Real Estate Blogs
+                </Link>
+              </li>
+              <li>
+                <Link to="/help-center" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                  Help Center
+                </Link>
+              </li>
+              <li>
+                <Link to="/market-trends" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                  Market Trends
+                </Link>
+              </li>
+              <li>
+                <Link to="/guides" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                  Property Guides
+                </Link>
+              </li>
+              <li>
+                <Link to="/agents" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                  Find an Agent
+                </Link>
+              </li>
+              <li>
+                <Link to="/user/investment-tools" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                  Investment Tools
+                </Link>
+              </li>
             </ul>
           </div>
 
