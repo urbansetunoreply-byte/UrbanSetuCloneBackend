@@ -1,4 +1,5 @@
 import HelpArticle from "../models/helpArticle.model.js";
+import HelpArticleView from "../models/helpArticleView.model.js";
 import { errorHandler } from "../utils/error.js";
 
 // Generate slug from title
@@ -69,9 +70,6 @@ export const getArticles = async (req, res, next) => {
         next(error);
     }
 };
-
-import HelpArticleView from "../models/helpArticleView.model.js";
-
 export const getArticleBySlug = async (req, res, next) => {
     try {
         const { slug } = req.params;
@@ -125,9 +123,6 @@ export const getArticleBySlug = async (req, res, next) => {
         }
 
         // Return article with user's vote status injected
-        // Need to convert to object to inject custom field not in schema if simple .json() is strict
-        // But Mongoose documents .toObject() usually happens on JSON stringify. 
-        // Safer to return explicit object for the UI to know user's vote.
         const articleData = article.toObject();
         articleData.userVote = userVote;
 
