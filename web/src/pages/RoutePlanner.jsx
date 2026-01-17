@@ -562,7 +562,11 @@ export default function RoutePlanner() {
 
         setRouteHistory(prev => [routeRecord, ...prev.slice(0, 9)]); // Keep last 10 routes
 
-        toast.success('Route planned successfully!');
+        if (hasRestoredFromUrl) {
+          toast.success('Shared route loaded successfully!');
+        } else {
+          toast.success('Route planned successfully!');
+        }
       } else {
         throw new Error('No routes found');
       }
@@ -1084,8 +1088,10 @@ export default function RoutePlanner() {
           if (data.highways !== undefined) setAvoidHighways(data.highways);
           if (data.opt !== undefined) setRouteOptimization(data.opt);
 
+          setIsSidebarOpen(true);
           setHasRestoredFromUrl(true);
-          toast.info('Shared route loaded. Optimizing...');
+          // Using a loading toast that will be replaced by success toast in optimize()
+          toast.info('Shared route found! Loading stops...', { autoClose: 2000 });
         }
       } catch (err) {
         console.error('Failed to parse shared route data:', err);
