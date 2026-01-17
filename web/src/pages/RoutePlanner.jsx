@@ -574,6 +574,9 @@ export default function RoutePlanner() {
       console.error('Route planning failed:', error);
       if (hasRestoredFromUrl) {
         toast.error('Unable to calculate the shared route. The locations might be unreachable.');
+        // Restore clean URL
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
       } else {
         toast.error('Route planning failed. Showing approximate itinerary.');
       }
