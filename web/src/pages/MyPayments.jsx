@@ -52,21 +52,73 @@ const MyPayments = () => {
     description: ''
   });
 
+  // Helper to clear paymentId from URL
+  const clearPaymentIdFromUrl = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('paymentId')) {
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  };
+
+  const closePreviewModal = () => {
+    setShowPreviewModal(false);
+    clearPaymentIdFromUrl();
+  };
+
   useEffect(() => {
-    // Check for paymentId in URL query params
     const params = new URLSearchParams(window.location.search);
     const paymentId = params.get('paymentId');
-    if (paymentId && allPayments.length > 0) {
-      const payment = allPayments.find(p => p.paymentId === paymentId);
-      if (payment) {
-        handlePaymentClick(payment);
-        // Clear search params after opening
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-      }
-    }
-  }, [allPayments]);
 
+    if (!paymentId) return;
+
+    const findAndOpenPayment = async () => {
+      // 1. Try finding in existing loaded payments
+      const existingPayment = allPayments.find(p => p.paymentId === paymentId);
+      if (existingPayment) {
+        handlePaymentClick(existingPayment);
+        return;
+      }
+
+      // 2. If not found, ignore if loading (will retry when loading finishes)
+      // But if we have finished loading and it's not there, or if we haven't loaded yet,
+      // we might want to fetch specifically to be robust (e.g. duplicate logic from MyAppointments resolveChatRoute).
+      // However, for payments, typically fetchPayments fetches *all* or specific pages.
+      // Let's rely on a specific fetch to be safe, similar to MyAppointments.
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE_URL}/api/payments/history?paymentId=${paymentId}`, { credentials: 'include' });
+        const data = await res.json();
+
+        if (res.ok && data.payments && data.payments.length > 0) {
+          const fetchedPayment = data.payments[0];
+          // Add to allPayments if not present to avoid potential issues
+          setAllPayments(prev => {
+            const exists = prev.some(p => p._id === fetchedPayment._id);
+            return exists ? prev : [fetchedPayment, ...prev];
+          });
+          handlePaymentClick(fetchedPayment);
+        } else {
+          // Not found
+          toast.error(`Payment with ID ${paymentId} not found.`);
+          clearPaymentIdFromUrl();
+        }
+      } catch (err) {
+        console.error("Error fetching specific payment:", err);
+        clearPaymentIdFromUrl();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Only verify if we are not already showing it
+    if (!selectedPayment || selectedPayment.paymentId !== paymentId) {
+      findAndOpenPayment();
+    }
+
+  }, [window.location.search, allPayments.length]); // depend on search params and list length
+
+  // We need to fetch initial payments regardless
   useEffect(() => { fetchPayments(); }, [filters]);
 
   // Listen for payment status updates
@@ -689,7 +741,7 @@ const MyPayments = () => {
 
       {/* Payment Preview Modal */}
       {showPreviewModal && selectedPayment && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4" onClick={() => setShowPreviewModal(false)}>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4" onClick={closePreviewModal}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10 p-6 pb-4 rounded-t-xl">
               <div className="flex items-center justify-between">
@@ -698,7 +750,7 @@ const MyPayments = () => {
                   Payment Details
                 </h3>
                 <button
-                  onClick={() => setShowPreviewModal(false)}
+                  onClick={closePreviewModal}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <FaTimes className="text-xl" />
