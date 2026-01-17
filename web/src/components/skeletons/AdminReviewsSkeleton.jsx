@@ -18,16 +18,27 @@ export default function AdminReviewsSkeleton() {
                 <div className="mb-8 bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
                     <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-6"></div>
 
+                    {/* Key Metrics Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
                         {[1, 2, 3, 4, 5, 6].map(i => (
                             <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-4 h-24 border border-transparent dark:border-gray-700"></div>
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Sentiment & Rating Distribution */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 h-64 border border-transparent dark:border-gray-700"></div>
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 h-64 border border-transparent dark:border-gray-700"></div>
                     </div>
+
+                    {/* Top Properties & Users */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 h-72 border border-transparent dark:border-gray-700"></div>
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 h-72 border border-transparent dark:border-gray-700"></div>
+                    </div>
+
+                    {/* Monthly Trends */}
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 h-64 border border-transparent dark:border-gray-700"></div>
                 </div>
 
                 {/* Search & Filter Bar */}

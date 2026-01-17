@@ -750,7 +750,7 @@ export default function AdminReviews() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</p>
-                    <p className="text-2xl font-bold text-blue-600">{analytics.totalReviews}</p>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{analytics.totalReviews}</p>
                   </div>
                   <FaComments className="text-2xl text-blue-500" />
                 </div>
@@ -760,7 +760,7 @@ export default function AdminReviews() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Pending</p>
-                    <p className="text-2xl font-bold text-yellow-600">{analytics.pendingReviews}</p>
+                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{analytics.pendingReviews}</p>
                   </div>
                   <FaExclamationTriangle className="text-2xl text-yellow-500" />
                 </div>
@@ -770,7 +770,7 @@ export default function AdminReviews() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Approved</p>
-                    <p className="text-2xl font-bold text-green-600">{analytics.approvedReviews}</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{analytics.approvedReviews}</p>
                   </div>
                   <FaCheck className="text-2xl text-green-500" />
                 </div>
@@ -780,7 +780,7 @@ export default function AdminReviews() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</p>
-                    <p className="text-2xl font-bold text-purple-600">{analytics.averageRating.toFixed(1)}</p>
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{analytics.averageRating.toFixed(1)}</p>
                   </div>
                   <FaStar className="text-2xl text-purple-500" />
                 </div>
@@ -790,7 +790,7 @@ export default function AdminReviews() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Response Rate</p>
-                    <p className="text-2xl font-bold text-indigo-600">{analytics.responseRate.toFixed(1)}%</p>
+                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{analytics.responseRate.toFixed(1)}%</p>
                   </div>
                   <FaReply className="text-2xl text-indigo-500" />
                 </div>
@@ -800,7 +800,7 @@ export default function AdminReviews() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Removed</p>
-                    <p className="text-2xl font-bold text-red-600">{analytics.removedReviews}</p>
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{analytics.removedReviews}</p>
                   </div>
                   <FaBan className="text-2xl text-red-500" />
                 </div>
@@ -816,24 +816,24 @@ export default function AdminReviews() {
                 </h3>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-sm text-gray-500">Positive</p>
-                    <p className="text-2xl font-bold text-green-600">{analytics.sentiment.positive}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Positive</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{analytics.sentiment.positive}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Neutral</p>
-                    <p className="text-2xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Neutral</p>
+                    <p className="text-2xl font-bold text-gray-600 dark:text-gray-400">{analytics.sentiment.neutral}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Negative</p>
-                    <p className="text-2xl font-bold text-red-600">{analytics.sentiment.negative}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Negative</p>
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{analytics.sentiment.negative}</p>
                   </div>
                 </div>
                 {analytics.sentiment.topWords.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Top Words</h4>
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Top Words</h4>
                     <div className="flex flex-wrap gap-2">
                       {analytics.sentiment.topWords.slice(0, 8).map((word, idx) => (
-                        <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                        <span key={idx} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
                           {word.word} ({word.count})
                         </span>
                       ))}
@@ -854,16 +854,16 @@ export default function AdminReviews() {
                     return (
                       <div key={rating} className="flex items-center gap-3">
                         <div className="flex items-center gap-1 w-8">
-                          <span className="text-sm font-medium">{rating}</span>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{rating}</span>
                           <FaStar className="text-yellow-400 text-xs" />
                         </div>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
                             className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${percentage}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm text-gray-600 w-12 text-right">{count}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400 w-12 text-right">{count}</span>
                       </div>
                     );
                   })}
@@ -874,7 +874,7 @@ export default function AdminReviews() {
             {/* Top Properties and Users */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm transition-colors">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
                   <FaHome className="text-purple-600" />
                   Top Reviewed Properties
                 </h3>
@@ -887,9 +887,9 @@ export default function AdminReviews() {
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1">
                               <FaStar className="text-yellow-400 text-sm" />
-                              <span className="text-sm text-gray-600">{property.avgRating.toFixed(1)}</span>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">{property.avgRating.toFixed(1)}</span>
                             </div>
-                            <span className="text-sm text-gray-500">•</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-500">•</span>
                             <span className="text-sm text-gray-500 dark:text-gray-400">{property.count} reviews</span>
                           </div>
                         </div>
@@ -897,12 +897,12 @@ export default function AdminReviews() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-4">No data available</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>
                 )}
               </div>
 
               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm transition-colors">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
                   <FaUsers className="text-indigo-600" />
                   Most Active Reviewers
                 </h3>
@@ -915,7 +915,7 @@ export default function AdminReviews() {
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1">
                               <FaStar className="text-yellow-400 text-sm" />
-                              <span className="text-sm text-gray-600">{user.avgRating.toFixed(1)} avg</span>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">{user.avgRating.toFixed(1)} avg</span>
                             </div>
                             <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
                             <span className="text-sm text-gray-500 dark:text-gray-400">{user.count} reviews</span>
@@ -925,7 +925,7 @@ export default function AdminReviews() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-4">No data available</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>
                 )}
               </div>
             </div>
@@ -994,7 +994,7 @@ export default function AdminReviews() {
             </select>
 
             <div className="flex flex-wrap items-center gap-2 w-full">
-              <span className="text-sm text-gray-600">Sort:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Sort:</span>
               <button
                 onClick={() => handleSort('date')}
                 className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
@@ -1359,9 +1359,6 @@ export default function AdminReviews() {
                   value={removalReason}
                   onChange={(e) => {
                     setRemovalReason(e.target.value);
-                    if (e.target.value) {
-                      toast.info(`Selected removal reason: ${e.target.value}`);
-                    }
                   }}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                 >
@@ -1398,7 +1395,6 @@ export default function AdminReviews() {
                   setReviewToRemove(null);
                   setRemovalReason('');
                   setRemovalNote('');
-                  toast.info('Review removal cancelled');
                 }}
                 className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
               >
@@ -1433,7 +1429,6 @@ export default function AdminReviews() {
                 onClick={() => {
                   setShowDeleteModal(false);
                   setReviewToDelete(null);
-                  toast.info('Delete action cancelled');
                 }}
                 className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
               >
