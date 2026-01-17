@@ -718,8 +718,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       toast.info('Please select a category for reporting.');
       return;
     }
-    if (reportCategory === 'Other' && !reportReason.trim()) {
-      toast.info('Please provide details for "Other" category.');
+    if (reportCategory === 'other' && !reportReason.trim()) {
+      toast.info('Please provide details for the "Other" category.');
       return;
     }
     setReportLoading(true);
