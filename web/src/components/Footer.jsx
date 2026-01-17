@@ -198,13 +198,13 @@ const Footer = () => {
                   to={
                     currentUser
                       ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/rental-agreements"
-                        : "/user/rental-agreements"
-                      : "/rental-agreements"
+                        ? "/admin/rental-contracts"
+                        : "/user/rental-contracts"
+                      : "/rental-contracts"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
-                  Rental Agreements
+                  Rental Contracts
                 </Link>
               </li>
               <li>
