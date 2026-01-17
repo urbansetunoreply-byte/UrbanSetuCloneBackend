@@ -1357,7 +1357,7 @@ export default function MyAppointments() {
 
         {/* Description text for archived appointments */}
         {showArchived && (
-          <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-6">
             📋 View and manage archived appointments. You can unarchive them to move them back to active appointments.
           </p>
         )}
