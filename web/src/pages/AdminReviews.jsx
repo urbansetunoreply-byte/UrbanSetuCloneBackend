@@ -307,9 +307,7 @@ export default function AdminReviews() {
         monthlyTrends[month] = (monthlyTrends[month] || 0) + 1;
       });
 
-      // Debug logging for monthly trends
-      console.log('Monthly trends data:', monthlyTrends);
-      console.log('Total reviews for trends:', allReviews.length);
+
 
       // Top properties by review count
       const propertyCounts = {};
@@ -634,22 +632,17 @@ export default function AdminReviews() {
       params.append('sortBy', reportsFilters.sortBy);
       params.append('sortOrder', reportsFilters.sortOrder);
 
-      console.log('Fetching reports from:', `${API_BASE_URL}/api/notifications/reports/reviews?${params}`);
+
 
       const res = await fetch(`${API_BASE_URL}/api/notifications/reports/reviews?${params}`, {
         credentials: 'include'
       });
       const data = await res.json();
 
-      console.log('Reports API response:', data);
+
 
       if (data.success) {
         setReports(data.reports || []);
-        console.log('Reports set:', data.reports?.length || 0);
-        // Debug: Log first report to see what data is available
-        if (data.reports && data.reports.length > 0) {
-          console.log('First report data:', JSON.stringify(data.reports[0], null, 2));
-        }
       } else {
         setReportsError(data.message || 'Failed to load reports');
         console.error('Reports API error:', data.message);
@@ -1479,6 +1472,7 @@ export default function AdminReviews() {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
                     <input
                       type="date"
+                      max={new Date().toISOString().split('T')[0]}
                       value={reportsFilters.dateFrom}
                       onChange={(e) => setReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
                       className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
@@ -1488,6 +1482,7 @@ export default function AdminReviews() {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">To Date</label>
                     <input
                       type="date"
+                      max={new Date().toISOString().split('T')[0]}
                       value={reportsFilters.dateTo}
                       onChange={(e) => setReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
                       className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
