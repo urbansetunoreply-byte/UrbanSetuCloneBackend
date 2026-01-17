@@ -32,11 +32,13 @@ const MyPayments = () => {
   // Preview modal states
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // Payment modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentAppointment, setPaymentAppointment] = useState(null);
   const [loadingPaymentId, setLoadingPaymentId] = useState(null); // Track which payment is loading
+  const [missingPaymentError, setMissingPaymentError] = useState(null);
 
   // Export password modal states
   const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
@@ -64,6 +66,7 @@ const MyPayments = () => {
   const closePreviewModal = () => {
     setShowPreviewModal(false);
     clearPaymentIdFromUrl();
+    setSelectedPayment(null);
   };
 
   useEffect(() => {
@@ -91,20 +94,29 @@ const MyPayments = () => {
         const data = await res.json();
 
         if (res.ok && data.payments && data.payments.length > 0) {
-          const fetchedPayment = data.payments[0];
-          // Add to allPayments if not present to avoid potential issues
-          setAllPayments(prev => {
-            const exists = prev.some(p => p._id === fetchedPayment._id);
-            return exists ? prev : [fetchedPayment, ...prev];
-          });
-          handlePaymentClick(fetchedPayment);
+          // Strictly find the matching payment since the API might return a list
+          const fetchedPayment = data.payments.find(p => p.paymentId === paymentId);
+
+          if (fetchedPayment) {
+            // Add to allPayments if not present to avoid potential issues
+            setAllPayments(prev => {
+              const exists = prev.some(p => p._id === fetchedPayment._id);
+              return exists ? prev : [fetchedPayment, ...prev];
+            });
+            handlePaymentClick(fetchedPayment);
+            setMissingPaymentError(null);
+          } else {
+            setMissingPaymentError(paymentId);
+            clearPaymentIdFromUrl();
+          }
         } else {
           // Not found
-          toast.error(`Payment with ID ${paymentId} not found.`);
+          setMissingPaymentError(paymentId);
           clearPaymentIdFromUrl();
         }
       } catch (err) {
         console.error("Error fetching specific payment:", err);
+        setMissingPaymentError(paymentId);
         clearPaymentIdFromUrl();
       } finally {
         setLoading(false);
@@ -490,6 +502,18 @@ const MyPayments = () => {
       description: description
     });
     setShowSharePanel(true);
+  };
+
+  const copyPaymentLink = (link, details) => {
+    const textToCopy = `${details}\n\nLink: ${link}`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setCopySuccess(true);
+      toast.success('Payment details copied to clipboard!');
+      setTimeout(() => setCopySuccess(false), 2000);
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      toast.error('Failed to copy details');
+    });
   };
 
   const statusBadge = (status) => {
@@ -925,7 +949,7 @@ const MyPayments = () => {
                   }}
                   className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
                 >
-                  <FaCopy /> Copy Details
+                  <FaCopy /> {copySuccess ? 'Copied' : 'Copy Details'}
                 </button>
                 {selectedPayment.status !== 'completed' && selectedPayment.status !== 'refunded' && selectedPayment.status !== 'partially_refunded' && (
                   <button
@@ -1007,7 +1031,7 @@ const MyPayments = () => {
       {showExportPasswordModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <form
-            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4"
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4"
             onSubmit={async (e) => {
               e.preventDefault();
               setExportPasswordLoading(true);
@@ -1097,21 +1121,21 @@ const MyPayments = () => {
               }
             }}
           >
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+            <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaLock /> Confirm Password</h3>
             <input
               type="password"
-              className="border rounded p-2 w-full"
+              className="border dark:border-gray-700 rounded p-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter your password"
               value={exportPassword}
               onChange={e => setExportPassword(e.target.value)}
               autoFocus
               required
             />
-            {exportPasswordError && <div className="text-red-600 text-sm">{exportPasswordError}</div>}
+            {exportPasswordError && <div className="text-red-600 dark:text-red-400 text-sm">{exportPasswordError}</div>}
             <div className="flex gap-2 justify-end">
               <button
                 type="button"
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
+                className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold"
                 onClick={() => {
                   setShowExportPasswordModal(false);
                   setExportPassword("");
@@ -1129,6 +1153,30 @@ const MyPayments = () => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Missing Payment Error Modal */}
+      {missingPaymentError && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 transform transition-all scale-100 border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+                <FaExclamationTriangle className="text-red-600 dark:text-red-400 text-3xl" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Payment Not Found</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                We couldn't find any payment history for ID: <span className="font-mono text-blue-600 dark:text-blue-400 break-all">{missingPaymentError}</span>.
+                Please verify the link or contact support if you believe this is an error.
+              </p>
+              <button
+                onClick={() => setMissingPaymentError(null)}
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95"
+              >
+                Go Back to My Payments
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

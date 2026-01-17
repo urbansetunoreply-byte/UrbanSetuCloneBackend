@@ -61,6 +61,8 @@ const PaymentDashboard = () => {
   // Preview modal states
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [missingPaymentError, setMissingPaymentError] = useState(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // Export password modal states
   const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
@@ -127,13 +129,15 @@ const PaymentDashboard = () => {
 
         if (foundPayment) {
           handlePaymentClick(foundPayment);
+          setMissingPaymentError(null);
         } else {
-          toast.error(`Payment with ID ${paymentId} not found.`);
+          setMissingPaymentError(paymentId);
           clearPaymentIdFromUrl();
         }
 
       } catch (err) {
         console.error("Error fetching specific payment:", err);
+        setMissingPaymentError(paymentId);
         clearPaymentIdFromUrl();
       } finally {
         setLoading(false);
@@ -315,6 +319,18 @@ const PaymentDashboard = () => {
       description: description
     });
     setShowSharePanel(true);
+  };
+
+  const copyPaymentLink = (link, details) => {
+    const textToCopy = `${details}\n\nLink: ${link}`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setCopySuccess(true);
+      toast.success('Payment details copied to clipboard!');
+      setTimeout(() => setCopySuccess(false), 2000);
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      toast.error('Failed to copy details');
+    });
   };
 
   const tabs = [
@@ -1050,7 +1066,7 @@ const PaymentDashboard = () => {
                       }}
                       className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
                     >
-                      <FaCopy /> Copy Details
+                      <FaCopy /> {copySuccess ? 'Copied' : 'Copy Details'}
                     </button>
                   </div>
                 </div>
@@ -1189,6 +1205,30 @@ const PaymentDashboard = () => {
         title={shareConfig.title}
         description={shareConfig.description}
       />
+
+      {/* Missing Payment Error Modal */}
+      {missingPaymentError && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 transform transition-all scale-100 border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+                <FaExclamationTriangle className="text-red-600 dark:text-red-400 text-3xl" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Payment Not Found</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                We couldn't find any payment history for ID: <span className="font-mono text-purple-600 dark:text-purple-400 break-all">{missingPaymentError}</span>.
+                This payment might not exist or may have been deleted.
+              </p>
+              <button
+                onClick={() => setMissingPaymentError(null)}
+                className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95"
+              >
+                Go Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div >
   );
 };
