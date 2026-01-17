@@ -83,15 +83,20 @@ export const createAuthenticatedFetchOptions = async (options = {}) => {
   try {
     const csrfToken = await getCSRFToken();
 
+    const headers = {
+      'X-CSRF-Token': csrfToken,
+      ...(localStorage.getItem('accessToken') ? { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` } : {}),
+      ...(localStorage.getItem('sessionId') ? { 'X-Session-Id': localStorage.getItem('sessionId') } : {}),
+      ...options.headers,
+    };
+
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     return {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfToken,
-        ...(localStorage.getItem('accessToken') ? { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` } : {}),
-        ...(localStorage.getItem('sessionId') ? { 'X-Session-Id': localStorage.getItem('sessionId') } : {}),
-        ...options.headers,
-      },
+      headers,
       credentials: 'include',
     };
   } catch (error) {
@@ -99,15 +104,20 @@ export const createAuthenticatedFetchOptions = async (options = {}) => {
     // Try once more without caching
     try {
       const csrfToken = await fetchCSRFToken();
+      const headers = {
+        'X-CSRF-Token': csrfToken,
+        ...(localStorage.getItem('accessToken') ? { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` } : {}),
+        ...(localStorage.getItem('sessionId') ? { 'X-Session-Id': localStorage.getItem('sessionId') } : {}),
+        ...options.headers,
+      };
+
+      if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+      }
+
       return {
         ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-          ...(localStorage.getItem('accessToken') ? { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` } : {}),
-          ...(localStorage.getItem('sessionId') ? { 'X-Session-Id': localStorage.getItem('sessionId') } : {}),
-          ...options.headers,
-        },
+        headers,
         credentials: 'include',
       };
     } catch (retryError) {

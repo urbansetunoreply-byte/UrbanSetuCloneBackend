@@ -1564,8 +1564,13 @@ export default function AdminAppointments() {
     setShowReactionsBar(false);
     setReactionsMessageId(null);
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/api/user/id/${userId}`);
-      setSelectedUser(data);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedUser(data);
+      } else {
+        throw new Error("Failed to fetch user");
+      }
     } catch (err) {
       toast.error("Failed to fetch user details.");
       setShowUserModal(false);
@@ -1591,15 +1596,17 @@ export default function AdminAppointments() {
   const handleManualRefresh = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings`, {
-        withCredentials: true
-      });
-      setAppointments(data);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings`);
+      if (res.ok) {
+        const data = await res.json();
+        setAppointments(data.appointments || data);
+      }
 
-      const { data: archivedData } = await axios.get(`${API_BASE_URL}/api/bookings/archived`, {
-        withCredentials: true
-      });
-      setArchivedAppointments(Array.isArray(archivedData) ? archivedData : []);
+      const resArchived = await authenticatedFetch(`${API_BASE_URL}/api/bookings/archived`);
+      if (resArchived.ok) {
+        const archivedData = await resArchived.json();
+        setArchivedAppointments(Array.isArray(archivedData) ? archivedData : []);
+      }
     } catch (err) {
       // Optionally handle error
     } finally {
@@ -3783,13 +3790,15 @@ function AdminAppointmentRow({
       }
 
       // Add reaction to the message
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageId}/react`,
-        { emoji },
-        {
-          withCredentials: true,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageId}/react`, {
+        method: 'PATCH',
+        body: JSON.stringify({ emoji })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
 
       // Update local state
       setLocalComments(prev => prev.map(c =>
@@ -3934,9 +3943,9 @@ function AdminAppointmentRow({
       // First, sync comments to ensure we have the latest starred status
       await loadInitialComments();
       // Then fetch starred messages from backend
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}/starred-messages`, {
-        withCredentials: true
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/starred-messages`);
+      if (!res.ok) throw new Error('Failed to fetch starred messages');
+      const data = await res.json();
       if (data.starredMessages) {
         setStarredMessages(data.starredMessages);
       }
@@ -3974,13 +3983,16 @@ function AdminAppointmentRow({
         try {
 
 
-          const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`,
-            { starred: false },
-            {
-              withCredentials: true,
-              headers: { 'Content-Type': 'application/json' }
-            }
-          );
+          const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`, {
+            method: 'PATCH',
+            body: JSON.stringify({ starred: false })
+          });
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw { response: { status: res.status, data: errorData } };
+          }
+          const data = await res.json();
+          const response = { status: 200, data };
 
 
           successCount++;
@@ -4169,8 +4181,9 @@ function AdminAppointmentRow({
         // Mark messages as read if chat is open
         if (showChatModal) {
           setTimeout(() => {
-            axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`, {}, {
-              withCredentials: true
+            authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`, {
+              method: 'PATCH',
+              body: JSON.stringify({})
             }).catch(err => {
               console.error('Error marking messages as read:', err);
             });
@@ -4449,13 +4462,15 @@ function AdminAppointmentRow({
       markingReadRef.current = true;
       try {
         // Mark messages as read in backend
-        const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`,
-          {},
-          {
-            withCredentials: true,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`, {
+          method: 'PATCH',
+          body: JSON.stringify({})
+        });
+        if (!res.ok) {
+          // We can swallow the error here or log it, but proceeding is fine
+          // The catch block below will handle it
+        }
+        const data = await res.json();
         // Update local state immediately
         setLocalComments(prev =>
           prev.map(c =>
@@ -4787,17 +4802,19 @@ function AdminAppointmentRow({
 
     // Send message in background
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`,
-        {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+        method: 'POST',
+        body: JSON.stringify({
           message: caption || '',
           imageUrl: imageUrl,
           type: "image"
-        },
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       // Find the new comment from the response
       const newCommentFromServer = data.comments[data.comments.length - 1];
 
@@ -5014,22 +5031,16 @@ function AdminAppointmentRow({
         currentUploadControllerRef.current = controller;
 
         try {
-          const { data } = await axios.post(`${API_BASE_URL}/api/upload/image`,
-            uploadFormData,
-            {
-              withCredentials: true,
-              headers: { 'Content-Type': 'multipart/form-data' },
-              signal: controller.signal,
-              onUploadProgress: (evt) => {
-                if (evt.total) {
-                  const perFile = Math.round((evt.loaded * 100) / evt.total);
-                  setCurrentFileProgress(perFile);
-                  const overall = Math.round(((i + perFile / 100) / selectedFiles.length) * 100);
-                  setUploadProgress(overall);
-                }
-              }
-            }
-          );
+          const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
+            method: 'POST',
+            body: uploadFormData,
+            signal: controller.signal
+          });
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw { response: { status: res.status, data: errorData } };
+          }
+          const data = await res.json();
 
           await sendImageMessage(data.imageUrl, file.name, imageCaptions[file.name] || '');
           setUploadProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
@@ -5105,11 +5116,19 @@ function AdminAppointmentRow({
     };
     setLocalComments(prev => [...prev, tempMessage]);
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
-        message: caption || '',
-        videoUrl,
-        type: 'video'
-      }, { withCredentials: true });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+        method: 'POST',
+        body: JSON.stringify({
+          message: caption || '',
+          videoUrl,
+          type: 'video'
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       // Merge server comments with local temp messages to prevent loss of temporary messages
       setLocalComments(prev => {
         const serverComments = data.comments || data.updated?.comments || data?.appointment?.comments || [];
@@ -5143,14 +5162,15 @@ function AdminAppointmentRow({
       setUploadingFile(true);
       const form = new FormData();
       form.append('video', selectedVideo);
-      const { data } = await axios.post(`${API_BASE_URL}/api/upload/video`, form, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (evt) => {
-          const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedVideo.size));
-          setUploadProgress(pct);
-        }
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/video`, {
+        method: 'POST',
+        body: form
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       await sendVideoMessage(data.videoUrl, selectedVideo.name, videoCaption);
       setSelectedVideo(null);
       setShowVideoPreviewModal(false);
@@ -5180,13 +5200,21 @@ function AdminAppointmentRow({
     };
     setLocalComments(prev => [...prev, tempMessage]);
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
-        message: caption || '',
-        documentUrl,
-        documentName: document.name,
-        documentType: document.type,
-        type: 'document'
-      }, { withCredentials: true });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+        method: 'POST',
+        body: JSON.stringify({
+          message: caption || '',
+          documentUrl,
+          documentName: document.name,
+          documentType: document.type,
+          type: 'document'
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       // Merge server comments with local temp messages to prevent loss of temporary messages
       setLocalComments(prev => {
         const serverComments = data.comments || data.updated?.comments || data?.appointment?.comments || [];
@@ -5231,13 +5259,21 @@ function AdminAppointmentRow({
     };
     setLocalComments(prev => [...prev, tempMessage]);
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
-        message: caption || '',
-        audioUrl,
-        audioName: file.name,
-        audioMimeType: file.type || null,
-        type: 'audio'
-      }, { withCredentials: true });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+        method: 'POST',
+        body: JSON.stringify({
+          message: caption || '',
+          audioUrl,
+          audioName: file.name,
+          audioMimeType: file.type || null,
+          type: 'audio'
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       // Merge server comments with local temp messages to prevent loss of temporary messages
       setLocalComments(prev => {
         const serverComments = data.comments || data.updated?.comments || data?.appointment?.comments || [];
@@ -5276,15 +5312,16 @@ function AdminAppointmentRow({
       const controller = new AbortController();
       currentUploadControllerRef.current = controller;
 
-      const { data } = await axios.post(`${API_BASE_URL}/api/upload/audio`, form, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' },
-        signal: controller.signal,
-        onUploadProgress: (evt) => {
-          const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedAudio.size));
-          setUploadProgress(pct);
-        }
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/audio`, {
+        method: 'POST',
+        body: form,
+        signal: controller.signal
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       await sendAudioMessage(data.audioUrl, selectedAudio, audioCaption);
       setSelectedAudio(null);
       setShowAudioPreviewModal(false);
@@ -5308,14 +5345,15 @@ function AdminAppointmentRow({
       setUploadingFile(true);
       const form = new FormData();
       form.append('document', selectedDocument);
-      const { data } = await axios.post(`${API_BASE_URL}/api/upload/document`, form, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (evt) => {
-          const pct = Math.round((evt.loaded * 100) / Math.max(1, evt.total || selectedDocument.size));
-          setUploadProgress(pct);
-        }
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/document`, {
+        method: 'POST',
+        body: form
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       await sendDocumentMessage(data.documentUrl, selectedDocument, documentCaption);
       setSelectedDocument(null);
       setShowDocumentPreviewModal(false);
@@ -5391,17 +5429,19 @@ function AdminAppointmentRow({
         // Check if replyTo is a call (starts with "call-") - if so, don't send replyTo as backend can't validate call IDs
         const replyToId = replyToData && !replyToData._id?.startsWith('call-') ? replyToData._id : null;
 
-        const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`,
-          {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, {
+          method: 'POST',
+          body: JSON.stringify({
             message: messageContent,
             ...(replyToId ? { replyTo: replyToId } : {}),
             ...(previewDismissed ? { previewDismissed: true } : {})
-          },
-          {
-            withCredentials: true,
-            headers: { "Content-Type": "application/json" }
-          }
-        );
+          })
+        });
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw { response: { status: res.status, data: errorData } };
+        }
+        const data = await res.json();
 
         // Find the new comment from the response
         const newCommentFromServer = data.comments[data.comments.length - 1];
@@ -5459,13 +5499,15 @@ function AdminAppointmentRow({
     setLocalComments(optimisticUpdate);
 
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${commentId}`,
-        { message: editText },
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${commentId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ message: editText })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
 
       // Update with server response
       setLocalComments(prev => {
@@ -5843,9 +5885,11 @@ function AdminAppointmentRow({
   const loadInitialComments = async () => {
     try {
       setLoadingComments(true);
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}`, {
-        withCredentials: true
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch booking details: ${res.status}`);
+      }
+      const data = await res.json();
       if (data.comments) {
         // Preserve starred status and temp messages from current state
         // Preserve starred status from current state
@@ -5891,9 +5935,11 @@ function AdminAppointmentRow({
   const fetchLatestComments = async () => {
     try {
       setLoadingComments(true);
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}`, {
-        withCredentials: true
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch booking details: ${res.status}`);
+      }
+      const data = await res.json();
       if (data.comments) {
         // Preserve starred status and temp messages from current state
         // Preserve starred status from current state
@@ -5939,13 +5985,15 @@ function AdminAppointmentRow({
     setPasswordError("");
     try {
       // Call backend to verify admin password
-      const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`,
-        { password: adminPassword },
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
+        method: 'POST',
+        body: JSON.stringify({ password: adminPassword })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       if (data.success) {
         // Reset attempts on successful password
         localStorage.removeItem('adminAppointmentsPwAttempts');
@@ -6031,11 +6079,15 @@ function AdminAppointmentRow({
       // Admin deletion is always for everyone
       if (Array.isArray(messageToDelete)) {
         const ids = messageToDelete.map(m => m._id);
-        const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comments/bulk-delete`, {
-          withCredentials: true,
-          headers: { 'Content-Type': 'application/json' },
-          data: { commentIds: ids }
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/bulk-delete`, {
+          method: 'DELETE',
+          body: JSON.stringify({ commentIds: ids })
         });
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw { response: { status: res.status, data: errorData } };
+        }
+        const data = await res.json();
         if (data?.comments) {
           // Merge server comments with local temp messages to prevent loss of temporary messages
           setLocalComments(prev => {
@@ -6063,9 +6115,14 @@ function AdminAppointmentRow({
       } else {
         const wasUnread = !messageToDelete.readBy?.includes(currentUser._id) &&
           messageToDelete.senderEmail !== currentUser.email;
-        const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageToDelete._id}`, {
-          withCredentials: true
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageToDelete._id}`, {
+          method: 'DELETE'
         });
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw { response: { status: res.status, data: errorData } };
+        }
+        const data = await res.json();
         // Merge server comments with local temp messages to prevent loss of temporary messages
         setLocalComments(prev => {
           const serverComments = data.comments;
@@ -6106,11 +6163,15 @@ function AdminAppointmentRow({
 
     try {
       setDeleteChatLoading(true);
-      const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comments`, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'application/json' },
-        data: { password: deleteChatPassword }
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comments`, {
+        method: 'DELETE',
+        body: JSON.stringify({ password: deleteChatPassword })
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
 
       setLocalComments([]);
       updateAppointmentComments(appt._id, []);
@@ -6447,13 +6508,15 @@ function AdminAppointmentRow({
                                         const isStarred = selectedMsg.starredBy?.includes(currentUser._id);
                                         setMultiSelectActions(prev => ({ ...prev, starring: true }));
                                         try {
-                                          const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMsg._id}/star`,
-                                            { starred: !isStarred },
-                                            {
-                                              withCredentials: true,
-                                              headers: { 'Content-Type': 'application/json' }
-                                            }
-                                          );
+                                          const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMsg._id}/star`, {
+                                            method: 'PATCH',
+                                            body: JSON.stringify({ starred: !isStarred })
+                                          });
+                                          if (!res.ok) {
+                                            const errorData = await res.json().catch(() => ({}));
+                                            throw { response: { status: res.status, data: errorData } };
+                                          }
+                                          const data = await res.json();
                                           setLocalComments(prev => {
                                             const updated = prev.map(c =>
                                               c._id === selectedMsg._id
@@ -6541,13 +6604,16 @@ function AdminAppointmentRow({
                                     const isStarred = msg.starredBy?.includes(currentUser._id);
 
 
-                                    const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/star`,
-                                      { starred: !isStarred },
-                                      {
-                                        withCredentials: true,
-                                        headers: { 'Content-Type': 'application/json' }
-                                      }
-                                    );
+                                    const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/star`, {
+                                      method: 'PATCH',
+                                      body: JSON.stringify({ starred: !isStarred })
+                                    });
+                                    if (!res.ok) {
+                                      const errorData = await res.json().catch(() => ({}));
+                                      throw { response: { status: res.status, data: errorData } };
+                                    }
+                                    const data = await res.json();
+                                    const response = { status: 200, data };
 
 
                                     successCount++;
@@ -6752,13 +6818,15 @@ function AdminAppointmentRow({
                               const isStarred = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
                               setStarringSaving(true);
                               try {
-                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`,
-                                  { starred: !isStarred },
-                                  {
-                                    withCredentials: true,
-                                    headers: { 'Content-Type': 'application/json' }
-                                  }
-                                );
+                                const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`, {
+                                  method: 'PATCH',
+                                  body: JSON.stringify({ starred: !isStarred })
+                                });
+                                if (!res.ok) {
+                                  const errorData = await res.json().catch(() => ({}));
+                                  throw { response: { status: res.status, data: errorData } };
+                                }
+                                const data = await res.json();
                                 // Update the local state
                                 setLocalComments(prev => {
                                   const updated = prev.map(c =>
