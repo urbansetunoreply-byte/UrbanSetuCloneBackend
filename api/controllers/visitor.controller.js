@@ -17,6 +17,62 @@ const getStartOfDay = (date = new Date()) => {
   return d;
 };
 
+// Helper to notify admins about client errors
+const notifyAdminsOfErrors = async (errors, visitor, page, userInfo, req) => {
+  try {
+    const admins = await User.find({
+      $or: [{ role: 'rootadmin' }, { role: 'admin' }, { isDefaultAdmin: true }],
+      status: { $ne: 'suspended' }
+    }).select('_id');
+
+    if (admins.length > 0) {
+      const errorCount = errors.length;
+      let titleContext = userInfo ? ` (${userInfo.username})` : '';
+      if (userInfo && userInfo.role === 'admin') titleContext += ' [Admin]';
+      const title = `⚠️ Client Error${titleContext}: ${errorCount} New Issue${errorCount > 1 ? 's' : ''}`;
+
+      const formatError = (err) => {
+        let msg = `🔴 Error: ${err.message || 'Unknown'}`;
+        if (err.source) msg += `\n   Source: ${err.source}`;
+        if (err.timestamp) msg += `\n   Time: ${new Date(err.timestamp).toLocaleString('en-IN')}`;
+        return msg;
+      };
+
+      let userDetails = userInfo
+        ? `👤 User: ${userInfo.username} (${userInfo.role})\n📧 Email: ${userInfo.email}\n🆔 ID: ${userInfo.userId}`
+        : '👤 User: Anonymous Guest';
+
+      const message = `${userDetails}\n📍 Page: ${page || 'Unknown'}\n\n${errors.map(e => formatError(e)).join('\n\n')}`;
+
+      const notificationsToCreate = admins.map(admin => ({
+        userId: admin._id,
+        type: 'client_error_report',
+        title: title,
+        message: message,
+        link: '/admin/client-error-monitoring',
+        meta: {
+          visitorId: visitor._id,
+          page: page,
+          errors: errors,
+          userInfo
+        }
+      }));
+
+      const createdNotifications = await Notification.insertMany(notificationsToCreate);
+
+      const io = req.app.get('io');
+      if (io) {
+        createdNotifications.forEach(notification => {
+          io.to(notification.userId.toString()).emit('notificationCreated', notification);
+        });
+      }
+      console.log(`🔔 Notified ${admins.length} admins about ${errorCount} client errors.`);
+    }
+  } catch (notifyErr) {
+    console.error('Failed to notify admins of visitor errors:', notifyErr);
+  }
+};
+
 // Track visitor when they accept cookies
 export const trackVisitor = async (req, res, next) => {
   try {
@@ -39,6 +95,23 @@ export const trackVisitor = async (req, res, next) => {
 
     // Try to create visitor log (will fail if already exists for today)
     try {
+      // Prepare initial page view with metrics if available
+      const initialPageView = {
+        path: page || '/',
+        title: '',
+        timestamp: new Date()
+      };
+
+      const initialMetrics = req.body.metrics || {};
+      if (initialMetrics.loadTime) initialPageView.loadTime = initialMetrics.loadTime;
+      if (initialMetrics.scrollPercentage) initialPageView.scrollPercentage = initialMetrics.scrollPercentage;
+      if (initialMetrics.interactions && Array.isArray(initialMetrics.interactions)) {
+        initialPageView.interactions = initialMetrics.interactions;
+      }
+      if (initialMetrics.errors && Array.isArray(initialMetrics.errors) && initialMetrics.errors.length > 0) {
+        initialPageView.errorLogs = initialMetrics.errors;
+      }
+
       const visitorLog = await VisitorLog.create({
         fingerprint,
         ip,
@@ -60,11 +133,16 @@ export const trackVisitor = async (req, res, next) => {
         page: page || '/',
         source: source || 'Unknown',
         // Advanced Tracking
-        pageViews: [{ path: page || '/', title: '', timestamp: new Date() }],
+        pageViews: [initialPageView],
         sessionStart: new Date(),
         lastActive: new Date(),
         utm: utm || {}
       });
+
+      // Notify if errors present on creation
+      if (initialMetrics.errors && Array.isArray(initialMetrics.errors) && initialMetrics.errors.length > 0) {
+        await notifyAdminsOfErrors(initialMetrics.errors, visitorLog, page, userInfo, req);
+      }
 
       res.status(201).json({
         success: true,
@@ -120,68 +198,7 @@ export const trackVisitor = async (req, res, next) => {
                 metrics.errors.forEach(e => lastPage.errorLogs.push(e));
 
                 // --- TRIGGER ADMIN NOTIFICATIONS FOR ERRORS ---
-                try {
-                  // Find all admins
-                  const admins = await User.find({
-                    $or: [
-                      { role: 'rootadmin' },
-                      { role: 'admin' },
-                      { isDefaultAdmin: true }
-                    ],
-                    status: { $ne: 'suspended' } // optional: don't notify suspended admins
-                  }).select('_id');
-
-                  if (admins.length > 0) {
-                    const errorCount = metrics.errors.length;
-
-                    // Prepare title with user context if available
-                    let titleContext = userInfo ? ` (${userInfo.username})` : '';
-                    if (userInfo && userInfo.role === 'admin') titleContext += ' [Admin]';
-                    const title = `⚠️ Client Error${titleContext}: ${errorCount} New Issue${errorCount > 1 ? 's' : ''}`;
-
-                    // Helper to format error details
-                    const formatError = (err) => {
-                      let msg = `🔴 Error: ${err.message || 'Unknown'}`;
-                      if (err.source) msg += `\n   Source: ${err.source}`;
-                      if (err.timestamp) msg += `\n   Time: ${new Date(err.timestamp).toLocaleString('en-IN')}`;
-                      return msg;
-                    };
-
-                    // Prepare detailed message with user info
-                    let userDetails = userInfo
-                      ? `👤 User: ${userInfo.username} (${userInfo.role})\n📧 Email: ${userInfo.email}\n🆔 ID: ${userInfo.userId}`
-                      : '👤 User: Anonymous Guest';
-
-                    const message = `${userDetails}\n📍 Page: ${page || 'Unknown'}\n\n${metrics.errors.map(e => formatError(e)).join('\n\n')}`;
-
-                    const notificationsToCreate = admins.map(admin => ({
-                      userId: admin._id,
-                      type: 'client_error_report',
-                      title: title,
-                      message: message,
-                      link: '/admin/session-audit-logs',
-                      meta: {
-                        visitorId: existingVisitor._id,
-                        page: page,
-                        errors: metrics.errors,
-                        userInfo
-                      }
-                    }));
-
-                    const createdNotifications = await Notification.insertMany(notificationsToCreate);
-
-                    // Emit Socket Events
-                    const io = req.app.get('io');
-                    if (io) {
-                      createdNotifications.forEach(notification => {
-                        io.to(notification.userId.toString()).emit('notificationCreated', notification);
-                      });
-                    }
-                    console.log(`🔔 Notified ${admins.length} admins about ${errorCount} client errors.`);
-                  }
-                } catch (notifyErr) {
-                  console.error('Failed to notify admins of visitor errors:', notifyErr);
-                }
+                await notifyAdminsOfErrors(metrics.errors, existingVisitor, page, userInfo, req);
                 // ----------------------------------------------
               }
             }
