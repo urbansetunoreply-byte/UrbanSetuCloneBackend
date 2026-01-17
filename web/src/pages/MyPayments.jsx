@@ -949,7 +949,7 @@ const MyPayments = () => {
                   }}
                   className={`px-4 py-2 text-white rounded-lg transition-all duration-300 flex items-center gap-2 ${copySuccess ? 'bg-green-600' : 'bg-gray-600 hover:bg-gray-700'}`}
                 >
-                  <FaCopy /> {copySuccess ? 'Copied' : 'Copy Details'}
+                  {copySuccess ? <FaCheck /> : <FaCopy />} {copySuccess ? 'Copied' : 'Copy Details'}
                 </button>
                 {selectedPayment.status !== 'completed' && selectedPayment.status !== 'refunded' && selectedPayment.status !== 'partially_refunded' && (
                   <button
