@@ -20,7 +20,7 @@ const getStartOfDay = (date = new Date()) => {
 // Track visitor when they accept cookies
 export const trackVisitor = async (req, res, next) => {
   try {
-    const { cookiePreferences, referrer, page, source, utm, type } = req.body;
+    const { cookiePreferences, referrer, page, source, utm, type, userInfo } = req.body;
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent') || 'Unknown';
 
@@ -133,31 +133,38 @@ export const trackVisitor = async (req, res, next) => {
 
                   if (admins.length > 0) {
                     const errorCount = metrics.errors.length;
-                    const firstError = metrics.errors[0];
 
-                    // Prepare generic error title
-                    const title = `⚠️ Client Error: ${errorCount} New Error${errorCount > 1 ? 's' : ''}`;
+                    // Prepare title with user context if available
+                    let titleContext = userInfo ? ` (${userInfo.username})` : '';
+                    if (userInfo && userInfo.role === 'admin') titleContext += ' [Admin]';
+                    const title = `⚠️ Client Error${titleContext}: ${errorCount} New Issue${errorCount > 1 ? 's' : ''}`;
 
-                    // Helper to format error details for the message
+                    // Helper to format error details
                     const formatError = (err) => {
-                      let msg = `Message: ${err.message || 'Unknown'}`;
-                      if (err.source) msg += `\nSource: ${err.source}`;
-                      // We truncate stack for notification message, full details in audit logs
-                      // Notifications are for immediate awareness
+                      let msg = `🔴 Error: ${err.message || 'Unknown'}`;
+                      if (err.source) msg += `\n   Source: ${err.source}`;
+                      if (err.timestamp) msg += `\n   Time: ${new Date(err.timestamp).toLocaleString('en-IN')}`;
                       return msg;
                     };
 
-                    const message = metrics.errors.map(e => formatError(e)).join('\n\n');
+                    // Prepare detailed message with user info
+                    let userDetails = userInfo
+                      ? `👤 User: ${userInfo.username} (${userInfo.role})\n📧 Email: ${userInfo.email}\n🆔 ID: ${userInfo.userId}`
+                      : '👤 User: Anonymous Guest';
+
+                    const message = `${userDetails}\n📍 Page: ${page || 'Unknown'}\n\n${metrics.errors.map(e => formatError(e)).join('\n\n')}`;
 
                     const notificationsToCreate = admins.map(admin => ({
                       userId: admin._id,
                       type: 'client_error_report',
                       title: title,
                       message: message,
+                      link: '/admin/session-audit-logs',
                       meta: {
                         visitorId: existingVisitor._id,
                         page: page,
-                        errors: metrics.errors
+                        errors: metrics.errors,
+                        userInfo
                       }
                     }));
 

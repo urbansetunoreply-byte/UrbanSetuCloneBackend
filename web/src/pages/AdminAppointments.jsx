@@ -2163,6 +2163,7 @@ export default function AdminAppointments() {
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
                       <input
                         type="date"
+                        max={new Date().toISOString().split('T')[0]}
                         value={adminReportsFilters.dateFrom}
                         onChange={(e) => setAdminReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
                         className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"

@@ -1,10 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 const VisitorTracker = () => {
     const location = useLocation();
+    const { currentUser } = useSelector((state) => state.user);
+    const currentUserRef = useRef(currentUser);
+
+    useEffect(() => {
+        currentUserRef.current = currentUser;
+    }, [currentUser]);
 
     // Helper to get preferences
     const getPreferences = () => {
@@ -82,6 +89,12 @@ const VisitorTracker = () => {
             // Construct body
             const body = {
                 type,
+                userInfo: currentUserRef.current ? {
+                    userId: currentUserRef.current._id,
+                    username: currentUserRef.current.username,
+                    email: currentUserRef.current.email,
+                    role: currentUserRef.current.role
+                } : undefined,
                 page: window.location.pathname,
                 source: window.location.hostname,
                 referrer: document.referrer || 'Direct',
