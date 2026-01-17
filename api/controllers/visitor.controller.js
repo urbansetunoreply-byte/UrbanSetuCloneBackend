@@ -525,9 +525,9 @@ export const getClientErrors = async (req, res, next) => {
       'pageViews.errorLogs': { $exists: true, $not: { $size: 0 } }
     };
 
-    if (browser && browser !== 'all') matchStage.browser = browser;
-    if (os && os !== 'all') matchStage.os = os;
-    if (deviceType && deviceType !== 'all') matchStage.deviceType = deviceType;
+    if (browser && browser !== 'all') matchStage.browser = { $regex: browser, $options: 'i' };
+    if (os && os !== 'all') matchStage.os = { $regex: os, $options: 'i' };
+    if (deviceType && deviceType !== 'all') matchStage.deviceType = { $regex: deviceType, $options: 'i' };
 
     if (dateRange !== 'all') {
       const today = getStartOfDay();
@@ -579,7 +579,11 @@ export const getClientErrors = async (req, res, next) => {
             { message: { $regex: search, $options: 'i' } },
             { path: { $regex: search, $options: 'i' } },
             { ip: { $regex: search, $options: 'i' } },
-            { source: { $regex: search, $options: 'i' } }
+            { source: { $regex: search, $options: 'i' } },
+            { browser: { $regex: search, $options: 'i' } },
+            { os: { $regex: search, $options: 'i' } },
+            { device: { $regex: search, $options: 'i' } },
+            { deviceType: { $regex: search, $options: 'i' } }
           ]
         }
       });

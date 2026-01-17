@@ -5,7 +5,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import {
     FaExclamationTriangle, FaSearch, FaFilter, FaBug, FaDesktop,
     FaMapMarkerAlt, FaGlobe, FaClock, FaTrash, FaCheckCircle,
-    FaUserShield, FaCode, FaSpinner, FaChevronLeft, FaChevronRight
+    FaUserShield, FaCode, FaSpinner, FaChevronLeft, FaChevronRight, FaMobileAlt
 } from 'react-icons/fa';
 import ClientErrorSkeleton from '../components/skeletons/ClientErrorSkeleton';
 import { toast } from 'react-toastify';
@@ -295,6 +295,12 @@ const ClientErrorMonitoring = () => {
                                                     <FaGlobe className="mt-1 text-blue-500" />
                                                     <span className="text-gray-600 dark:text-gray-300 break-all">
                                                         <span className="font-semibold text-gray-800 dark:text-gray-200">Browser:</span> {error.browser} {error.browserVersion}
+                                                    </span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <FaMobileAlt className="mt-1 text-purple-600" />
+                                                    <span className="text-gray-600 dark:text-gray-300">
+                                                        <span className="font-semibold text-gray-800 dark:text-gray-200">Device:</span> {error.device || 'Unknown'}
                                                     </span>
                                                 </li>
                                                 <li className="flex items-start gap-2">
