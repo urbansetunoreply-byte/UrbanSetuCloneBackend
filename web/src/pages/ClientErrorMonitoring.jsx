@@ -11,7 +11,6 @@ import {
 import ClientErrorSkeleton from '../components/skeletons/ClientErrorSkeleton';
 import VisitorDetailsModal from '../components/VisitorDetailsModal';
 import { toast } from 'react-toastify';
-import { useSelector } from 'react-redux';
 
 const calculateDuration = (start, end) => {
     if (!start || !end) return 'N/A';
