@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import PaymentModal from '../components/PaymentModal';
 import MyPaymentsSkeleton from '../components/skeletons/MyPaymentsSkeleton';
+import SocialSharePanel from '../components/SocialSharePanel';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -42,6 +43,14 @@ const MyPayments = () => {
   const [exportPassword, setExportPassword] = useState('');
   const [exportPasswordError, setExportPasswordError] = useState('');
   const [exportPasswordLoading, setExportPasswordLoading] = useState(false);
+
+  // Share Panel State
+  const [showSharePanel, setShowSharePanel] = useState(false);
+  const [shareConfig, setShareConfig] = useState({
+    url: '',
+    title: '',
+    description: ''
+  });
 
   useEffect(() => { fetchPayments(); }, [filters]);
 
@@ -400,35 +409,20 @@ const MyPayments = () => {
     setShowPreviewModal(true);
   };
 
-  const sharePayment = async (payment) => {
-    const shareText = `Payment Details:\nProperty: ${payment.appointmentId?.propertyName || 'N/A'}\nAmount: ${payment.currency === 'INR' ? '₹' : '$'}${Number(payment.amount).toFixed(2)}\nStatus: ${payment.status}\nPayment ID: ${payment.paymentId}`;
+  const sharePayment = (payment) => {
+    const propertyName = payment.appointmentId?.propertyName || 'N/A';
+    const amount = `${payment.currency === 'INR' ? '₹' : '$'}${Number(payment.amount).toFixed(2)}`;
+    const status = payment.status.charAt(0).toUpperCase() + payment.status.slice(1);
+
+    const description = `Payment Receipt\nProperty: ${propertyName}\nAmount: ${amount}\nStatus: ${status}\nPayment ID: ${payment.paymentId}`;
     const shareUrl = window.location.origin + `/user/my-payments?paymentId=${payment.paymentId}`;
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Payment Receipt',
-          text: shareText,
-          url: shareUrl
-        });
-        toast.success('Payment shared successfully');
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          copyPaymentLink(shareUrl, shareText);
-        }
-      }
-    } else {
-      copyPaymentLink(shareUrl, shareText);
-    }
-  };
-
-  const copyPaymentLink = async (url, text) => {
-    try {
-      await navigator.clipboard.writeText(text + '\n' + url);
-      toast.success('Payment details copied to clipboard');
-    } catch {
-      toast.error('Failed to copy payment details');
-    }
+    setShareConfig({
+      url: shareUrl,
+      title: 'Payment Receipt',
+      description: description
+    });
+    setShowSharePanel(true);
   };
 
   const statusBadge = (status) => {
@@ -902,6 +896,15 @@ const MyPayments = () => {
           </div>
         </div>
       )}
+
+      {/* Social Share Panel */}
+      <SocialSharePanel
+        isOpen={showSharePanel}
+        onClose={() => setShowSharePanel(false)}
+        url={shareConfig.url}
+        title={shareConfig.title}
+        description={shareConfig.description}
+      />
 
       {/* Payment Modal */}
       {showPaymentModal && paymentAppointment && (
