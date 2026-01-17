@@ -23,19 +23,32 @@ const ClientErrorMonitoring = () => {
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
     const [dateRange, setDateRange] = useState('all');
+    const [browser, setBrowser] = useState('all');
+    const [os, setOs] = useState('all');
+    const [deviceType, setDeviceType] = useState('all');
+
+    const [isRefetching, setIsRefetching] = useState(false);
 
     useEffect(() => {
         fetchErrors();
-    }, [currentPage, searchQuery, dateRange]);
+    }, [currentPage, searchQuery, dateRange, browser, os, deviceType]);
 
     const fetchErrors = async () => {
         try {
-            setLoading(true);
+            if (errors.length === 0 && loading) {
+                // Initial load
+            } else {
+                setIsRefetching(true);
+            }
+
             const queryParams = new URLSearchParams({
                 page: currentPage,
                 limit: 10,
                 search: searchQuery,
-                dateRange
+                dateRange,
+                browser,
+                os,
+                deviceType
             });
 
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/visitors/client-errors?${queryParams}`, {
@@ -56,6 +69,7 @@ const ClientErrorMonitoring = () => {
             toast.error('Network error while fetching logs');
         } finally {
             setLoading(false);
+            setIsRefetching(false);
         }
     };
 
@@ -68,6 +82,9 @@ const ClientErrorMonitoring = () => {
     const clearFilters = () => {
         setSearchQuery('');
         setDateRange('all');
+        setBrowser('all');
+        setOs('all');
+        setDeviceType('all');
         setCurrentPage(1);
     };
 
@@ -118,51 +135,90 @@ const ClientErrorMonitoring = () => {
 
                 {/* Filters */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-                    <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 items-end">
-                        <div className="flex-1 w-full">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Errors</label>
-                            <div className="relative">
-                                <FaSearch className="absolute left-3 top-3 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Search by error message, path, IP..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-                                />
+                    <form onSubmit={handleSearch} className="flex flex-col gap-4">
+                        {/* Row 1: Search & Date */}
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Errors</label>
+                                <div className="relative">
+                                    <FaSearch className="absolute left-3 top-3 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search by error message, path, IP..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="w-full md:w-48">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Range</label>
+                                <select
+                                    value={dateRange}
+                                    onChange={(e) => setDateRange(e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                >
+                                    <option value="all">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="yesterday">Yesterday</option>
+                                    <option value="7days">Last 7 Days</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div className="w-full md:w-48">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Range</label>
-                            <select
-                                value={dateRange}
-                                onChange={(e) => setDateRange(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-                            >
-                                <option value="all">All Time</option>
-                                <option value="today">Today</option>
-                                <option value="yesterday">Yesterday</option>
-                                <option value="7days">Last 7 Days</option>
-                            </select>
-                        </div>
+                        {/* Row 2: Advanced Filters & Actions */}
+                        <div className="flex flex-col md:flex-row gap-4 items-end">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 w-full">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Browser</label>
+                                    <select value={browser} onChange={(e) => setBrowser(e.target.value)} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        <option value="all">All Browsers</option>
+                                        <option value="Chrome">Chrome</option>
+                                        <option value="Firefox">Firefox</option>
+                                        <option value="Safari">Safari</option>
+                                        <option value="Edge">Edge</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">OS</label>
+                                    <select value={os} onChange={(e) => setOs(e.target.value)} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        <option value="all">All OS</option>
+                                        <option value="Windows">Windows</option>
+                                        <option value="Mac">Mac OS</option>
+                                        <option value="Linux">Linux</option>
+                                        <option value="Android">Android</option>
+                                        <option value="iOS">iOS</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Device</label>
+                                    <select value={deviceType} onChange={(e) => setDeviceType(e.target.value)} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        <option value="all">All Devices</option>
+                                        <option value="desktop">Desktop</option>
+                                        <option value="mobile">Mobile</option>
+                                        <option value="tablet">Tablet</option>
+                                    </select>
+                                </div>
+                            </div>
 
-                        <div className="flex gap-2">
-                            <button
-                                type="submit"
-                                className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 font-medium"
-                            >
-                                <FaFilter /> Filter
-                            </button>
-                            {(searchQuery || dateRange !== 'all') && (
+                            <div className="flex gap-2 shrink-0">
                                 <button
-                                    type="button"
-                                    onClick={clearFilters}
-                                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                    type="submit"
+                                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 font-medium h-[42px]"
                                 >
-                                    Clear
+                                    <FaFilter /> Filter
                                 </button>
-                            )}
+                                {(searchQuery || dateRange !== 'all' || browser !== 'all' || os !== 'all' || deviceType !== 'all') && (
+                                    <button
+                                        type="button"
+                                        onClick={clearFilters}
+                                        className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors h-[42px]"
+                                    >
+                                        Clear
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -179,7 +235,7 @@ const ClientErrorMonitoring = () => {
                         <p className="text-gray-500 dark:text-gray-400">Everything seems to be running smoothly within the selected constraints.</p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className={`space-y-4 transition-opacity duration-200 ${isRefetching ? 'opacity-50 pointer-events-none' : ''}`}>
                         {errors.map((error, index) => (
                             <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow">
                                 {/* Error Header */}

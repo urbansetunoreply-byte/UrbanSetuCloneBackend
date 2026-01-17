@@ -517,13 +517,17 @@ export const clearOldVisitorLogs = async (req, res, next) => {
 // Get all client errors across all visitors (admin only)
 export const getClientErrors = async (req, res, next) => {
   try {
-    const { page = 1, limit = 50, search = '', dateRange = 'all' } = req.query;
+    const { page = 1, limit = 50, search = '', dateRange = 'all', browser, os, deviceType } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     // Build match stage for date filter
     const matchStage = {
       'pageViews.errorLogs': { $exists: true, $not: { $size: 0 } }
     };
+
+    if (browser && browser !== 'all') matchStage.browser = browser;
+    if (os && os !== 'all') matchStage.os = os;
+    if (deviceType && deviceType !== 'all') matchStage.deviceType = deviceType;
 
     if (dateRange !== 'all') {
       const today = getStartOfDay();
