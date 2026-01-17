@@ -698,6 +698,12 @@ export default function AdminReviews() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 py-4 sm:py-10 px-1 sm:px-2 md:px-8 animate-fadeIn transition-colors duration-300">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <div className="max-w-full sm:max-w-3xl md:max-w-6xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-2 sm:p-4 md:p-8 animate-slideUp transition-colors duration-300">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8 gap-4">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-700 dark:text-white drop-shadow animate-fade-in">Review Management</h1>
@@ -1025,10 +1031,11 @@ export default function AdminReviews() {
 
         <div className="overflow-x-auto">
           <div className="space-y-4">
-            {filteredReviews.map((review, idx) => (
+            {filteredReviews.map((review, index) => (
               <div
                 key={review._id}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow"
+                style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
               >
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 md:p-6">
                   {/* Column 1: User & Property Info (4 cols) */}
@@ -1196,7 +1203,7 @@ export default function AdminReviews() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-gray-700 dark:text-gray-200">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">

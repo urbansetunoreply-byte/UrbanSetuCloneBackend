@@ -512,8 +512,12 @@ const SessionManagement = () => {
                       return false;
                     }
                     return true;
-                  }).map((session) => (
-                    <tr key={session.sessionId} className="hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-colors duration-150">
+                  }).map((session, index) => (
+                    <tr
+                      key={session.sessionId}
+                      className="hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-colors duration-150"
+                      style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">

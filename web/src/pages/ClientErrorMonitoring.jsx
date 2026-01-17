@@ -139,6 +139,12 @@ const ClientErrorMonitoring = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+            <style>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
             <div className="max-w-7xl mx-auto space-y-6">
 
                 {/* Header */}
@@ -272,9 +278,13 @@ const ClientErrorMonitoring = () => {
                         <p className="text-gray-500 dark:text-gray-400">Everything seems to be running smoothly within the selected constraints.</p>
                     </div>
                 ) : (
-                    <div className={`space-y-4 transition-opacity duration-200 ${isRefetching ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <div key={currentPage} className={`space-y-4 transition-opacity duration-200 ${isRefetching ? 'opacity-50 pointer-events-none' : ''}`}>
                         {errors.map((error, index) => (
-                            <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow">
+                            <div
+                                key={error.id || index}
+                                className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow"
+                                style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
+                            >
                                 {/* Error Header */}
                                 <div className="bg-red-50 dark:bg-red-900/10 p-4 border-b border-red-100 dark:border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-3">
                                     <div className="flex items-start gap-3">

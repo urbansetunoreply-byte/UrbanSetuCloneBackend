@@ -896,8 +896,12 @@ const SessionAuditLogs = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-                      {logs.map((log) => (
-                        <tr key={log._id} className="hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-colors duration-150">
+                      {logs.map((log, index) => (
+                        <tr
+                          key={log._id}
+                          className="hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-colors duration-150"
+                          style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
+                        >
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex items-center gap-2">
                               <FaHistory className="text-gray-400 dark:text-gray-500" />
@@ -1422,8 +1426,12 @@ const SessionAuditLogs = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-                      {visitors.map((visitor) => (
-                        <tr key={visitor._id} className="hover:bg-purple-50/30 dark:hover:bg-purple-900/20 transition-colors duration-150">
+                      {visitors.map((visitor, index) => (
+                        <tr
+                          key={visitor._id}
+                          className="hover:bg-purple-50/30 dark:hover:bg-purple-900/20 transition-colors duration-150"
+                          style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
+                        >
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex items-center gap-2">
                               <FaHistory className="text-gray-400 dark:text-gray-500" />
