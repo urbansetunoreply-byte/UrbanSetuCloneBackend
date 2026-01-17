@@ -730,7 +730,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         credentials: 'include',
         body: JSON.stringify({
           category: reportCategory,
-          reason: reportReason.trim()
+          reason: (reportReason || '').trim()
         }),
       });
       const data = await res.json();
