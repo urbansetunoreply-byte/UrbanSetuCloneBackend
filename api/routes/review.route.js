@@ -1097,6 +1097,7 @@ router.post('/report/:reviewId', verifyToken, async (req, res, next) => {
 
     // Find all admins
     const admins = await User.find({ role: { $in: ['admin', 'rootadmin'] } });
+    const now = new Date();
     const notifications = await Promise.all(admins.map(async (admin) => {
       return Notification.create({
         userId: admin._id,
@@ -1105,6 +1106,7 @@ router.post('/report/:reviewId', verifyToken, async (req, res, next) => {
         message: notificationMessage,
         listingId: review.listingId,
         adminId: req.user.id,
+        createdAt: now, // Ensure same timestamp for deduplication
         meta: {
           reviewId: review._id,
           reporterId: reporter?._id,
