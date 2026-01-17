@@ -1633,6 +1633,7 @@ export default function Community() {
                                                                                                             <form onSubmit={(e) => handleUpdateReply(e, post._id, comment._id, reply._id)} className="w-full mb-2">
                                                                                                                 {/* ... (keep form same) ... */}
                                                                                                                 <div className="relative">
+                                                                                                                    {showMentionSuggestions.show && showMentionSuggestions.id === reply._id && showMentionSuggestions.type === 'edit-reply' && renderMentionsPanel()}
                                                                                                                     <textarea
                                                                                                                         value={editingContent.content}
                                                                                                                         onChange={(e) => handleInputChange(e, 'edit-reply', reply._id)}
