@@ -1490,7 +1490,7 @@ export default function AdminReviews() {
                       type="date"
                       value={reportsFilters.dateTo}
                       onChange={(e) => setReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                     />
                   </div>
                   <div>
@@ -1500,7 +1500,7 @@ export default function AdminReviews() {
                       placeholder="Reporter"
                       value={reportsFilters.reporter}
                       onChange={(e) => setReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
-                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                     />
                   </div>
                   <div>
@@ -1510,7 +1510,7 @@ export default function AdminReviews() {
                       placeholder="Search..."
                       value={reportsFilters.search}
                       onChange={(e) => setReportsFilters(prev => ({ ...prev, search: e.target.value }))}
-                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                     />
                   </div>
                 </div>
@@ -1521,7 +1521,7 @@ export default function AdminReviews() {
                     <select
                       value={reportsFilters.sortBy}
                       onChange={(e) => setReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                      className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                     >
                       <option value="date">Date</option>
                       <option value="reporter">Reporter</option>
@@ -1531,7 +1531,7 @@ export default function AdminReviews() {
                     <select
                       value={reportsFilters.sortOrder}
                       onChange={(e) => setReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
-                      className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                     >
                       <option value="desc">↓</option>
                       <option value="asc">↑</option>
@@ -1577,15 +1577,7 @@ export default function AdminReviews() {
 
             {/* Reports List */}
             <div className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-6 min-h-0">
-              {/* Debug info */}
-              <div className="mb-2 sm:mb-4 p-1.5 sm:p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
-                <div className="hidden sm:block">
-                  Debug: Loading={reportsLoading.toString()}, Error={reportsError}, Total Reports={reports.length}, Filtered={filteredReports.length}
-                </div>
-                <div className="sm:hidden">
-                  L:{reportsLoading.toString()} | T:{reports.length} | F:{filteredReports.length}
-                </div>
-              </div>
+
               {reportsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
