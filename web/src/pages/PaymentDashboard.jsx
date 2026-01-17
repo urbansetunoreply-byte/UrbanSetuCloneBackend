@@ -68,20 +68,83 @@ const PaymentDashboard = () => {
   const [exportPasswordError, setExportPasswordError] = useState('');
   const [exportPasswordLoading, setExportPasswordLoading] = useState(false);
 
+  // Helper to clear paymentId from URL
+  const clearPaymentIdFromUrl = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('paymentId')) {
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  };
+
+  const closePreviewModal = () => {
+    setShowPreviewModal(false);
+    clearPaymentIdFromUrl();
+    setSelectedPayment(null);
+  };
+
   useEffect(() => {
-    // Check for paymentId in URL query params
     const params = new URLSearchParams(window.location.search);
     const paymentId = params.get('paymentId');
-    if (paymentId) {
-      const payment = [...allUsdPayments, ...allInrPayments].find(p => p.paymentId === paymentId);
-      if (payment) {
-        handlePaymentClick(payment);
-        // Clear search params after opening
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
+
+    if (!paymentId) return;
+
+    const findAndOpenPayment = async () => {
+      // Switch to history tab if not there
+      if (activeTab !== 'history') {
+        setActiveTab('history');
       }
+
+      // 1. Try finding in existing loaded payments
+      const existingPayment = [...allUsdPayments, ...allInrPayments].find(p => p.paymentId === paymentId);
+      if (existingPayment) {
+        handlePaymentClick(existingPayment);
+        return;
+      }
+
+      // 2. If not found, fetch specifically
+      try {
+        // We use a separate loading indicator or just rely on the main one if appropriate
+        // Here we'll use the main one but ensure we don't blocking UI if data is already there? 
+        // Actually, preventing interaction while we resolve the link is improved UX.
+        setLoading(true);
+
+        // Search in both currencies
+        const [usdRes, inrRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?q=${paymentId}&limit=1&currency=USD`, { credentials: 'include' }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?q=${paymentId}&limit=1&currency=INR`, { credentials: 'include' })
+        ]);
+
+        const usdData = await usdRes.json();
+        const inrData = await inrRes.json();
+
+        let foundPayment = null;
+        if (usdRes.ok && usdData.payments && usdData.payments.length > 0 && usdData.payments[0].paymentId === paymentId) {
+          foundPayment = usdData.payments[0];
+        } else if (inrRes.ok && inrData.payments && inrData.payments.length > 0 && inrData.payments[0].paymentId === paymentId) {
+          foundPayment = inrData.payments[0];
+        }
+
+        if (foundPayment) {
+          handlePaymentClick(foundPayment);
+        } else {
+          toast.error(`Payment with ID ${paymentId} not found.`);
+          clearPaymentIdFromUrl();
+        }
+
+      } catch (err) {
+        console.error("Error fetching specific payment:", err);
+        clearPaymentIdFromUrl();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Only verify if we are not already showing it
+    if (!selectedPayment || selectedPayment.paymentId !== paymentId) {
+      findAndOpenPayment();
     }
-  }, [allUsdPayments, allInrPayments]);
+  }, [window.location.search, allUsdPayments.length, allInrPayments.length, activeTab]);
 
   useEffect(() => {
     fetchPaymentStats();
@@ -812,7 +875,7 @@ const PaymentDashboard = () => {
       {/* Payment Preview Modal */}
       {
         showPreviewModal && selectedPayment && (
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50" onClick={() => setShowPreviewModal(false)}>
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50" onClick={closePreviewModal}>
             <div className="flex min-h-full items-center justify-center p-4">
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full relative" onClick={(e) => e.stopPropagation()}>
                 <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10 p-4 sm:p-6 pb-3 sm:pb-4 rounded-t-xl">
@@ -822,7 +885,7 @@ const PaymentDashboard = () => {
                       Payment Details
                     </h3>
                     <button
-                      onClick={() => setShowPreviewModal(false)}
+                      onClick={closePreviewModal}
                       className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors bg-gray-100 dark:bg-gray-700 rounded-full p-2"
                     >
                       <FaTimes className="text-xl" />
@@ -962,7 +1025,7 @@ const PaymentDashboard = () => {
                       <button
                         onClick={() => {
                           downloadReceipt(selectedPayment.receiptUrl);
-                          setShowPreviewModal(false);
+                          closePreviewModal();
                         }}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                       >
@@ -972,7 +1035,7 @@ const PaymentDashboard = () => {
                     <button
                       onClick={() => {
                         sharePayment(selectedPayment);
-                        setShowPreviewModal(false);
+                        closePreviewModal();
                       }}
                       className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
                     >
