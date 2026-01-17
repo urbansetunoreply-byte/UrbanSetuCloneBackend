@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FaThumbsUp, FaThumbsDown, FaChevronLeft, FaCalendarAlt, FaEye } from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown, FaChevronLeft, FaCalendarAlt } from 'react-icons/fa';
 
 const ArticleView = () => {
     const { slug } = useParams();
@@ -51,8 +51,33 @@ const ArticleView = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+                <div className="max-w-4xl mx-auto animate-pulse">
+                    {/* Back Link Skeleton */}
+                    <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-6"></div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                        <div className="p-8 sm:p-12">
+                            {/* Title Skeleton */}
+                            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-6"></div>
+
+                            {/* Meta Row Skeleton */}
+                            <div className="flex gap-4 mb-8">
+                                <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            </div>
+
+                            {/* Content Skeleton - Multiple lines */}
+                            <div className="space-y-4">
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -91,10 +116,6 @@ const ArticleView = () => {
                                 <FaCalendarAlt className="mr-2" />
                                 Updated {new Date(article.updatedAt).toLocaleDateString()}
                             </div>
-                            <div className="flex items-center">
-                                <FaEye className="mr-2" />
-                                {article.views} views
-                            </div>
                         </div>
 
                         {/* Content */}
@@ -110,8 +131,8 @@ const ArticleView = () => {
                                     onClick={() => handleVote('helpful')}
                                     disabled={voteStatus !== null}
                                     className={`flex items-center px-4 py-2 rounded-lg transition-all ${voteStatus === 'helpful'
-                                            ? 'bg-green-600 text-white'
-                                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600'
+                                        ? 'bg-green-600 text-white'
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600'
                                         } border border-gray-200 dark:border-gray-600`}
                                 >
                                     <FaThumbsUp className="mr-2" />
@@ -121,8 +142,8 @@ const ArticleView = () => {
                                     onClick={() => handleVote('not_helpful')}
                                     disabled={voteStatus !== null}
                                     className={`flex items-center px-4 py-2 rounded-lg transition-all ${voteStatus === 'not_helpful'
-                                            ? 'bg-red-600 text-white'
-                                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600'
+                                        ? 'bg-red-600 text-white'
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600'
                                         } border border-gray-200 dark:border-gray-600`}
                                 >
                                     <FaThumbsDown className="mr-2" />

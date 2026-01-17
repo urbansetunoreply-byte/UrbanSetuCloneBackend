@@ -58,7 +58,17 @@ const helpArticleSchema = new mongoose.Schema({
     isPublished: {
         type: Boolean,
         default: true
-    }
+    },
+    votedBy: [{
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        voteType: {
+            type: String,
+            enum: ['helpful', 'not_helpful']
+        }
+    }]
 }, { timestamps: true });
 
 // Index for search

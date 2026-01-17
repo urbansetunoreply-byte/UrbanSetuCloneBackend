@@ -19,6 +19,12 @@ const HelpCenter = () => {
             if (category) url += `&category=${encodeURIComponent(category)}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
 
+            // If no search and no category, we are likely on the landing page "Popular Articles" section
+            // So we explicitly ask for popular sort
+            if (!category && !search) {
+                url += `&sort=popular`;
+            }
+
             const res = await fetch(url);
             const data = await res.json();
             setArticles(data);
@@ -107,8 +113,18 @@ const HelpCenter = () => {
                         </h2>
 
                         {loading ? (
-                            <div className="flex justify-center py-12">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                            <div className="space-y-4 animate-pulse">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                                        <div className="mt-4 flex gap-4">
+                                            <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                            <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ) : articles.length > 0 ? (
                             <div className="space-y-4">
@@ -168,8 +184,10 @@ const HelpCenter = () => {
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Popular Articles</h2>
                             {loading ? (
-                                <div className="flex justify-center py-8">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div key={i} className="h-12 bg-gray-100 dark:bg-gray-700 rounded-lg"></div>
+                                    ))}
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

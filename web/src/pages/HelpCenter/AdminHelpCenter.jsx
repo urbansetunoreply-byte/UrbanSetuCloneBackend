@@ -161,6 +161,40 @@ const AdminHelpCenter = () => {
                 </button>
             </div>
 
+            {/* Top Performing Articles (Popularity Metrics) */}
+            {articles.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Top Performing Articles</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[...articles]
+                            .map(a => ({
+                                ...a,
+                                score: (a.views || 0) + ((a.helpfulCount || 0) * 10) - ((a.notHelpfulCount || 0) * 5)
+                            }))
+                            .sort((a, b) => b.score - a.score)
+                            .slice(0, 4)
+                            .map((article) => (
+                                <div key={article._id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-full blur-xl translate-x-1/2 -translate-y-1/2"></div>
+                                    <h3 className="font-semibold text-gray-800 dark:text-white truncate mb-2" title={article.title}>{article.title}</h3>
+                                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                                        <div className="flex items-center gap-1">
+                                            <FaEye className="text-blue-500" /> {article.views}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-green-600 dark:text-green-400 font-medium">+{article.helpfulCount}</span>
+                                            <span className="text-red-500 font-medium">-{article.notHelpfulCount}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 text-xs font-medium text-blue-600 dark:text-blue-400">
+                                        Score: {article.score}
+                                    </div>
+                                </div>
+                            ))}
+                    </div>
+                </div>
+            )}
+
             {/* Search */}
             <div className="mb-6 relative">
                 <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
