@@ -1652,6 +1652,17 @@ export default function AdminReviews() {
                                 <span className="text-gray-900 dark:text-gray-100">{report.details}</span>
                               </div>
                             )}
+                            {report.reviewContent && (
+                              <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600">
+                                <span className="font-medium text-gray-700 dark:text-gray-300 block mb-1">Reported Review:</span>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 italic">"{report.reviewContent}"</p>
+                                {report.reviewRating && (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">Rating: {report.reviewRating}/5</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2">

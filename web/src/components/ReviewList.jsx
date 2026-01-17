@@ -718,6 +718,10 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       toast.info('Please select a category for reporting.');
       return;
     }
+    if (reportCategory === 'Other' && !reportReason.trim()) {
+      toast.info('Please provide details for "Other" category.');
+      return;
+    }
     setReportLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/review/report/${reportingReview._id}`, {

@@ -305,6 +305,20 @@ export const getReviewReports = async (req, res, next) => {
         }
       }
 
+      // Fetch review content
+      if (report.reviewId) {
+        try {
+          const Review = (await import('../models/review.model.js')).default;
+          const review = await Review.findById(report.reviewId).select('comment rating');
+          if (review) {
+            report.reviewContent = review.comment;
+            report.reviewRating = review.rating;
+          }
+        } catch (error) {
+          console.error('Error fetching review details:', error);
+        }
+      }
+
       if (reporterId) {
         try {
           const User = (await import('../models/user.model.js')).default;

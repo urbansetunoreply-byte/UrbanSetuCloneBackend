@@ -724,6 +724,7 @@ export default function AdminListings() {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
                     <input
                       type="date"
+                      max={new Date().toISOString().split('T')[0]}
                       value={propertyReportsFilters.dateFrom}
                       onChange={(e) => setPropertyReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
                       className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-red-500"
@@ -733,6 +734,7 @@ export default function AdminListings() {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
                     <input
                       type="date"
+                      max={new Date().toISOString().split('T')[0]}
                       value={propertyReportsFilters.dateTo}
                       onChange={(e) => setPropertyReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
                       className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-red-500"
