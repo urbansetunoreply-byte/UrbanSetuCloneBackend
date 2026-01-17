@@ -417,8 +417,58 @@ export default function AdminFraudManagement() {
     return <AdminFraudManagementSkeleton />;
   }
 
+  const finalListings = listings
+    .filter(l => {
+      const q = searchQuery.trim().toLowerCase();
+      if (!q) return true;
+      const fields = [
+        l.name,
+        l.city,
+        l.state,
+        (l.description || ''),
+        (l._fraudReasons || []).join(' ')
+      ].join(' ').toLowerCase();
+      return fields.includes(q);
+    })
+    .filter(l => includeLowSeverity ? true : (l._fraudReasons || []).length >= 2)
+    .filter(l => reasonFilter === 'all' ? true : (l._fraudReasons || []).includes(reasonFilter))
+    .sort((a, b) => {
+      if (sortBy === 'alpha') return String(a.name || '').localeCompare(String(b.name || ''));
+      if (sortBy === 'recent') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      const sa = (a._fraudReasons || []).length, sb = (b._fraudReasons || []).length; return sb - sa;
+    });
+
+  const finalReviews = reviews
+    .filter(r => {
+      const q = searchQuery.trim().toLowerCase();
+      if (!q) return true;
+      const fields = [
+        (r.listingId?.name) || String(r.listingId || ''),
+        (r.userId?.email) || String(r.userId || ''),
+        (r.comment || ''),
+        (r._fraudReasons || []).join(' ')
+      ].join(' ').toLowerCase();
+      return fields.includes(q);
+    })
+    .filter(r => includeLowSeverity ? true : (r._fraudReasons || []).length >= 2)
+    .filter(r => reasonFilter === 'all' ? true : (r._fraudReasons || []).includes(reasonFilter))
+    .sort((a, b) => {
+      if (sortBy === 'alpha') return String(a.listingId?.name || '').localeCompare(String(b.listingId?.name || ''));
+      if (sortBy === 'recent') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      const sa = (a._fraudReasons || []).length, sb = (b._fraudReasons || []).length; return sb - sa;
+    });
+
+  const totalPagesL = Math.max(1, Math.ceil(finalListings.length / pageSize));
+  const totalPagesR = Math.max(1, Math.ceil(finalReviews.length / pageSize));
+
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-slate-900 dark:to-slate-950 min-h-screen py-6 sm:py-10 px-2 md:px-8">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <div className="w-full mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 transition-colors duration-300">
         <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
           <h3 className="text-3xl font-extrabold text-blue-700 dark:text-indigo-400 drop-shadow">Fraud Management</h3>
@@ -557,29 +607,10 @@ export default function AdminFraudManagement() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {listings
-                        .filter(l => {
-                          const q = searchQuery.trim().toLowerCase();
-                          if (!q) return true;
-                          const fields = [
-                            l.name,
-                            l.city,
-                            l.state,
-                            (l.description || ''),
-                            (l._fraudReasons || []).join(' ')
-                          ].join(' ').toLowerCase();
-                          return fields.includes(q);
-                        })
-                        .filter(l => includeLowSeverity ? true : (l._fraudReasons || []).length >= 2)
-                        .filter(l => reasonFilter === 'all' ? true : (l._fraudReasons || []).includes(reasonFilter))
-                        .sort((a, b) => {
-                          if (sortBy === 'alpha') return String(a.name || '').localeCompare(String(b.name || ''));
-                          if (sortBy === 'recent') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-                          const sa = (a._fraudReasons || []).length, sb = (b._fraudReasons || []).length; return sb - sa;
-                        })
+                      {finalListings
                         .slice((pageL - 1) * pageSize, pageL * pageSize)
-                        .map(l => (
-                          <tr key={l._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        .map((l, index) => (
+                          <tr key={l._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}>
                             {showSelectMode && <td className="p-3"><input type="checkbox" className="rounded dark:bg-gray-700 dark:border-gray-600" checked={selectedRows.listings.has(l._id)} onChange={(e) => {
                               const ns = new Set(selectedRows.listings); if (e.target.checked) ns.add(l._id); else ns.delete(l._id);
                               setSelectedRows(s => ({ ...s, listings: ns }));
@@ -601,25 +632,17 @@ export default function AdminFraudManagement() {
                             </div></td>
                           </tr>
                         ))}
-                      {listings
-                        .filter(l => {
-                          const q = searchQuery.trim().toLowerCase();
-                          if (!q) return true;
-                          const fields = [l.name, l.city, l.state, (l.description || ''), (l._fraudReasons || []).join(' ')].join(' ').toLowerCase();
-                          return fields.includes(q);
-                        })
-                        .filter(l => reasonFilter === 'all' ? true : (l._fraudReasons || []).includes(reasonFilter))
-                        .length === 0 && (
-                          <tr><td className="p-6 text-sm text-gray-500 dark:text-gray-400 text-center italic" colSpan={showSelectMode ? 5 : 4}>No suspicious listings found</td></tr>
-                        )}
+                      {finalListings.length === 0 && (
+                        <tr><td className="p-6 text-sm text-gray-500 dark:text-gray-400 text-center italic" colSpan={showSelectMode ? 5 : 4}>No suspicious listings found</td></tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
                 {/* Pagination for listings */}
                 <div className="flex items-center justify-end gap-2 mt-4">
                   <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50" disabled={pageL === 1} onClick={() => setPageL(p => Math.max(1, p - 1))}>Prev</button>
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-400">Page {pageL}</span>
-                  <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors" onClick={() => setPageL(p => p + 1)}>Next</button>
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-400">Page {pageL} of {totalPagesL}</span>
+                  <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={pageL === totalPagesL} onClick={() => setPageL(p => Math.min(totalPagesL, p + 1))}>Next</button>
                 </div>
               </div>
             )}
@@ -640,28 +663,10 @@ export default function AdminFraudManagement() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {reviews
-                        .filter(r => {
-                          const q = searchQuery.trim().toLowerCase();
-                          if (!q) return true;
-                          const fields = [
-                            (r.listingId?.name) || String(r.listingId || ''),
-                            (r.userId?.email) || String(r.userId || ''),
-                            (r.comment || ''),
-                            (r._fraudReasons || []).join(' ')
-                          ].join(' ').toLowerCase();
-                          return fields.includes(q);
-                        })
-                        .filter(r => includeLowSeverity ? true : (r._fraudReasons || []).length >= 2)
-                        .filter(r => reasonFilter === 'all' ? true : (r._fraudReasons || []).includes(reasonFilter))
-                        .sort((a, b) => {
-                          if (sortBy === 'alpha') return String(a.listingId?.name || '').localeCompare(String(b.listingId?.name || ''));
-                          if (sortBy === 'recent') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-                          const sa = (a._fraudReasons || []).length, sb = (b._fraudReasons || []).length; return sb - sa;
-                        })
+                      {finalReviews
                         .slice((pageR - 1) * pageSize, pageR * pageSize)
-                        .map(r => (
-                          <tr key={r._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        .map((r, index) => (
+                          <tr key={r._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}>
                             {showSelectMode && <td className="p-3"><input type="checkbox" className="rounded dark:bg-gray-700 dark:border-gray-600" checked={selectedRows.reviews.has(r._id)} onChange={(e) => {
                               const ns = new Set(selectedRows.reviews); if (e.target.checked) ns.add(r._id); else ns.delete(r._id);
                               setSelectedRows(s => ({ ...s, reviews: ns }));
@@ -684,30 +689,17 @@ export default function AdminFraudManagement() {
                             </div></td>
                           </tr>
                         ))}
-                      {reviews
-                        .filter(r => {
-                          const q = searchQuery.trim().toLowerCase();
-                          if (!q) return true;
-                          const fields = [
-                            (r.listingId?.name) || String(r.listingId || ''),
-                            (r.userId?.email) || String(r.userId || ''),
-                            (r.comment || ''),
-                            (r._fraudReasons || []).join(' ')
-                          ].join(' ').toLowerCase();
-                          return fields.includes(q);
-                        })
-                        .filter(r => reasonFilter === 'all' ? true : (r._fraudReasons || []).includes(reasonFilter))
-                        .length === 0 && (
-                          <tr><td className="p-6 text-sm text-gray-500 dark:text-gray-400 text-center italic" colSpan={showSelectMode ? 6 : 5}>No suspected fake reviews found</td></tr>
-                        )}
+                      {finalReviews.length === 0 && (
+                        <tr><td className="p-6 text-sm text-gray-500 dark:text-gray-400 text-center italic" colSpan={showSelectMode ? 6 : 5}>No suspected fake reviews found</td></tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
                 {/* Pagination for reviews */}
                 <div className="flex items-center justify-end gap-2 mt-4">
                   <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50" disabled={pageR === 1} onClick={() => setPageR(p => Math.max(1, p - 1))}>Prev</button>
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-400">Page {pageR}</span>
-                  <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors" onClick={() => setPageR(p => p + 1)}>Next</button>
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-400">Page {pageR} of {totalPagesR}</span>
+                  <button className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={pageR === totalPagesR} onClick={() => setPageR(p => Math.min(totalPagesR, p + 1))}>Next</button>
                 </div>
               </div>
             )}
