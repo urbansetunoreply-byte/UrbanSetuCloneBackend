@@ -1768,6 +1768,12 @@ export default function AdminAppointments() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 py-10 px-2 md:px-8 transition-colors duration-300">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
 
 
       <div className="max-w-7xl mx-auto mb-4 flex justify-end">
@@ -1922,8 +1928,9 @@ export default function AdminAppointments() {
                   </tr>
                 </thead>
                 <tbody>
-                  {archivedAppointmentsWithComments.map((appt) => (
+                  {archivedAppointmentsWithComments.map((appt, index) => (
                     <AdminAppointmentRow
+                      style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
                       key={appt._id}
                       appt={appt}
                       currentUser={currentUser}
@@ -2010,8 +2017,9 @@ export default function AdminAppointments() {
                   </tr>
                 </thead>
                 <tbody>
-                  {appointmentsWithComments.map((appt) => (
+                  {appointmentsWithComments.map((appt, index) => (
                     <AdminAppointmentRow
+                      style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
                       key={appt._id}
                       appt={appt}
                       currentUser={currentUser}

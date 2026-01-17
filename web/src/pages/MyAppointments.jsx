@@ -1221,6 +1221,12 @@ export default function MyAppointments() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-slate-900 py-10 px-2 md:px-8">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       {/* Chat Settings Modal */}
       <ChatSettingsModal
         isOpen={showChatSettings}
@@ -1384,8 +1390,9 @@ export default function MyAppointments() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredArchivedAppointments.map((appt) => (
+                  {filteredArchivedAppointments.map((appt, index) => (
                     <AppointmentRow
+                      style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
                       key={appt._id}
                       appt={appt}
                       currentUser={currentUser}
@@ -1462,8 +1469,9 @@ export default function MyAppointments() {
                   </tr>
                 </thead>
                 <tbody>
-                  {appointments.map((appt) => (
+                  {appointments.map((appt, index) => (
                     <AppointmentRow
+                      style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
                       key={appt._id}
                       appt={appt}
                       currentUser={currentUser}
