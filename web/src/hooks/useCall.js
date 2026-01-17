@@ -13,15 +13,12 @@ const DEFAULT_ICE_SERVERS = [
   { urls: 'stun:stun1.l.google.com:19302' }
 ];
 
+import { authenticatedFetch } from '../utils/csrf';
+
 // Helper to fetch TURN credentials securely
 const fetchIceServers = async () => {
   try {
-    const token = getAuthToken();
-    if (!token) return DEFAULT_ICE_SERVERS;
-
-    const response = await fetch(`${API_BASE_URL}/api/turn-credentials`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const response = await authenticatedFetch(`${API_BASE_URL}/api/turn-credentials`);
 
     if (response.ok) {
       const data = await response.json();

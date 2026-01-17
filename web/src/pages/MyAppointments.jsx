@@ -11,7 +11,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { socket } from "../utils/socket";
 import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
-import axios from 'axios';
+import { authenticatedFetch } from '../utils/csrf';
 import PaymentModal from '../components/PaymentModal';
 import { useCallContext } from '../contexts/CallContext';
 import CallHistoryModal from '../components/CallHistoryModal';
@@ -251,9 +251,9 @@ export default function MyAppointments() {
         setError(null);
 
         // First, fetch all appointments without pagination
-        const { data } = await axios.get(`${API_BASE_URL}/api/bookings/my`, {
-          withCredentials: true
-        });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/my`);
+        if (!res.ok) throw new Error('Failed to fetch appointments');
+        const data = await res.json();
 
         console.log('All appointments fetched:', data);
         const allAppts = data.appointments || data;
@@ -270,9 +270,9 @@ export default function MyAppointments() {
       // Fetch archived appointments for all users
       if (currentUser) {
         try {
-          const { data } = await axios.get(`${API_BASE_URL}/api/bookings/archived`, {
-            withCredentials: true
-          });
+          const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/archived`);
+          if (!res.ok) throw new Error('Failed to fetch archived appointments');
+          const data = await res.json();
           setArchivedAppointments(Array.isArray(data) ? data : []);
         } catch (err) {
           setArchivedAppointments([]);
@@ -662,9 +662,7 @@ export default function MyAppointments() {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/bookings/${chatIdFromUrl}`, {
-          credentials: 'include'
-        });
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${chatIdFromUrl}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -748,13 +746,15 @@ export default function MyAppointments() {
   const handleStatusUpdate = async (id, status) => {
     setActionLoading(id + status);
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/status`,
-        { status },
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === id ? { ...appt, status } : appt))
       );
@@ -792,13 +792,15 @@ export default function MyAppointments() {
     saleModalStore.close();
 
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/token-paid`,
-        {},
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${id}/sale/token-paid`, {
+        method: 'PATCH',
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === id ? { ...appt, saleStatus: 'token_paid' } : appt))
       );

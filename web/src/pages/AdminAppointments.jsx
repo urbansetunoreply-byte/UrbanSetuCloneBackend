@@ -20,7 +20,7 @@ import { useSoundEffects } from "../components/SoundEffects";
 import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
 import CallHistoryModal from '../components/CallHistoryModal';
-import axios from 'axios';
+import { authenticatedFetch } from '../utils/csrf';
 import ChatSettingsModal from '../components/ChatSettingsModal';
 import { useChatSettings } from '../hooks/useChatSettings';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -943,9 +943,9 @@ export default function AdminAppointments() {
   const fetchAppointments = useCallback(async () => {
     try {
       // Fetch all appointments without pagination
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings`, {
-        withCredentials: true
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings`);
+      if (!res.ok) throw new Error('Failed to fetch appointments');
+      const data = await res.json();
       const allAppts = data.appointments || data;
       setAllAppointments(allAppts);
       setLoading(false);
@@ -957,9 +957,9 @@ export default function AdminAppointments() {
 
   const fetchArchivedAppointments = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings/archived`, {
-        withCredentials: true
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/archived`);
+      if (!res.ok) throw new Error('Failed to fetch archived appointments');
+      const data = await res.json();
       setArchivedAppointments(data);
     } catch (err) {
       console.error("Failed to fetch archived appointments", err);
@@ -1381,13 +1381,15 @@ export default function AdminAppointments() {
     }
 
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/cancel`,
-        { reason: cancelReason },
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/cancel`, {
+        method: 'PATCH',
+        body: JSON.stringify({ reason: cancelReason })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
 
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === appointmentToHandle ? { ...appt, status: "cancelledByAdmin", cancelReason: cancelReason } : appt))
@@ -1411,9 +1413,7 @@ export default function AdminAppointments() {
     // Fetch payment status to check if refunded
     let paymentStatus = null;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${id}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/payments/history?appointmentId=${id}`);
       if (response.ok) {
         const data = await response.json();
         if (data.payments && data.payments.length > 0) {
@@ -1448,13 +1448,15 @@ export default function AdminAppointments() {
     }
 
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/reinitiate`,
-        {},
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/reinitiate`, {
+        method: 'PATCH',
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
 
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === appointmentToHandle ? { ...appt, status: "pending", cancelReason: "" } : appt))
@@ -1484,13 +1486,15 @@ export default function AdminAppointments() {
 
   const confirmArchive = async () => {
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/archive`,
-        {},
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/archive`, {
+        method: 'PATCH',
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
 
       // Remove from active appointments and add to archived
       const archivedAppt = appointments.find(appt => appt._id === appointmentToHandle);
@@ -1520,13 +1524,15 @@ export default function AdminAppointments() {
 
   const confirmUnarchive = async () => {
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/unarchive`,
-        {},
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/unarchive`, {
+        method: 'PATCH',
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw { response: { status: res.status, data: errorData } };
+      }
+      const data = await res.json();
 
       // Remove from archived appointments and add back to active
       const unarchivedAppt = archivedAppointments.find(appt => appt._id === appointmentToHandle);
@@ -6831,13 +6837,15 @@ function AdminAppointmentRow({
                               const isStarred = selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
                               setStarringSaving(true);
                               try {
-                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`,
-                                  { starred: !isStarred },
-                                  {
-                                    withCredentials: true,
-                                    headers: { 'Content-Type': 'application/json' }
-                                  }
-                                );
+                                const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions && selectedMessageForHeaderOptions._id}/star`, {
+                                  method: 'PATCH',
+                                  body: JSON.stringify({ starred: !isStarred })
+                                });
+                                if (!res.ok) {
+                                  const errorData = await res.json().catch(() => ({}));
+                                  throw { response: { status: res.status, data: errorData } };
+                                }
+                                const data = await res.json();
                                 // Update the local state
                                 setLocalComments(prev => {
                                   const updated = prev.map(c =>
@@ -10461,13 +10469,12 @@ function AdminAppointmentRow({
                                 onClick={async () => {
                                   setUnstarringMessageId(message._id);
                                   try {
-                                    const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`,
-                                      { starred: false },
-                                      {
-                                        withCredentials: true,
-                                        headers: { 'Content-Type': 'application/json' }
-                                      }
-                                    );
+                                    const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`, {
+                                      method: 'PATCH',
+                                      body: JSON.stringify({ starred: false })
+                                    });
+                                    if (!res.ok) throw new Error('Failed to unstar message');
+                                    const data = await res.json();
                                     // Remove from starred messages list
                                     setStarredMessages(prev => prev.filter(m => m._id !== message._id));
                                     // Update the main comments state
