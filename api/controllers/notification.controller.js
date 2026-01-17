@@ -98,9 +98,9 @@ export const getReportedNotifications = async (req, res, next) => {
       dateFilter.$lte = endDate;
     }
 
-    // Fetch this admin's notifications with date filter
+    // Fetch ALL notifications for these types (ignore userId to show global view for all admins)
+    // This ensures root admins and other admins see the same, complete list of reports
     const query = {
-      userId: req.user.id,
       title: { $in: ['Chat message reported', 'Chat conversation reported', 'Review Reported'] },
       ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
     };
@@ -108,13 +108,34 @@ export const getReportedNotifications = async (req, res, next) => {
     const notifications = await Notification.find(query).sort({ createdAt: -1 });
 
     // Parse to structured reports
-    let reports = notifications.map(n => {
+    let rawReports = notifications.map(n => {
       if (n.title === 'Review Reported') {
         return parseReviewReportFromNotification(n);
       } else {
         return parseReportFromNotification(n);
       }
     });
+
+    // Deduplicate reports (since notifications are broadcast to multiple admins, duplicates exist)
+    const uniqueReports = new Map();
+    rawReports.forEach(report => {
+      // Create a unique key based on the report content to merge duplicates
+      let uniqueKey;
+      if (report.type === 'review') {
+        // Review report key: Property + Reporter + Category + Details
+        uniqueKey = `review-${report.propertyName}-${report.reporter}-${report.category}-${report.details}`;
+      } else {
+        // Chat/Message report key: Type + Reporter + Reason + Appointment + MessageId/Excerpt
+        uniqueKey = `${report.type}-${report.reporter}-${report.reason}-${report.appointmentRef}-${report.messageId || 'conv'}-${report.messageExcerpt || ''}`;
+      }
+
+      // Only keep the first occurrence (closest to sort order, or arbitrary)
+      if (!uniqueReports.has(uniqueKey)) {
+        uniqueReports.set(uniqueKey, report);
+      }
+    });
+
+    let reports = Array.from(uniqueReports.values());
 
     // Apply filters
     if (appointmentId) {
