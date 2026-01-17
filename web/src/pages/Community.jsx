@@ -573,8 +573,8 @@ export default function Community() {
     const renderMentionsPanel = () => {
         if (!showMentionSuggestions.show || propertySuggestions.length === 0) return null;
         return (
-            <div className="absolute bottom-full left-0 w-64 bg-white shadow-xl rounded-lg border border-gray-200 mb-2 z-[100] overflow-hidden animate-fade-in-up" style={{ opacity: 1 }}>
-                <div className="bg-gray-50 px-3 py-2 border-b border-gray-100 flex items-center justify-between">
+            <div className="absolute bottom-full left-0 w-64 bg-white dark:bg-gray-900 shadow-xl rounded-lg border border-gray-200 dark:border-gray-700 mb-2 z-[100] overflow-hidden animate-fade-in-up" style={{ opacity: 1 }}>
+                <div className="bg-gray-50 dark:bg-gray-800 px-3 py-2 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Mention Property</span>
                     {mentionSearchLoading && <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>}
                 </div>
@@ -583,12 +583,12 @@ export default function Community() {
                         <div
                             key={prop._id}
                             onClick={() => handleMentionSelect(prop)}
-                            className={`px-3 py-2 cursor-pointer transition-colors flex items-center gap-3 ${idx === selectedMentionIndex ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                            className={`px-3 py-2 cursor-pointer transition-colors flex items-center gap-3 ${idx === selectedMentionIndex ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                         >
                             <img src={prop.coverImage || prop.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3'} className="w-8 h-8 rounded object-cover" alt="" />
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-800 truncate">{prop.name}</p>
-                                <p className="text-[10px] text-gray-500 truncate">{prop.location?.city || 'India'}</p>
+                                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{prop.name}</p>
+                                <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{prop.location?.city || 'India'}</p>
                             </div>
                         </div>
                     ))}
