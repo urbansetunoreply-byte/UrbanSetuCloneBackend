@@ -163,14 +163,20 @@ const AdminHelpCenter = () => {
 
     return (
         <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Help Center Management</h1>
-                    <p className="text-gray-500 dark:text-gray-400">Manage help articles and guides</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                            <FaEdit />
+                        </span>
+                        Help Center Management
+                    </h1>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1 ml-11">Manage help articles, guides, and user feedback</p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-500/30 hover:scale-105 font-medium"
                 >
                     <FaPlus /> Create Article
                 </button>
@@ -179,7 +185,10 @@ const AdminHelpCenter = () => {
             {/* Top Performing Articles (Popularity Metrics) */}
             {articles.length > 0 && (
                 <div className="mb-8">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Top Performing Articles</h2>
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
+                        Top Performing Articles
+                    </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {[...articles]
                             .map(a => ({
@@ -189,20 +198,27 @@ const AdminHelpCenter = () => {
                             .sort((a, b) => b.score - a.score)
                             .slice(0, 4)
                             .map((article) => (
-                                <div key={article._id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-full blur-xl translate-x-1/2 -translate-y-1/2"></div>
-                                    <h3 className="font-semibold text-gray-800 dark:text-white truncate mb-2" title={article.title}>{article.title}</h3>
-                                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                                        <div className="flex items-center gap-1">
-                                            <FaEye className="text-blue-500" /> {article.views}
+                                <div key={article._id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                                    <h3 className="font-semibold text-gray-800 dark:text-white truncate mb-3 relative z-10 pr-2" title={article.title}>{article.title}</h3>
+
+                                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 relative z-10 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">
+                                        <div className="flex items-center gap-1.5" title="Views">
+                                            <FaEye className="text-blue-500" /> <span className="font-medium">{article.views}</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-green-600 dark:text-green-400 font-medium">+{article.helpfulCount}</span>
-                                            <span className="text-red-500 font-medium">-{article.notHelpfulCount}</span>
+                                        <div className="h-3 w-px bg-gray-300 dark:bg-gray-600"></div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-green-600 dark:text-green-400 font-bold flex items-center gap-0.5" title="Helpful votes">
+                                                <FaCheck className="text-[10px]" /> {article.helpfulCount}
+                                            </span>
+                                            <span className="text-red-500 font-bold flex items-center gap-0.5" title="Not helpful votes">
+                                                <FaTimes className="text-[10px]" /> {article.notHelpfulCount}
+                                            </span>
                                         </div>
                                     </div>
-                                    <div className="mt-2 text-xs font-medium text-blue-600 dark:text-blue-400">
-                                        Score: {article.score}
+                                    <div className="mt-3 text-xs font-semibold text-blue-600 dark:text-blue-400 flex justify-between items-center">
+                                        <span>Impact Score</span>
+                                        <span className="bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded text-blue-700 dark:text-blue-300">{article.score}</span>
                                     </div>
                                 </div>
                             ))}
@@ -212,13 +228,15 @@ const AdminHelpCenter = () => {
 
             {/* Search */}
             <div className="mb-6 relative">
-                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FaSearch className="text-gray-400" />
+                </div>
                 <input
                     type="text"
-                    placeholder="Search articles..."
+                    placeholder="Search articles by title or category..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm transition-all"
                 />
             </div>
 

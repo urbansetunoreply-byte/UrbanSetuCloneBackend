@@ -1132,6 +1132,15 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                     Sign Up
                                 </Link>
                             </p>
+                            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                                Trouble signing in?{" "}
+                                <Link
+                                    to="/help-center"
+                                    className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
+                                >
+                                    Visit our Help Center
+                                </Link>
+                            </p>
                         </div>
                     </div>
 

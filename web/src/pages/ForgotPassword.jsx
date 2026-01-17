@@ -803,6 +803,15 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     Sign In
                   </Link>
                 </p>
+                <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                  Trouble verifying email?{" "}
+                  <Link
+                    to="/help-center"
+                    className="text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 font-medium hover:underline transition-colors"
+                  >
+                    Visit our Help Center
+                  </Link>
+                </p>
               </div>
 
               <SecureBadge />
@@ -1116,6 +1125,15 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     }`}
                 >
                   Back to Sign In
+                </Link>
+              </p>
+              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                Trouble resetting password?{" "}
+                <Link
+                  to="/help-center"
+                  className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium hover:underline transition-colors"
+                >
+                  Visit our Help Center
                 </Link>
               </p>
             </div>

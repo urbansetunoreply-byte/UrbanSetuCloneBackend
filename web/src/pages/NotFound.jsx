@@ -74,7 +74,12 @@ export default function NotFound() {
 
         {/* Helpful Links / Footer */}
         <div className="mt-10 pt-8 border-t border-gray-100 dark:border-gray-700">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Looking for something specific?</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Need help finding your way?{" "}
+            <Link to="/help-center" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline">
+              Visit our Help Center
+            </Link>
+          </p>
           <div className="flex flex-wrap justify-center gap-4 text-sm font-medium text-blue-600 dark:text-blue-400">
             <Link to="/about" className="hover:text-blue-700 dark:hover:text-blue-300 hover:underline">About Us</Link>
             <span className="text-gray-300 dark:text-gray-600">•</span>

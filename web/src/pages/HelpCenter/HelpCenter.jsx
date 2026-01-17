@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaSearch, FaArrowRight, FaChevronLeft, FaEdit } from 'react-icons/fa';
+import { FaSearch, FaArrowRight, FaChevronLeft, FaEdit, FaBookOpen, FaFire, FaClock, FaCheckCircle, FaTag } from 'react-icons/fa';
 import { helpCategories } from '../../utils/helpCategories';
 
 const HelpCenter = () => {
@@ -19,8 +19,6 @@ const HelpCenter = () => {
             if (category) url += `&category=${encodeURIComponent(category)}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
 
-            // If no search and no category, we are likely on the landing page "Popular Articles" section
-            // So we explicitly ask for popular sort
             if (!category && !search) {
                 url += `&sort=popular`;
             }
@@ -36,193 +34,278 @@ const HelpCenter = () => {
     };
 
     useEffect(() => {
-        // Initial load: fetch recent/popular (no filter)
         fetchArticles();
     }, []);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
+    const handleSearch = () => {
         fetchArticles(selectedCategory?.id || '', searchTerm);
-    };
-
-    const handleCategoryClick = (category) => {
-        setSelectedCategory(category);
-        setSearchTerm('');
-        fetchArticles(category.id, '');
     };
 
     const { currentUser } = useSelector((state) => state.user);
 
-    const handleBackToHome = () => {
-        setSelectedCategory(null);
-        setSearchTerm('');
-        fetchArticles();
-    };
-
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 font-sans">
             {/* Hero Section */}
-            <div className="bg-blue-600 dark:bg-blue-800 py-16 px-4 sm:px-6 lg:px-8 text-center transition-colors relative">
+            <div className="bg-gradient-to-br from-blue-600 to-purple-700 py-20 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
+                {/* Background elements */}
+                <div className="absolute inset-0 opacity-20 pointer-events-none">
+                    <svg className="w-full h-full" fill="none" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+                        <path d="M0 0h100v100H0z" fill="url(#grid)" />
+                        <defs>
+                            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                <path d="M10 0L0 0 0 10" fill="none" stroke="white" strokeOpacity="0.1" strokeWidth="0.5" />
+                            </pattern>
+                        </defs>
+                    </svg>
+                </div>
+                <div className="absolute top-0 left-0 w-48 h-48 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob pointer-events-none"></div>
+                <div className="absolute top-0 right-0 w-48 h-48 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000 pointer-events-none"></div>
+                <div className="absolute bottom-0 left-1/2 w-48 h-48 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000 pointer-events-none"></div>
+
                 {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
                     <Link
                         to="/admin/help-center"
-                        className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition-all text-sm font-medium flex items-center gap-2"
+                        className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition-all text-sm font-medium flex items-center gap-2 z-20"
                     >
                         <FaEdit /> Manage Help Center
                     </Link>
                 )}
-                <h1 className="text-3xl font-extrabold text-white sm:text-4xl mb-6">
-                    How can we help you?
-                </h1>
-                <div className="max-w-2xl mx-auto relative">
-                    <form onSubmit={handleSearch}>
-                        <div className="relative">
-                            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search for answers..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-4 rounded-full shadow-lg border-none focus:ring-4 focus:ring-blue-400 dark:focus:ring-blue-600 focus:outline-none text-gray-900"
-                            />
-                            <button
-                                type="submit"
-                                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition-colors text-sm font-semibold"
-                            >
-                                Search
-                            </button>
+
+                <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
+                    {/* Brand Logo / Icon */}
+                    <div className="flex justify-center mb-6">
+                        <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl animate-float">
+                            <FaBookOpen className="text-5xl text-yellow-400 drop-shadow-lg" />
                         </div>
-                    </form>
+                    </div>
+
+                    <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight drop-shadow-md">
+                        <span className="bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent">How can we</span>
+                        <br />
+                        <span className="text-white">help you today?</span>
+                    </h1>
+
+                    <p className="text-lg md:text-xl text-blue-100 mb-10 max-w-2xl mx-auto font-light">
+                        Find advice, answers, and support from the <span className="font-semibold text-yellow-300">UrbanSetu Team</span>.
+                    </p>
+
+                    <div className="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl max-w-2xl mx-auto flex items-center transform transition-all hover:scale-[1.01] focus-within:ring-4 focus-within:ring-blue-400/30">
+                        <FaSearch className="text-gray-400 ml-4 text-xl" />
+                        <input
+                            type="text"
+                            placeholder="Search for answers (e.g. 'reset password')"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            className="w-full px-4 py-3 bg-transparent text-gray-900 dark:text-white border-none focus:ring-0 placeholder-gray-400 text-lg outline-none"
+                        />
+                        <button
+                            onClick={handleSearch}
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl"
+                        >
+                            Search
+                        </button>
+                    </div>
+
+                    {/* Popular Tags / Quick Links */}
+                    <div className="mt-8 flex flex-wrap justify-center gap-3">
+                        <span className="text-white/80 text-sm font-medium mr-2 self-center">Popular:</span>
+                        {['Login Issue', 'Account', 'Payment', 'Listings', 'Safety'].map((tag) => (
+                            <button
+                                key={tag}
+                                onClick={() => { setSearchTerm(tag); handleSearch(); }}
+                                className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full text-sm text-white transition-all backdrop-blur-sm"
+                            >
+                                {tag}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                {selectedCategory || searchTerm ? (
-                    /* Articles List View */
-                    <div>
-                        <button
-                            onClick={handleBackToHome}
-                            className="flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-8 font-medium"
-                        >
-                            <FaChevronLeft className="mr-2" />
-                            Back to Help Center
-                        </button>
-
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                            {selectedCategory ? selectedCategory.title : `Search Results for "${searchTerm}"`}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 -mt-20 relative z-20">
+                {/* Categories Grid - Only show if NO search term is active */}
+                {!searchTerm && (
+                    <div className="mb-20">
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-10 text-center flex items-center justify-center gap-3">
+                            <span className="w-12 h-1 bg-blue-600 rounded-full"></span>
+                            Browse by Category
+                            <span className="w-12 h-1 bg-blue-600 rounded-full"></span>
                         </h2>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                            {helpCategories.map((cat, index) => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => { setSelectedCategory(cat.title); setSearchTerm(''); }}
+                                    className={`
+                                        group relative p-6 rounded-2xl border transition-all duration-300 flex flex-col items-center gap-4 text-center overflow-hidden
+                                        ${selectedCategory === cat.title
+                                            ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
+                                            : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-xl hover:-translate-y-1'
+                                        }
+                                    `}
+                                >
+                                    <div className={`
+                                        p-4 rounded-full text-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3
+                                        ${selectedCategory === cat.title ? 'bg-white/20' : 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400'}
+                                    `}>
+                                        {cat.icon}
+                                    </div>
+                                    <span className="font-semibold">{cat.title}</span>
+                                    {selectedCategory === cat.title && (
+                                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Articles Section */}
+                <div className="flex flex-col lg:flex-row gap-12">
+                    {/* Main Content Area */}
+                    <div className="flex-1">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                {searchTerm ? (
+                                    <>
+                                        <FaSearch className="text-blue-500" />
+                                        Search Results for "{searchTerm}"
+                                    </>
+                                ) : (
+                                    <>
+                                        {selectedCategory ? (
+                                            <>
+                                                <span className="text-3xl text-blue-500">
+                                                    {helpCategories.find(c => c.title === selectedCategory)?.icon}
+                                                </span>
+                                                {selectedCategory}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaFire className="text-orange-500" />
+                                                Popular Articles
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </h2>
+                            {(searchTerm || selectedCategory) && (
+                                <button
+                                    onClick={() => { setSearchTerm(''); setSelectedCategory(null); fetchArticles(); }}
+                                    className="text-blue-600 hover:underline text-sm font-medium"
+                                >
+                                    Clear Filters
+                                </button>
+                            )}
+                        </div>
 
                         {loading ? (
                             <div className="space-y-4 animate-pulse">
                                 {[1, 2, 3].map((i) => (
-                                    <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                                    <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                                         <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
                                         <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
                                         <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-                                        <div className="mt-4 flex gap-4">
-                                            <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                                            <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                                        </div>
                                     </div>
                                 ))}
                             </div>
                         ) : articles.length > 0 ? (
                             <div className="space-y-4">
-                                {articles.map((article) => (
+                                {articles.map((article, index) => (
                                     <Link
-                                        key={article._id}
                                         to={`/help-center/article/${article.slug}`}
-                                        className="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow dark:text-gray-100"
+                                        key={article._id}
+                                        className="group block bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
                                     >
-                                        <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                                            {article.title}
-                                        </h3>
-                                        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">
-                                            {article.description}
-                                        </p>
-                                        <div className="mt-2 flex items-center text-xs text-gray-400 dark:text-gray-500 gap-4">
-                                            <span>{article.category}</span>
-                                            <span>{new Date(article.updatedAt).toLocaleDateString()}</span>
-                                            <span>{article.views} views</span>
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top"></div>
+
+                                        <div className="flex justify-between items-start gap-4">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+                                                        {article.category}
+                                                    </span>
+                                                    {article.tags && article.tags.length > 0 && (
+                                                        <span className="hidden sm:inline-flex items-center text-xs text-gray-400">
+                                                            <FaTag className="mr-1 text-[10px]" />
+                                                            {article.tags.slice(0, 2).join(', ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                    {article.title}
+                                                </h3>
+
+                                                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-4 leading-relaxed">
+                                                    {article.description}
+                                                </p>
+
+                                                <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
+                                                    <span className="flex items-center gap-1">
+                                                        <FaClock /> 5 min read
+                                                    </span>
+                                                    <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                                        <FaCheckCircle className="text-[10px]" /> Update verified
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                                <FaArrowRight className="transform group-hover:translate-x-1 transition-transform" />
+                                            </div>
                                         </div>
                                     </Link>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-12">
-                                <p className="text-gray-500 dark:text-gray-400 text-lg">No articles found.</p>
-                                <button onClick={handleBackToHome} className="mt-4 text-blue-600 dark:text-blue-400 hover:underline">
-                                    Browse all categories
-                                </button>
+                            <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700">
+                                <div className="bg-gray-100 dark:bg-gray-700 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <FaSearch className="text-3xl text-gray-400" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No answers found</h3>
+                                <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                                    We couldn't find any articles matching your search. Try different keywords or browse categories.
+                                </p>
                             </div>
                         )}
                     </div>
-                ) : (
-                    /* Categories Grid View */
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-                            {helpCategories.map((category) => (
-                                <button
-                                    key={category.id}
-                                    onClick={() => handleCategoryClick(category)}
-                                    className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left border border-gray-100 dark:border-gray-700 h-full flex flex-col"
-                                >
-                                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4">
-                                        <category.icon className="text-blue-600 dark:text-blue-400 text-2xl" />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                                        {category.title}
-                                    </h3>
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm flex-grow">
-                                        {category.description}
-                                    </p>
-                                </button>
-                            ))}
-                        </div>
 
-                        {/* Popular Articles Section */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Popular Articles</h2>
-                            {loading ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse">
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <div key={i} className="h-12 bg-gray-100 dark:bg-gray-700 rounded-lg"></div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {articles.slice(0, 6).map((article) => (
-                                        <Link
-                                            key={article._id}
-                                            to={`/help-center/article/${article.slug}`}
-                                            className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg group transition-colors"
-                                        >
-                                            <div className="mr-3 text-gray-300 dark:text-gray-600 group-hover:text-blue-500 dark:group-hover:text-blue-400">
-                                                <FaArrowRight className="w-4 h-4" />
-                                            </div>
-                                            <span className="text-gray-700 dark:text-gray-200 font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                                {article.title}
-                                            </span>
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Contact Support CTA */}
-                        <div className="mt-16 text-center">
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                Still can't find what you're looking for?
-                            </p>
-                            <Link
-                                to="/contact" // Standard contact page
-                                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                            >
+                    {/* Sidebar / Quick Links only on Desktop */}
+                    <div className="hidden lg:block w-80 space-y-8 sticky top-24 self-start">
+                        <div className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl p-6 text-white text-center shadow-lg relative overflow-hidden">
+                            <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                            <h3 className="text-xl font-bold mb-2 relative z-10">Still need help?</h3>
+                            <p className="text-blue-100 text-sm mb-6 relative z-10 w-3/4 mx-auto">Our support team is available 24/7 to assist you with any issues.</p>
+                            <Link to="/contact" className="inline-block w-full py-3 bg-white text-blue-600 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-md">
                                 Contact Support
                             </Link>
                         </div>
-                    </>
-                )}
+
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-4">Quick Links</h3>
+                            <ul className="space-y-3">
+                                <li>
+                                    <Link to="/about" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2">
+                                        <FaArrowRight className="text-xs" /> About UrbanSetu
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/privacy-policy" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2">
+                                        <FaArrowRight className="text-xs" /> Privacy Policy
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/terms-and-conditions" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2">
+                                        <FaArrowRight className="text-xs" /> Terms of Service
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
