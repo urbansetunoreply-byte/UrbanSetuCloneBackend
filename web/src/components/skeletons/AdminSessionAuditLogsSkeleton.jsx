@@ -18,7 +18,10 @@ export default function AdminSessionAuditLogsSkeleton() {
                                 <div className="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded transition-colors duration-300"></div>
                                 <div className="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded transition-colors duration-300"></div>
                             </div>
-                            <div className="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                            <div className="flex gap-2">
+                                <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                <div className="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
