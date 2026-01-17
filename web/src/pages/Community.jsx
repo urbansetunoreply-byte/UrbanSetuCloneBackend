@@ -532,6 +532,10 @@ export default function Community() {
             setCommentText(prev => ({ ...prev, [id]: value }));
         } else if (type === 'reply') {
             setReplyText(value);
+        } else if (type === 'edit-post') {
+            setEditingPost(prev => ({ ...prev, content: value }));
+        } else if (type === 'edit-comment' || type === 'edit-reply') {
+            setEditingContent(prev => ({ ...prev, content: value }));
         }
 
         if (lastAtIndex !== -1) {
@@ -552,6 +556,8 @@ export default function Community() {
         if (type === 'post') content = newPost.content;
         else if (type === 'comment') content = commentText[id] || '';
         else if (type === 'reply') content = replyText;
+        else if (type === 'edit-post') content = editingPost.content;
+        else if (type === 'edit-comment' || type === 'edit-reply') content = editingContent.content;
 
         const lastAtIndex = content.lastIndexOf('@' + query);
         const beforeAt = content.substring(0, lastAtIndex);
@@ -565,6 +571,10 @@ export default function Community() {
             setCommentText(prev => ({ ...prev, [id]: newContent }));
         } else if (type === 'reply') {
             setReplyText(newContent);
+        } else if (type === 'edit-post') {
+            setEditingPost(prev => ({ ...prev, content: newContent }));
+        } else if (type === 'edit-comment' || type === 'edit-reply') {
+            setEditingContent(prev => ({ ...prev, content: newContent }));
         }
 
         setShowMentionSuggestions({ show: false, query: '', type: null, id: null });
@@ -1214,9 +1224,10 @@ export default function Community() {
                                         {editingPost?.id === post._id ? (
                                             <form onSubmit={(e) => handleUpdatePost(e, post._id)} className="w-full mb-2">
                                                 <div className="relative">
+                                                    {showMentionSuggestions.show && showMentionSuggestions.id === post._id && showMentionSuggestions.type === 'edit-post' && renderMentionsPanel()}
                                                     <textarea
                                                         value={editingPost.content}
-                                                        onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
+                                                        onChange={(e) => handleInputChange(e, 'edit-post', post._id)}
                                                         className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white min-h-[100px]"
                                                         autoFocus
                                                     />
@@ -1358,9 +1369,10 @@ export default function Community() {
                                                                     {editingContent.id === comment._id && editingContent.type === 'comment' ? (
                                                                         <form onSubmit={(e) => handleUpdateComment(e, post._id, comment._id)} className="w-full mb-2">
                                                                             <div className="relative">
+                                                                                {showMentionSuggestions.show && showMentionSuggestions.id === comment._id && showMentionSuggestions.type === 'edit-comment' && renderMentionsPanel()}
                                                                                 <textarea
                                                                                     value={editingContent.content}
-                                                                                    onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                                                                                    onChange={(e) => handleInputChange(e, 'edit-comment', comment._id)}
                                                                                     className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white min-h-[60px]"
                                                                                     autoFocus
                                                                                 />
@@ -1623,7 +1635,7 @@ export default function Community() {
                                                                                                                 <div className="relative">
                                                                                                                     <textarea
                                                                                                                         value={editingContent.content}
-                                                                                                                        onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                                                                                                                        onChange={(e) => handleInputChange(e, 'edit-reply', reply._id)}
                                                                                                                         className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-xs focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white min-h-[50px]"
                                                                                                                         autoFocus
                                                                                                                     />

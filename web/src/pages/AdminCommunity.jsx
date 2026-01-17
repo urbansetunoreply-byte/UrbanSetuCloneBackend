@@ -948,6 +948,10 @@ export default function AdminCommunity() {
             setCommentText(prev => ({ ...prev, [id]: value }));
         } else if (type === 'reply') {
             setReplyText(value);
+        } else if (type === 'edit-post') {
+            setEditingPost(prev => ({ ...prev, content: value }));
+        } else if (type === 'edit-comment' || type === 'edit-reply') {
+            setEditingContent(prev => ({ ...prev, content: value }));
         }
 
         if (lastAtIndex !== -1) {
@@ -970,6 +974,8 @@ export default function AdminCommunity() {
         if (contextType === 'post') currentValue = newPost.content;
         else if (contextType === 'comment') currentValue = commentText[contextId] || '';
         else if (contextType === 'reply') currentValue = replyText;
+        else if (contextType === 'edit-post') currentValue = editingPost.content;
+        else if (contextType === 'edit-comment' || contextType === 'edit-reply') currentValue = editingContent.content;
 
         const textBeforeAt = currentValue.substring(0, currentValue.lastIndexOf('@' + query));
         const textAfterAt = currentValue.substring(currentValue.lastIndexOf('@' + query) + 1 + query.length);
@@ -983,6 +989,10 @@ export default function AdminCommunity() {
             setCommentText(prev => ({ ...prev, [contextId]: newValue }));
         } else if (contextType === 'reply') {
             setReplyText(newValue);
+        } else if (contextType === 'edit-post') {
+            setEditingPost(prev => ({ ...prev, content: newValue }));
+        } else if (contextType === 'edit-comment' || contextType === 'edit-reply') {
+            setEditingContent(prev => ({ ...prev, content: newValue }));
         }
 
         setShowMentionSuggestions({ show: false, query: '', type: null, id: null });
@@ -1253,9 +1263,10 @@ export default function AdminCommunity() {
                                         {editingPost?.id === post._id ? (
                                             <form onSubmit={(e) => handleUpdatePost(e, post._id)} className="w-full mb-2">
                                                 <div className="relative">
+                                                    {showMentionSuggestions.show && showMentionSuggestions.id === post._id && showMentionSuggestions.type === 'edit-post' && renderMentionsPanel("bottom-full mb-2")}
                                                     <textarea
                                                         value={editingPost.content}
-                                                        onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
+                                                        onChange={(e) => handleInputChange(e, 'edit-post', post._id)}
                                                         className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white transition-colors min-h-[100px]"
                                                         autoFocus
                                                     />
@@ -1417,9 +1428,10 @@ export default function AdminCommunity() {
                                                                                 className="hidden" // Dummy input to prevent auto-focus issues
                                                                             />
                                                                             <div className="relative">
+                                                                                {showMentionSuggestions.show && showMentionSuggestions.id === comment._id && showMentionSuggestions.type === 'edit-comment' && renderMentionsPanel("bottom-full mb-2")}
                                                                                 <textarea
                                                                                     value={editingContent.content}
-                                                                                    onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                                                                                    onChange={(e) => handleInputChange(e, 'edit-comment', comment._id)}
                                                                                     className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm focus:outline-none focus:border-blue-500 min-h-[60px] text-gray-900 dark:text-white transition-colors"
                                                                                     autoFocus
                                                                                 />
@@ -1661,9 +1673,10 @@ export default function AdminCommunity() {
                                                                                                             <form onSubmit={(e) => handleUpdateReply(e, post._id, comment._id, reply._id)} className="w-full mb-2">
                                                                                                                 {/* ... (keep form same) ... */}
                                                                                                                 <div className="relative">
+                                                                                                                    {showMentionSuggestions.show && showMentionSuggestions.id === reply._id && showMentionSuggestions.type === 'edit-reply' && renderMentionsPanel("bottom-full mb-2")}
                                                                                                                     <textarea
                                                                                                                         value={editingContent.content}
-                                                                                                                        onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                                                                                                                        onChange={(e) => handleInputChange(e, 'edit-reply', reply._id)}
                                                                                                                         className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-xs focus:outline-none focus:border-blue-500 min-h-[50px] text-gray-900 dark:text-white transition-colors"
                                                                                                                         autoFocus
                                                                                                                     />
