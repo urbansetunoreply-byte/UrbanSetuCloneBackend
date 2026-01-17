@@ -1479,7 +1479,7 @@ export default function AdminReviews() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">To Date</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
                     <input
                       type="date"
                       max={new Date().toISOString().split('T')[0]}
@@ -1489,7 +1489,7 @@ export default function AdminReviews() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Reporter</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reporter</label>
                     <input
                       type="text"
                       placeholder="Reporter"
@@ -1499,7 +1499,7 @@ export default function AdminReviews() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
                     <input
                       type="text"
                       placeholder="Search..."
@@ -1600,7 +1600,7 @@ export default function AdminReviews() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="text-sm text-gray-600 mb-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Showing {filteredReports.length} of {reports.length} report{reports.length !== 1 ? 's' : ''}
                   </div>
                   {filteredReports.map((report, index) => (

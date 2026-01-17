@@ -263,57 +263,27 @@ export const getReviewReports = async (req, res, next) => {
     }
 
     // Fetch review report notifications
-    let query;
-    if (req.user.role === 'rootadmin') {
-      // Root admins see all review reports (notifications sent to any admin)
-      query = {
-        title: 'Review Reported',
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
-      };
-    } else {
-      // Regular admins see only reports assigned to them
-      query = {
-        userId: req.user.id,
-        title: 'Review Reported',
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
-      };
-    }
-
-    // console.log('User role:', req.user.role);
-    // console.log('Query for notifications:', JSON.stringify(query, null, 2));
+    // Admins and Root Admins should see the same global list of reports
+    const query = {
+      title: 'Review Reported',
+      ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
+    };
 
     const notifications = await Notification.find(query).sort({ createdAt: -1 });
-    // console.log('Found notifications:', notifications.length);
-
-    // Additional debugging for root admin
-    if (req.user.role === 'rootadmin') {
-      const totalReviewReports = await Notification.countDocuments({ title: 'Review Reported' });
-      // console.log('Total review reports in system:', totalReviewReports);
-      // console.log('Reports found for root admin:', notifications.length);
-    }
 
     // Parse to structured reports
     let reports = notifications.map(parseReviewReportFromNotification);
 
-    // Debug: Log first notification to see what's stored
-    // Debug: Log first notification to see what's stored
-    /* if (notifications.length > 0) {
-      console.log('First notification:', JSON.stringify(notifications[0], null, 2));
-    } */
-
-    // Deduplicate reports for root admin (same review can be reported multiple times to different admins)
-    if (req.user.role === 'rootadmin') {
-      const uniqueReports = new Map();
-      reports.forEach(report => {
-        // Use reviewId + reporterId + createdAt as unique key to avoid duplicates
-        const uniqueKey = `${report.reviewId || 'no-review'}-${report.reporterId || 'no-reporter'}-${report.createdAt}`;
-        if (!uniqueReports.has(uniqueKey)) {
-          uniqueReports.set(uniqueKey, report);
-        }
-      });
-      reports = Array.from(uniqueReports.values());
-      // console.log('Deduplicated reports for root admin:', reports.length, 'from', notifications.length, 'notifications');
-    }
+    // Deduplicate reports (same review can be reported multiple times to different admins)
+    const uniqueReports = new Map();
+    reports.forEach(report => {
+      // Use reviewId + reporterId + createdAt as unique key to avoid duplicates
+      const uniqueKey = `${report.reviewId || 'no-review'}-${report.reporterId || 'no-reporter'}-${report.createdAt}`;
+      if (!uniqueReports.has(uniqueKey)) {
+        uniqueReports.set(uniqueKey, report);
+      }
+    });
+    reports = Array.from(uniqueReports.values());
 
     // Enhance reports with additional reporter details
     let enhancedReports = await Promise.all(reports.map(async (report) => {
@@ -472,57 +442,27 @@ export const getPropertyReports = async (req, res, next) => {
     }
 
     // Fetch property report notifications
-    let query;
-    if (req.user.role === 'rootadmin') {
-      // Root admins see all property reports (notifications sent to any admin)
-      query = {
-        title: 'Property Reported',
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
-      };
-    } else {
-      // Regular admins see only reports assigned to them
-      query = {
-        userId: req.user.id,
-        title: 'Property Reported',
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
-      };
-    }
-
-    // console.log('User role:', req.user.role);
-    // console.log('Query for property notifications:', JSON.stringify(query, null, 2));
+    // Admins and Root Admins should see the same global list of reports
+    const query = {
+      title: 'Property Reported',
+      ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
+    };
 
     const notifications = await Notification.find(query).sort({ createdAt: -1 });
-    // console.log('Found property notifications:', notifications.length);
-
-    // Additional debugging for root admin
-    if (req.user.role === 'rootadmin') {
-      const totalPropertyReports = await Notification.countDocuments({ title: 'Property Reported' });
-      // console.log('Total property reports in system:', totalPropertyReports);
-      // console.log('Reports found for root admin:', notifications.length);
-    }
 
     // Parse to structured reports
     let reports = notifications.map(parsePropertyReportFromNotification);
 
-    // Debug: Log first notification to see what's stored
-    // Debug: Log first notification to see what's stored
-    /* if (notifications.length > 0) {
-      console.log('First property notification:', JSON.stringify(notifications[0], null, 2));
-    } */
-
-    // Deduplicate reports for root admin (same property can be reported multiple times to different admins)
-    if (req.user.role === 'rootadmin') {
-      const uniqueReports = new Map();
-      reports.forEach(report => {
-        // Use listingId + reporterId + createdAt as unique key to avoid duplicates
-        const uniqueKey = `${report.listingId || 'no-listing'}-${report.reporterId || 'no-reporter'}-${report.createdAt}`;
-        if (!uniqueReports.has(uniqueKey)) {
-          uniqueReports.set(uniqueKey, report);
-        }
-      });
-      reports = Array.from(uniqueReports.values());
-      // console.log('Deduplicated property reports for root admin:', reports.length, 'from', notifications.length, 'notifications');
-    }
+    // Deduplicate reports (same property can be reported multiple times to different admins)
+    const uniqueReports = new Map();
+    reports.forEach(report => {
+      // Use listingId + reporterId + createdAt as unique key to avoid duplicates
+      const uniqueKey = `${report.listingId || 'no-listing'}-${report.reporterId || 'no-reporter'}-${report.createdAt}`;
+      if (!uniqueReports.has(uniqueKey)) {
+        uniqueReports.set(uniqueKey, report);
+      }
+    });
+    reports = Array.from(uniqueReports.values());
 
     // Enhance reports with additional reporter details
     let enhancedReports = await Promise.all(reports.map(async (report) => {
