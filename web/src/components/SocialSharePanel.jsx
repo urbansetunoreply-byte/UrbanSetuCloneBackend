@@ -35,14 +35,14 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       icon: <FaWhatsapp />,
       color: 'bg-[#25D366]',
       hover: 'hover:bg-[#128C7E]',
-      link: `https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`
+      link: `https://wa.me/?text=${encodeURIComponent(`${title}\n${description}\n${url}`)}`
     },
     {
       name: 'Twitter',
       icon: <FaTwitter />,
       color: 'bg-[#1DA1F2]',
       hover: 'hover:bg-[#0c85d0]',
-      link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`
+      link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${title}\n${description}`)}`
     },
     {
       name: 'LinkedIn',
@@ -56,7 +56,7 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       icon: <FaTelegram />,
       color: 'bg-[#0088cc]',
       hover: 'hover:bg-[#006699]',
-      link: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`
+      link: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${title}\n${description}`)}`
     },
     {
       name: 'Facebook',

@@ -13,6 +13,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { useHeader } from '../contexts/HeaderContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmationModal from '../components/ConfirmationModal';
+import SocialSharePanel from '../components/SocialSharePanel';
 
 const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -63,6 +64,14 @@ export default function RoutePlanner() {
     message: '',
     onConfirm: () => { },
     isDestructive: false
+  });
+
+  // Share Panel State
+  const [showSharePanel, setShowSharePanel] = useState(false);
+  const [shareConfig, setShareConfig] = useState({
+    url: '',
+    title: '',
+    description: ''
   });
 
   const mapRef = useRef(null);
@@ -841,29 +850,21 @@ export default function RoutePlanner() {
   };
 
   // Share route
-  const shareRoute = async () => {
+  const shareRoute = () => {
     if (!routeData) {
       toast.error('No route to share');
       return;
     }
 
-    const shareData = {
-      title: 'Route from UrbanSetu',
-      text: `Check out this route: ${stops.filter(s => s.address).map(s => s.address).join(' → ')}`,
-      url: window.location.href
-    };
+    const stopsList = stops.filter(s => s.address).map(s => s.address.split(',')[0]).join(' → ');
+    const description = `Route Details: ${stopsList}.\nDistance: ${routeStats?.distance} km • Duration: ${routeStats?.duration} min.\nPlan your trip with UrbanSetu!`;
 
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-        toast.success('Route shared successfully!');
-      } catch (error) {
-        console.error('Error sharing:', error);
-        fallbackShare(shareData);
-      }
-    } else {
-      fallbackShare(shareData);
-    }
+    setShareConfig({
+      url: window.location.href,
+      title: 'Plan your route with UrbanSetu 🗺️',
+      description: description
+    });
+    setShowSharePanel(true);
   };
 
   // Fallback share method
@@ -1523,6 +1524,13 @@ export default function RoutePlanner() {
         message={confirmModal.message}
         confirmText={confirmModal.confirmText}
         isDestructive={confirmModal.isDestructive}
+      />
+      <SocialSharePanel
+        isOpen={showSharePanel}
+        onClose={() => setShowSharePanel(false)}
+        url={shareConfig.url}
+        title={shareConfig.title}
+        description={shareConfig.description}
       />
     </>
   );
