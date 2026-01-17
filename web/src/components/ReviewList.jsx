@@ -1190,7 +1190,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Issue Category *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Issue Category *</label>
                 <select
                   value={reportCategory}
                   onChange={(e) => setReportCategory(e.target.value)}
