@@ -1258,7 +1258,7 @@ export default function AdminReviews() {
                 </div>
               </div>
               <div className="mt-2 flex flex-col items-center">
-                <span className="inline-flex items-center gap-1 text-sm text-purple-700 font-semibold">
+                <span className="inline-flex items-center gap-1 text-sm text-purple-700 dark:text-purple-300 font-semibold">
                   <FaStar className="text-yellow-400" />
                   {selectedReview.rating} / 5
                 </span>
