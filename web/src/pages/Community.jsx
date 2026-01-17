@@ -1693,7 +1693,7 @@ export default function Community() {
                                                                                                                 </div>
                                                                                                             </form>
                                                                                                         ) : (
-                                                                                                            <p className={`text-sm ${reply.isDeleted ? 'text-gray-500 italic' : 'text-gray-700'} leading-relaxed break-words overflow-hidden`}>
+                                                                                                            <p className={`text-sm ${reply.isDeleted ? 'text-gray-500 italic' : 'text-gray-700 dark:text-gray-300'} leading-relaxed break-words overflow-hidden`}>
                                                                                                                 {reply.isDeleted
                                                                                                                     ? (reply.deletedBy === reply.user?._id ? "This reply was deleted." : "This reply is deleted by admin.")
                                                                                                                     : formatContent(reply.content)}
