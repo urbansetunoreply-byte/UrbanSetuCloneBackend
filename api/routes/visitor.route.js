@@ -5,9 +5,10 @@ import {
   getVisitorStats,
   getAllVisitors,
   clearOldVisitorLogs,
-  getClientErrors
+  getClientErrors,
+  getVisitorById
 } from '../controllers/visitor.controller.js';
-import { verifyToken } from '../utils/verify.js';
+import { verifyToken, checkRole } from '../utils/verify.js';
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ router.get('/count/daily', getDailyVisitorCount); // Get today's visitor count
 router.get('/stats', verifyToken, getVisitorStats); // Get visitor statistics
 router.get('/all', verifyToken, getAllVisitors); // Get all visitors with filters
 router.get('/client-errors', verifyToken, getClientErrors); // Get all client errors
+router.get('/monitor/:id', verifyToken, getVisitorById); // Get single visitor details
 router.delete('/cleanup', verifyToken, clearOldVisitorLogs); // Clear old visitor logs
 
 export default router;

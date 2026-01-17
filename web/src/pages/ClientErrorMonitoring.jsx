@@ -5,10 +5,23 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import {
     FaExclamationTriangle, FaSearch, FaFilter, FaBug, FaDesktop,
     FaMapMarkerAlt, FaGlobe, FaClock, FaTrash, FaCheckCircle,
-    FaUserShield, FaCode, FaSpinner, FaChevronLeft, FaChevronRight, FaMobileAlt
+    FaUserShield, FaCode, FaSpinner, FaChevronLeft, FaChevronRight, FaMobileAlt,
+    FaHistory, FaCloud, FaFileAlt
 } from 'react-icons/fa';
 import ClientErrorSkeleton from '../components/skeletons/ClientErrorSkeleton';
+import VisitorDetailsModal from '../components/VisitorDetailsModal';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
+
+const calculateDuration = (start, end) => {
+    if (!start || !end) return 'N/A';
+    const s = new Date(start).getTime();
+    const e = new Date(end).getTime();
+    const diff = Math.max(0, Math.floor((e - s) / 1000));
+    if (diff < 60) return `${diff}s`;
+    const m = Math.floor(diff / 60);
+    return `${m}m ${diff % 60}s`;
+};
 
 const ClientErrorMonitoring = () => {
     usePageTitle("Client Error Monitoring - Admin");
@@ -28,6 +41,31 @@ const ClientErrorMonitoring = () => {
     const [deviceType, setDeviceType] = useState('all');
 
     const [isRefetching, setIsRefetching] = useState(false);
+
+    // Modal State
+    const [selectedVisitor, setSelectedVisitor] = useState(null);
+    const [showVisitorModal, setShowVisitorModal] = useState(false);
+    const [isVisitorLoading, setIsVisitorLoading] = useState(false);
+
+    const handleViewSession = async (visitorId) => {
+        if (isVisitorLoading) return;
+        setIsVisitorLoading(true);
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/visitors/monitor/${visitorId}`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) {
+                setSelectedVisitor(data.visitor);
+                setShowVisitorModal(true);
+            } else {
+                toast.error("Failed to load session details");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Error loading session");
+        } finally {
+            setIsVisitorLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchErrors();
@@ -269,8 +307,16 @@ const ClientErrorMonitoring = () => {
                                     </div>
 
                                     {/* Actions (Future: Mark Resolved, Assign) */}
+                                    {/* Actions */}
                                     <div className="flex items-center gap-2">
-                                        {/* Placeholder for future actions */}
+                                        <button
+                                            onClick={() => handleViewSession(error.visitorId)}
+                                            disabled={isVisitorLoading}
+                                            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-800"
+                                        >
+                                            {isVisitorLoading ? <FaSpinner className="animate-spin" /> : <FaHistory />}
+                                            View Session
+                                        </button>
                                     </div>
                                 </div>
 
@@ -321,6 +367,25 @@ const ClientErrorMonitoring = () => {
                                                         {error.location || 'Unknown Location'}
                                                     </span>
                                                 </li>
+                                                <li className="pt-2 border-t border-gray-100 dark:border-gray-700 mt-2"></li>
+                                                <li className="flex items-start gap-2">
+                                                    <FaCloud className="mt-1 text-orange-500" />
+                                                    <span className="text-gray-600 dark:text-gray-300">
+                                                        <span className="font-semibold text-gray-800 dark:text-gray-200">Source:</span> {error.visitorSource || 'Direct'}
+                                                    </span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <FaHistory className="mt-1 text-teal-500" />
+                                                    <span className="text-gray-600 dark:text-gray-300">
+                                                        <span className="font-semibold text-gray-800 dark:text-gray-200">Duration:</span> {calculateDuration(error.sessionStart, error.timestamp)}
+                                                    </span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <FaFileAlt className="mt-1 text-indigo-500" />
+                                                    <span className="text-gray-600 dark:text-gray-300">
+                                                        <span className="font-semibold text-gray-800 dark:text-gray-200">Pages:</span> {error.pageCount || 1}
+                                                    </span>
+                                                </li>
                                             </ul>
                                         </div>
                                     </div>
@@ -355,6 +420,15 @@ const ClientErrorMonitoring = () => {
                     </div>
                 )}
             </div>
+            {/* Modal */}
+            {showVisitorModal && (
+                <VisitorDetailsModal
+                    visitor={selectedVisitor}
+                    onClose={() => setShowVisitorModal(false)}
+                    onRefresh={() => handleViewSession(selectedVisitor._id)}
+                    isRefreshing={isVisitorLoading}
+                />
+            )}
         </div>
     );
 };

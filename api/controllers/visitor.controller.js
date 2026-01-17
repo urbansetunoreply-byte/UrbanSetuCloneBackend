@@ -547,6 +547,7 @@ export const getClientErrors = async (req, res, next) => {
     // Aggregation to flatten error logs and include visitor context
     const pipeline = [
       { $match: matchStage },
+      { $addFields: { pageCount: { $size: '$pageViews' } } },
       { $unwind: '$pageViews' },
       { $unwind: '$pageViews.errorLogs' },
       {
@@ -565,7 +566,13 @@ export const getClientErrors = async (req, res, next) => {
           device: 1,
           browser: 1,
           os: 1,
-          deviceType: 1
+          deviceType: 1,
+          pageCount: 1,
+          sessionStart: 1,
+          lastActive: 1,
+          referrer: 1,
+          visitorSource: '$source',
+          utm: 1
         }
       },
       { $sort: { timestamp: -1 } }
@@ -610,6 +617,29 @@ export const getClientErrors = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Error getting client errors:', error);
+    next(error);
+  }
+};
+
+// Get single visitor by ID (admin only)
+export const getVisitorById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const visitor = await VisitorLog.findById(id);
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Visitor not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      visitor
+    });
+  } catch (error) {
+    console.error('Error fetching visitor details:', error);
     next(error);
   }
 };
