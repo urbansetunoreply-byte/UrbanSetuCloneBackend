@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { usePageTitle } from '../hooks/usePageTitle';
 import {
     FaExclamationTriangle, FaSearch, FaFilter, FaBug, FaDesktop,
@@ -98,11 +99,18 @@ const ClientErrorMonitoring = () => {
                                 Monitor and analyze critical client-side exceptions and crashes reported by users.
                             </p>
                         </div>
-                        <div className="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 px-4 py-2 rounded-lg border border-red-100 dark:border-red-900/30">
-                            <FaExclamationTriangle className="text-red-500" />
-                            <div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Issues</div>
-                                <div className="text-xl font-bold text-red-600 dark:text-red-400">{totalErrors}</div>
+                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                            <Link to="/admin/session-audit-logs" className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors">
+                                <FaUserShield />
+                                <span className="font-medium">Audit Logs</span>
+                            </Link>
+
+                            <div className="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 px-4 py-2 rounded-lg border border-red-100 dark:border-red-900/30">
+                                <FaExclamationTriangle className="text-red-500" />
+                                <div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Issues</div>
+                                    <div className="text-xl font-bold text-red-600 dark:text-red-400">{totalErrors}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
