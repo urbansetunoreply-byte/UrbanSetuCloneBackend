@@ -56,6 +56,7 @@ export default function RoutePlanner() {
   const [selectedAlternative, setSelectedAlternative] = useState(0);
   const [isRouteSaved, setIsRouteSaved] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(null);
+  const [hasRestoredFromUrl, setHasRestoredFromUrl] = useState(false);
 
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState({
@@ -859,12 +860,35 @@ export default function RoutePlanner() {
     const stopsList = stops.filter(s => s.address).map(s => s.address.split(',')[0]).join(' → ');
     const description = `Route Details: ${stopsList}.\nDistance: ${routeStats?.distance} km • Duration: ${routeStats?.duration} min.\nPlan your trip with UrbanSetu!`;
 
-    setShareConfig({
-      url: window.location.href,
-      title: 'Plan your route with UrbanSetu 🗺️',
-      description: description
-    });
-    setShowSharePanel(true);
+    // Encode route details into URL for deep linking
+    const sharedData = {
+      stops: stops.filter(s => s.address && s.coordinates),
+      mode: travelMode,
+      tolls: avoidTolls,
+      highways: avoidHighways,
+      opt: routeOptimization
+    };
+
+    try {
+      const dataStr = JSON.stringify(sharedData);
+      // Safe base64 encoding for unicode strings
+      const encodedData = btoa(unescape(encodeURIComponent(dataStr)));
+
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set('routeData', encodedData);
+
+      const shareUrl = `${window.location.origin}${window.location.pathname}?${searchParams.toString()}`;
+
+      setShareConfig({
+        url: shareUrl,
+        title: 'Plan your route with UrbanSetu 🗺️',
+        description: description
+      });
+      setShowSharePanel(true);
+    } catch (err) {
+      console.error('Error creating share link:', err);
+      toast.error('Failed to generate shareable link');
+    }
   };
 
   // Fallback share method
@@ -1042,6 +1066,42 @@ export default function RoutePlanner() {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1 }
   };
+
+  // 5. Handle Deep Linking / Shared Routes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const encodedData = params.get('routeData');
+
+    if (encodedData && !hasRestoredFromUrl) {
+      try {
+        const decodedStr = decodeURIComponent(escape(atob(encodedData)));
+        const data = JSON.parse(decodedStr);
+
+        if (data && data.stops && Array.isArray(data.stops) && data.stops.length >= 2) {
+          setStops(data.stops);
+          if (data.mode) setTravelMode(data.mode);
+          if (data.tolls !== undefined) setAvoidTolls(data.tolls);
+          if (data.highways !== undefined) setAvoidHighways(data.highways);
+          if (data.opt !== undefined) setRouteOptimization(data.opt);
+
+          setHasRestoredFromUrl(true);
+          toast.info('Shared route loaded. Optimizing...');
+        }
+      } catch (err) {
+        console.error('Failed to parse shared route data:', err);
+      }
+    }
+  }, [hasRestoredFromUrl]);
+
+  // 6. Auto-optimize if loaded from deep link once map is ready
+  useEffect(() => {
+    if (hasRestoredFromUrl && map && mapReady && !routeData && !optimizing) {
+      const timer = setTimeout(() => {
+        optimize();
+      }, 1000); // Small delay to ensure map and layers are stable
+      return () => clearTimeout(timer);
+    }
+  }, [hasRestoredFromUrl, map, mapReady, routeData, optimizing]);
 
   return (
     <>
