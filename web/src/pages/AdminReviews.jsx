@@ -1269,11 +1269,22 @@ export default function AdminReviews() {
             <div className="px-4 sm:px-8 py-4 space-y-4">
               {/* Property Info */}
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 flex flex-col gap-1 border border-blue-100 dark:border-blue-800 transition-colors">
-                <div className="font-semibold text-blue-700 flex items-center gap-2">
-                  <FaHome className="text-blue-400" />
-                  {selectedReview.listingId?.name || 'Property not found'}
+                <div className="font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                  <FaHome className="text-blue-400 dark:text-blue-500" />
+                  {selectedReview.listingId ? (
+                    <a
+                      href={`/admin/listing/${selectedReview.listingId._id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline hover:text-blue-800 dark:hover:text-blue-200 transition-colors"
+                    >
+                      {selectedReview.listingId.name}
+                    </a>
+                  ) : (
+                    'Property not found'
+                  )}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-gray-400 pl-6">
                   {selectedReview.listingId?.city}, {selectedReview.listingId?.state}
                 </div>
               </div>

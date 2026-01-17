@@ -416,8 +416,8 @@ const parsePropertyReportFromNotification = (n) => {
     type: 'property',
     propertyName: propertyMatch ? propertyMatch[1] : 'Unknown Property',
     reporter: reporterMatch ? reporterMatch[1] : 'Unknown User',
-    category: categoryMatch ? categoryMatch[1].trim() : 'Unknown Category',
-    details: detailsMatch ? detailsMatch[1].trim() : '',
+    category: n.meta?.category || (categoryMatch ? categoryMatch[1].trim() : 'Unknown Category'),
+    details: n.meta?.details || (detailsMatch ? detailsMatch[1].trim() : ''),
     listingId: n.listingId || null,
     reporterId: n.meta?.reporterId || null,
     reporterEmail: n.meta?.reporterEmail || null,
@@ -470,8 +470,10 @@ export const getPropertyReports = async (req, res, next) => {
     // Deduplicate reports (same property can be reported multiple times to different admins)
     const uniqueReports = new Map();
     reports.forEach(report => {
-      // Use listingId + reporterId + createdAt as unique key to avoid duplicates
-      const uniqueKey = `${report.listingId || 'no-listing'}-${report.reporterId || 'no-reporter'}-${report.createdAt}`;
+      // Use listingId + reporterId + rounded createdAt (to second) as unique key to avoid duplicates
+      // This handles minor timestamp differences in parallel creation
+      const dateStr = new Date(report.createdAt).toISOString().split('.')[0];
+      const uniqueKey = `${report.listingId || 'no-listing'}-${report.reporterId || 'no-reporter'}-${dateStr}`;
       if (!uniqueReports.has(uniqueKey)) {
         uniqueReports.set(uniqueKey, report);
       }

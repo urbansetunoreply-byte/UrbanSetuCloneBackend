@@ -196,6 +196,7 @@ router.post("/report/:listingId", verifyToken, async (req, res, next) => {
     const detailsText = details && details.trim() ? ` - ${details.trim()}` : '';
     const notificationMessage = `Property "${listing.name}" was reported by ${reporter?.username || 'a user'} for: ${categoryText}${detailsText}`;
 
+    const now = new Date();
     const notifications = await Promise.all(admins.map(async (admin) => {
       return Notification.create({
         userId: admin._id,
@@ -204,6 +205,7 @@ router.post("/report/:listingId", verifyToken, async (req, res, next) => {
         message: notificationMessage,
         listingId: listing._id,
         adminId: req.user.id,
+        createdAt: now, // Ensure same timestamp for deduplication
         meta: {
           listingId: listing._id,
           reporterId: reporter?._id,
