@@ -1064,7 +1064,7 @@ const PaymentDashboard = () => {
                           `Payment Details:\nProperty: ${selectedPayment.appointmentId?.propertyName || 'N/A'}\nBuyer: ${selectedPayment.userId?.username || 'N/A'}\nAmount: ${selectedPayment.currency === 'INR' ? '₹' : '$'}${Number(selectedPayment.amount).toFixed(2)}\nStatus: ${selectedPayment.status}\nPayment ID: ${selectedPayment.paymentId}`
                         );
                       }}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+                      className={`px-4 py-2 text-white rounded-lg transition-all duration-300 flex items-center gap-2 ${copySuccess ? 'bg-green-600' : 'bg-gray-600 hover:bg-gray-700'}`}
                     >
                       <FaCopy /> {copySuccess ? 'Copied' : 'Copy Details'}
                     </button>
