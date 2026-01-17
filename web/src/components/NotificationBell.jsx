@@ -40,6 +40,7 @@ export default function NotificationBell({ mobile = false }) {
   // Separate state for "Send to All Users" form
   const [allUsersTitle, setAllUsersTitle] = useState('');
   const [allUsersMessage, setAllUsersMessage] = useState('');
+  const [copiedId, setCopiedId] = useState(null);
   const bellRef = useRef(null);
 
   // Scroll lock effect: prevent background scroll when notification dropdown/modal is open
@@ -888,12 +889,14 @@ export default function NotificationBell({ mobile = false }) {
                                           <button
                                             onClick={() => {
                                               navigator.clipboard.writeText(`${notification.title}\n${notification.message}`);
+                                              setCopiedId(notification._id);
+                                              setTimeout(() => setCopiedId(null), 2000);
                                               toast.success('Copied');
                                             }}
-                                            className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
+                                            className={`p-1.5 rounded-lg transition-all ${copiedId === notification._id ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30' : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`}
                                             title="Copy"
                                           >
-                                            <FaCopy className="w-3 h-3" />
+                                            {copiedId === notification._id ? <FaCheck className="w-3 h-3" /> : <FaCopy className="w-3 h-3" />}
                                           </button>
                                           {!notification.isRead && (
                                             <button
@@ -1421,11 +1424,13 @@ export default function NotificationBell({ mobile = false }) {
                                           <button
                                             onClick={() => {
                                               navigator.clipboard.writeText(`${n.title}\n${n.message}`);
+                                              setCopiedId(n._id);
+                                              setTimeout(() => setCopiedId(null), 2000);
                                               toast.success('Copied');
                                             }}
-                                            className="p-1 text-gray-300 hover:text-blue-500 transition-all"
+                                            className={`p-1 transition-all ${copiedId === n._id ? 'text-emerald-500' : 'text-gray-300 hover:text-blue-500'}`}
                                           >
-                                            <FaCopy className="w-3 h-3" />
+                                            {copiedId === n._id ? <FaCheck className="w-3 h-3" /> : <FaCopy className="w-3 h-3" />}
                                           </button>
                                           {!n.isRead && (
                                             <button
