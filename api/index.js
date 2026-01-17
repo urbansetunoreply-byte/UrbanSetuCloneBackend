@@ -58,6 +58,7 @@ import turnRouter from "./routes/turn.route.js"; // Import TURN route
 import preBookingChatRouter from "./routes/preBookingChat.route.js";
 import platformUpdateRouter from "./routes/platformUpdate.route.js";
 import yearInReviewRouter from "./routes/yearInReview.route.js";
+import helpCenterRouter from "./routes/helpCenter.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -1219,6 +1220,7 @@ app.use("/api/forum", forumRouter);
 app.use("/api/coins", coinRouter);
 app.use("/api/year-in-review", yearInReviewRouter);
 app.use("/api/updates", platformUpdateRouter);
+app.use("/api/help", helpCenterRouter); // Register Help Center routes
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes

@@ -143,6 +143,9 @@ const CommunityGuidelines = lazy(() => import('./pages/CommunityGuidelines'));
 const Downloads = lazy(() => import('./pages/Downloads'));
 const GoogleOneTap = lazy(() => import('./components/GoogleOneTap'));
 const ClientErrorMonitoring = lazy(() => import('./pages/ClientErrorMonitoring'));
+const HelpCenter = lazy(() => import('./pages/HelpCenter/HelpCenter'));
+const ArticleView = lazy(() => import('./pages/HelpCenter/ArticleView'));
+const AdminHelpCenter = lazy(() => import('./pages/HelpCenter/AdminHelpCenter'));
 
 
 // Loading component
@@ -790,6 +793,9 @@ function AppRoutes({ bootstrapped }) {
         <NormalizeRoute>
           <Routes>
             {/* Public Routes */}
+            {/* Universal Help Center Routes - Accessible by everyone */}
+            <Route path="/help-center" element={<HelpCenter />} />
+            <Route path="/help-center/article/:slug" element={<ArticleView />} />
             <Route path="/" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/home" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/about" element={currentUser ? <Navigate to="/user/about" /> : <PublicAbout bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
@@ -944,6 +950,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/support" element={<Navigate to="/admin/support" />} />
               <Route path="/ai" element={<Navigate to="/admin/ai" />} />
               <Route path="/user/ai" element={<Navigate to="/admin/ai" />} />
+              <Route path="/admin/help-center" element={<AdminHelpCenter />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
