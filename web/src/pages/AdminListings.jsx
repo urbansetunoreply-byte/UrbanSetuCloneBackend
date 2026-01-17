@@ -292,9 +292,6 @@ export default function AdminListings() {
       params.append('sortBy', propertyReportsFilters.sortBy);
       params.append('sortOrder', propertyReportsFilters.sortOrder);
 
-      params.append('sortBy', propertyReportsFilters.sortBy);
-      params.append('sortOrder', propertyReportsFilters.sortOrder);
-
       const res = await fetch(`${API_BASE_URL}/api/notifications/reports/properties?${params}`, {
         credentials: 'include'
       });
