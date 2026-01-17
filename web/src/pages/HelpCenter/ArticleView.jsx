@@ -21,6 +21,9 @@ const ArticleView = () => {
                 if (!res.ok) throw new Error(data.message || 'Article not found');
 
                 setArticle(data);
+                if (data.userVote) {
+                    setVoteStatus(data.userVote);
+                }
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -32,20 +35,32 @@ const ArticleView = () => {
     }, [slug]);
 
     const handleVote = async (type) => {
-        if (voteStatus) return; // Already voted
+        // Optimistic UI update
+        const previousStatus = voteStatus;
+
+        // Toggle off if same type clicked, otherwise swap/set
+        const newStatus = previousStatus === type ? null : type;
+        setVoteStatus(newStatus);
 
         try {
-            setVoteStatus(type);
-            await fetch(`${API_BASE_URL}/api/help/${article._id}/vote`, {
+            const res = await fetch(`${API_BASE_URL}/api/help/${article._id}/vote`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}` // Ensure auth header
                 },
                 body: JSON.stringify({ type })
             });
-            // Optionally update local count
+
+            if (!res.ok) {
+                // Revert on error
+                setVoteStatus(previousStatus);
+                // toast.error("Failed to vote"); 
+            }
+
         } catch (err) {
             console.error("Failed to vote", err);
+            setVoteStatus(previousStatus);
         }
     };
 
@@ -129,8 +144,8 @@ const ArticleView = () => {
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => handleVote('helpful')}
-                                    disabled={voteStatus !== null}
                                     className={`flex items-center px-4 py-2 rounded-lg transition-all ${voteStatus === 'helpful'
+
                                         ? 'bg-green-600 text-white'
                                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600'
                                         } border border-gray-200 dark:border-gray-600`}
@@ -140,7 +155,6 @@ const ArticleView = () => {
                                 </button>
                                 <button
                                     onClick={() => handleVote('not_helpful')}
-                                    disabled={voteStatus !== null}
                                     className={`flex items-center px-4 py-2 rounded-lg transition-all ${voteStatus === 'not_helpful'
                                         ? 'bg-red-600 text-white'
                                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600'
