@@ -1296,7 +1296,7 @@ export default function AdminReviews() {
               {/* Helpful Votes */}
               {selectedReview.helpfulCount > 0 && (
                 <div>
-                  <h4 className="font-medium mb-1 text-gray-700">Helpful Votes</h4>
+                  <h4 className="font-medium mb-1 text-gray-700 dark:text-gray-300">Helpful Votes</h4>
                   <div className="flex items-center text-gray-700 dark:text-gray-300">
                     <FaThumbsUp className="mr-2 text-blue-500" />
                     {selectedReview.helpfulCount} people found this helpful
@@ -1316,7 +1316,7 @@ export default function AdminReviews() {
               {/* Admin Note */}
               {selectedReview.adminNote && (
                 <div>
-                  <h4 className="font-medium mb-1 text-gray-700">Admin Note</h4>
+                  <h4 className="font-medium mb-1 text-gray-700 dark:text-gray-300">Admin Note</h4>
                   <p className="text-gray-700 dark:text-gray-200 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md border border-yellow-100 dark:border-yellow-800 shadow-inner">{selectedReview.adminNote}</p>
                 </div>
               )}
@@ -1678,9 +1678,34 @@ export default function AdminReviews() {
                           )}
                           {report.reviewId && (
                             <button
-                              onClick={() => {
-                                // You could implement a function to view the specific review
-                                toast.info('Review ID: ' + report.reviewId);
+                              onClick={async () => {
+                                try {
+                                  // Close report modal momentarily or keep it open? 
+                                  const existingReview = reviews.find(r => r._id === report.reviewId);
+                                  if (existingReview) {
+                                    setSelectedReview(existingReview);
+                                    setShowReportsModal(false); // Close reports modal to show review modal
+                                  } else {
+                                    // Fallback: try to fetch from API listings endpoint
+                                    toast.info("Fetching review details...");
+                                    const fetchRes = await fetch(`${API_BASE_URL}/api/review/listing/${report.listingId}`);
+                                    if (fetchRes.ok) {
+                                      const listingReviews = await fetchRes.json();
+                                      const found = listingReviews.find(r => r._id === report.reviewId);
+                                      if (found) {
+                                        setSelectedReview(found);
+                                        setShowReportsModal(false);
+                                      } else {
+                                        toast.error("Review details not found in current context.");
+                                      }
+                                    } else {
+                                      toast.error("Failed to fetch review details.");
+                                    }
+                                  }
+                                } catch (error) {
+                                  console.error(error);
+                                  toast.error("Failed to load review details.");
+                                }
                               }}
                               className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition"
                             >

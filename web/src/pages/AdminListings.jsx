@@ -292,22 +292,16 @@ export default function AdminListings() {
       params.append('sortBy', propertyReportsFilters.sortBy);
       params.append('sortOrder', propertyReportsFilters.sortOrder);
 
-      console.log('Fetching property reports from:', `${API_BASE_URL}/api/notifications/reports/properties?${params}`);
+      params.append('sortBy', propertyReportsFilters.sortBy);
+      params.append('sortOrder', propertyReportsFilters.sortOrder);
 
       const res = await fetch(`${API_BASE_URL}/api/notifications/reports/properties?${params}`, {
         credentials: 'include'
       });
       const data = await res.json();
 
-      console.log('Property Reports API response:', data);
-
       if (data.success) {
         setPropertyReports(data.reports || []);
-        console.log('Property Reports set:', data.reports?.length || 0);
-        // Debug: Log first report to see what data is available
-        if (data.reports && data.reports.length > 0) {
-          console.log('First property report data:', JSON.stringify(data.reports[0], null, 2));
-        }
       } else {
         setPropertyReportsError(data.message || 'Failed to load property reports');
         console.error('Property Reports API error:', data.message);
