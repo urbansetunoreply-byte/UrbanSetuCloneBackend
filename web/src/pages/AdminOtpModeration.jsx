@@ -18,6 +18,11 @@ export default function AdminOtpModeration() {
   const [filters, setFilters] = useState({ email: '', ip: '', captchaOnly: false, lockedOnly: false });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  // Reset pagination on filter change
+  useEffect(() => { setCurrentPage(1); }, [search, filters]);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -75,16 +80,24 @@ export default function AdminOtpModeration() {
   const filtered = stats.recent.filter(r => {
     const q = search.trim().toLowerCase();
     let ok = true;
-    if (q) ok = (r.email||'').toLowerCase().includes(q) || (r.ipAddress||'').toLowerCase().includes(q);
-    if (ok && filters.email) ok = (r.email||'').toLowerCase().includes(filters.email.toLowerCase());
-    if (ok && filters.ip) ok = (r.ipAddress||'').toLowerCase().includes(filters.ip.toLowerCase());
+    if (q) ok = (r.email || '').toLowerCase().includes(q) || (r.ipAddress || '').toLowerCase().includes(q);
+    if (ok && filters.email) ok = (r.email || '').toLowerCase().includes(filters.email.toLowerCase());
+    if (ok && filters.ip) ok = (r.ipAddress || '').toLowerCase().includes(filters.ip.toLowerCase());
     if (ok && filters.captchaOnly) ok = !!r.requiresCaptcha;
     if (ok && filters.lockedOnly) ok = r.lockoutUntil && new Date(r.lockoutUntil) > new Date();
     return ok;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-8 px-4">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-100">
           <div className="flex items-center gap-3 mb-2">
@@ -100,12 +113,12 @@ export default function AdminOtpModeration() {
             <button onClick={fetchStats} className="px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-300 text-gray-800 flex items-center gap-2"><FaSync /> Refresh</button>
             <div className="ml-auto flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg flex-1 min-w-[220px]">
               <FaSearch className="text-gray-500" />
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search email or IP" className="bg-transparent outline-none text-sm w-full" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search email or IP" className="bg-transparent outline-none text-sm w-full" />
             </div>
-            <input value={filters.email} onChange={e=>setFilters(f=>({...f,email:e.target.value}))} placeholder="Filter email" className="border px-2 py-2 rounded-lg text-sm min-w-[180px]" />
-            <input value={filters.ip} onChange={e=>setFilters(f=>({...f,ip:e.target.value}))} placeholder="Filter IP" className="border px-2 py-2 rounded-lg text-sm min-w-[140px]" />
-            <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={filters.captchaOnly} onChange={e=>setFilters(f=>({...f,captchaOnly:e.target.checked}))} /> Captcha</label>
-            <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={filters.lockedOnly} onChange={e=>setFilters(f=>({...f,lockedOnly:e.target.checked}))} /> Locked</label>
+            <input value={filters.email} onChange={e => setFilters(f => ({ ...f, email: e.target.value }))} placeholder="Filter email" className="border px-2 py-2 rounded-lg text-sm min-w-[180px]" />
+            <input value={filters.ip} onChange={e => setFilters(f => ({ ...f, ip: e.target.value }))} placeholder="Filter IP" className="border px-2 py-2 rounded-lg text-sm min-w-[140px]" />
+            <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={filters.captchaOnly} onChange={e => setFilters(f => ({ ...f, captchaOnly: e.target.checked }))} /> Captcha</label>
+            <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={filters.lockedOnly} onChange={e => setFilters(f => ({ ...f, lockedOnly: e.target.checked }))} /> Locked</label>
           </div>
         </div>
 
@@ -115,43 +128,67 @@ export default function AdminOtpModeration() {
               <h2 className="text-lg font-semibold text-gray-800">Recent OTP Activity</h2>
               <div className="text-right text-sm text-gray-600">
                 <span className="mr-3">Active OTP lockouts: <span className="font-semibold text-red-600">{stats.activeLockouts}</span></span>
-                <span>Password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts||0}</span></span>
+                <span>Password lockouts: <span className="font-semibold text-red-600">{stats.passwordLockouts || 0}</span></span>
               </div>
             </div>
             {loading ? (
               <div className="p-6 text-center text-gray-500">Loading...</div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-600">
-                      <th className="py-2 pr-4">Email</th>
-                      <th className="py-2 pr-4">IP</th>
-                      <th className="py-2 pr-4">Req</th>
-                      <th className="py-2 pr-4">Fails</th>
-                      <th className="py-2 pr-4">Captcha</th>
-                      <th className="py-2 pr-4">Lockout</th>
-                      <th className="py-2 pr-4">Updated</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((r) => (
-                      <tr key={r._id} className="border-t">
-                        <td className="py-2 pr-4">{r.email}</td>
-                        <td className="py-2 pr-4">{r.ipAddress}</td>
-                        <td className="py-2 pr-4">{r.otpRequestCount}</td>
-                        <td className="py-2 pr-4">{r.failedOtpAttempts}</td>
-                        <td className="py-2 pr-4">{r.requiresCaptcha ? 'Yes' : 'No'}</td>
-                        <td className="py-2 pr-4">{r.lockoutUntil && new Date(r.lockoutUntil) > new Date() ? new Date(r.lockoutUntil).toLocaleString() : '-'}</td>
-                        <td className="py-2 pr-4">{r.updatedAt ? new Date(r.updatedAt).toLocaleString() : '-'}</td>
+              <>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-600">
+                        <th className="py-2 pr-4">Email</th>
+                        <th className="py-2 pr-4">IP</th>
+                        <th className="py-2 pr-4">Req</th>
+                        <th className="py-2 pr-4">Fails</th>
+                        <th className="py-2 pr-4">Captcha</th>
+                        <th className="py-2 pr-4">Lockout</th>
+                        <th className="py-2 pr-4">Updated</th>
                       </tr>
-                    ))}
-                    {filtered.length === 0 && (
-                      <tr><td colSpan="7" className="py-4 text-center text-gray-500">No records</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {filtered
+                        .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                        .map((r, index) => (
+                          <tr key={r._id} className="border-t" style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}>
+                            <td className="py-2 pr-4">{r.email}</td>
+                            <td className="py-2 pr-4">{r.ipAddress}</td>
+                            <td className="py-2 pr-4">{r.otpRequestCount}</td>
+                            <td className="py-2 pr-4">{r.failedOtpAttempts}</td>
+                            <td className="py-2 pr-4">{r.requiresCaptcha ? 'Yes' : 'No'}</td>
+                            <td className="py-2 pr-4">{r.lockoutUntil && new Date(r.lockoutUntil) > new Date() ? new Date(r.lockoutUntil).toLocaleString() : '-'}</td>
+                            <td className="py-2 pr-4">{r.updatedAt ? new Date(r.updatedAt).toLocaleString() : '-'}</td>
+                          </tr>
+                        ))}
+                      {filtered.length === 0 && (
+                        <tr><td colSpan="7" className="py-4 text-center text-gray-500">No records</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Pagination */}
+                <div className="flex items-center justify-end gap-2 mt-4">
+                  <button
+                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  >
+                    Prev
+                  </button>
+                  <span className="text-xs font-bold text-gray-600">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
             )}
           </div>
 
@@ -163,14 +200,14 @@ export default function AdminOtpModeration() {
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex-1 min-w-[220px]">
                   <label className="text-sm text-gray-700">Email</label>
-                  <input value={emailToUnlock} onChange={e=>setEmailToUnlock(e.target.value)} placeholder="user@example.com" className="w-full border rounded-lg px-3 py-2 mt-1" />
+                  <input value={emailToUnlock} onChange={e => setEmailToUnlock(e.target.value)} placeholder="user@example.com" className="w-full border rounded-lg px-3 py-2 mt-1" />
                 </div>
                 <button onClick={unlockByEmail} className="px-3 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock</button>
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex-1 min-w-[180px]">
                   <label className="text-sm text-gray-700">IP Address</label>
-                  <input value={ipToUnlock} onChange={e=>setIpToUnlock(e.target.value)} placeholder="192.168.0.1" className="w-full border rounded-lg px-3 py-2 mt-1" />
+                  <input value={ipToUnlock} onChange={e => setIpToUnlock(e.target.value)} placeholder="192.168.0.1" className="w-full border rounded-lg px-3 py-2 mt-1" />
                 </div>
                 <button onClick={unlockByIp} className="px-3 py-2 bg-purple-600 text-white rounded-lg flex items-center gap-2 self-end sm:self-auto"><FaUnlockAlt /> Unlock</button>
               </div>
