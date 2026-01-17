@@ -503,7 +503,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                 )}
 
                 {/* Header */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-blue-600 text-white rounded-t-lg flex justify-between items-center shadow-md">
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-700 to-purple-700 text-white rounded-t-lg flex justify-between items-center shadow-md">
                     <div className="flex items-center gap-3">
                         {isOwner && (
                             <button onClick={() => setActiveChat(null)} className="mr-1 hover:bg-blue-700 p-1 rounded text-white">
