@@ -148,6 +148,28 @@ const ArticleView = lazy(() => import('./pages/HelpCenter/ArticleView'));
 const AdminHelpCenter = lazy(() => import('./pages/HelpCenter/AdminHelpCenter'));
 
 
+// Helper for Help Center Redirects
+function ArticleViewRedirect() {
+  const { slug } = useParams();
+  const { currentUser } = useSelector((state) => state.user);
+
+  if (currentUser) {
+    if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
+      // Admins might want to edit or view. For now, send to Admin Dashboard or implement Admin View
+      // Since we don't have a specific admin view page for slug yet (only edit modal), 
+      // let's send them to the public view but under /admin if needed, or just /admin/help-center
+      // The user instruction implies specific routes.
+      // But wait, admin route is /admin/help-center (dashboard). 
+      // Let's redirect admins to dashboard for now as they "manage" it.
+      return <Navigate to="/admin/help-center" />;
+    } else {
+      return <Navigate to={`/user/help-center/article/${slug}`} />;
+    }
+  }
+  return <ArticleView />;
+}
+
+// ----------------------------------------------------------------------
 // Loading component
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300 relative overflow-hidden">
@@ -226,7 +248,7 @@ function normalizeRoute(path, role) {
   }
 
   // List of base routes that have public-facing versions
-  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community"];
+  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community", "help-center"];
 
   // List of base routes that exist for both user and admin but are NOT public
   const parallelBases = [
@@ -794,8 +816,12 @@ function AppRoutes({ bootstrapped }) {
           <Routes>
             {/* Public Routes */}
             {/* Universal Help Center Routes - Accessible by everyone */}
-            <Route path="/help-center" element={<HelpCenter />} />
-            <Route path="/help-center/article/:slug" element={<ArticleView />} />
+            <Route path="/help-center" element={currentUser ? <Navigate to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? "/admin/help-center" : "/user/help-center"} /> : <HelpCenter />} />
+            {/* Note: extraction of param is tricky in Navigate, simpler to just let user route handle it if path matches pattern */}
+            {/* But since we need to redirect PUBLIC /help-center/article/X to /user/help-center/article/X, we can't easily access :slug in render prop unless we wrap it */}
+            {/* Simpler approach: Make HelpCenter component handle the redirect if mounted on public route with auth? No, typically App.jsx handles it. */}
+            {/* Let's use a wrapper component for the redirect to extract params correctly */}
+            <Route path="/help-center/article/:slug" element={<ArticleViewRedirect />} />
             <Route path="/" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/home" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/about" element={currentUser ? <Navigate to="/user/about" /> : <PublicAbout bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
@@ -880,6 +906,8 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/year/:year" element={<YearInReview />} />
               <Route path="/user/updates" element={<Updates />} />
               <Route path="/user/download" element={<Downloads />} />
+              <Route path="/user/help-center" element={<HelpCenter />} />
+              <Route path="/user/help-center/article/:slug" element={<ArticleView />} />
 
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
