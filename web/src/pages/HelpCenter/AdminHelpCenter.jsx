@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaTimes, FaSearch, FaCheck, FaEye, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../../utils/csrf';
 import { helpCategories } from '../../utils/helpCategories';
 import ConfirmationModal from '../../components/ConfirmationModal';
 
@@ -36,17 +37,15 @@ const AdminHelpCenter = () => {
     const fetchArticles = async () => {
         try {
             setLoading(true);
-            // Using admin endpoint to see even unpublished ones if needed, or public GET
-            // Using public GET is easier unless we restrict unpublished visibility.
-            // But verifyAdmin middleware was put on /admin/all
-            const res = await fetch(`${API_BASE_URL}/api/help/admin/all`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
-            });
+            // Using admin endpoint to see even unpublished ones if needed
+            // authenticatedFetch handles token refresh automatically
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/help/admin/all`);
+
             if (res.ok) {
                 const data = await res.json();
                 setArticles(data);
+            } else if (res.status === 401) {
+                toast.error("Session expired. Please login again.");
             }
         } catch (error) {
             console.error(error);
@@ -95,11 +94,10 @@ const AdminHelpCenter = () => {
 
             const method = editingArticle ? 'PUT' : 'POST';
 
-            const res = await fetch(url, {
+            const res = await authenticatedFetch(url, {
                 method,
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
@@ -121,11 +119,8 @@ const AdminHelpCenter = () => {
     const handleDelete = async () => {
         if (!deleteId) return;
         try {
-            const res = await fetch(`${API_BASE_URL}/api/help/admin/delete/${deleteId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/help/admin/delete/${deleteId}`, {
+                method: 'DELETE'
             });
             if (res.ok) {
                 toast.success('Article deleted');
