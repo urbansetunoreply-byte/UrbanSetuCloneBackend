@@ -1,9 +1,9 @@
-// Test ESG Recommendations API
-const API_BASE_URL = 'https://urbansetu.onrender.com';
+﻿// Test ESG Recommendations API
+const API_BASE_URL = 'https://urbansetu-pvt4.onrender.com';
 
 const testESGRecommendations = async () => {
   try {
-    console.log('🌱 Testing ESG Recommendations API...');
+    console.log('ðŸŒ± Testing ESG Recommendations API...');
     
     // Test the ESG recommendations endpoint
     const response = await fetch(`${API_BASE_URL}/api/esg-ai/recommendations?limit=5&includeExplanation=true`, {
@@ -15,25 +15,25 @@ const testESGRecommendations = async () => {
       }
     });
 
-    console.log('📊 Response Status:', response.status);
-    console.log('📊 Response Headers:', Object.fromEntries(response.headers.entries()));
+    console.log('ðŸ“Š Response Status:', response.status);
+    console.log('ðŸ“Š Response Headers:', Object.fromEntries(response.headers.entries()));
 
     if (response.ok) {
       const data = await response.json();
-      console.log('✅ ESG Recommendations Response:', JSON.stringify(data, null, 2));
+      console.log('âœ… ESG Recommendations Response:', JSON.stringify(data, null, 2));
     } else {
       const errorText = await response.text();
-      console.log('❌ ESG Recommendations Error:', errorText);
+      console.log('âŒ ESG Recommendations Error:', errorText);
     }
 
   } catch (error) {
-    console.error('❌ Test Error:', error.message);
+    console.error('âŒ Test Error:', error.message);
   }
 };
 
 const testESGAuth = async () => {
   try {
-    console.log('🌱 Testing ESG Auth Endpoint...');
+    console.log('ðŸŒ± Testing ESG Auth Endpoint...');
     
     const response = await fetch(`${API_BASE_URL}/api/esg-ai/test-auth`, {
       method: 'GET',
@@ -42,29 +42,29 @@ const testESGAuth = async () => {
       }
     });
 
-    console.log('📊 Auth Response Status:', response.status);
+    console.log('ðŸ“Š Auth Response Status:', response.status);
     
     if (response.ok) {
       const data = await response.json();
-      console.log('✅ Auth Response:', JSON.stringify(data, null, 2));
+      console.log('âœ… Auth Response:', JSON.stringify(data, null, 2));
     } else {
       const errorText = await response.text();
-      console.log('❌ Auth Error:', errorText);
+      console.log('âŒ Auth Error:', errorText);
     }
 
   } catch (error) {
-    console.error('❌ Auth Test Error:', error.message);
+    console.error('âŒ Auth Test Error:', error.message);
   }
 };
 
 // Run tests
-console.log('🚀 Starting ESG System Tests...\n');
+console.log('ðŸš€ Starting ESG System Tests...\n');
 
 testESGAuth().then(() => {
   console.log('\n' + '='.repeat(50) + '\n');
   return testESGRecommendations();
 }).then(() => {
-  console.log('\n✅ ESG System Tests Complete!');
+  console.log('\nâœ… ESG System Tests Complete!');
 }).catch(error => {
-  console.error('\n❌ Test Suite Error:', error);
+  console.error('\nâŒ Test Suite Error:', error);
 });

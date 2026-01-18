@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FaRobot, FaUser, FaClock, FaCalendar, FaExclamationTriangle, FaArrowRight, FaDownload } from 'react-icons/fa';
@@ -20,7 +20,7 @@ export default function SharedChatView() {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [error, setError] = useState(null);
     const [inputToken, setInputToken] = useState('');
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
     useEffect(() => {
         const fetchChat = async () => {

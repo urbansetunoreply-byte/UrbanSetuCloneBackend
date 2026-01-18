@@ -1,4 +1,4 @@
-# Backend Environment Variables for Mobile App Support
+﻿# Backend Environment Variables for Mobile App Support
 
 ## Required Environment Variables
 
@@ -103,14 +103,14 @@ The mobile app sends `User-Agent: UrbanSetuMobile/1.0` which helps with:
 
 1. **Test CSRF Token Endpoint:**
    ```bash
-   curl -X GET https://urbansetu.onrender.com/api/auth/csrf-token \
+   curl -X GET https://urbansetu-pvt4.onrender.com/api/auth/csrf-token \
      -H "User-Agent: UrbanSetuMobile/1.0" \
      -v
    ```
 
 2. **Test Mobile Login:**
    ```bash
-   curl -X POST https://urbansetu.onrender.com/api/auth/signin \
+   curl -X POST https://urbansetu-pvt4.onrender.com/api/auth/signin \
      -H "Content-Type: application/json" \
      -H "User-Agent: UrbanSetuMobile/1.0" \
      -H "X-CSRF-Token: YOUR_TOKEN" \

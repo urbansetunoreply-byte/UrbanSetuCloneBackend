@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -52,7 +52,7 @@ const PublicBlogDetail = () => {
   });
   const [shareModal, setShareModal] = useState({ isOpen: false, url: '', title: '', description: '' });
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
   useEffect(() => {
     fetchBlog();
@@ -556,7 +556,7 @@ const PublicBlogDetail = () => {
                                 {isAdmin ? 'UrbanSetu Team' : comment.user?.username || 'Anonymous'}
                               </span>
                               {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
-                              <span className="text-xs text-gray-400 dark:text-gray-500">• {new Date(comment.createdAt).toLocaleDateString()}</span>
+                              <span className="text-xs text-gray-400 dark:text-gray-500">â€¢ {new Date(comment.createdAt).toLocaleDateString()}</span>
                             </div>
 
                             {isOwner && editingCommentId !== comment._id && (

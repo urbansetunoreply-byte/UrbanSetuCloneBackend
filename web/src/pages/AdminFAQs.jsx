@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -41,7 +41,7 @@ const AdminFAQs = () => {
   const [propertySearch, setPropertySearch] = useState('');
   const [authWarning, setAuthWarning] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
   // Check authentication status
   const checkAuthStatus = async () => {
@@ -58,7 +58,7 @@ const AdminFAQs = () => {
         return false;
       }
     } catch (error) {
-      console.error('❌ Auth check error:', error);
+      console.error('âŒ Auth check error:', error);
       return false;
     }
   };
@@ -68,7 +68,7 @@ const AdminFAQs = () => {
     const initializeData = async () => {
       const isAuthenticated = await checkAuthStatus();
       if (!isAuthenticated) {
-        console.warn('⚠️ User not authenticated - FAQ filtering may be affected');
+        console.warn('âš ï¸ User not authenticated - FAQ filtering may be affected');
       }
       fetchFAQs();
       fetchProperties();
@@ -343,7 +343,7 @@ const AdminFAQs = () => {
         toast.error(errorData.message || 'Failed to toggle FAQ status');
       }
     } catch (error) {
-      console.error('❌ Error toggling FAQ status:', error);
+      console.error('âŒ Error toggling FAQ status:', error);
       toast.error('Failed to toggle FAQ status. Please try again.');
     }
   };
@@ -378,7 +378,7 @@ const AdminFAQs = () => {
           {authWarning && (
             <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl animate-pulse">
               <p className="text-yellow-800 dark:text-yellow-400 text-sm font-bold flex items-center gap-2">
-                ⚠️ Auth session expired. Please re-login to manage inactive FAQs.
+                âš ï¸ Auth session expired. Please re-login to manage inactive FAQs.
               </p>
             </div>
           )}
@@ -805,7 +805,7 @@ const AdminFAQs = () => {
                         })
                         .map(property => (
                           <option key={property._id} value={property._id}>
-                            {property.name.toUpperCase()} — {property.city.toUpperCase()}
+                            {property.name.toUpperCase()} â€” {property.city.toUpperCase()}
                           </option>
                         ))}
                     </select>

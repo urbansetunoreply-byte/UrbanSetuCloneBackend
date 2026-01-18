@@ -1,4 +1,4 @@
-services:
+﻿services:
   - type: web
     name: urbansetu-backend
     env: node
@@ -27,4 +27,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://urbansetu.onrender.com
+        value: https://urbansetu-pvt4.onrender.com

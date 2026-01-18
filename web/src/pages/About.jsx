@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaDownload, FaAndroid, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -8,7 +8,7 @@ import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
 export default function About() {
   // Set page title
@@ -386,7 +386,7 @@ export default function About() {
                   <span className="font-medium">+1 (555) 987-6543</span>
                 </button>
               </div>
-              <p className="text-sm text-blue-600 dark:text-blue-400 mt-3">📱 Mobile: Tap to call | 💻 Desktop: Click to copy</p>
+              <p className="text-sm text-blue-600 dark:text-blue-400 mt-3">ðŸ“± Mobile: Tap to call | ðŸ’» Desktop: Click to copy</p>
             </div>
 
             {/* Email Support */}
@@ -404,7 +404,7 @@ export default function About() {
                   <span className="font-medium">info@urbansetu.com</span>
                 </a>
               </div>
-              <p className="text-sm text-green-600 dark:text-green-400 mt-3">📧 24/7 email support available</p>
+              <p className="text-sm text-green-600 dark:text-green-400 mt-3">ðŸ“§ 24/7 email support available</p>
             </div>
           </div>
         </div>

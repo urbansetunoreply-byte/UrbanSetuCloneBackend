@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -52,7 +52,7 @@ const AdminBlogs = () => {
 
   const [propertySearch, setPropertySearch] = useState('');
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
   // Separate useEffect for initial load and static data
   useEffect(() => {
@@ -620,7 +620,7 @@ const AdminBlogs = () => {
                           <h3 className="font-black text-gray-800 dark:text-white line-clamp-1">{blog.title}</h3>
                           <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mt-1 font-bold">
                             <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">{new Date(blog.createdAt).toLocaleDateString()}</span>
-                            <span>•</span>
+                            <span>â€¢</span>
                             <span className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">{blog.views || 0} views</span>
                           </div>
                         </div>

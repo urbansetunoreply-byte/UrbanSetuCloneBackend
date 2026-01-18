@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { FaShareAlt, FaCopy, FaTrash, FaClock, FaCheck, FaTimes, FaGlobe, FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -8,7 +8,7 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
     const [expiryType, setExpiryType] = useState('30days');
     const [customTitle, setCustomTitle] = useState(currentChatName || '');
     const [copied, setCopied] = useState(false);
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
     useEffect(() => {
         if (isOpen && sessionId) {
