@@ -1,6 +1,7 @@
 import Agent from "../models/agent.model.js";
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
+import { sendAgentApprovalEmail, sendAgentRejectionEmail } from "../utils/emailService.js";
 
 // --- Public Endpoints ---
 
@@ -165,10 +166,22 @@ export const updateAgentStatus = async (req, res, next) => {
             agent.isVerified = true;
             // Also optionally update User role to 'agent' here if we want role-based permissions
             // await User.findByIdAndUpdate(agent.userId, { role: 'agent' });
-            // For now, let's stick to status.
         }
 
         await agent.save();
+
+        // Send automated emails
+        try {
+            if (status === 'approved') {
+                await sendAgentApprovalEmail(agent.email, agent.name);
+            } else if (status === 'rejected') {
+                await sendAgentRejectionEmail(agent.email, agent.name, rejectionReason);
+            }
+        } catch (emailError) {
+            console.error('Failed to send agent status email:', emailError);
+            // Don't fail the request if email fails
+        }
+
         res.status(200).json(agent);
     } catch (error) {
         next(error);

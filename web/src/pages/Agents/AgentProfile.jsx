@@ -1,8 +1,14 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
 
 const AgentProfile = () => {
     const { id } = useParams();
-    // ... (rest of imports)
+    const [agent, setAgent] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const { currentUser } = useSelector(state => state.user);
 
     useEffect(() => {
         const fetchAgent = async () => {

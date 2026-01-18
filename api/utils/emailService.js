@@ -758,6 +758,97 @@ export const sendUpdateAnnouncementEmail = async (email, update) => {
   }
 };
 
+export const sendAgentApprovalEmail = async (email, name) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Application Approved - Welcome to UrbanSetu Agent Network',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Agent Application Update</p>
+          </div>
+          
+          <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #059669;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Congratulations, ${name}!</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              We are excited to inform you that your application to become an UrbanSetu Partner Agent has been <strong>APPROVED</strong>.
+            </p>
+            <p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.6;">
+              You now have access to the Agent Dashboard where you can manage listings, view leads, and grow your real estate business.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="${clientBaseUrl}/user/agent-dashboard" style="display: inline-block; background-color: #059669; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Access Dashboard</a>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? createSuccessResponse(result.messageId, 'agent_approval') : createErrorResponse(new Error(result.error), 'agent_approval');
+  } catch (error) {
+    return createErrorResponse(error, 'agent_approval');
+  }
+};
+
+export const sendAgentRejectionEmail = async (email, name, reason) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Update on Your UrbanSetu Agent Application',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #dc2626; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Application Status</p>
+          </div>
+          
+          <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Dear ${name},</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Thank you for your interest in joining UrbanSetu. After carefully reviewing your application, we regret to inform you that we are unable to approve your request at this time.
+            </p>
+            <div style="margin-top: 15px; background: white; padding: 10px; border-radius: 4px; border: 1px solid #fee2e2;">
+              <strong>Reason:</strong><br>
+              <span style="color: #ef4444;">${reason || 'Does not meet current requirements.'}</span>
+            </div>
+            <p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.6;">
+              You are welcome to re-apply after addressing the above points or in 30 days.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ? createSuccessResponse(result.messageId, 'agent_rejection') : createErrorResponse(new Error(result.error), 'agent_rejection');
+  } catch (error) {
+    return createErrorResponse(error, 'agent_rejection');
+  }
+};
+
 export const sendNewLoginEmail = async (email, device, ip, location, loginTime) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
