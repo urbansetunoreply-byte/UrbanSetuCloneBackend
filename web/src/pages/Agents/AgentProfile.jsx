@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaTimes, FaSpinner, FaTrash } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaTimes, FaSpinner, FaTrash, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
@@ -95,6 +95,33 @@ const AgentProfile = () => {
                 }));
             } else {
                 toast.error("Failed to delete review");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Network error");
+        }
+    };
+
+    // Admin Agent Management
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [showApproveModal, setShowApproveModal] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
+
+    const handleUpdateStatus = async (status, reason = null) => {
+        try {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/admin/status/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, rejectionReason: reason })
+            });
+
+            if (res.ok) {
+                toast.success(`Agent ${status} successfully`);
+                setAgent(prev => ({ ...prev, status }));
+                setShowApproveModal(false);
+                setShowRejectModal(false);
+            } else {
+                toast.error("Failed to update status");
             }
         } catch (error) {
             console.error(error);
@@ -231,6 +258,56 @@ const AgentProfile = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-10">
+                {/* Admin Management Panel */}
+                {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-blue-200 dark:border-blue-900 shadow-md mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400">
+                                <FaUserTie />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-gray-900 dark:text-white">Admin Controls</h3>
+                                <p className="text-xs text-gray-500">Manage this agent account</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${agent.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400' :
+                                    agent.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                        'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400'
+                                }`}>
+                                Current Status: {agent.status}
+                            </span>
+
+                            {agent.status === 'pending' && (
+                                <>
+                                    <button
+                                        onClick={() => setShowApproveModal(true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors text-sm"
+                                    >
+                                        <FaCheck /> Approve
+                                    </button>
+                                    <button
+                                        onClick={() => setShowRejectModal(true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors text-sm"
+                                    >
+                                        <FaTimes /> Reject
+                                    </button>
+                                </>
+                            )}
+
+                            {agent.status === 'approved' && (
+                                <button
+                                    onClick={() => setShowRejectModal(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 border border-red-200 rounded-lg font-medium transition-colors text-sm"
+                                >
+                                    <FaTimes /> Revoke Access
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
                     <div className="md:flex">
                         {/* Sidebar / Left Info */}
@@ -570,6 +647,71 @@ const AgentProfile = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* Approve Modal */}
+            {showApproveModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6">
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-green-600 dark:text-green-400">
+                            <FaCheck size={28} />
+                        </div>
+                        <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">Approve Agent?</h3>
+                        <p className="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
+                            Are you sure you want to approve <strong>{agent.name}</strong>? They will gain access to agent features immediately.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowApproveModal(false)}
+                                className="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => handleUpdateStatus('approved')}
+                                className="flex-1 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium"
+                            >
+                                Approve
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Reject Modal */}
+            {showRejectModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+                        <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600 dark:text-red-400">
+                            <FaExclamationTriangle size={24} />
+                        </div>
+                        <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
+                            {agent.status === 'approved' ? 'Revoke Access' : 'Reject Application'}
+                        </h3>
+                        <p className="text-center text-gray-500 dark:text-gray-400 mb-4 text-sm">
+                            Please provide a reason for {agent.status === 'approved' ? 'revoking access' : 'rejection'}.
+                        </p>
+                        <textarea
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white mb-4 h-32 text-sm"
+                            placeholder="Reason..."
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                        ></textarea>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowRejectModal(false)}
+                                className="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => handleUpdateStatus('rejected', rejectReason)}
+                                className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium"
+                            >
+                                {agent.status === 'approved' ? 'Revoke' : 'Reject'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

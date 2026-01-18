@@ -957,6 +957,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/community-guidelines" element={<CommunityGuidelines />} />
               <Route path="/admin/updates" element={<AdminUpdates />} />
               <Route path="/admin/agents" element={<AdminAgents />} />
+              <Route path="/admin/agents/:id" element={<AgentProfile />} />
               <Route path="/admin/help-center" element={<AdminHelpCenter />} />
               <Route path="/admin/management" element={<AdminManagement />} />
               <Route path="/admin/download" element={<Downloads />} />
