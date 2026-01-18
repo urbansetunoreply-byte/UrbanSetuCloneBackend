@@ -146,6 +146,11 @@ const ClientErrorMonitoring = lazy(() => import('./pages/ClientErrorMonitoring')
 const HelpCenter = lazy(() => import('./pages/HelpCenter/HelpCenter'));
 const ArticleView = lazy(() => import('./pages/HelpCenter/ArticleView'));
 const AdminHelpCenter = lazy(() => import('./pages/HelpCenter/AdminHelpCenter'));
+const FindAgent = lazy(() => import('./pages/Agents/FindAgent'));
+const BecomeAgent = lazy(() => import('./pages/Agents/BecomeAgent'));
+const AgentProfile = lazy(() => import('./pages/Agents/AgentProfile'));
+const AdminAgents = lazy(() => import('./pages/AdminAgents'));
+const AgentDashboard = lazy(() => import('./pages/Agents/AgentDashboard'));
 
 
 // Helper for Help Center Redirects
@@ -853,6 +858,11 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/security/unlock-account/:token" element={<UnlockAccount />} />
             <Route path="/download" element={currentUser ? <Navigate to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? "/admin/download" : "/user/download"} /> : <Downloads />} />
 
+            {/* Agent Routes (Public) */}
+            <Route path="/agents" element={<FindAgent />} />
+            <Route path="/agents/:id" element={<AgentProfile />} />
+            <Route path="/become-an-agent" element={<BecomeAgent />} />
+
             {/* User Routes (Protected) */}
             <Route element={<Private bootstrapped={bootstrapped} />}>
               <Route path="/user" element={<Home />} />
@@ -908,6 +918,9 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/download" element={<Downloads />} />
               <Route path="/user/help-center" element={<HelpCenter />} />
               <Route path="/user/help-center/article/:slug" element={<ArticleView />} />
+              <Route path="/user/agents" element={<FindAgent />} />
+              <Route path="/user/agents/:id" element={<AgentProfile />} />
+              <Route path="/agent/dashboard" element={<AgentDashboard />} />
 
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
@@ -943,6 +956,8 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/cookie-policy" element={<AdminCookiePolicy />} />
               <Route path="/admin/community-guidelines" element={<CommunityGuidelines />} />
               <Route path="/admin/updates" element={<AdminUpdates />} />
+              <Route path="/admin/agents" element={<AdminAgents />} />
+              <Route path="/admin/help-center" element={<AdminHelpCenter />} />
               <Route path="/admin/management" element={<AdminManagement />} />
               <Route path="/admin/download" element={<Downloads />} />
               <Route path="/admin/reviews" element={<AdminReviews />} />

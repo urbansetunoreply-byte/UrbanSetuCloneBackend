@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { isMobileDevice } from '../utils/mobileUtils';
-import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog, FaFileContract, FaGavel, FaMoneyCheckAlt } from "react-icons/fa";
+import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog, FaFileContract, FaGavel, FaMoneyCheckAlt, FaUserTie, FaHeadset } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
 import EncryptedText from "../components/ui/EncryptedText";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
@@ -2281,6 +2281,21 @@ export default function Profile() {
             </span>
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+            <Link
+              to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/help-center" : "/user/help-center"}
+              className={`bg-purple-500 text-white p-3 rounded-lg hover:bg-purple-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-purple-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-300`}
+            >
+              <FaHeadset className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
+              <span className="font-medium text-xs sm:text-sm">Help Center</span>
+            </Link>
+
+            <Link
+              to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/agents" : "/user/agents"}
+              className={`bg-teal-500 text-white p-3 rounded-lg hover:bg-teal-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-400`}
+            >
+              <FaUserTie className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
+              <span className="font-medium text-xs sm:text-sm">Agents</span>
+            </Link>
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <button
                 onClick={handleShowListings}
