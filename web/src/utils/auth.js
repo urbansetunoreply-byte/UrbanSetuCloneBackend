@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../config/api';
+
 export const areCookiesEnabled = () => {
   // Dummy function to prevent breaking imports
   return true;
@@ -27,9 +29,7 @@ export const authenticatedFetch = async (url, options = {}) => {
 
   if (response.status === 401 && !options._retry) {
     try {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
-      const refreshToken = localStorage.getItem('refreshToken');
-      const refreshRes = await fetch(`${apiUrl}/api/auth/refresh`, {
+      const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
