@@ -10,6 +10,10 @@ const generateSlug = (title) => {
         .replace(/\s+/g, "-");
 };
 
+const escapeRegex = (text) => {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+};
+
 export const getArticles = async (req, res, next) => {
     try {
         const { category, search, limit, slug, sort } = req.query;
@@ -30,7 +34,17 @@ export const getArticles = async (req, res, next) => {
             // For simple implementation, if search exists, we handle it in the match or separate flow.
             // Current requirement implies "Popular Articles" section which usually has no search term.
             if (search) {
-                pipeline.push({ $match: { $text: { $search: search } } });
+                const searchRegex = new RegExp(escapeRegex(search), 'i');
+                pipeline.push({
+                    $match: {
+                        $or: [
+                            { title: { $regex: searchRegex } },
+                            { description: { $regex: searchRegex } },
+                            { content: { $regex: searchRegex } },
+                            { tags: { $regex: searchRegex } }
+                        ]
+                    }
+                });
             }
 
             // Calculate Score: Views(1x) + Helpful(10x) - NotHelpful(5x)
@@ -59,7 +73,15 @@ export const getArticles = async (req, res, next) => {
 
         if (category) query.category = category;
         if (slug) query.slug = slug;
-        if (search) query.$text = { $search: search };
+        if (search) {
+            const searchRegex = new RegExp(escapeRegex(search), 'i');
+            query.$or = [
+                { title: searchRegex },
+                { description: searchRegex },
+                { content: searchRegex },
+                { tags: searchRegex }
+            ];
+        }
 
         const articles = await HelpArticle.find(query)
             .sort({ createdAt: -1 }) // Newest first

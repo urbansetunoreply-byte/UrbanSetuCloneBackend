@@ -30,6 +30,7 @@ const HelpCenter = () => {
             setArticles(data);
         } catch (error) {
             console.error("Failed to fetch articles", error);
+            setArticles([]);
         } finally {
             setLoading(false);
         }
