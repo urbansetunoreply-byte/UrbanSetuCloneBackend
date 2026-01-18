@@ -82,11 +82,9 @@ const Footer = () => {
               <li>
                 <Link
                   to={
-                    currentUser
-                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin"
-                        : "/user"
-                      : "/"
+                    currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                      ? "/admin"
+                      : "/user"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -115,11 +113,11 @@ const Footer = () => {
               <li>
                 <Link
                   to={
-                    currentUser
-                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/explore"
-                        : "/user/search"
-                      : "/search"
+                    currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                      ? "/admin/explore"
+                      : currentUser
+                        ? "/user/search"
+                        : "/search"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -129,11 +127,11 @@ const Footer = () => {
               <li>
                 <Link
                   to={
-                    currentUser
-                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/about"
-                        : "/user/about"
-                      : "/about"
+                    currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                      ? "/admin/about"
+                      : currentUser
+                        ? "/user/about"
+                        : "/about"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -156,14 +154,14 @@ const Footer = () => {
             <h4 className="text-lg font-semibold dark:text-white">Services</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                <Link to={(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin'))
                   ? "/admin/create-listing"
                   : "/user/create-listing"} className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   List Property
                 </Link>
               </li>
               <li>
-                <Link to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                <Link to={(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin'))
                   ? "/admin/appointments"
                   : "/user/my-appointments"} className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Book Appointment
@@ -172,11 +170,9 @@ const Footer = () => {
               <li>
                 <Link
                   to={
-                    currentUser
-                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/ai"
-                        : "/user/ai"
-                      : "/ai"
+                    currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                      ? "/admin/ai"
+                      : "/user/ai"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -185,7 +181,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                  to={(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin'))
                     ? "/admin/route-planner"
                     : "/user/route-planner"}
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
@@ -195,7 +191,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                  to={(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin'))
                     ? "/admin/rental-contracts"
                     : "/user/rental-contracts"}
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
@@ -205,7 +201,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                  to={(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin'))
                     ? "/admin/property-verification"
                     : "/user/property-verification"}
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
@@ -223,11 +219,9 @@ const Footer = () => {
               <li>
                 <Link
                   to={
-                    currentUser
-                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/blogs"
-                        : "/user/blogs"
-                      : "/blogs"
+                    currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                      ? "/admin/blogs"
+                      : "/user/blogs"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -237,11 +231,9 @@ const Footer = () => {
               <li>
                 <Link
                   to={
-                    currentUser
-                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/help-center"
-                        : "/help-center"
-                      : "/help-center"
+                    currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                      ? "/admin/help-center"
+                      : "/user/help-center"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -260,17 +252,15 @@ const Footer = () => {
               </li>
               <li>
                 <Link to={
-                  currentUser
-                    ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                      ? "/admin/agents"
-                      : "/user/agents"
-                    : "/agents"
+                  currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                    ? "/admin/agents"
+                    : "/user/agents"
                 } className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Find an Agent
                 </Link>
               </li>
               <li>
-                <Link to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                <Link to={(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin'))
                   ? "/admin/investment-tools"
                   : "/user/investment-tools"} className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Investment Tools
