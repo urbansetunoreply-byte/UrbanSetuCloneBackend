@@ -29,6 +29,7 @@ export const authenticatedFetch = async (url, options = {}) => {
 
   if (response.status === 401 && !options._retry) {
     try {
+      const refreshToken = localStorage.getItem('refreshToken');
       const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
         method: 'POST',
         headers: {
