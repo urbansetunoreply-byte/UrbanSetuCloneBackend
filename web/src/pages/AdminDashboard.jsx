@@ -32,7 +32,8 @@ import DailyQuote from "../components/DailyQuote";
 import SeasonalEffects from "../components/SeasonalEffects";
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 import ThemeDetailModal from "../components/ThemeDetailModal";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { API_BASE_URL } from '../config/api';
+import { authenticatedFetch } from '../utils/auth';
 
 export default function AdminDashboard() {
   // Set page title
@@ -160,8 +161,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchSentiment = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/ai/sentiment/summary`);
-        const data = res.data;
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/ai/sentiment/summary`);
+        const data = await res.json();
         if (data && typeof data === 'object') setSentimentSummary({
           positive: data.positive || 0,
           negative: data.negative || 0,
@@ -296,11 +297,10 @@ export default function AdminDashboard() {
 
   const fetchAuditLogs = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/session-management/admin/audit-logs?limit=100`, {
-        withCredentials: true
-      });
-      if (res.data.success) {
-        setAuditLogs(res.data.logs);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/session-management/admin/audit-logs?limit=100`);
+      const data = await res.json();
+      if (data.success) {
+        setAuditLogs(data.logs);
       }
     } catch (error) {
       console.error('Failed to fetch audit logs:', error);
@@ -346,8 +346,9 @@ export default function AdminDashboard() {
 
   const fetchOfferListings = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/listing/get?offer=true&limit=6`, { withCredentials: true });
-      setOfferListings(res.data);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?offer=true&limit=6`);
+      const data = await res.json();
+      setOfferListings(data);
     } catch (error) {
       console.error("Error fetching offer listings", error);
     }
@@ -355,8 +356,9 @@ export default function AdminDashboard() {
 
   const fetchRentListings = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/listing/get?type=rent&limit=6`, { withCredentials: true });
-      setRentListings(res.data);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?type=rent&limit=6`);
+      const data = await res.json();
+      setRentListings(data);
     } catch (error) {
       console.error("Error fetching rent listings", error);
     }
@@ -364,8 +366,9 @@ export default function AdminDashboard() {
 
   const fetchSaleListings = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/listing/get?type=sale&limit=6`, { withCredentials: true });
-      setSaleListings(res.data);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?type=sale&limit=6`);
+      const data = await res.json();
+      setSaleListings(data);
     } catch (error) {
       console.error("Error fetching sale listings", error);
     }
@@ -373,10 +376,9 @@ export default function AdminDashboard() {
 
   const fetchAppointmentCount = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/bookings`, {
-        withCredentials: true
-      });
-      setAppointmentCount(res.data.length);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings`);
+      const data = await res.json();
+      setAppointmentCount(data.length);
     } catch (error) {
       console.error('Failed to fetch appointment count:', error);
     }
@@ -384,10 +386,9 @@ export default function AdminDashboard() {
 
   const fetchBookingStats = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/bookings/stats`, {
-        withCredentials: true
-      });
-      setBookingStats(res.data);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/stats`);
+      const data = await res.json();
+      setBookingStats(data);
     } catch (error) {
       console.error('Failed to fetch booking stats:', error);
     }
@@ -395,17 +396,16 @@ export default function AdminDashboard() {
 
   const fetchSecurityStats = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/auth/otp/stats`, {
-        withCredentials: true
-      });
-      if (res.data.success) {
-        const recent = res.data.recent || [];
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/stats`);
+      const data = await res.json();
+      if (data.success) {
+        const recent = data.recent || [];
         const totalOtpRequests = recent.reduce((sum, r) => sum + (r.otpRequestCount || 0), 0);
         const totalFailedAttempts = recent.reduce((sum, r) => sum + (r.failedOtpAttempts || 0), 0);
 
         setSecurityStats({
-          activeOtpLockouts: res.data.activeLockouts || 0,
-          passwordLockouts: res.data.passwordLockouts || 0,
+          activeOtpLockouts: data.activeLockouts || 0,
+          passwordLockouts: data.passwordLockouts || 0,
           totalOtpRequests,
           totalFailedAttempts
         });
@@ -417,11 +417,10 @@ export default function AdminDashboard() {
 
   const fetchVisitorStats = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/visitors/stats?days=30`, {
-        withCredentials: true
-      });
-      if (res.data.success) {
-        setVisitorStats(res.data.stats);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/visitors/stats?days=30`);
+      const data = await res.json();
+      if (data.success) {
+        setVisitorStats(data.stats);
       }
     } catch (error) {
       console.error('Failed to fetch visitor stats:', error);
@@ -431,17 +430,17 @@ export default function AdminDashboard() {
   const fetchAnalytics = async () => {
     try {
       // Fetch user statistics
-      const usersRes = await axios.get(`${API_BASE_URL}/api/admin/management/users`, { withCredentials: true });
-      const adminsRes = await axios.get(`${API_BASE_URL}/api/admin/management/admins`, { withCredentials: true });
+      const usersRes = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/users`);
+      const adminsRes = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/admins`);
       // Fetch review statistics
-      const reviewsRes = await axios.get(`${API_BASE_URL}/api/review/admin/stats`, { withCredentials: true });
-      const reviewsAllRes = await axios.get(`${API_BASE_URL}/api/review/admin/all?status=approved&limit=1000&sort=date&order=desc`, { withCredentials: true });
+      const reviewsRes = await authenticatedFetch(`${API_BASE_URL}/api/review/admin/stats`);
+      const reviewsAllRes = await authenticatedFetch(`${API_BASE_URL}/api/review/admin/all?status=approved&limit=1000&sort=date&order=desc`);
       // Fetch listing statistics
-      const listingsRes = await axios.get(`${API_BASE_URL}/api/listing/get?limit=10000`, { withCredentials: true });
-      const fraudRes = await axios.get(`${API_BASE_URL}/api/ai/fraud/stats`);
+      const listingsRes = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=10000`);
+      const fraudRes = await authenticatedFetch(`${API_BASE_URL}/api/ai/fraud/stats`);
       // Fetch watchlist statistics
-      const watchlistStatsRes = await axios.get(`${API_BASE_URL}/api/watchlist/stats`, { withCredentials: true });
-      const topWatchedRes = await axios.get(`${API_BASE_URL}/api/watchlist/top`, { withCredentials: true });
+      const watchlistStatsRes = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/stats`);
+      const topWatchedRes = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/top`);
 
       let usersData = [];
       let adminsData = [];
@@ -452,37 +451,37 @@ export default function AdminDashboard() {
       let topWatchedProperties = [];
 
       try {
-        usersData = usersRes.data;
+        usersData = await usersRes.json();
       } catch (e) { }
 
       try {
-        adminsData = adminsRes.data;
+        adminsData = await adminsRes.json();
       } catch (e) { }
 
       try {
-        reviewsData = reviewsRes.data;
+        reviewsData = await reviewsRes.json();
       } catch (e) { }
 
       try {
-        const temp = reviewsAllRes.data;
+        const temp = await reviewsAllRes.json();
         allApprovedReviews = temp.reviews || temp; // depending on API shape
       } catch (e) { }
 
       try {
-        listingsData = listingsRes.data;
+        listingsData = await listingsRes.json();
       } catch (e) { }
 
       try {
-        watchlistStats = watchlistStatsRes.data;
+        watchlistStats = await watchlistStatsRes.json();
       } catch (e) { }
 
       try {
-        topWatchedProperties = topWatchedRes.data;
+        topWatchedProperties = await topWatchedRes.json();
       } catch (e) { }
 
       let fraudData = { suspiciousListings: 0, suspectedFakeReviews: 0, lastScan: null };
       try {
-        fraudData = fraudRes.data;
+        fraudData = await fraudRes.json();
       } catch (e) { }
 
       const listingStats = {
@@ -898,10 +897,12 @@ export default function AdminDashboard() {
     try {
       // Verify password
       try {
-        await axios.post(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`,
-          { password: deletePassword },
-          { withCredentials: true }
-        );
+        const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: deletePassword })
+        });
+        if (!verifyRes.ok) throw new Error('Password incorrect');
       } catch (verifyError) {
         setDeleteError("Incorrect password. Property not deleted.");
         setDeleteLoading(false);
@@ -909,19 +910,21 @@ export default function AdminDashboard() {
       }
 
       // Proceed to delete
-      const res = await axios.delete(`${API_BASE_URL}/api/listing/delete/${pendingDelete.id}`, {
-        withCredentials: true,
-        data: { reason: deleteReason }
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/delete/${pendingDelete.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: deleteReason })
       });
+      const data = await res.json();
 
       setOfferListings((prev) => prev.filter((l) => l._id !== pendingDelete.id));
       setRentListings((prev) => prev.filter((l) => l._id !== pendingDelete.id));
       setSaleListings((prev) => prev.filter((l) => l._id !== pendingDelete.id));
       setShowPasswordModal(false);
-      toast.success(res.data.message || 'Listing deleted successfully.');
+      toast.success(data.message || 'Listing deleted successfully.');
       fetchAnalytics();
     } catch (err) {
-      setDeleteError(err.response?.data?.message || 'An error occurred. Please try again.');
+      setDeleteError(err.message || 'An error occurred. Please try again.');
     } finally {
       setDeleteLoading(false);
     }

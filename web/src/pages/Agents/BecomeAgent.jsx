@@ -1,63 +1,46 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { FaUserShield, FaCheckCircle, FaBuilding, FaIdCard, FaSpinner, FaArrowLeft } from 'react-icons/fa';
+import { API_BASE_URL } from '../../config/api';
+import { authenticatedFetch } from '../../utils/auth';
 
 const BecomeAgent = () => {
-    const { currentUser } = useSelector((state) => state.user);
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    import { useSelector } from 'react-redux';
+    import { useNavigate } from 'react-router-dom';
+    import { toast } from 'react-toastify';
+    import { FaUserShield, FaCheckCircle, FaBuilding, FaIdCard, FaSpinner, FaArrowLeft } from 'react-icons/fa';
 
-    const [formData, setFormData] = useState({
-        name: currentUser ? currentUser.username : '',
-        mobileNumber: currentUser ? currentUser.mobileNumber : '',
-        city: currentUser ? currentUser.address || '' : '',
-        yearsOfExperience: '',
-        about: '',
-        areas: '',
-        reraId: '',
-        agencyName: '',
-    });
+    const BecomeAgent = () => {
+        const { currentUser } = useSelector((state) => state.user);
+        const navigate = useNavigate();
+        const [loading, setLoading] = useState(false);
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.id]: e.target.value
+        const [formData, setFormData] = useState({
+            name: currentUser ? currentUser.username : '',
+            mobileNumber: currentUser ? currentUser.mobileNumber : '',
+            city: currentUser ? currentUser.address || '' : '',
+            yearsOfExperience: '',
+            about: '',
+            areas: '',
+            reraId: '',
+            agencyName: '',
         });
-    };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!currentUser) {
-            toast.error("Please sign in to apply.");
-            navigate('/sign-in');
-            return;
-        }
-
-        try {
-            setLoading(true);
-            // Transform areas string to array
-            const payload = {
+        const handleChange = (e) => {
+            setFormData({
                 ...formData,
-                experience: formData.yearsOfExperience, // Map to schema field
-                areas: formData.areas.split(',').map(a => a.trim()).filter(a => a)
-            };
-
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/agent/apply`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                },
-                body: JSON.stringify(payload)
+                [e.target.id]: e.target.value
             });
+        };
 
-            const data = await res.json();
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            if (!currentUser) {
+                toast.error("Please sign in to apply.");
+                navigate('/sign-in');
+                return;
+            }
 
-            if (res.ok) {
-                toast.success("Application submitted successfully! Wait for admin approval.");
-                navigate('/agents');
+            try {
+                setLoading(true);
+                // Transform areas string to array
             } else {
                 toast.error(data.message || "Something went wrong");
             }

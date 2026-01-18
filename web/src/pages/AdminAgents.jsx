@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FaCheck, FaTimes, FaSearch, FaUserTie, FaArrowLeft, FaArrowRight, FaExclamationTriangle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../config/api';
+import { authenticatedFetch } from '../utils/auth';
 
 const AdminAgents = () => {
     const [agents, setAgents] = useState([]);
@@ -25,11 +26,7 @@ const AdminAgents = () => {
     const fetchAgents = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${API_BASE_URL}/api/agent/admin/all`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/admin/all`);
             const data = await res.json();
             if (res.ok) {
                 setAgents(data);
@@ -45,11 +42,10 @@ const AdminAgents = () => {
 
     const handleUpdateStatus = async (id, status, reason = null) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/agent/admin/status/${id}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/admin/status/${id}`, {
                 method: 'PATCH',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ status, rejectionReason: reason })
             });

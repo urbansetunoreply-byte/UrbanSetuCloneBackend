@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHome, FaUser, FaChartLine, FaEnvelope, FaCalendarAlt, FaPlus, FaEdit } from 'react-icons/fa';
+import { FaHome, FaChartLine, FaEnvelope, FaPlus, FaStar, } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../../config/api';
+import { authenticatedFetch } from '../../utils/auth';
 
 const AgentDashboard = () => {
     const { currentUser } = useSelector((state) => state.user);
@@ -15,13 +16,11 @@ const AgentDashboard = () => {
 
     const fetchAgentProfile = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/agent/status/me`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/status/me`);
             const data = await res.json();
             if (res.ok && data.isAgent) {
                 // Now fetch full profile details
-                const profileRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/agent/profile/${data.agentId}`);
+                const profileRes = await fetch(`${API_BASE_URL}/api/agent/profile/${data.agentId}`);
                 const profileData = await profileRes.json();
                 setAgentProfile(profileData);
             }
