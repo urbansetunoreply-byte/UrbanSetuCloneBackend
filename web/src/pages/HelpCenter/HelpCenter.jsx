@@ -37,19 +37,20 @@ const HelpCenter = () => {
     };
 
     useEffect(() => {
-        // Initial load: fetch recent/popular (no filter)
-        fetchArticles();
-    }, []);
+        const delayDebounceFn = setTimeout(() => {
+            fetchArticles(selectedCategory?.id || '', searchTerm);
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, selectedCategory]);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        fetchArticles(selectedCategory?.id || '', searchTerm);
     };
 
     const handleCategoryClick = (category) => {
         setSelectedCategory(category);
         setSearchTerm('');
-        fetchArticles(category.id, '');
     };
 
     const { currentUser } = useSelector((state) => state.user);
@@ -57,7 +58,6 @@ const HelpCenter = () => {
     const handleBackToHome = () => {
         setSelectedCategory(null);
         setSearchTerm('');
-        fetchArticles();
     };
 
     return (
