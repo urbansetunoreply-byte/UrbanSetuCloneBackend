@@ -734,8 +734,8 @@ const AgentProfile = () => {
             )}
             {/* Approve Modal */}
             {showApproveModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform transition-all scale-100">
                         <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-green-600 dark:text-green-400">
                             <FaCheck size={28} />
                         </div>
@@ -746,13 +746,13 @@ const AgentProfile = () => {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowApproveModal(false)}
-                                className="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => handleUpdateStatus('approved')}
-                                className="flex-1 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium"
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium transition-colors shadow-lg shadow-green-500/30"
                             >
                                 Approve
                             </button>
@@ -763,8 +763,8 @@ const AgentProfile = () => {
 
             {/* Reject Modal */}
             {showRejectModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
                         <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600 dark:text-red-400">
                             <FaExclamationTriangle size={24} />
                         </div>
@@ -772,31 +772,42 @@ const AgentProfile = () => {
                             {agent.status === 'approved' ? 'Revoke Access' : 'Reject Application'}
                         </h3>
                         <p className="text-center text-gray-500 dark:text-gray-400 mb-4 text-sm">
-                            Please provide a reason for {agent.status === 'approved' ? 'revoking access' : 'rejection'}.
+                            {agent.status === 'approved'
+                                ? <span>You are regarding to revoke access for <strong>{agent.name}</strong>.</span>
+                                : <span>You are about to reject <strong>{agent.name}</strong>.</span>
+                            }
+                            Please provide a reason below.
                         </p>
                         <textarea
-                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white mb-4 h-32 text-sm"
-                            placeholder="Reason..."
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none resize-none h-32 text-sm mb-4"
+                            placeholder="Reason for rejection (required)..."
                             value={rejectReason}
                             onChange={(e) => setRejectReason(e.target.value)}
                         ></textarea>
-                        <div className="flex gap-3">
+                        <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setShowRejectModal(false)}
-                                className="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => handleUpdateStatus('rejected', rejectReason)}
-                                className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium"
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/30"
                             >
-                                {agent.status === 'approved' ? 'Revoke' : 'Reject'}
+                                Reject Agent
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
+            <style>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
         </div>
     );
 };
