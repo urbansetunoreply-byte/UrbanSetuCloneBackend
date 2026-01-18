@@ -24,7 +24,7 @@ const AgentProfile = () => {
 
     const fetchAgent = async () => {
         try {
-            const url = `${API_BASE_URL} /api/agent / profile / ${id} `;
+            const url = `${API_BASE_URL}/api/agent/profile/${id}`;
             const res = await fetch(url);
             const data = await res.json();
 
@@ -75,7 +75,7 @@ const AgentProfile = () => {
         e.preventDefault();
         try {
             setUpdating(true);
-            const res = await authenticatedFetch(`${API_BASE_URL} /api/agent / update / me`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/update/me`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editFormData)
