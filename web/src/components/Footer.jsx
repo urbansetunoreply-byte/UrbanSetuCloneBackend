@@ -84,7 +84,9 @@ const Footer = () => {
                   to={
                     currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
                       ? "/admin"
-                      : "/user"
+                      : currentUser
+                        ? "/user"
+                        : "/"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -172,7 +174,9 @@ const Footer = () => {
                   to={
                     currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
                       ? "/admin/ai"
-                      : "/user/ai"
+                      : currentUser
+                        ? "/user/ai"
+                        : "/ai"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -233,7 +237,9 @@ const Footer = () => {
                   to={
                     currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
                       ? "/admin/help-center"
-                      : "/user/help-center"
+                      : currentUser
+                        ? "/user/help-center"
+                        : "/help-center"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -276,13 +282,25 @@ const Footer = () => {
             <h4 className="text-lg font-semibold dark:text-white">Legal & Privacy</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/terms" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors flex items-center gap-2">
+                <Link to={
+                  currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                    ? "/admin/terms"
+                    : currentUser
+                      ? "/user/terms"
+                      : "/terms"
+                } className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors flex items-center gap-2">
                   <FaFileContract className="text-xs" />
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors flex items-center gap-2">
+                <Link to={
+                  currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                    ? "/admin/privacy"
+                    : currentUser
+                      ? "/user/privacy"
+                      : "/privacy"
+                } className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors flex items-center gap-2">
                   <FaShieldAlt className="text-xs" />
                   Privacy Policy
                 </Link>
