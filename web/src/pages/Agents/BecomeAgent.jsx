@@ -1,52 +1,70 @@
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { FaUserShield, FaCheckCircle, FaBuilding, FaIdCard, FaSpinner, FaArrowLeft } from 'react-icons/fa';
 import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
 
 const BecomeAgent = () => {
-    import { useSelector } from 'react-redux';
-    import { useNavigate } from 'react-router-dom';
-    import { toast } from 'react-toastify';
-    import { FaUserShield, FaCheckCircle, FaBuilding, FaIdCard, FaSpinner, FaArrowLeft } from 'react-icons/fa';
+    const { currentUser } = useSelector((state) => state.user);
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
-    const BecomeAgent = () => {
-        const { currentUser } = useSelector((state) => state.user);
-        const navigate = useNavigate();
-        const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        name: currentUser ? currentUser.username : '',
+        mobileNumber: currentUser ? currentUser.mobileNumber : '',
+        city: currentUser ? currentUser.address || '' : '',
+        yearsOfExperience: '',
+        about: '',
+        areas: '',
+        reraId: '',
+        agencyName: '',
+    });
 
-        const [formData, setFormData] = useState({
-            name: currentUser ? currentUser.username : '',
-            mobileNumber: currentUser ? currentUser.mobileNumber : '',
-            city: currentUser ? currentUser.address || '' : '',
-            yearsOfExperience: '',
-            about: '',
-            areas: '',
-            reraId: '',
-            agencyName: '',
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.id]: e.target.value
         });
+    };
 
-        const handleChange = (e) => {
-            setFormData({
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!currentUser) {
+            toast.error("Please sign in to apply.");
+            navigate('/sign-in');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const areasArray = formData.areas.split(',').map(area => area.trim()).filter(area => area.length > 0);
+
+            const payload = {
                 ...formData,
-                [e.target.id]: e.target.value
+                areas: areasArray
+            };
+
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/apply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
             });
-        };
 
-        const handleSubmit = async (e) => {
-            e.preventDefault();
-            if (!currentUser) {
-                toast.error("Please sign in to apply.");
-                navigate('/sign-in');
-                return;
-            }
+            const data = await res.json();
 
-            try {
-                setLoading(true);
-                // Transform areas string to array
+            if (res.ok) {
+                toast.success('Application submitted successfully!');
+                navigate('/user/agent-dashboard');
             } else {
                 toast.error(data.message || "Something went wrong");
             }
         } catch (error) {
             console.error(error);
-            toast.error("Network error");
+            toast.error("Network error. Please try again.");
         } finally {
             setLoading(false);
         }
