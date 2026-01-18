@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaUserShield, FaCheckCircle, FaBuilding, FaIdCard, FaSpinner } from 'react-icons/fa';
+import { FaUserShield, FaCheckCircle, FaBuilding, FaIdCard, FaSpinner, FaArrowLeft } from 'react-icons/fa';
 
 const BecomeAgent = () => {
     const { currentUser } = useSelector((state) => state.user);
@@ -72,6 +72,13 @@ const BecomeAgent = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-12 transition-colors duration-300">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                {/* Back Link */}
+                <div className="mb-6">
+                    <button onClick={() => navigate('/agents')} className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
+                        <FaArrowLeft /> Back to Agents
+                    </button>
+                </div>
 
                 <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 mb-6">
@@ -174,7 +181,7 @@ const BecomeAgent = () => {
                                         {loading ? <FaSpinner className="animate-spin" /> : 'Submit Application'}
                                     </button>
                                     <p className="text-xs text-gray-500 mt-4 text-center">
-                                        By submitting, you agree to our Terms and Conditions for Partners.
+                                        By submitting, you agree to our <a href="/user/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Terms and Conditions for Partners</a>.
                                     </p>
                                 </div>
                             </form>

@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar, FaRobot, FaBan, FaExclamationTriangle } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar, FaRobot, FaBan, FaExclamationTriangle, FaUserTie } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
@@ -2981,6 +2981,41 @@ export default function Listing() {
               </div>
             </div>
           )}
+
+          {/* Find Agent Section */}
+          <div className="mt-8 mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-blue-100 dark:border-gray-600 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="bg-white dark:bg-gray-600 p-3 rounded-full shadow-sm">
+                <FaUserTie className="text-2xl text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h4 className="text-lg font-bold text-gray-800 dark:text-white">
+                  {currentUser ? (isAdmin ? "Manage Agents" : "Not sure about this property?") : "Need professional help?"}
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {currentUser
+                    ? (isAdmin ? "Access the agent management dashboard." : "Talk to a local agent for expert guidance.")
+                    : "Sign in to connect with verified local agents."}
+                </p>
+              </div>
+            </div>
+
+            {currentUser ? (
+              <Link
+                to={isAdmin ? "/admin/agents" : "/user/agents"}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 whitespace-nowrap flex items-center gap-2"
+              >
+                Find an Agent <FaArrowLeft className="rotate-180" />
+              </Link>
+            ) : (
+              <Link
+                to={`/sign-in?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 whitespace-nowrap flex items-center gap-2"
+              >
+                Sign In to Find Agent <FaArrowLeft className="rotate-180" />
+              </Link>
+            )}
+          </div>
 
           {listing && isListingUnavailable && (
             <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 items-start mb-6">
