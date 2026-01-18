@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch, FaMapMarkerAlt, FaFilter, FaUserPlus } from 'react-icons/fa';
+import { FaSearch, FaMapMarkerAlt, FaFilter, FaUserPlus, FaUserTie } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import AgentCard from '../../components/AgentCard';
 
