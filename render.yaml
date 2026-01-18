@@ -1,6 +1,6 @@
 ﻿services:
   - type: web
-    name: urbansetu-backend
+    name: urbansetu
     env: node
     plan: free
     buildCommand: npm install
