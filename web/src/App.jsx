@@ -253,7 +253,7 @@ function normalizeRoute(path, role) {
   }
 
   // List of base routes that have public-facing versions
-  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community", "help-center"];
+  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community", "help-center", "agents"];
 
   // List of base routes that exist for both user and admin but are NOT public
   const parallelBases = [
