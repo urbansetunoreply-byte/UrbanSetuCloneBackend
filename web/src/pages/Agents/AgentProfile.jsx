@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard } from 'react-icons/fa';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
 
 const AgentProfile = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [agent, setAgent] = useState(null);
     const [loading, setLoading] = useState(true);
     const { currentUser } = useSelector(state => state.user);
@@ -31,6 +32,14 @@ const AgentProfile = () => {
         fetchAgent();
     }, [id]);
 
+    const handleBack = () => {
+        if (currentUser) {
+            navigate('/user/agents');
+        } else {
+            navigate('/agents');
+        }
+    };
+
     if (loading) return (
         <div className="min-h-screen pt-20 flex justify-center items-center">
             <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -40,7 +49,7 @@ const AgentProfile = () => {
     if (!agent) return (
         <div className="min-h-screen pt-20 flex flex-col justify-center items-center">
             <h2 className="text-2xl font-bold dark:text-white">Agent Not Found</h2>
-            <Link to="/agents" className="text-blue-500 mt-4 hover:underline">Back to Agents</Link>
+            <button onClick={handleBack} className="text-blue-500 mt-4 hover:underline">Back to Agents</button>
         </div>
     );
 
@@ -49,9 +58,27 @@ const AgentProfile = () => {
             {/* Header / Cover */}
             <div className="bg-gradient-to-r from-gray-800 to-gray-900 h-64 md:h-80 relative">
                 <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/city-fields.png')]"></div>
+
+                {/* Header Content & Back Button */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 h-full flex flex-col justify-center">
+                    <button
+                        onClick={handleBack}
+                        className="absolute top-6 left-4 sm:left-6 flex items-center gap-2 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 px-4 py-2 rounded-lg transition-all backdrop-blur-sm"
+                    >
+                        <FaArrowLeft /> Back to Agents
+                    </button>
+                    <div className="text-center md:text-left md:ml-64 lg:ml-72 mt-8 animate-fade-in-up">
+                        <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-blue-200 text-xs font-semibold tracking-wider uppercase mb-2">
+                            Professional Agent
+                        </span>
+                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{agent.name}</h1>
+                        <p className="text-gray-300 max-w-xl">{agent.city} • {agent.experience} Years Experience</p>
+                    </div>
+                </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-10">
+                {/* Same content as before, just need to preserve rest of file. Since I am replacing whole file (easier due to complexity), I will paste rest. */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
                     <div className="md:flex">
                         {/* Sidebar / Left Info */}
@@ -69,10 +96,11 @@ const AgentProfile = () => {
                                 )}
                             </div>
 
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{agent.name}</h1>
+                            {/* Name logic moved to header, but we can keep subtle branding here or remove H1 */}
+                            {/* Let's keep a smaller version or just agency info */}
 
                             {agent.agencyName && (
-                                <p className="text-gray-600 dark:text-gray-400 flex items-center justify-center md:justify-start gap-2 mb-4">
+                                <p className="text-gray-600 dark:text-gray-400 flex items-center justify-center md:justify-start gap-2 mb-4 mt-2">
                                     <FaBuilding /> {agent.agencyName}
                                 </p>
                             )}

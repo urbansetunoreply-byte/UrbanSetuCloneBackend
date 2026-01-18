@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { FaSearch, FaMapMarkerAlt, FaFilter, FaUserPlus, FaUserTie } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import AgentCard from '../../components/AgentCard';
 
 const FindAgent = () => {
+    const navigate = useNavigate();
+    const { currentUser } = useSelector(state => state.user);
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -96,10 +100,20 @@ const FindAgent = () => {
                             {agents.length} Found
                         </span>
                     </h2>
-
-                    <Link to="/user/become-an-agent" className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                    <button
+                        onClick={() => {
+                            if (!currentUser) {
+                                toast.info("Please sign in to become an agent");
+                                // Optionally redirect to sign-in with return URL
+                                // navigate('/sign-in?redirect=/user/become-an-agent');
+                            } else {
+                                navigate('/user/become-an-agent');
+                            }
+                        }}
+                        className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold hover:underline bg-transparent border-none cursor-pointer"
+                    >
                         <FaUserPlus /> Become an Agent
-                    </Link>
+                    </button>
                 </div>
 
                 {loading ? (

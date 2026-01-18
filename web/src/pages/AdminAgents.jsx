@@ -190,8 +190,19 @@ const AdminAgents = () => {
                                                     </button>
                                                 </div>
                                             )}
-                                            {agent.status !== 'pending' && (
-                                                <span className="text-xs text-gray-400 italic">No actions available</span>
+                                            {agent.status === 'approved' && (
+                                                <div className="flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => openRejectModal(agent)}
+                                                        className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-semibold flex items-center gap-1"
+                                                        title="Revoke Access"
+                                                    >
+                                                        <FaTimes /> Revoke
+                                                    </button>
+                                                </div>
+                                            )}
+                                            {agent.status === 'rejected' && (
+                                                <span className="text-xs text-gray-400 italic">No remaining actions</span>
                                             )}
                                         </td>
                                     </tr>
@@ -263,9 +274,15 @@ const AdminAgents = () => {
                         <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600 dark:text-red-400">
                             <FaExclamationTriangle size={24} />
                         </div>
-                        <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">Reject Application</h3>
+                        <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
+                            {selectedAgent.status === 'approved' ? 'Revoke Access' : 'Reject Application'}
+                        </h3>
                         <p className="text-center text-gray-500 dark:text-gray-400 mb-4 text-sm">
-                            You are about to reject <strong>{selectedAgent.name}</strong>. Please provide a reason below.
+                            {selectedAgent.status === 'approved'
+                                ? <span>You are regarding to revoke access for <strong>{selectedAgent.name}</strong>.</span>
+                                : <span>You are about to reject <strong>{selectedAgent.name}</strong>.</span>
+                            }
+                            Please provide a reason below.
                         </p>
                         <textarea
                             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none resize-none h-32 text-sm mb-4"

@@ -1,7 +1,7 @@
 import Agent from "../models/agent.model.js";
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
-import { sendAgentApprovalEmail, sendAgentRejectionEmail } from "../utils/emailService.js";
+import { sendAgentApprovalEmail, sendAgentRejectionEmail, sendAgentRevokedEmail } from "../utils/emailService.js";
 
 // --- Public Endpoints ---
 
@@ -158,14 +158,14 @@ export const updateAgentStatus = async (req, res, next) => {
         const agent = await Agent.findById(id);
         if (!agent) return next(errorHandler(404, "Agent not found"));
 
+        const previousStatus = agent.status;
+
         agent.status = status;
         if (status === 'rejected' && rejectionReason) {
             agent.rejectionReason = rejectionReason;
         }
         if (status === 'approved') {
             agent.isVerified = true;
-            // Also optionally update User role to 'agent' here if we want role-based permissions
-            // await User.findByIdAndUpdate(agent.userId, { role: 'agent' });
         }
 
         await agent.save();
@@ -175,7 +175,13 @@ export const updateAgentStatus = async (req, res, next) => {
             if (status === 'approved') {
                 await sendAgentApprovalEmail(agent.email, agent.name);
             } else if (status === 'rejected') {
-                await sendAgentRejectionEmail(agent.email, agent.name, rejectionReason);
+                if (previousStatus === 'approved') {
+                    // Revocation
+                    await sendAgentRevokedEmail(agent.email, agent.name, rejectionReason);
+                } else {
+                    // Application Rejection
+                    await sendAgentRejectionEmail(agent.email, agent.name, rejectionReason);
+                }
             }
         } catch (emailError) {
             console.error('Failed to send agent status email:', emailError);
