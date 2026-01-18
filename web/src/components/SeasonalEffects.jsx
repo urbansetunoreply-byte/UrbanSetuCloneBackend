@@ -62,9 +62,9 @@ const SeasonalEffects = ({ className }) => {
             :root:not(.light) { --seasonal-thread: #cbd5e1; }
           }
           @keyframes seasonal-fall {
-            0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
+            0% { top: -10vh; transform: translateX(0) rotate(0deg); opacity: 0; }
             10% { opacity: 1; }
-            100% { transform: translateY(100vh) translateX(20px) rotate(360deg); opacity: 0; }
+            100% { top: 100vh; transform: translateX(20px) rotate(360deg); opacity: 0; }
           }
           @keyframes seasonal-float-up {
             0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
@@ -159,9 +159,9 @@ const SeasonalEffects = ({ className }) => {
                 return (
                     <div
                         key={p.id}
-                        className="absolute top-0 flex justify-center"
+                        className="absolute flex justify-center"
                         style={{
-                            left: 0,
+                            left: p.left,
                             width: content ? 'auto' : p.size,
                             height: (content && typeof content === 'string') ? 'auto' : p.size, // SVG needs height
                             backgroundColor: (content && typeof content === 'string') ? 'transparent' : (isKite && p.isSolid) ? 'transparent' : p.color,
