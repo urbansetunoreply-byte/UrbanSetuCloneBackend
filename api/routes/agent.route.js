@@ -10,7 +10,8 @@ import {
     checkMyAgentStatus,
     createAgentReview,
     getAgentReviews,
-    deleteAgentReview
+    deleteAgentReview,
+    updateAgentReview
 } from '../controllers/agent.controller.js';
 import { verifyToken, verifyAdmin } from '../utils/verify.js';
 
@@ -26,7 +27,8 @@ router.post('/apply', verifyToken, applyAgent);
 router.put('/update/me', verifyToken, updateAgentProfile);
 router.post('/review/:id', verifyToken, createAgentReview);
 router.get('/reviews/:id', getAgentReviews);
-router.delete('/admin/review/:reviewId', verifyToken, verifyAdmin, deleteAgentReview);
+router.put('/review/:reviewId', verifyToken, updateAgentReview);
+router.delete('/review/:reviewId', verifyToken, deleteAgentReview);
 
 // Admin Routes
 router.get('/admin/all', verifyToken, verifyAdmin, getAllAgentsAdmin);

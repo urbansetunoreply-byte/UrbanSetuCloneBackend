@@ -22,6 +22,8 @@ const AgentProfile = () => {
     const [reviews, setReviews] = useState([]);
     const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
     const [submittingReview, setSubmittingReview] = useState(false);
+    const [editingReviewId, setEditingReviewId] = useState(null);
+    const [editReviewData, setEditReviewData] = useState({ rating: 0, comment: '' });
 
     useEffect(() => {
         fetchAgent();
@@ -58,11 +60,13 @@ const AgentProfile = () => {
                 toast.success("Review submitted successfully!");
                 setReviews([data, ...reviews]);
                 setNewReview({ rating: 0, comment: '' });
-                // Update agent stats locally for immediate feedback
+                // Update stats locally
+                const count = (agent.reviewCount || 0) + 1;
+                const newAvg = ((agent.rating * (agent.reviewCount || 0)) + newReview.rating) / count;
                 setAgent(prev => ({
                     ...prev,
-                    reviewCount: (prev.reviewCount || 0) + 1,
-                    rating: ((prev.rating * (prev.reviewCount || 0)) + newReview.rating) / ((prev.reviewCount || 0) + 1)
+                    reviewCount: count,
+                    rating: newAvg
                 }));
             } else {
                 toast.error(data.message || "Failed to submit review");
@@ -78,13 +82,15 @@ const AgentProfile = () => {
     const handleDeleteReview = async (reviewId) => {
         if (!window.confirm("Are you sure you want to delete this review?")) return;
         try {
-            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/admin/review/${reviewId}`, {
+            // Updated endpoint (generic /review/:id)
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/review/${reviewId}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
                 toast.success("Review deleted");
                 setReviews(reviews.filter(r => r._id !== reviewId));
-                // Update stats locally
+
+                // Recalculate stats locally
                 const remaining = reviews.filter(r => r._id !== reviewId);
                 const count = remaining.length;
                 const total = remaining.reduce((acc, r) => acc + r.rating, 0);
@@ -99,6 +105,40 @@ const AgentProfile = () => {
         } catch (error) {
             console.error(error);
             toast.error("Network error");
+        }
+    };
+
+    const startEditing = (review) => {
+        setEditingReviewId(review._id);
+        setEditReviewData({ rating: review.rating, comment: review.comment });
+    };
+
+    const handleUpdateReview = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/review/${editingReviewId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editReviewData)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                toast.success("Review updated");
+                setReviews(reviews.map(r => r._id === editingReviewId ? data : r));
+                setEditingReviewId(null);
+
+                // Recalculate stats locally (approximate or refetch)
+                const updatedReviews = reviews.map(r => r._id === editingReviewId ? data : r);
+                const total = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
+                setAgent(prev => ({
+                    ...prev,
+                    rating: total / updatedReviews.length
+                }));
+            } else {
+                toast.error(data.message || "Failed to update");
+            }
+        } catch (error) {
+            console.error(error);
         }
     };
 
@@ -273,8 +313,8 @@ const AgentProfile = () => {
 
                         <div className="flex items-center gap-3">
                             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${agent.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400' :
-                                    agent.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                        'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400'
+                                agent.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                    'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400'
                                 }`}>
                                 Current Status: {agent.status}
                             </span>
@@ -448,32 +488,74 @@ const AgentProfile = () => {
                                     {reviews.length > 0 ? (
                                         reviews.map((review) => (
                                             <div key={review._id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <img src={review.userAvatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"} alt={review.userName} className="w-10 h-10 rounded-full object-cover" />
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{review.userName}</h4>
-                                                        <div className="flex text-yellow-400 text-xs">
-                                                            {[...Array(5)].map((_, i) => (
-                                                                <FaStar key={i} className={i < review.rating ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"} />
+                                                {editingReviewId === review._id ? (
+                                                    <form onSubmit={handleUpdateReview}>
+                                                        <div className="flex gap-2 mb-2">
+                                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                                <button
+                                                                    type="button"
+                                                                    key={star}
+                                                                    onClick={() => setEditReviewData({ ...editReviewData, rating: star })}
+                                                                    className={`text-lg ${star <= editReviewData.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                                                                >
+                                                                    <FaStar />
+                                                                </button>
                                                             ))}
                                                         </div>
-                                                    </div>
-                                                    <span className="ml-auto flex items-center gap-3">
-                                                        <span className="text-xs text-gray-400">
-                                                            {new Date(review.createdAt).toLocaleDateString()}
-                                                        </span>
-                                                        {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
-                                                            <button
-                                                                onClick={() => handleDeleteReview(review._id)}
-                                                                className="text-red-500 hover:text-red-700 transition-colors"
-                                                                title="Delete Review"
-                                                            >
-                                                                <FaTrash size={12} />
-                                                            </button>
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <p className="text-gray-600 dark:text-gray-300 text-sm pl-13">{review.comment}</p>
+                                                        <textarea
+                                                            value={editReviewData.comment}
+                                                            onChange={(e) => setEditReviewData({ ...editReviewData, comment: e.target.value })}
+                                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded mb-2 bg-gray-50 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
+                                                            rows="2"
+                                                        ></textarea>
+                                                        <div className="flex gap-2">
+                                                            <button type="submit" className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">Save</button>
+                                                            <button type="button" onClick={() => setEditingReviewId(null)} className="px-3 py-1 bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-xs rounded hover:opacity-80">Cancel</button>
+                                                        </div>
+                                                    </form>
+                                                ) : (
+                                                    <>
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <img src={review.userAvatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"} alt={review.userName} className="w-10 h-10 rounded-full object-cover" />
+                                                            <div>
+                                                                <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{review.userName}</h4>
+                                                                <div className="flex text-yellow-400 text-xs">
+                                                                    {[...Array(5)].map((_, i) => (
+                                                                        <FaStar key={i} className={i < review.rating ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"} />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            <span className="ml-auto flex items-center gap-2">
+                                                                <span className="text-xs text-gray-400">
+                                                                    {new Date(review.createdAt).toLocaleDateString()}
+                                                                </span>
+                                                                {currentUser && (
+                                                                    (currentUser._id === review.userId || currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                                                                ) && (
+                                                                        <div className="flex gap-2 ml-2">
+                                                                            {currentUser._id === review.userId && (
+                                                                                <button
+                                                                                    onClick={() => startEditing(review)}
+                                                                                    className="text-blue-500 hover:text-blue-700 transition-colors"
+                                                                                    title="Edit Review"
+                                                                                >
+                                                                                    <FaEdit size={12} />
+                                                                                </button>
+                                                                            )}
+                                                                            <button
+                                                                                onClick={() => handleDeleteReview(review._id)}
+                                                                                className="text-red-500 hover:text-red-700 transition-colors"
+                                                                                title="Delete Review"
+                                                                            >
+                                                                                <FaTrash size={12} />
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-gray-600 dark:text-gray-300 text-sm pl-13">{review.comment}</p>
+                                                    </>
+                                                )}
                                             </div>
                                         ))
                                     ) : (

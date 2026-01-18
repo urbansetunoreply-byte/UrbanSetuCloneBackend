@@ -288,10 +288,45 @@ export const getAgentReviews = async (req, res, next) => {
     }
 };
 
+export const updateAgentReview = async (req, res, next) => {
+    try {
+        const review = await Review.findById(req.params.reviewId);
+        if (!review) return next(errorHandler(404, "Review not found"));
+
+        if (review.userId.toString() !== req.user.id) return next(errorHandler(403, "You can only update your own review"));
+
+        const { rating, comment } = req.body;
+        if (rating) review.rating = rating;
+        if (comment) review.comment = comment;
+
+        await review.save();
+
+        // Recalculate stats
+        const agent = await Agent.findById(review.agentId);
+        if (agent) {
+            const reviews = await Review.find({ agentId: review.agentId, status: 'approved' });
+            const avg = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
+            agent.rating = avg;
+            await agent.save();
+        }
+
+        res.status(200).json(review);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const deleteAgentReview = async (req, res, next) => {
     try {
         const review = await Review.findById(req.params.reviewId);
         if (!review) return next(errorHandler(404, "Review not found"));
+
+        const isAdmin = req.user.role === 'admin' || req.user.role === 'rootadmin';
+        const isOwner = review.userId.toString() === req.user.id;
+
+        if (!isAdmin && !isOwner) {
+            return next(errorHandler(403, "You are not allowed to delete this review"));
+        }
 
         const agentId = review.agentId;
         await Review.findByIdAndDelete(req.params.reviewId);
