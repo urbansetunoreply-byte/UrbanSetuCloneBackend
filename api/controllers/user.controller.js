@@ -1,5 +1,6 @@
 import Listing from "../models/listing.model.js"
 import User from "../models/user.model.js"
+import Agent from "../models/agent.model.js"
 import { errorHandler } from "../utils/error.js"
 import mongoose from "mongoose"
 import DeletedAccount from '../models/deletedAccount.model.js';
@@ -156,6 +157,17 @@ export const updateUser = async (req, res, next) => {
             { userId: updatedUser._id },
             { $set: { userName: updatedUser.username, userAvatar: updatedUser.avatar } }
         );
+
+        // Sync with Agent Profile if exists
+        const agentUpdateFields = {};
+        if (updateFields.username) agentUpdateFields.name = updatedUser.username;
+        if (updateFields.mobileNumber) agentUpdateFields.mobileNumber = updatedUser.mobileNumber;
+        if (updateFields.avatar !== undefined) agentUpdateFields.photo = updatedUser.avatar;
+        if (updateFields.address) agentUpdateFields.city = updatedUser.address;
+
+        if (Object.keys(agentUpdateFields).length > 0) {
+            await Agent.findOneAndUpdate({ userId: updatedUser._id }, { $set: agentUpdateFields });
+        }
         // Return a plain object with all fields except password
         const { password, ...userObj } = updatedUser._doc;
         // Emit socket event for profile update

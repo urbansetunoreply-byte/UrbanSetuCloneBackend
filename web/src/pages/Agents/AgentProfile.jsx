@@ -117,7 +117,7 @@ const AgentProfile = () => {
                 <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/city-fields.png')]"></div>
 
                 {/* Header Content & Buttons */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 h-full flex flex-col justify-center">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 h-full">
                     <div className="absolute top-6 w-full flex justify-between pr-8">
                         <button
                             onClick={handleBack}
@@ -136,12 +136,15 @@ const AgentProfile = () => {
                         )}
                     </div>
 
-                    <div className="text-center md:text-left md:ml-64 lg:ml-72 mt-8 animate-fade-in-up">
-                        <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-blue-200 text-xs font-semibold tracking-wider uppercase mb-2">
-                            Professional Agent
-                        </span>
-                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{agent.name}</h1>
-                        <p className="text-gray-300 max-w-xl">{agent.city} • {agent.experience} Years Experience</p>
+                    <div className="h-full flex flex-col justify-center md:flex-row md:items-center">
+                        <div className="md:w-1/3"></div>
+                        <div className="md:w-2/3 md:pl-8 lg:pl-10 text-center md:text-left mt-12 md:mt-0 animate-fade-in-up">
+                            <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-blue-200 text-xs font-semibold tracking-wider uppercase mb-2">
+                                Professional Agent
+                            </span>
+                            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{agent.name}</h1>
+                            <p className="text-gray-300 max-w-xl mx-auto md:mx-0">{agent.city} • {agent.experience} Years Experience</p>
+                        </div>
                     </div>
                 </div>
             </div>
