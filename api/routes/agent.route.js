@@ -5,6 +5,7 @@ import {
     applyAgent,
     getAllAgentsAdmin,
     updateAgentStatus,
+    updateAgentProfile,
     deleteAgent,
     checkMyAgentStatus
 } from '../controllers/agent.controller.js';
@@ -19,6 +20,7 @@ router.get('/profile/:id', getAgent); // Public profile view
 // User Routes
 router.get('/status/me', verifyToken, checkMyAgentStatus);
 router.post('/apply', verifyToken, applyAgent);
+router.put('/update/me', verifyToken, updateAgentProfile);
 
 // Admin Routes
 router.get('/admin/all', verifyToken, verifyAdmin, getAllAgentsAdmin);

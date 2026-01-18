@@ -145,6 +145,37 @@ export const getAllAgentsAdmin = async (req, res, next) => {
     }
 };
 
+
+// Update Agent Profile (Self)
+export const updateAgentProfile = async (req, res, next) => {
+    try {
+        const agent = await Agent.findOne({ userId: req.user.id });
+        if (!agent) return next(errorHandler(404, "Agent profile not found"));
+
+        if (agent.status === 'rejected') {
+            return next(errorHandler(403, "Cannot edit a rejected profile. Please contact support."));
+        }
+
+        const allowedFields = ['name', 'mobileNumber', 'city', 'areas', 'experience', 'about', 'reraId', 'agencyName', 'photo'];
+
+        Object.keys(req.body).forEach(key => {
+            if (allowedFields.includes(key)) {
+                agent[key] = req.body[key];
+            }
+        });
+
+        // Ensure areas is array if string provided
+        if (req.body.areas && typeof req.body.areas === 'string') {
+            agent.areas = req.body.areas.split(',').map(a => a.trim()).filter(a => a);
+        }
+
+        await agent.save();
+        res.status(200).json(agent);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Update status (Approve/Reject)
 export const updateAgentStatus = async (req, res, next) => {
     try {
