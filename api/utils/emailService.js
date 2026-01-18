@@ -805,6 +805,7 @@ export const sendAgentApprovalEmail = async (email, name) => {
 };
 
 export const sendAgentRejectionEmail = async (email, name, reason) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -829,6 +830,10 @@ export const sendAgentRejectionEmail = async (email, name, reason) => {
             <p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.6;">
               You are welcome to re-apply after addressing the above points or in 30 days.
             </p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="${clientBaseUrl}/user/become-an-agent" style="display: inline-block; background-color: #dc2626; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">View Partner Program</a>
           </div>
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
