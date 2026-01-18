@@ -12,9 +12,9 @@ const HelpCenter = () => {
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-    const fetchArticles = async (category = '', search = '') => {
+    const fetchArticles = async (category = '', search = '', showLoading = true) => {
         try {
-            setLoading(true);
+            if (showLoading) setLoading(true);
             let url = `${API_BASE_URL}/api/help?limit=20`;
             if (category) url += `&category=${encodeURIComponent(category)}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
@@ -38,7 +38,10 @@ const HelpCenter = () => {
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            fetchArticles(selectedCategory?.id || '', searchTerm);
+            // Only show loader if we're not searching (e.g. initial load or category switch)
+            // prevents skeleton flickering while typing
+            const showLoader = !searchTerm;
+            fetchArticles(selectedCategory?.id || '', searchTerm, showLoader);
         }, 300);
 
         return () => clearTimeout(delayDebounceFn);
