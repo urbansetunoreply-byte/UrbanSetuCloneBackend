@@ -97,7 +97,7 @@ const FindAgent = () => {
                         </span>
                     </h2>
 
-                    <Link to="/become-an-agent" className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                    <Link to="/user/become-an-agent" className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold hover:underline">
                         <FaUserPlus /> Become an Agent
                     </Link>
                 </div>

@@ -38,7 +38,7 @@ const AgentDashboard = () => {
         <div className="p-10 text-center">
             <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
             <p>You do not have an active agent profile.</p>
-            <Link to="/become-an-agent" className="text-blue-500 hover:underline">Apply Now</Link>
+            <Link to="/user/become-an-agent" className="text-blue-500 hover:underline">Apply Now</Link>
         </div>
     );
 

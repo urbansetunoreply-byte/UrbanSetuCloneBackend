@@ -861,7 +861,6 @@ function AppRoutes({ bootstrapped }) {
             {/* Agent Routes (Public) */}
             <Route path="/agents" element={<FindAgent />} />
             <Route path="/agents/:id" element={<AgentProfile />} />
-            <Route path="/become-an-agent" element={<BecomeAgent />} />
 
             {/* User Routes (Protected) */}
             <Route element={<Private bootstrapped={bootstrapped} />}>
@@ -921,6 +920,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/agents" element={<FindAgent />} />
               <Route path="/user/agents/:id" element={<AgentProfile />} />
               <Route path="/agent/dashboard" element={<AgentDashboard />} />
+              <Route path="/user/become-an-agent" element={<BecomeAgent />} />
 
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
