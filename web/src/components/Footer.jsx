@@ -156,12 +156,16 @@ const Footer = () => {
             <h4 className="text-lg font-semibold dark:text-white">Services</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/user/create-listing" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                  ? "/admin/create-listing"
+                  : "/user/create-listing"} className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   List Property
                 </Link>
               </li>
               <li>
-                <Link to="/user/my-appointments" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                  ? "/admin/appointments"
+                  : "/user/my-appointments"} className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Book Appointment
                 </Link>
               </li>
@@ -170,9 +174,9 @@ const Footer = () => {
                   to={
                     currentUser
                       ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/ai-assistant"
-                        : "/user/ai-assistant"
-                      : "/ai-assistant"
+                        ? "/admin/ai"
+                        : "/user/ai"
+                      : "/ai"
                   }
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
@@ -181,13 +185,9 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to={
-                    currentUser
-                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/route-planner"
-                        : "/user/route-planner"
-                      : "/route-planner"
-                  }
+                  to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                    ? "/admin/route-planner"
+                    : "/user/route-planner"}
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
                   Route Planner
@@ -195,13 +195,9 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to={
-                    currentUser
-                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/rental-contracts"
-                        : "/user/rental-contracts"
-                      : "/rental-contracts"
-                  }
+                  to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                    ? "/admin/rental-contracts"
+                    : "/user/rental-contracts"}
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors"
                 >
                   Rental Contracts
@@ -209,13 +205,9 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to={
-                    currentUser
-                      ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                        ? "/admin/property-verification"
-                        : "/user/property-verification"
-                      : "/property-verification"
-                  }
+                  to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                    ? "/admin/property-verification"
+                    : "/user/property-verification"}
                   className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Property Verification
                 </Link>
@@ -267,12 +259,20 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/agents" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link to={
+                  currentUser
+                    ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                      ? "/admin/agents"
+                      : "/user/agents"
+                    : "/agents"
+                } className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Find an Agent
                 </Link>
               </li>
               <li>
-                <Link to="/user/investment-tools" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                  ? "/admin/investment-tools"
+                  : "/user/investment-tools"} className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Investment Tools
                 </Link>
               </li>
