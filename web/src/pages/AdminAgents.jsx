@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { FaCheck, FaTimes, FaSearch, FaUserTie, FaArrowLeft, FaArrowRight, FaExclamationTriangle } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { FaCheck, FaTimes, FaSearch, FaUserTie, FaArrowLeft, FaArrowRight, FaExclamationTriangle, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../config/api';
 import { authenticatedFetch } from '../utils/auth';
@@ -172,26 +173,34 @@ const AdminAgents = () => {
                                             </span>
                                         </td>
                                         <td className="p-4 text-right">
-                                            {agent.status === 'pending' && (
-                                                <div className="flex justify-end gap-2">
-                                                    <button
-                                                        onClick={() => openApproveModal(agent)}
-                                                        className="p-2 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-transform hover:scale-105 shadow-sm"
-                                                        title="Approve"
-                                                    >
-                                                        <FaCheck />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => openRejectModal(agent)}
-                                                        className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm"
-                                                        title="Reject"
-                                                    >
-                                                        <FaTimes />
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {agent.status === 'approved' && (
-                                                <div className="flex justify-end gap-2">
+                                            <div className="flex justify-end gap-2 items-center">
+                                                <Link
+                                                    to={`/user/agents/${agent._id}`}
+                                                    className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-transform hover:scale-105 shadow-sm"
+                                                    title="View Profile & Reviews"
+                                                >
+                                                    <FaEye />
+                                                </Link>
+
+                                                {agent.status === 'pending' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => openApproveModal(agent)}
+                                                            className="p-2 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-transform hover:scale-105 shadow-sm"
+                                                            title="Approve"
+                                                        >
+                                                            <FaCheck />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => openRejectModal(agent)}
+                                                            className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm"
+                                                            title="Reject"
+                                                        >
+                                                            <FaTimes />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {agent.status === 'approved' && (
                                                     <button
                                                         onClick={() => openRejectModal(agent)}
                                                         className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-semibold flex items-center gap-1"
@@ -199,11 +208,11 @@ const AdminAgents = () => {
                                                     >
                                                         <FaTimes /> Revoke
                                                     </button>
-                                                </div>
-                                            )}
-                                            {agent.status === 'rejected' && (
-                                                <span className="text-xs text-gray-400 italic">No remaining actions</span>
-                                            )}
+                                                )}
+                                                {agent.status === 'rejected' && (
+                                                    <span className="text-xs text-gray-400 italic">Rejected</span>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

@@ -1,5 +1,6 @@
 import Agent from "../models/agent.model.js";
 import User from "../models/user.model.js";
+import Review from "../models/review.model.js";
 import { errorHandler } from "../utils/error.js";
 import { sendAgentApprovalEmail, sendAgentRejectionEmail, sendAgentRevokedEmail } from "../utils/emailService.js";
 
@@ -234,3 +235,79 @@ export const deleteAgent = async (req, res, next) => {
         next(error);
     }
 }
+
+
+// --- Reviews ---
+
+export const createAgentReview = async (req, res, next) => {
+    try {
+        const { rating, comment } = req.body;
+        const agentId = req.params.id;
+        const userId = req.user.id;
+
+        const agent = await Agent.findById(agentId);
+        if (!agent) return next(errorHandler(404, "Agent not found"));
+        if (agent.userId.toString() === userId) return next(errorHandler(400, "You cannot review yourself"));
+
+        const existing = await Review.findOne({ agentId, userId });
+        if (existing) return next(errorHandler(400, "You have already reviewed this agent"));
+
+        const reviewer = await User.findById(userId);
+
+        const newReview = new Review({
+            agentId,
+            userId,
+            rating,
+            comment,
+            userName: reviewer.username,
+            userAvatar: reviewer.avatar,
+            status: 'approved'
+        });
+
+        await newReview.save();
+
+        const reviews = await Review.find({ agentId, status: 'approved' });
+        const avg = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
+
+        agent.rating = avg;
+        agent.reviewCount = reviews.length;
+        await agent.save();
+
+        res.status(201).json(newReview);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getAgentReviews = async (req, res, next) => {
+    try {
+        const reviews = await Review.find({ agentId: req.params.id }).sort({ createdAt: -1 });
+        res.status(200).json(reviews);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteAgentReview = async (req, res, next) => {
+    try {
+        const review = await Review.findById(req.params.reviewId);
+        if (!review) return next(errorHandler(404, "Review not found"));
+
+        const agentId = review.agentId;
+        await Review.findByIdAndDelete(req.params.reviewId);
+
+        if (agentId) {
+            const agent = await Agent.findById(agentId);
+            if (agent) {
+                const reviews = await Review.find({ agentId, status: 'approved' });
+                const avg = reviews.length > 0 ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length : 0;
+                agent.rating = avg;
+                agent.reviewCount = reviews.length;
+                await agent.save();
+            }
+        }
+        res.status(200).json("Review deleted");
+    } catch (error) {
+        next(error);
+    }
+};

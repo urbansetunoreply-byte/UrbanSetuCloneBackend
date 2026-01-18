@@ -4,7 +4,11 @@ const reviewSchema = new mongoose.Schema({
   listingId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Listing',
-    required: true
+    required: false
+  },
+  agentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Agent'
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -123,6 +127,7 @@ const reviewSchema = new mongoose.Schema({
 
 // Index for efficient queries
 reviewSchema.index({ listingId: 1, status: 1, createdAt: -1 });
+reviewSchema.index({ agentId: 1, status: 1, createdAt: -1 });
 reviewSchema.index({ userId: 1, createdAt: -1 });
 reviewSchema.index({ helpfulCount: -1, createdAt: -1 });
 

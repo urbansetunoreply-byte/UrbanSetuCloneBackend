@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaTimes, FaSpinner, FaTrash } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
@@ -18,11 +18,92 @@ const AgentProfile = () => {
     const [editFormData, setEditFormData] = useState({});
     const [updating, setUpdating] = useState(false);
 
+    // Review State
+    const [reviews, setReviews] = useState([]);
+    const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
+    const [submittingReview, setSubmittingReview] = useState(false);
+
     useEffect(() => {
         fetchAgent();
+        fetchReviews();
     }, [id]);
 
+    const fetchReviews = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/agent/reviews/${id}`);
+            const data = await res.json();
+            if (res.ok) {
+                setReviews(data);
+            }
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+        }
+    };
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        if (newReview.rating === 0) {
+            toast.error("Please select a rating");
+            return;
+        }
+        try {
+            setSubmittingReview(true);
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/review/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newReview)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                toast.success("Review submitted successfully!");
+                setReviews([data, ...reviews]);
+                setNewReview({ rating: 0, comment: '' });
+                // Update agent stats locally for immediate feedback
+                setAgent(prev => ({
+                    ...prev,
+                    reviewCount: (prev.reviewCount || 0) + 1,
+                    rating: ((prev.rating * (prev.reviewCount || 0)) + newReview.rating) / ((prev.reviewCount || 0) + 1)
+                }));
+            } else {
+                toast.error(data.message || "Failed to submit review");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Network error");
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
+
+    const handleDeleteReview = async (reviewId) => {
+        if (!window.confirm("Are you sure you want to delete this review?")) return;
+        try {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/admin/review/${reviewId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                toast.success("Review deleted");
+                setReviews(reviews.filter(r => r._id !== reviewId));
+                // Update stats locally
+                const remaining = reviews.filter(r => r._id !== reviewId);
+                const count = remaining.length;
+                const total = remaining.reduce((acc, r) => acc + r.rating, 0);
+                setAgent(prev => ({
+                    ...prev,
+                    reviewCount: count,
+                    rating: count > 0 ? total / count : 0
+                }));
+            } else {
+                toast.error("Failed to delete review");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Network error");
+        }
+    };
+
     const fetchAgent = async () => {
+
         try {
             const url = `${API_BASE_URL}/api/agent/profile/${id}`;
             const res = await fetch(url);
@@ -269,11 +350,101 @@ const AgentProfile = () => {
                             </section>
 
                             {/* Listings Section (Placeholder for now) */}
-                            <section>
+                            <section className="mb-10">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-b dark:border-gray-700 pb-2">Active Listings</h3>
                                 <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl text-center border border-dashed border-gray-300 dark:border-gray-600">
                                     <p className="text-gray-500 dark:text-gray-400">Listings integration coming soon...</p>
                                 </div>
+                            </section>
+
+                            {/* Reviews Section */}
+                            <section>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 border-b dark:border-gray-700 pb-2 flex justify-between items-center">
+                                    <span>Client Reviews</span>
+                                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                        {agent.reviewCount} review{agent.reviewCount !== 1 ? 's' : ''}
+                                    </span>
+                                </h3>
+
+                                {/* Review List */}
+                                <div className="space-y-6 mb-10">
+                                    {reviews.length > 0 ? (
+                                        reviews.map((review) => (
+                                            <div key={review._id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <img src={review.userAvatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"} alt={review.userName} className="w-10 h-10 rounded-full object-cover" />
+                                                    <div>
+                                                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{review.userName}</h4>
+                                                        <div className="flex text-yellow-400 text-xs">
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <FaStar key={i} className={i < review.rating ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"} />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <span className="ml-auto flex items-center gap-3">
+                                                        <span className="text-xs text-gray-400">
+                                                            {new Date(review.createdAt).toLocaleDateString()}
+                                                        </span>
+                                                        {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+                                                            <button
+                                                                onClick={() => handleDeleteReview(review._id)}
+                                                                className="text-red-500 hover:text-red-700 transition-colors"
+                                                                title="Delete Review"
+                                                            >
+                                                                <FaTrash size={12} />
+                                                            </button>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-600 dark:text-gray-300 text-sm pl-13">{review.comment}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-500 dark:text-gray-400 italic">No reviews yet. Be the first to review!</p>
+                                    )}
+                                </div>
+
+                                {/* Review Form */}
+                                {currentUser && !isOwner && (
+                                    <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                        <h4 className="font-bold text-gray-900 dark:text-white mb-4">Write a Review</h4>
+                                        <form onSubmit={handleReviewSubmit}>
+                                            <div className="mb-4">
+                                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Rating</label>
+                                                <div className="flex gap-2">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <button
+                                                            type="button"
+                                                            key={star}
+                                                            onClick={() => setNewReview({ ...newReview, rating: star })}
+                                                            className={`text-2xl transition-colors ${star <= newReview.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-200'}`}
+                                                        >
+                                                            <FaStar />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="mb-4">
+                                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Your Experience</label>
+                                                <textarea
+                                                    rows="3"
+                                                    value={newReview.comment}
+                                                    onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                                    className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                                    placeholder="Share your experience working with this agent..."
+                                                    required
+                                                ></textarea>
+                                            </div>
+                                            <button
+                                                type="submit"
+                                                disabled={submittingReview}
+                                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-70"
+                                            >
+                                                {submittingReview ? 'Submitting...' : 'Submit Review'}
+                                            </button>
+                                        </form>
+                                    </div>
+                                )}
                             </section>
                         </div>
                     </div>
