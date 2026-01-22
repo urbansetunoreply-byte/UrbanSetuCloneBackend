@@ -221,11 +221,24 @@ export default function AdminCoinStats() {
                     </div>
                 ))}
             </div>
-            <div className="h-96 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 animate-pulse">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 animate-pulse min-h-[500px]">
+                {/* Header */}
                 <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-6"></div>
+
+                {/* Filters Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                    ))}
+                </div>
+
+                {/* Table Header */}
+                <div className="h-10 bg-gray-100 dark:bg-gray-700/50 rounded-xl mb-4"></div>
+
+                {/* Table Rows */}
                 <div className="space-y-4">
                     {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="h-12 w-full bg-gray-100 dark:bg-gray-700 rounded-xl"></div>
+                        <div key={i} className="h-14 w-full bg-gray-50 dark:bg-gray-700/30 rounded-xl"></div>
                     ))}
                 </div>
             </div>
