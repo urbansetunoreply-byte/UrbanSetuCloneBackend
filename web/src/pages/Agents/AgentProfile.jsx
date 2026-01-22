@@ -498,29 +498,39 @@ const AgentProfile = () => {
                                         reviews.map((review) => (
                                             <div key={review._id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
                                                 {editingReviewId === review._id ? (
-                                                    <form onSubmit={handleUpdateReview}>
-                                                        <div className="flex gap-2 mb-2">
-                                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                                <button
-                                                                    type="button"
-                                                                    key={star}
-                                                                    onClick={() => setEditReviewData({ ...editReviewData, rating: star })}
-                                                                    className={`text-lg ${star <= editReviewData.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
-                                                                >
-                                                                    <FaStar />
-                                                                </button>
-                                                            ))}
+                                                    <form onSubmit={handleUpdateReview} className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-4 transition-all animate-fade-in-up">
+                                                        <h4 className="font-bold text-gray-900 dark:text-white mb-3">Edit Review</h4>
+
+                                                        <div className="mb-3">
+                                                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Rating</label>
+                                                            <div className="flex gap-2">
+                                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                                    <button
+                                                                        type="button"
+                                                                        key={star}
+                                                                        onClick={() => setEditReviewData({ ...editReviewData, rating: star })}
+                                                                        className={`text-lg transition-colors ${star <= editReviewData.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                                                                    >
+                                                                        <FaStar />
+                                                                    </button>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                        <textarea
-                                                            value={editReviewData.comment}
-                                                            onChange={(e) => setEditReviewData({ ...editReviewData, comment: e.target.value })}
-                                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded mb-2 bg-gray-50 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
-                                                            rows="3"
-                                                            placeholder="Update your review..."
-                                                        ></textarea>
-                                                        <div className="flex gap-2">
-                                                            <button type="submit" className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">Save</button>
-                                                            <button type="button" onClick={() => setEditingReviewId(null)} className="px-3 py-1 bg-gray-300 dark:bg-gray-700 text-black dark:text-white text-xs rounded hover:opacity-80">Cancel</button>
+
+                                                        <div className="mb-3">
+                                                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Your Experience</label>
+                                                            <textarea
+                                                                value={editReviewData.comment}
+                                                                onChange={(e) => setEditReviewData({ ...editReviewData, comment: e.target.value })}
+                                                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
+                                                                rows="3"
+                                                                placeholder="Update your review..."
+                                                            ></textarea>
+                                                        </div>
+
+                                                        <div className="flex gap-3">
+                                                            <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Save Changes</button>
+                                                            <button type="button" onClick={() => setEditingReviewId(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
                                                         </div>
                                                     </form>
                                                 ) : (
