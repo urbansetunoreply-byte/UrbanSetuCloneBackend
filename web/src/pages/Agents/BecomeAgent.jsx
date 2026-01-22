@@ -58,7 +58,7 @@ const BecomeAgent = () => {
 
             if (res.ok) {
                 toast.success('Application submitted successfully!');
-                navigate('/user/agent-dashboard');
+                navigate('/user/agents');
             } else {
                 toast.error(data.message || "Something went wrong");
             }

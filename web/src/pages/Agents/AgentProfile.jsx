@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
 import { toast } from 'react-toastify';
+import AgentProfileSkeleton from '../../components/skeletons/AgentProfileSkeleton';
 
 const AgentProfile = () => {
     const { id } = useParams();
@@ -24,6 +25,10 @@ const AgentProfile = () => {
     const [submittingReview, setSubmittingReview] = useState(false);
     const [editingReviewId, setEditingReviewId] = useState(null);
     const [editReviewData, setEditReviewData] = useState({ rating: 0, comment: '' });
+
+    // Delete Confirmation State
+    const [showDeleteReviewModal, setShowDeleteReviewModal] = useState(false);
+    const [reviewToDelete, setReviewToDelete] = useState(null);
 
     useEffect(() => {
         fetchAgent();
@@ -79,19 +84,23 @@ const AgentProfile = () => {
         }
     };
 
-    const handleDeleteReview = async (reviewId) => {
-        if (!window.confirm("Are you sure you want to delete this review?")) return;
+    const handleDeleteReview = (reviewId) => {
+        setReviewToDelete(reviewId);
+        setShowDeleteReviewModal(true);
+    };
+
+    const confirmDeleteReview = async () => {
+        if (!reviewToDelete) return;
         try {
-            // Updated endpoint (generic /review/:id)
-            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/review/${reviewId}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/review/${reviewToDelete}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
                 toast.success("Review deleted");
-                setReviews(reviews.filter(r => r._id !== reviewId));
+                setReviews(reviews.filter(r => r._id !== reviewToDelete));
 
                 // Recalculate stats locally
-                const remaining = reviews.filter(r => r._id !== reviewId);
+                const remaining = reviews.filter(r => r._id !== reviewToDelete);
                 const count = remaining.length;
                 const total = remaining.reduce((acc, r) => acc + r.rating, 0);
                 setAgent(prev => ({
@@ -105,6 +114,9 @@ const AgentProfile = () => {
         } catch (error) {
             console.error(error);
             toast.error("Network error");
+        } finally {
+            setShowDeleteReviewModal(false);
+            setReviewToDelete(null);
         }
     };
 
@@ -245,11 +257,7 @@ const AgentProfile = () => {
         }
     };
 
-    if (loading) return (
-        <div className="min-h-screen pt-20 flex justify-center items-center">
-            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-    );
+    if (loading) return <AgentProfileSkeleton />;
 
     if (!agent) return (
         <div className="min-h-screen pt-20 flex flex-col justify-center items-center">
@@ -298,55 +306,7 @@ const AgentProfile = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-30">
-                {/* Admin Management Panel */}
-                {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-blue-200 dark:border-blue-900 shadow-lg mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in-up">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400">
-                                <FaUserTie />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-gray-900 dark:text-white">Admin Controls</h3>
-                                <p className="text-xs text-gray-500">Manage this agent account</p>
-                            </div>
-                        </div>
 
-                        <div className="flex items-center gap-3">
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${agent.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400' :
-                                agent.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                    'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400'
-                                }`}>
-                                Current Status: {agent.status}
-                            </span>
-
-                            {agent.status === 'pending' && (
-                                <>
-                                    <button
-                                        onClick={() => setShowApproveModal(true)}
-                                        className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
-                                    >
-                                        <FaCheck /> Approve
-                                    </button>
-                                    <button
-                                        onClick={() => setShowRejectModal(true)}
-                                        className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
-                                    >
-                                        <FaTimes /> Reject
-                                    </button>
-                                </>
-                            )}
-
-                            {agent.status === 'approved' && (
-                                <button
-                                    onClick={() => setShowRejectModal(true)}
-                                    className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
-                                >
-                                    <FaTimes /> Revoke
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                )}
 
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
                     <div className="md:flex">
@@ -420,6 +380,55 @@ const AgentProfile = () => {
 
                         {/* Main Content */}
                         <div className="md:w-2/3 p-6 md:p-10">
+                            {/* Admin Management Panel */}
+                            {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+                                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-blue-200 dark:border-blue-900 shadow-lg mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in-up">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400">
+                                            <FaUserTie />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 dark:text-white">Admin Controls</h3>
+                                            <p className="text-xs text-gray-500">Manage this agent account</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${agent.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400' :
+                                            agent.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400'
+                                            }`}>
+                                            Current Status: {agent.status}
+                                        </span>
+
+                                        {agent.status === 'pending' && (
+                                            <>
+                                                <button
+                                                    onClick={() => setShowApproveModal(true)}
+                                                    className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
+                                                >
+                                                    <FaCheck /> Approve
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowRejectModal(true)}
+                                                    className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
+                                                >
+                                                    <FaTimes /> Reject
+                                                </button>
+                                            </>
+                                        )}
+
+                                        {agent.status === 'approved' && (
+                                            <button
+                                                onClick={() => setShowRejectModal(true)}
+                                                className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
+                                            >
+                                                <FaTimes /> Revoke
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                             {/* About Section */}
                             <section className="mb-10">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-b dark:border-gray-700 pb-2">About {agent.name.split(' ')[0]}</h3>
@@ -796,6 +805,35 @@ const AgentProfile = () => {
                                 className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/30"
                             >
                                 Reject Agent
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Review Modal */}
+            {showDeleteReviewModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-fade-in">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all scale-100">
+                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600 dark:text-red-400">
+                            <FaTrash size={28} />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Review?</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+                            Are you sure you want to delete this review? This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteReviewModal(false)}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDeleteReview}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/30"
+                            >
+                                Delete
                             </button>
                         </div>
                     </div>
