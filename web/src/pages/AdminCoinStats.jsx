@@ -506,6 +506,7 @@ export default function AdminCoinStats() {
                             <input
                                 type="date"
                                 value={filters.startDate}
+                                min={new Date().toISOString().split('T')[0]}
                                 onChange={(e) => { setFilters(prev => ({ ...prev, startDate: e.target.value })); setTxPage(1); }}
                                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-gray-500 dark:text-gray-400"
                                 placeholder="Start Date"
@@ -513,6 +514,7 @@ export default function AdminCoinStats() {
                             <input
                                 type="date"
                                 value={filters.endDate}
+                                max={new Date().toISOString().split('T')[0]}
                                 onChange={(e) => { setFilters(prev => ({ ...prev, endDate: e.target.value })); setTxPage(1); }}
                                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-gray-500 dark:text-gray-400"
                                 placeholder="End Date"
