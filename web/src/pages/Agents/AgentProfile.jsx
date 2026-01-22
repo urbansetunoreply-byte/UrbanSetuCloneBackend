@@ -297,10 +297,10 @@ const AgentProfile = () => {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-30">
                 {/* Admin Management Panel */}
                 {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-blue-200 dark:border-blue-900 shadow-md mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-blue-200 dark:border-blue-900 shadow-lg mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in-up">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400">
                                 <FaUserTie />
@@ -323,13 +323,13 @@ const AgentProfile = () => {
                                 <>
                                     <button
                                         onClick={() => setShowApproveModal(true)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors text-sm"
+                                        className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
                                     >
                                         <FaCheck /> Approve
                                     </button>
                                     <button
                                         onClick={() => setShowRejectModal(true)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors text-sm"
+                                        className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
                                     >
                                         <FaTimes /> Reject
                                     </button>
@@ -339,9 +339,9 @@ const AgentProfile = () => {
                             {agent.status === 'approved' && (
                                 <button
                                     onClick={() => setShowRejectModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 border border-red-200 rounded-lg font-medium transition-colors text-sm"
+                                    className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
                                 >
-                                    <FaTimes /> Revoke Access
+                                    <FaTimes /> Revoke
                                 </button>
                             )}
                         </div>
