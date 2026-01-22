@@ -292,16 +292,7 @@ const AgentProfile = () => {
                         )}
                     </div>
 
-                    <div className="h-full flex flex-col justify-center md:flex-row md:items-center">
-                        <div className="md:w-1/3"></div>
-                        <div className="md:w-2/3 md:pl-8 lg:pl-10 text-center md:text-left mt-12 md:mt-0 animate-fade-in-up">
-                            <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-blue-200 text-xs font-semibold tracking-wider uppercase mb-2">
-                                Professional Agent
-                            </span>
-                            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{agent.name}</h1>
-                            <p className="text-gray-300 max-w-xl mx-auto md:mx-0">{agent.city} • {agent.experience} Years Experience</p>
-                        </div>
-                    </div>
+
                 </div>
             </div>
 
@@ -380,6 +371,15 @@ const AgentProfile = () => {
 
                         {/* Main Content */}
                         <div className="md:w-2/3 p-6 md:p-10">
+                            {/* Agent Header Info */}
+                            <div className="mb-8 animate-fade-in-up">
+                                <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400 text-xs font-semibold tracking-wider uppercase mb-2">
+                                    Professional Agent
+                                </span>
+                                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">{agent.name}</h1>
+                                <p className="text-gray-500 dark:text-gray-400 max-w-xl">{agent.city} • {agent.experience} Years Experience</p>
+                            </div>
+
                             {/* Admin Management Panel */}
                             {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
                                 <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-blue-200 dark:border-blue-900 shadow-lg mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in-up">
