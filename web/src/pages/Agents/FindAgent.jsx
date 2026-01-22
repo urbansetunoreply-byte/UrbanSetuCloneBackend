@@ -45,7 +45,7 @@ const FindAgent = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20 pb-12 transition-colors duration-300">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16 pb-12 transition-colors duration-300">
 
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-16 mb-10 relative overflow-hidden">

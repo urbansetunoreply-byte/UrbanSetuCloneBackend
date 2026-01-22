@@ -86,6 +86,18 @@ export default function AdminPrivacy() {
           <li><strong>Service Coordination:</strong> Scoped access to on-demand service requests (movers, cleaning) is granted for vendor allotment and quality control.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">12. Partner Agent Data Access</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Verification Docs:</strong> Admins access agent ID proofs and RERA certificates strictly for verification purposes.</li>
+          <li><strong>Performance Data:</strong> Admins may view agent performance metrics (response times, reviews) to ensure quality standards.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">13. Help Center Data Handling</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>User Tickets:</strong> Admins view user-submitted tickets and attachments to assist with resolution.</li>
+          <li><strong>Chat Logs:</strong> Admins may review chat logs for dispute resolution or quality assurance. Confidentiality must be maintained.</li>
+        </ul>
+
         <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 transition-colors">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 transition-colors">Related Policies</h3>
           <p className="text-gray-700 dark:text-gray-300 mb-3 transition-colors">For information about how we use cookies and similar technologies, please review our:</p>

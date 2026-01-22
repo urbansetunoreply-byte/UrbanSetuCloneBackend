@@ -269,7 +269,7 @@ const AgentProfile = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20 pb-12 transition-colors duration-300">
             {/* Header / Cover */}
-            <div className="bg-gradient-to-r from-gray-800 to-gray-900 h-64 md:h-80 relative">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-gray-800 dark:to-gray-900 h-48 md:h-60 relative transition-colors duration-300">
                 <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/city-fields.png')]"></div>
 
                 {/* Header Content & Buttons */}
@@ -515,7 +515,8 @@ const AgentProfile = () => {
                                                             value={editReviewData.comment}
                                                             onChange={(e) => setEditReviewData({ ...editReviewData, comment: e.target.value })}
                                                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded mb-2 bg-gray-50 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
-                                                            rows="2"
+                                                            rows="3"
+                                                            placeholder="Update your review..."
                                                         ></textarea>
                                                         <div className="flex gap-2">
                                                             <button type="submit" className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">Save</button>
@@ -598,7 +599,7 @@ const AgentProfile = () => {
                                                     rows="3"
                                                     value={newReview.comment}
                                                     onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                                                    className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                                    className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                                     placeholder="Share your experience working with this agent..."
                                                     required
                                                 ></textarea>

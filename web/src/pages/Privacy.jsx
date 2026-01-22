@@ -144,6 +144,20 @@ export default function Privacy() {
           <li><strong>Condition Records:</strong> Move-in/move-out checklists with images and videos are stored to resolve property damage disputes between tenants and landlords.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">19. Partner Agent Data Handling</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Data Sharing:</strong> When you initiate contact with a Partner Agent (e.g., "Request Call Back", "Book Appointment"), we share your necessary contact details and property interests with that specific agent.</li>
+          <li><strong>Agent Access:</strong> Verified agents have access to limited insights about your property preferences to provide better service. This access is governed by strict data usage agreements.</li>
+          <li><strong>Purpose Limitation:</strong> Agents are contractually obligated to use your personal data solely for real estate transaction facilitation and not for unauthorized marketing.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">20. Help Center & Support Data</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Ticket Data:</strong> Information you submit via support tickets (descriptions, screenshots, logs) is stored securely to resolve your issues and track support history.</li>
+          <li><strong>AI Interactions:</strong> Conversations with our AI support bot are processed to provide real-time answers. These logs are anonymized and used to improve AI accuracy and service quality.</li>
+          <li><strong>Quality Assurance:</strong> Human support staff may review ticket and chat history to ensure service quality and compliance with our policies.</li>
+        </ul>
+
         <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors">
           <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2 transition-colors">Contact Us</h3>
           <p className="text-gray-700 dark:text-gray-300 transition-colors">If you have any questions about this privacy policy or our data practices, please contact us:</p>

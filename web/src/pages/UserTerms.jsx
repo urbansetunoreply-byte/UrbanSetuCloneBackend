@@ -92,6 +92,19 @@ export default function UserTerms() {
           <li>Always verify AI-generated smart-search results before making viewing appointments or financial deposits.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">12. Partner Agents</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Independence:</strong> Agents listed on UrbanSetu are independent professionals. We verify their credentials but do not employ them directly.</li>
+          <li><strong>Interactions:</strong> You engage with agents at your own risk. UrbanSetu is not liable for agent misconduct, though we will investigate reported violations.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">13. Help & Support</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Tickets:</strong> Use the Help Center to raise tickets for issues. Providing clear evidence accelerates resolution.</li>
+          <li><strong>AI Assistance:</strong> Our AI chatbot offers immediate help. For complex issues, request human intervention.</li>
+          <li><strong>Respect:</strong> Maintain respectful communication with our support team. Abuse is not tolerated.</li>
+        </ul>
+
         <p className="mt-6 text-sm text-gray-600 dark:text-gray-400 transition-colors">Last updated: {new Date().toLocaleDateString(`en-IN`, {
           year: 'numeric',
           month: 'long',

@@ -79,6 +79,18 @@ export default function UserPrivacy() {
           <li><strong>Checklists:</strong> Moving checklists with photos and videos are stored to protect you and the landlord during property transitions.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">11. Sharing with Partner Agents</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Contact:</strong> When you contact an agent, we share your name, phone number, and property interest so they can assist you.</li>
+          <li><strong>Limitations:</strong> Agents act as independent data controllers for the data you share with them directly.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">12. Help Center Data</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Tickets:</strong> Support tickets and chat logs are stored to resolve issues and improve service quality.</li>
+          <li><strong>AI Training:</strong> Anonymized interaction data helps train our AI to provide better support in the future.</li>
+        </ul>
+
         <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 transition-colors">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 transition-colors">Related Policies</h3>
           <p className="text-gray-700 dark:text-gray-300 mb-3 transition-colors">For information about how we use cookies and similar technologies, please review our:</p>

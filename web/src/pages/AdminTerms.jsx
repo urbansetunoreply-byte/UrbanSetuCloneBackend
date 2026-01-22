@@ -104,6 +104,19 @@ export default function AdminTerms() {
           <li><strong>Revocation:</strong> Admins reserve the right to revoke coins earned through cancelled service requests, fraudulent rent payments, or non-genuine referrals.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">13. Agent Oversight & Verification</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Verification Duty:</strong> Admins are responsible for verifying agent credentials (RERA, ID) before approval. Approving unverified agents is a policy violation.</li>
+          <li><strong>Monitoring:</strong> Admins must monitor agent activity for complaints or policy violations and take appropriate action (suspension/revocation).</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">14. Support & Ticket Management</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>SLA Compliance:</strong> Admins must address assigned support tickets within the defined Service Level Agreement timelines.</li>
+          <li><strong>Professionalism:</strong> All support responses must be professional, accurate, and helpful. Rude or dismissive behavior is prohibited.</li>
+          <li><strong>Ticket Resolution:</strong> Tickets should only be closed when the issue is resolved or escalated appropriately.</li>
+        </ul>
+
         <p className="mt-6 text-sm text-gray-600 dark:text-gray-400 transition-colors">Last updated: {new Date().toLocaleDateString(`en-IN`, {
           year: 'numeric',
           month: 'long',

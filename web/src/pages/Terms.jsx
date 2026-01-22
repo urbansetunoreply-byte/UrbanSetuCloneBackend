@@ -228,6 +228,22 @@ export default function Terms() {
           <li><strong>Reporting Obligation:</strong> Users must report any suspicious listing or "too good to be true" offer immediately through the "Report" feature.</li>
         </ul>
 
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">27. Partner Agents & Professional Services</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Role:</strong> Partner Agents are independent real estate professionals verified by UrbanSetu to assist users with buying, selling, or renting properties.</li>
+          <li><strong>Verification:</strong> Agents undergo strict verification processes including RERA registration checks, identity verification, and professional background reviews.</li>
+          <li><strong>Conduct:</strong> Agents are required to adhere to our Code of Conduct, maintaining high standards of honesty, transparency, and fair dealing in all interactions.</li>
+          <li><strong>Liability:</strong> While UrbanSetu facilitates connections, we are not liable for the independent actions, advice, or services provided by Partner Agents beyond our platform enforcement measures.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">28. Help Center & Support Services</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Availability:</strong> Support is available through our Help Center, Ticket System, and AI-powered Chat. Response times vary based on issue severity and user tier.</li>
+          <li><strong>Ticket System:</strong> Users may submit detailed support tickets for technical issues, disputes, or general inquiries. Accurate information must be provided for effective resolution.</li>
+          <li><strong>AI Support:</strong> Our AI support chatbot provides instant assistance for common queries. Users should verify critical information with human support or official documentation.</li>
+          <li><strong>Conduct:</strong> Abusive, threatening, or harassing behavior towards support staff or AI systems will result in immediate account suspension.</li>
+        </ul>
+
         <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors">
           <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2 transition-colors">Contact Information</h3>
           <p className="text-gray-700 dark:text-gray-300 transition-colors">For questions about these terms or our services, please contact us:</p>
