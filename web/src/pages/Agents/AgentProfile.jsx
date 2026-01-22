@@ -737,6 +737,9 @@ const AgentProfile = () => {
                                     {updating ? <FaSpinner className="animate-spin" /> : 'Save Changes'}
                                 </button>
                             </div>
+                            <p className="text-xs text-gray-500 mt-4 text-center">
+                                By saving changes, you agree to our <a href="/user/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Terms and Conditions for Partners</a>.
+                            </p>
                         </form>
                     </div>
                 </div>
