@@ -268,6 +268,51 @@ class CoinService {
     }
 
     /**
+     * Get system-wide transactions with filtering and pagination
+     */
+    async getSystemTransactions(filters = {}, page = 1, limit = 20) {
+        const query = {};
+
+        if (filters.type && filters.type !== 'all') {
+            query.type = filters.type;
+        }
+
+        if (filters.startDate || filters.endDate) {
+            query.createdAt = {};
+            if (filters.startDate) query.createdAt.$gte = new Date(filters.startDate);
+            if (filters.endDate) {
+                const end = new Date(filters.endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+
+        if (filters.minAmount) {
+            query.amount = { ...query.amount, $gte: parseInt(filters.minAmount) };
+        }
+        if (filters.maxAmount) {
+            query.amount = { ...query.amount, ...((query.amount || {}).$gte ? {} : {}), $lte: parseInt(filters.maxAmount) };
+        }
+
+        const skip = (page - 1) * limit;
+
+        const transactions = await CoinTransaction.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('userId', 'username email');
+
+        const total = await CoinTransaction.countDocuments(query);
+
+        return {
+            transactions,
+            total,
+            page,
+            pages: Math.ceil(total / limit)
+        };
+    }
+
+    /**
      * Get System Stats for Admin
      */
     async getStats() {

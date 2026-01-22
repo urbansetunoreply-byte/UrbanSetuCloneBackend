@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaCoins, FaFire, FaUsers, FaChartLine, FaHistory, FaArrowUp, FaArrowDown, FaSearch, FaUser, FaCheck, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
+import { FaCoins, FaFire, FaUsers, FaChartLine, FaHistory, FaArrowUp, FaArrowDown, FaSearch, FaUser, FaCheck, FaExclamationTriangle, FaTimes, FaFilter, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { authenticatedFetch } from '../utils/auth';
@@ -26,6 +26,18 @@ export default function AdminCoinStats() {
     const [adjustmentReason, setAdjustmentReason] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
+    // Filter & Pagination State
+    const [transactions, setTransactions] = useState([]);
+    const [txPage, setTxPage] = useState(1);
+    const [txPages, setTxPages] = useState(1);
+    const [loadingTx, setLoadingTx] = useState(false);
+    const [filters, setFilters] = useState({
+        type: 'all',
+        startDate: '',
+        endDate: '',
+        minAmount: ''
+    });
+
     const fetchStats = async () => {
         try {
             const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/admin/stats`);
@@ -40,6 +52,33 @@ export default function AdminCoinStats() {
             toast.error("Error fetching stats");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchTransactions = async () => {
+        try {
+            setLoadingTx(true);
+            const queryParams = new URLSearchParams({
+                page: txPage.toString(),
+                limit: '15'
+            });
+
+            if (filters.type && filters.type !== 'all') queryParams.set('type', filters.type);
+            if (filters.startDate) queryParams.set('startDate', filters.startDate);
+            if (filters.endDate) queryParams.set('endDate', filters.endDate);
+            if (filters.minAmount) queryParams.set('minAmount', filters.minAmount);
+
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/admin/transactions?${queryParams}`);
+            const data = await res.json();
+            if (data.success) {
+                setTransactions(data.transactions);
+                setTxPages(data.pages);
+            }
+        } catch (error) {
+            console.error(error);
+            // toast.error("Failed to load transactions"); // Silent error to avoid spam
+        } finally {
+            setLoadingTx(false);
         }
     };
 
@@ -160,6 +199,10 @@ export default function AdminCoinStats() {
     useEffect(() => {
         fetchStats();
     }, []);
+
+    useEffect(() => {
+        fetchTransactions();
+    }, [txPage, filters]);
 
     if (loading) return (
         <div className="p-6 max-w-7xl mx-auto space-y-8 pb-20">
@@ -426,12 +469,52 @@ export default function AdminCoinStats() {
                 </div>
             ) : (
                 <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                    <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex items-center justify-between">
-                        <h3 className="text-lg font-black text-gray-800 dark:text-white flex items-center gap-2">
-                            <FaHistory className="text-indigo-400" /> Recent System-wide Transactions
-                        </h3>
+                    <div className="p-6 border-b border-gray-50 dark:border-gray-700 space-y-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <h3 className="text-lg font-black text-gray-800 dark:text-white flex items-center gap-2">
+                                <FaHistory className="text-indigo-400" /> System Transactions
+                            </h3>
+                        </div>
+
+                        {/* Filters */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-[fadeIn_0.3s_ease-out]">
+                            <div className="relative">
+                                <FaFilter className="absolute left-3 top-3 text-gray-400 text-xs" />
+                                <select
+                                    value={filters.type}
+                                    onChange={(e) => { setFilters(prev => ({ ...prev, type: e.target.value })); setTxPage(1); }}
+                                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none appearance-none font-medium"
+                                >
+                                    <option value="all">All Types</option>
+                                    <option value="credit">Credits (Grants)</option>
+                                    <option value="debit">Debits (Burned)</option>
+                                </select>
+                            </div>
+                            <input
+                                type="date"
+                                value={filters.startDate}
+                                onChange={(e) => { setFilters(prev => ({ ...prev, startDate: e.target.value })); setTxPage(1); }}
+                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-gray-500 dark:text-gray-400"
+                                placeholder="Start Date"
+                            />
+                            <input
+                                type="date"
+                                value={filters.endDate}
+                                onChange={(e) => { setFilters(prev => ({ ...prev, endDate: e.target.value })); setTxPage(1); }}
+                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-gray-500 dark:text-gray-400"
+                                placeholder="End Date"
+                            />
+                            <input
+                                type="number"
+                                value={filters.minAmount}
+                                onChange={(e) => { setFilters(prev => ({ ...prev, minAmount: e.target.value })); setTxPage(1); }}
+                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
+                                placeholder="Min Amount"
+                            />
+                        </div>
                     </div>
-                    <div className="overflow-x-auto">
+
+                    <div className="overflow-x-auto min-h-[400px]">
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-300 text-[10px] font-black uppercase tracking-[0.2em]">
                                 <tr>
@@ -441,35 +524,79 @@ export default function AdminCoinStats() {
                                     <th className="px-6 py-4 text-right">Balance Impact</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                                {stats.recentTransactions?.map((tx) => (
-                                    <tr key={tx._id} className="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-gray-700 flex items-center justify-center text-slate-400 dark:text-gray-400 font-bold text-xs">
-                                                    {tx.userId?.username?.[0]?.toUpperCase() || 'U'}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{tx.userId?.username || 'Unknown'}</p>
-                                                    <p className="text--[10px] text-gray-400 dark:text-gray-500">{tx.userId?.email}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{tx.description}</p>
-                                            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">{tx.source?.replace(/_/g, ' ')}</p>
-                                        </td>
-                                        <td className="px-6 py-4 text-xs font-medium text-gray-500">
-                                            {new Date(tx.createdAt).toLocaleDateString()}
-                                        </td>
-                                        <td className={`px-6 py-4 text-right font-black text-lg ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
-                                            {tx.type === 'credit' ? '+' : '-'}{tx.amount}
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                                {loadingTx ? (
+                                    Array(5).fill(0).map((_, i) => (
+                                        <tr key={i} className="animate-pulse">
+                                            <td className="px-6 py-4"><div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-32"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-48"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-24"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-16 ml-auto"></div></td>
+                                        </tr>
+                                    ))
+                                ) : transactions.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="4" className="px-6 py-12 text-center text-gray-400 dark:text-gray-500 font-medium">
+                                            No transactions found match your filters.
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    transactions.map((tx) => (
+                                        <tr key={tx._id} className="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-gray-700 flex items-center justify-center text-slate-400 dark:text-gray-400 font-bold text-xs">
+                                                        {tx.userId?.username?.[0]?.toUpperCase() || 'U'}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{tx.userId?.username || 'Unknown'}</p>
+                                                        <p className="text-[10px] text-gray-400 dark:text-gray-500">{tx.userId?.email}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{tx.description}</p>
+                                                <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">{tx.source?.replace(/_/g, ' ')}</p>
+                                            </td>
+                                            <td className="px-6 py-4 text-xs font-medium text-gray-500">
+                                                {new Date(tx.createdAt).toLocaleDateString()}
+                                                <span className="text-gray-300 mx-1">•</span>
+                                                {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </td>
+                                            <td className={`px-6 py-4 text-right font-black text-lg ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                                                {tx.type === 'credit' ? '+' : '-'}{tx.amount}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination */}
+                    {txPages > 1 && (
+                        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-700/20">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                Page {txPage} of {txPages}
+                            </span>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setTxPage(p => Math.max(1, p - 1))}
+                                    disabled={txPage === 1}
+                                    className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                                >
+                                    <FaChevronLeft size={12} />
+                                </button>
+                                <button
+                                    onClick={() => setTxPage(p => Math.min(txPages, p + 1))}
+                                    disabled={txPage === txPages}
+                                    className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                                >
+                                    <FaChevronRight size={12} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

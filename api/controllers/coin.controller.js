@@ -165,6 +165,32 @@ export const adminAdjustCoins = async (req, res, next) => {
 };
 
 /**
+ * Admin: Get System Transactions (Filtered)
+ */
+export const getSystemTransactions = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'Forbidden'));
+        }
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const filters = {
+            type: req.query.type,
+            startDate: req.query.startDate,
+            endDate: req.query.endDate,
+            minAmount: req.query.minAmount,
+            maxAmount: req.query.maxAmount
+        };
+
+        const result = await CoinService.getSystemTransactions(filters, page, limit);
+        res.status(200).json({ success: true, ...result });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Admin: Get System Stats
  */
 export const getStats = async (req, res, next) => {
