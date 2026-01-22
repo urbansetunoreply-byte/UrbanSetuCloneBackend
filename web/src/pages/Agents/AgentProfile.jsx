@@ -127,6 +127,12 @@ const AgentProfile = () => {
 
     const handleUpdateReview = async (e) => {
         e.preventDefault();
+        const originalReview = reviews.find(r => r._id === editingReviewId);
+        if (originalReview.comment === editReviewData.comment && originalReview.rating === editReviewData.rating) {
+            setEditingReviewId(null);
+            return;
+        }
+
         try {
             const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/review/${editingReviewId}`, {
                 method: 'PUT',
@@ -548,6 +554,9 @@ const AgentProfile = () => {
                                                             <span className="ml-auto flex items-center gap-2">
                                                                 <span className="text-xs text-gray-400">
                                                                     {new Date(review.createdAt).toLocaleDateString()}
+                                                                    {(review.isEdited || (review.updatedAt && new Date(review.updatedAt).getTime() > new Date(review.createdAt).getTime())) && (
+                                                                        <span className="italic ml-1">(edited)</span>
+                                                                    )}
                                                                 </span>
                                                                 {currentUser && (
                                                                     (currentUser._id === review.userId || currentUser.role === 'admin' || currentUser.role === 'rootadmin')
