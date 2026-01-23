@@ -448,52 +448,67 @@ const AgentProfile = () => {
 
                             {/* Admin Management Panel */}
                             {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
-                                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-blue-200 dark:border-blue-900 shadow-lg mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in-up">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400">
-                                            <FaUserTie />
+                                <>
+                                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-blue-200 dark:border-blue-900 shadow-lg mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in-up">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400">
+                                                <FaUserTie />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 dark:text-white">Admin Controls</h3>
+                                                <p className="text-xs text-gray-500">Manage this agent account</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900 dark:text-white">Admin Controls</h3>
-                                            <p className="text-xs text-gray-500">Manage this agent account</p>
-                                        </div>
-                                    </div>
 
-                                    <div className="flex items-center gap-3">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${agent.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400' :
-                                            agent.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                                'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400'
-                                            }`}>
-                                            Current Status: {agent.status}
-                                        </span>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${agent.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400' :
+                                                agent.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                    'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400'
+                                                }`}>
+                                                Current Status: {agent.status}
+                                            </span>
 
-                                        {agent.status === 'pending' && (
-                                            <>
-                                                <button
-                                                    onClick={() => setShowApproveModal(true)}
-                                                    className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
-                                                >
-                                                    <FaCheck /> Approve
-                                                </button>
+                                            {agent.status === 'pending' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => setShowApproveModal(true)}
+                                                        className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
+                                                    >
+                                                        <FaCheck /> Approve
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setShowRejectModal(true)}
+                                                        className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
+                                                    >
+                                                        <FaTimes /> Reject
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {agent.status === 'approved' && (
                                                 <button
                                                     onClick={() => setShowRejectModal(true)}
                                                     className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
                                                 >
-                                                    <FaTimes /> Reject
+                                                    <FaTimes /> Revoke
                                                 </button>
-                                            </>
-                                        )}
-
-                                        {agent.status === 'approved' && (
-                                            <button
-                                                onClick={() => setShowRejectModal(true)}
-                                                className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-transform hover:scale-105 shadow-sm text-xs font-bold flex items-center gap-1"
-                                            >
-                                                <FaTimes /> Revoke
-                                            </button>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+
+                                    <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900 mb-6 flex flex-wrap gap-6 animate-fade-in-up">
+                                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <FaEnvelope className="text-blue-500" />
+                                            <span className="font-semibold">Email:</span>
+                                            <span>{agent.userId?.email || agent.email}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <FaUserTie className="text-purple-500" />
+                                            <span className="font-semibold">Gender:</span>
+                                            <span className="capitalize">{agent.userId?.gender || 'Not Specified'}</span>
+                                        </div>
+                                    </div>
+                                </>
                             )}
                             {/* About Section */}
                             <section className="mb-10">
@@ -725,7 +740,7 @@ const AgentProfile = () => {
                             )}
                         </div>
                     </div>
-                </div>
+                </div >
 
                 {/* Edit Modal */}
                 {
@@ -967,15 +982,17 @@ const AgentProfile = () => {
             `}</style>
 
                 {/* Chat Wrapper for Agent Inquiry */}
-                {agent && (
-                    <PreBookingChatWrapper
-                        isOpen={isChatOpen}
-                        onClose={() => setIsChatOpen(false)}
-                        ownerId={agent.userId?._id || agent.userId}
-                        listingId={null}
-                        showFloatingButton={false}
-                    />
-                )}
+                {
+                    agent && (
+                        <PreBookingChatWrapper
+                            isOpen={isChatOpen}
+                            onClose={() => setIsChatOpen(false)}
+                            ownerId={agent.userId?._id || agent.userId}
+                            listingId={null}
+                            showFloatingButton={false}
+                        />
+                    )
+                }
 
                 {/* Info Modal */}
                 <AgentInfoModal
@@ -983,8 +1000,8 @@ const AgentProfile = () => {
                     onClose={() => setShowInfoModal(false)}
                 />
 
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

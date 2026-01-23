@@ -184,11 +184,6 @@ const HelpCenter = () => {
                             ))}
                         </div>
 
-                        {/* Instant AI Help Section */}
-                        <div className="mb-16">
-                            <HelpCenterChat />
-                        </div>
-
                         {/* Popular Articles Section */}
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Popular Articles</h2>
@@ -233,6 +228,8 @@ const HelpCenter = () => {
                     </>
                 )}
             </div>
+            {/* Floating Chat Widget */}
+            <HelpCenterChat />
         </div>
     );
 };

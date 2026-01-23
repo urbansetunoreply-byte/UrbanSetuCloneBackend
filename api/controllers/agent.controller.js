@@ -61,7 +61,7 @@ export const getAgent = async (req, res, next) => {
     try {
         const { id } = req.params;
         // We might accept ID or UserID, but usually _id of Agent doc
-        const agent = await Agent.findById(id).populate('userId', 'username email avatar');
+        const agent = await Agent.findById(id).populate('userId', 'username email avatar gender');
 
         if (!agent) return next(errorHandler(404, "Agent not found"));
 

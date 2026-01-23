@@ -97,121 +97,176 @@ const HelpCenterChat = () => {
         }
     };
 
+    const [isOpen, setIsOpen] = useState(false);
+
+    const toggleChat = () => setIsOpen(!isOpen);
+
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-[600px] w-full max-w-4xl mx-auto my-8">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                        <FaRobot className="text-white text-xl" />
-                    </div>
-                    <div>
-                        <h3 className="text-white font-bold text-lg">UrbanSetu Instant Help</h3>
-                        <p className="text-blue-100 text-xs">AI-powered 24/7 Support</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50 dark:bg-gray-900/50">
-                {messages.map((msg) => (
-                    <div
-                        key={msg.id}
-                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+        <>
+            {/* Floating Chat Button */}
+            {!isOpen && (
+                <div className="fixed bottom-6 right-6 z-50 animate-bounce-in">
+                    <button
+                        onClick={toggleChat}
+                        className="group w-14 h-14 rounded-full shadow-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 flex items-center justify-center transform transition-all duration-300 hover:scale-110"
+                        title="Chat with AI Help"
                     >
-                        <div className={`flex max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-3`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-green-500 text-white'
-                                }`}>
-                                {msg.role === 'user' ? <FaUser size={12} /> : <FaRobot size={14} />}
-                            </div>
+                        <FaRobot className="text-white text-2xl drop-shadow-sm group-hover:rotate-12 transition-transform" />
 
-                            <div className={`p-4 rounded-2xl ${msg.role === 'user'
-                                    ? 'bg-blue-600 text-white rounded-tr-none'
-                                    : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none shadow-sm'
-                                }`}>
-                                {msg.isError ? (
-                                    <div className="flex items-center gap-2 text-red-500">
-                                        <FaExclamationTriangle />
-                                        <span>{msg.content}</span>
-                                    </div>
-                                ) : (
-                                    <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed">
-                                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                                    </div>
-                                )}
+                        {/* Tooltip */}
+                        <div className="absolute right-full mr-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-white px-3 py-1.5 rounded-lg shadow-xl text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-gray-100 dark:border-gray-700">
+                            Need help? Ask AI
+                            <div className="absolute top-1/2 -right-1.5 w-3 h-3 bg-white dark:bg-gray-800 transform -translate-y-1/2 rotate-45 border-r border-t border-gray-100 dark:border-gray-700"></div>
+                        </div>
+                    </button>
+                </div>
+            )}
+
+            {/* Floating Chat Window */}
+            {isOpen && (
+                <div className="fixed bottom-24 right-4 sm:right-6 w-[90vw] sm:w-[400px] h-[600px] max-h-[80vh] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col overflow-hidden animate-slide-up font-sans">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 flex items-center justify-between shadow-md flex-shrink-0">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+                                <FaRobot className="text-white text-xl" />
+                            </div>
+                            <div>
+                                <h3 className="text-white font-bold text-base leading-tight">UrbanSetu Help</h3>
+                                <p className="text-blue-100 text-xs opacity-90 flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                                    AI Assistant Online
+                                </p>
                             </div>
                         </div>
+                        <button
+                            onClick={toggleChat}
+                            className="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
-                ))}
 
-                {isLoading && (
-                    <div className="flex justify-start">
-                        <div className="flex flex-row gap-3">
-                            <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center flex-shrink-0">
-                                <FaRobot size={14} />
-                            </div>
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl rounded-tl-none border border-gray-200 dark:border-gray-700 shadow-sm">
-                                <div className="flex space-x-2">
-                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    {/* Messages Area */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900/95 scroll-smooth">
+                        {messages.map((msg) => (
+                            <div
+                                key={msg.id}
+                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+                            >
+                                <div className={`flex max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-2`}>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${msg.role === 'user'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-indigo-500 text-white'
+                                        }`}>
+                                        {msg.role === 'user' ? <FaUser size={12} /> : <FaRobot size={14} />}
+                                    </div>
+
+                                    <div className={`px-4 py-3 rounded-2xl text-sm shadow-sm ${msg.role === 'user'
+                                        ? 'bg-blue-600 text-white rounded-tr-none'
+                                        : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-800 dark:text-gray-100 rounded-tl-none'
+                                        }`}>
+                                        {msg.isError ? (
+                                            <div className="flex items-center gap-2 text-red-500">
+                                                <FaExclamationTriangle />
+                                                <span>{msg.content}</span>
+                                            </div>
+                                        ) : (
+                                            <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed break-words">
+                                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                )}
+                        ))}
 
-                {/* Escalation Prompt */}
-                {showEscalation && (
-                    <div className="flex justify-center my-4 animate-fadeIn">
-                        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 flex flex-col sm:flex-row items-center gap-4 max-w-lg text-center sm:text-left">
-                            <div className="p-2 bg-orange-100 dark:bg-orange-800 rounded-full text-orange-600 dark:text-orange-200">
-                                <FaExclamationTriangle />
+                        {isLoading && (
+                            <div className="flex justify-start animate-pulse">
+                                <div className="flex flex-row gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center flex-shrink-0">
+                                        <FaRobot size={14} />
+                                    </div>
+                                    <div className="bg-white dark:bg-gray-800 px-4 py-3 rounded-2xl rounded-tl-none border border-gray-100 dark:border-gray-700 shadow-sm">
+                                        <div className="flex space-x-1.5 items-center h-5">
+                                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex-1">
-                                <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Need more help?</h4>
-                                <p className="text-xs text-gray-600 dark:text-gray-300">The AI might be unsure. You can contact our human support team directly.</p>
+                        )}
+
+                        {/* Escalation Prompt */}
+                        {showEscalation && (
+                            <div className="flex justify-center my-2 animate-fade-in-up">
+                                <Link
+                                    to="/contact"
+                                    className="bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-xl p-3 flex items-center gap-3 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors group w-full"
+                                >
+                                    <div className="p-2 bg-orange-100 dark:bg-orange-800 rounded-full text-orange-600 dark:text-orange-200 group-hover:scale-110 transition-transform">
+                                        <FaExclamationTriangle size={14} />
+                                    </div>
+                                    <div className="flex-1 text-left">
+                                        <h4 className="font-semibold text-gray-900 dark:text-white text-xs uppercase tracking-wide">Still need help?</h4>
+                                        <p className="text-xs text-gray-600 dark:text-gray-300">Contact Human Support</p>
+                                    </div>
+                                    <FaArrowRight className="text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" size={12} />
+                                </Link>
                             </div>
-                            <Link
-                                to="/contact"
-                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex-shrink-0">
+                        <form onSubmit={handleSend} className="relative flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="Ask about UrbanSetu..."
+                                className="flex-1 pl-4 pr-10 py-3 bg-gray-100 dark:bg-gray-900/50 border-0 rounded-full focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-sm"
+                                disabled={isLoading}
+                            />
+                            <button
+                                type="submit"
+                                disabled={!input.trim() || isLoading}
+                                className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-50 disabled:scale-100 hover:scale-105 shadow-md flex-shrink-0"
                             >
-                                Contact Support <FaArrowRight size={12} />
-                            </Link>
+                                <FaPaperPlane className={`text-xs ml-0.5 ${isLoading ? 'animate-pulse' : ''}`} />
+                            </button>
+                        </form>
+                        <div className="text-center mt-2">
+                            <p className="text-[9px] text-gray-400 dark:text-gray-500">
+                                AI responses may vary. Check important info.
+                            </p>
                         </div>
                     </div>
-                )}
-                <div ref={messagesEndRef} />
-            </div>
 
-            {/* Input Area */}
-            <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
-                <form onSubmit={handleSend} className="relative">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Type your question here about buying, renting, or our policies..."
-                        className="w-full pl-6 pr-14 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white shadow-inner transition-all"
-                        disabled={isLoading}
-                    />
-                    <button
-                        type="submit"
-                        disabled={!input.trim() || isLoading}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-                    >
-                        <FaPaperPlane className={`text-sm ${isLoading ? 'animate-pulse' : ''}`} />
-                    </button>
-                </form>
-                <div className="text-center mt-2">
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500">
-                        UrbanSetu AI can make mistakes. Consider checking important information.
-                    </p>
+                    <style jsx>{`
+                        @keyframes slide-up {
+                            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+                            to { opacity: 1; transform: translateY(0) scale(1); }
+                        }
+                        .animate-slide-up {
+                            animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                        }
+                        @keyframes bounce-in {
+                            0% { opacity: 0; transform: scale(0.5); }
+                            60% { transform: scale(1.1); }
+                            100% { opacity: 1; transform: scale(1); }
+                        }
+                        .animate-bounce-in {
+                            animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+                        }
+                    `}</style>
                 </div>
-            </div>
-        </div>
+            )}
+        </>
     );
 };
 
