@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaPaperPlane, FaRobot, FaUser, FaExclamationTriangle, FaArrowRight } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
+import { authenticatedFetch } from '../utils/auth';
 
 const HelpCenterChat = () => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: "Hi! I'm the UrbanSetu AI Assistant. ask me any question about our platform, services, or real estate policies, and I'll do my best to help!",
+            content: "Hello! I'm the UrbanSetu AI Assistant. ask me any question about our platform, services, or real estate policies, and I'll do my best to help!",
             id: 'init-1'
         }
     ]);
@@ -66,7 +67,7 @@ const HelpCenterChat = () => {
         setIsLoading(true);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/gemini/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
