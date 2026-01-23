@@ -25,11 +25,20 @@ export default function MyDeletedListings() {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [selectedListingToRestore, setSelectedListingToRestore] = useState(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     useEffect(() => {
         if (currentUser) {
             fetchDeletedListings();
         }
     }, [currentUser, filters]);
+
+    // Reset pagination when filters change (already triggered by dependency above re-fetching, 
+    // but if we want client-side pagination on fetched data, we reset page here)
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters]);
 
     const fetchDeletedListings = async () => {
         try {
@@ -38,7 +47,7 @@ export default function MyDeletedListings() {
 
             const queryParams = new URLSearchParams();
             if (filters.searchTerm) queryParams.append('searchTerm', filters.searchTerm);
-            queryParams.append('limit', '50');
+            queryParams.append('limit', '100'); // Fetch more to handle client-side pagination smoothly for now
 
             const res = await fetch(`${API_BASE_URL}/api/listing/user/get-deleted?${queryParams.toString()}`, {
                 credentials: 'include'
@@ -66,18 +75,14 @@ export default function MyDeletedListings() {
 
     const confirmRestore = async () => {
         if (!selectedListingToRestore) return;
-
         const id = selectedListingToRestore._id;
-
         try {
             setRestoringId(id);
             const res = await fetch(`${API_BASE_URL}/api/listing/restore-deleted/${id}`, {
                 method: 'POST',
                 credentials: 'include'
             });
-
             const data = await res.json();
-
             if (data.success) {
                 toast.success("Listing restored successfully!");
                 setListings(prev => prev.filter(item => item._id !== id));
@@ -113,6 +118,10 @@ export default function MyDeletedListings() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays > 0 ? diffDays : 0;
     };
+
+    // Pagination Logic
+    const totalPages = Math.ceil(listings.length / itemsPerPage) || 1;
+    const displayedListings = listings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col relative transition-colors duration-300">
@@ -173,7 +182,7 @@ export default function MyDeletedListings() {
                         <p className="text-gray-500 dark:text-gray-400">You don't have any deleted listings.</p>
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300 flex flex-col">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
@@ -185,8 +194,12 @@ export default function MyDeletedListings() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                    {listings.map((item) => (
-                                        <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                    {displayedListings.map((item, index) => (
+                                        <tr
+                                            key={item._id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                            style={{ animation: `fadeIn 0.2s ease-out ${index * 0.05}s backwards` }}
+                                        >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
@@ -285,13 +298,38 @@ export default function MyDeletedListings() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    Showing page <span className="font-semibold text-gray-900 dark:text-white">{currentPage}</span> of <span className="font-semibold dark:text-gray-300">{totalPages}</span>
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                        className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <FaArrowLeft size={12} /> Previous
+                                    </button>
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Next <span style={{ transform: 'rotate(180deg)' }}><FaArrowLeft size={12} /></span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
 
             {/* Restore Confirmation Modal */}
             {showConfirmModal && selectedListingToRestore && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all scale-100">
                         <div className="p-6">
                             <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -332,6 +370,12 @@ export default function MyDeletedListings() {
                 </div>
             )}
             <ContactSupportWrapper />
+            <style>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
         </div>
     );
 }
