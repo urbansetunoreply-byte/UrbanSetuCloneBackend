@@ -24,7 +24,7 @@ const BecomeAgent = () => {
             const data = await res.json();
             if (res.ok && data.isAgent) {
                 // Fetch full profile to get updatedAt
-                const profileRes = await fetch(`${API_BASE_URL}/api/agent/profile/${data.agentId}`);
+                const profileRes = await authenticatedFetch(`${API_BASE_URL}/api/agent/profile/${data.agentId}`);
                 const profileData = await profileRes.json();
                 setExistingAgent(profileData);
             }
