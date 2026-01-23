@@ -114,18 +114,18 @@ const AdminAgents = () => {
 
     return (
         <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                     <FaUserTie className="text-blue-600" /> Agent Management
                 </h1>
 
                 {/* Filter Tabs */}
-                <div className="flex bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-x-auto">
+                <div className="flex w-full md:w-auto bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-x-auto no-scrollbar">
                     {['all', 'pending', 'approved', 'rejected', 'revoked'].map(f => (
                         <button
                             key={f}
                             onClick={() => { setFilter(f); setCurrentPage(1); }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap ${filter === f
+                            className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap ${filter === f
                                 ? 'bg-blue-600 text-white shadow-md transform scale-105'
                                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                 }`}
@@ -138,7 +138,7 @@ const AdminAgents = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700">
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                    <div className="relative max-w-md">
+                    <div className="relative w-full md:max-w-md">
                         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
@@ -378,6 +378,13 @@ const AdminAgents = () => {
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
+                }
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none; /* IE and Edge */
+                    scrollbar-width: none;  /* Firefox */
                 }
             `}</style>
         </div>
