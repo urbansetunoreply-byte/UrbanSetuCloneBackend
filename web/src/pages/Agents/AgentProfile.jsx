@@ -266,9 +266,18 @@ const AgentProfile = () => {
     if (loading) return <AgentProfileSkeleton />;
 
     if (!agent) return (
-        <div className="min-h-screen pt-20 flex flex-col justify-center items-center">
-            <h2 className="text-2xl font-bold dark:text-white">Agent Not Found</h2>
-            <button onClick={handleBack} className="text-blue-500 mt-4 hover:underline">Back to Agents</button>
+        <div className="min-h-screen pt-20 flex flex-col justify-center items-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+            <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 animate-fade-in-up">
+                <div className="text-6xl mb-4">🕵️</div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Agent Not Found</h2>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">The agent profile you are looking for does not exist or has been removed.</p>
+                <button
+                    onClick={handleBack}
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-md transform hover:scale-105"
+                >
+                    Back to Agents
+                </button>
+            </div>
         </div>
     );
 
