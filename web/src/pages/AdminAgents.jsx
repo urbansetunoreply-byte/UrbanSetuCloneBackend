@@ -9,6 +9,7 @@ const AdminAgents = () => {
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -88,14 +89,22 @@ const AdminAgents = () => {
     };
 
     const filteredAgents = agents.filter(agent => {
-        if (filter === 'all') return true;
-        if (filter === 'revoked') {
-            return agent.status === 'rejected' && agent.revokedAt;
-        }
-        if (filter === 'rejected') {
-            return agent.status === 'rejected' && !agent.revokedAt;
-        }
-        return agent.status === filter;
+        // Status Filter
+        let matchesStatus = false;
+        if (filter === 'all') matchesStatus = true;
+        else if (filter === 'revoked') matchesStatus = agent.status === 'rejected' && agent.revokedAt;
+        else if (filter === 'rejected') matchesStatus = agent.status === 'rejected' && !agent.revokedAt;
+        else matchesStatus = agent.status === filter;
+
+        // Search Filter
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = !searchTerm ||
+            agent.name.toLowerCase().includes(searchLower) ||
+            agent.email.toLowerCase().includes(searchLower) ||
+            agent.city.toLowerCase().includes(searchLower) ||
+            (agent.agencyName && agent.agencyName.toLowerCase().includes(searchLower));
+
+        return matchesStatus && matchesSearch;
     });
 
     // Pagination Logic
@@ -128,9 +137,20 @@ const AdminAgents = () => {
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                    <div className="relative max-w-md">
+                        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search agents by name, city, or email..."
+                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-colors text-sm"
+                            value={searchTerm}
+                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        />
+                    </div>
+                </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        {/* ... (Header remains same) ... */}
                         <thead>
                             <tr className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 text-sm uppercase tracking-wider">
                                 <th className="p-4 font-semibold border-b dark:border-gray-700">Agent Details</th>
@@ -142,9 +162,30 @@ const AdminAgents = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {loading ? (
-                                <tr><td colSpan="5" className="p-12 text-center text-gray-500 animate-pulse">Loading agent data...</td></tr>
+                                [...Array(5)].map((_, i) => (
+                                    <tr key={i} className="animate-pulse">
+                                        <td className="p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                                <div className="space-y-2">
+                                                    <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                                    <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="space-y-2">
+                                                <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                                <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                            </div>
+                                        </td>
+                                        <td className="p-4"><div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div></td>
+                                        <td className="p-4"><div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div></td>
+                                        <td className="p-4"><div className="flex justify-end gap-2"><div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-lg"></div><div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-lg"></div></div></td>
+                                    </tr>
+                                ))
                             ) : paginatedAgents.length === 0 ? (
-                                <tr><td colSpan="5" className="p-12 text-center text-gray-500">No agents found with this status.</td></tr>
+                                <tr><td colSpan="5" className="p-12 text-center text-gray-500">No agents found matching your criteria.</td></tr>
                             ) : (
                                 paginatedAgents.map((agent, index) => (
                                     <tr
