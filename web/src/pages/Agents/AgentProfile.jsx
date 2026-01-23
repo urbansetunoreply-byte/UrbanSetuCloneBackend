@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ListingItem from '../../components/ListingItem';
-import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaEnvelop, FaTimes, FaSpinner, FaTrash, FaCheck, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaEnvelope, FaTimes, FaSpinner, FaTrash, FaCheck, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
