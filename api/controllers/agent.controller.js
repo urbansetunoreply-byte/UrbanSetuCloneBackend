@@ -92,9 +92,41 @@ export const applyAgent = async (req, res, next) => {
         if (existing) {
             if (existing.status === 'pending') return next(errorHandler(400, "You already have a pending application"));
             if (existing.status === 'approved') return next(errorHandler(400, "You are already a registered agent"));
-            // if rejected, they might re-apply. For simplicity, let's allow updating rejected applications via update endpoint or basic Re-apply here
-            // But for now, returning status
-            return next(errorHandler(400, "You have an existing agent profile. Please check status."));
+
+            // If rejected, update existing application
+            if (existing.status === 'rejected') {
+                // Server-side Freeze Check
+                if (existing.revokedAt) {
+                    const daysPassed = Math.ceil(Math.abs(new Date() - new Date(existing.revokedAt)) / (1000 * 60 * 60 * 24));
+                    if (daysPassed < 30) {
+                        return next(errorHandler(403, `Account revoked. Please wait ${30 - daysPassed} days `));
+                    }
+                }
+
+                // Update fields
+                existing.name = name;
+                existing.mobileNumber = mobileNumber;
+                existing.city = city;
+                existing.areas = areas || [];
+                existing.experience = parseInt(experience) || 0;
+                existing.about = about;
+                existing.reraId = reraId;
+                existing.agencyName = agencyName;
+                if (photo) existing.photo = photo;
+                if (idProof) existing.idProof = idProof;
+
+                existing.status = 'pending';
+                existing.rejectionReason = undefined;
+                existing.revokedAt = undefined; // Clear revocation history on new application? Or keep it?
+                // Usually clear it so they aren't marked as revoked in pending state. 
+                // However, history is good. But 'revokedAt' is used for Freeze check. If I clear it, freeze check passes next time. 
+                // But status is now 'pending', so freeze check condition 'status===rejected && revokedAt' won't trigger anyway.
+                // Keeping it might be confusing if they get rejected again (normal rejection) but revokedAt persists?
+                // So I SHOULD clear it.
+
+                await existing.save();
+                return res.status(200).json(existing);
+            }
         }
 
         const newAgent = new Agent({
