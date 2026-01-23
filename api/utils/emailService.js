@@ -783,7 +783,7 @@ export const sendAgentApprovalEmail = async (email, name) => {
           </div>
           
           <div style="text-align: center; margin-top: 30px;">
-            <a href="${clientBaseUrl}/user/agent-dashboard" style="display: inline-block; background-color: #059669; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Access Dashboard</a>
+            <a href="${clientBaseUrl}/user/agents" style="display: inline-block; background-color: #059669; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Access Dashboard</a>
           </div>
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
