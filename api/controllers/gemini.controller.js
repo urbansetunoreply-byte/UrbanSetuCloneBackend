@@ -394,7 +394,13 @@ export const chatWithGemini = async (req, res) => {
             // Get relevant website data from cache (faster)
             const websiteData = getRelevantCachedData(userMessage, selectedProperties || []);
 
+            const helpContext = (req.body.helpArticles && Array.isArray(req.body.helpArticles))
+                ? `\nAVAILABLE HELP ARTICLES (Suggest these when relevant):\n` + req.body.helpArticles.map(a => `- "[${a.title}](/help-center/article/${a.slug})": ${a.description}`).join('\n')
+                : '';
+
             return `${basePrompt}
+            
+            ${helpContext}
 
             LIVE WEBSITE DATA (Contextual):
             ${websiteData}
@@ -402,7 +408,7 @@ export const chatWithGemini = async (req, res) => {
             Remember:
             - If the user's query is simple, keep it simple.
             - If they ask about the project/platform specifically, use the "Project Knowledge" section.
-            - Always try to provide a direct Link from the "Route Map" if relevant.
+            - Always try to provide a direct Link from the "Route Map" or "Help Articles" if relevant.
 
             Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         };

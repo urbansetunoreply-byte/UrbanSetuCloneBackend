@@ -34,6 +34,24 @@ const HelpCenterChat = () => {
         }
     }, [sessionId]);
 
+    const [helpArticles, setHelpArticles] = useState([]);
+
+    useEffect(() => {
+        // Fetch help articles for context
+        const fetchArticles = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/help?limit=50`);
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    setHelpArticles(data.map(a => ({ title: a.title, slug: a.slug, description: a.description, category: a.category })));
+                }
+            } catch (error) {
+                console.error("Failed to fetch help context", error);
+            }
+        };
+        fetchArticles();
+    }, []);
+
     const handleSend = async (e) => {
         e.preventDefault();
         if (!input.trim()) return;
@@ -58,7 +76,9 @@ const HelpCenterChat = () => {
                     sessionId: sessionId,
                     history: messages.map(m => ({ role: m.role, content: m.content })),
                     tone: 'friendly', // Force friendly tone for help center
-                    responseLength: 'medium'
+                    responseLength: 'medium',
+                    enableStreaming: false,
+                    helpArticles: helpArticles
                 })
             });
 
