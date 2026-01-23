@@ -828,7 +828,7 @@ export const sendAgentRejectionEmail = async (email, name, reason) => {
               <span style="color: #ef4444;">${reason || 'Does not meet current requirements.'}</span>
             </div>
             <p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.6;">
-              You are welcome to re-apply after addressing the above points or in 30 days.
+              You are welcome to re-apply after ${new Date(new Date().setDate(new Date().getDate() + 30)).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}.
             </p>
           </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -10,6 +10,28 @@ const BecomeAgent = () => {
     const { currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [existingAgent, setExistingAgent] = useState(null);
+
+    useEffect(() => {
+        if (currentUser) {
+            checkAgentStatus();
+        }
+    }, [currentUser]);
+
+    const checkAgentStatus = async () => {
+        try {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/status/me`);
+            const data = await res.json();
+            if (res.ok && data.isAgent) {
+                // Fetch full profile to get updatedAt
+                const profileRes = await fetch(`${API_BASE_URL}/api/agent/profile/${data.agentId}`);
+                const profileData = await profileRes.json();
+                setExistingAgent(profileData);
+            }
+        } catch (error) {
+            console.error("Error checking status:", error);
+        }
+    };
 
     const [formData, setFormData] = useState({
         name: currentUser ? currentUser.username : '',
@@ -38,6 +60,21 @@ const BecomeAgent = () => {
         }
 
         try {
+            // Check for rejection freeze
+            if (existingAgent && existingAgent.status === 'rejected') {
+                const rejectedDate = new Date(existingAgent.updatedAt);
+                const now = new Date();
+                const diffTime = Math.abs(now - rejectedDate);
+                const daysPassed = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const freezePeriod = 30;
+
+                if (daysPassed < freezePeriod) {
+                    const daysLeft = freezePeriod - daysPassed;
+                    toast.error(`Application rejected. You can re-apply in ${daysLeft} days.`);
+                    return;
+                }
+            }
+
             setLoading(true);
             const areasArray = formData.areas.split(',').map(area => area.trim()).filter(area => area.length > 0);
 
