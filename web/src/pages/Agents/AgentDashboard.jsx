@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHome, FaChartLine, FaEnvelope, FaPlus, FaStar, } from 'react-icons/fa';
+import { FaHome, FaChartLine, FaEnvelope, FaPlus, FaStar, FaInfoCircle } from 'react-icons/fa';
+import AgentInfoModal from '../../components/AgentInfoModal';
 import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
@@ -9,6 +10,7 @@ const AgentDashboard = () => {
     const { currentUser } = useSelector((state) => state.user);
     const [agentProfile, setAgentProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showInfoModal, setShowInfoModal] = useState(false);
 
     useEffect(() => {
         fetchAgentProfile();
@@ -53,7 +55,16 @@ const AgentDashboard = () => {
             <div className="max-w-7xl mx-auto">
                 <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agent Dashboard</h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agent Dashboard</h1>
+                            <button
+                                onClick={() => setShowInfoModal(true)}
+                                className="text-gray-400 hover:text-blue-600 transition-colors"
+                                title="About Agents"
+                            >
+                                <FaInfoCircle className="text-xl" />
+                            </button>
+                        </div>
                         <p className="text-gray-600 dark:text-gray-400">Welcome back, {agentProfile.name}</p>
                     </div>
                     <Link to={`/agents/${agentProfile._id}`} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors w-full md:w-auto text-center">
@@ -121,6 +132,12 @@ const AgentDashboard = () => {
                         <p>No recent activity.</p>
                     </div>
                 </div>
+
+                {/* Info Modal */}
+                <AgentInfoModal
+                    isOpen={showInfoModal}
+                    onClose={() => setShowInfoModal(false)}
+                />
 
             </div>
         </div>

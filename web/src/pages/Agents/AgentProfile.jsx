@@ -8,6 +8,7 @@ import { authenticatedFetch } from '../../utils/auth';
 import { toast } from 'react-toastify';
 import AgentProfileSkeleton from '../../components/skeletons/AgentProfileSkeleton';
 import PreBookingChatWrapper from '../../components/PreBookingChatWrapper';
+import AgentInfoModal from '../../components/AgentInfoModal';
 
 const AgentProfile = () => {
     const { id } = useParams();
@@ -35,6 +36,7 @@ const AgentProfile = () => {
 
     // Chat State
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [showInfoModal, setShowInfoModal] = useState(false);
 
     useEffect(() => {
         fetchAgent();
@@ -350,7 +352,14 @@ const AgentProfile = () => {
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
                     <div className="md:flex">
                         {/* Sidebar / Left Info */}
-                        <div className="md:w-1/3 bg-gray-50 dark:bg-gray-800/50 p-6 md:p-8 text-center md:text-left border-r border-gray-100 dark:border-gray-700">
+                        <div className="md:w-1/3 bg-gray-50 dark:bg-gray-800/50 p-6 md:p-8 text-center md:text-left border-r border-gray-100 dark:border-gray-700 relative">
+                            <button
+                                onClick={() => setShowInfoModal(true)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-blue-600 transition-colors z-10"
+                                title="About Agents"
+                            >
+                                <FaInfoCircle className="text-xl" />
+                            </button>
                             <div className="relative inline-block md:block mb-4">
                                 <img
                                     src={agent.photo}
