@@ -99,7 +99,7 @@ export const applyAgent = async (req, res, next) => {
                 if (existing.revokedAt) {
                     const daysPassed = Math.ceil(Math.abs(new Date() - new Date(existing.revokedAt)) / (1000 * 60 * 60 * 24));
                     if (daysPassed < 30) {
-                        return next(errorHandler(403, `Account revoked. Please wait ${30 - daysPassed} days `));
+                        return next(errorHandler(403, `Your Agent Account was revoked. Please wait a cool-off period of ${30 - daysPassed} days before raising new application.`));
                     }
                 }
 
