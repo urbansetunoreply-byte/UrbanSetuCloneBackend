@@ -280,7 +280,7 @@ const AgentProfile = () => {
 
                 {/* Header Content & Buttons */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 h-full">
-                    <div className="absolute top-6 w-full flex justify-between pr-8">
+                    <div className="absolute top-6 w-full flex flex-wrap justify-between pr-4 sm:pr-8 gap-3">
                         <button
                             onClick={handleBack}
                             className="flex items-center gap-2 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 px-4 py-2 rounded-lg transition-all backdrop-blur-sm"

@@ -51,12 +51,12 @@ const AgentDashboard = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
             <div className="max-w-7xl mx-auto">
-                <header className="mb-8 flex justify-between items-center">
+                <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agent Dashboard</h1>
                         <p className="text-gray-600 dark:text-gray-400">Welcome back, {agentProfile.name}</p>
                     </div>
-                    <Link to={`/agents/${agentProfile._id}`} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    <Link to={`/agents/${agentProfile._id}`} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors w-full md:w-auto text-center">
                         View Public Profile
                     </Link>
                 </header>

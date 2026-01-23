@@ -92,11 +92,10 @@ const FindAgent = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <FaUserTie className="text-blue-600" />
-                        Expert Agents
-                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded-full ml-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex flex-wrap items-center gap-2">
+                        <span className="flex items-center gap-2"><FaUserTie className="text-blue-600" /> Expert Agents</span>
+                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded-full">
                             {agents.length} Found
                         </span>
                     </h2>

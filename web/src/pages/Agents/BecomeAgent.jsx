@@ -159,7 +159,7 @@ const BecomeAgent = () => {
                         </div>
 
                         {/* Form */}
-                        <div className="col-span-2 p-8 lg:p-10">
+                        <div className="col-span-2 p-6 lg:p-10">
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
