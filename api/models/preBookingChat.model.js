@@ -9,7 +9,7 @@ const preBookingChatSchema = new mongoose.Schema({
     listingId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Listing',
-        required: true
+        required: false
     },
     ownerId: {
         type: mongoose.Schema.Types.ObjectId,

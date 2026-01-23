@@ -7,6 +7,7 @@ import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
 import { toast } from 'react-toastify';
 import AgentProfileSkeleton from '../../components/skeletons/AgentProfileSkeleton';
+import PreBookingChatWrapper from '../../components/PreBookingChatWrapper';
 
 const AgentProfile = () => {
     const { id } = useParams();
@@ -31,6 +32,9 @@ const AgentProfile = () => {
     // Delete Confirmation State
     const [showDeleteReviewModal, setShowDeleteReviewModal] = useState(false);
     const [reviewToDelete, setReviewToDelete] = useState(null);
+
+    // Chat State
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     useEffect(() => {
         fetchAgent();
@@ -257,6 +261,15 @@ const AgentProfile = () => {
         });
     };
 
+    const handleMessageAgent = () => {
+        if (!currentUser) {
+            toast.info("Please sign in to message the agent");
+            navigate('/sign-in'); // Optional: redirect to login
+            return;
+        }
+        setIsChatOpen(true);
+    };
+
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
         try {
@@ -377,7 +390,10 @@ const AgentProfile = () => {
                             {/* Action Buttons: Show contact ONLY if NOT owner */}
                             {!isOwner && currentUser && (
                                 <div className="space-y-3">
-                                    <button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold shadow-md transition-all hover:scale-105">
+                                    <button
+                                        onClick={handleMessageAgent}
+                                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold shadow-md transition-all hover:scale-105"
+                                    >
                                         <FaCommentDots /> Message Agent
                                     </button>
                                     <button className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold shadow-md transition-all hover:scale-105">
@@ -934,6 +950,18 @@ const AgentProfile = () => {
                     to { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
+
+                {/* Chat Wrapper for Agent Inquiry */}
+                {agent && (
+                    <PreBookingChatWrapper
+                        isOpen={isChatOpen}
+                        onClose={() => setIsChatOpen(false)}
+                        ownerId={agent.userId?._id || agent.userId}
+                        listingId={null}
+                        showFloatingButton={false}
+                    />
+                )}
+
             </div>
         </div>
     );

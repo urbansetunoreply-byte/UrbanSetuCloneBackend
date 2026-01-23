@@ -8,8 +8,8 @@ export const initiateOrGetChat = async (req, res, next) => {
         const { listingId, ownerId } = req.body;
         const userId = req.user.id; // From verifyToken middleware
 
-        if (!listingId || !ownerId) {
-            return res.status(400).json({ success: false, message: 'Missing listingId or ownerId' });
+        if (!ownerId) {
+            return res.status(400).json({ success: false, message: 'Missing ownerId' });
         }
 
         if (userId === ownerId) {
@@ -17,10 +17,18 @@ export const initiateOrGetChat = async (req, res, next) => {
         }
 
         // Check if chat exists
-        let chat = await PreBookingChat.findOne({
-            listingId,
+        // If listingId is provided, look for it. If not, explicitly look for listingId: null
+        const query = {
             participants: { $all: [userId, ownerId] }
-        })
+        };
+
+        if (listingId) {
+            query.listingId = listingId;
+        } else {
+            query.listingId = null;
+        }
+
+        let chat = await PreBookingChat.findOne(query)
             .populate('participants', 'username avatar email')
             .populate('listingId', 'name address imageSqft');
 
@@ -28,7 +36,7 @@ export const initiateOrGetChat = async (req, res, next) => {
             // Create new chat
             chat = new PreBookingChat({
                 participants: [userId, ownerId],
-                listingId,
+                listingId: listingId || null,
                 ownerId,
                 messages: []
             });
@@ -100,7 +108,7 @@ export const sendMessage = async (req, res, next) => {
         io.to(recipientId).emit('pre_booking_message', {
             chatId: chat._id,
             message: newMessage,
-            listingId: chat.listingId._id,
+            listingId: chat.listingId ? chat.listingId._id : null,
             senderId,
             senderName
         });
@@ -109,7 +117,7 @@ export const sendMessage = async (req, res, next) => {
         io.to(senderId).emit('pre_booking_message', {
             chatId: chat._id,
             message: newMessage,
-            listingId: chat.listingId._id,
+            listingId: chat.listingId ? chat.listingId._id : null,
             senderId,
             senderName
         });
@@ -131,8 +139,16 @@ export const sendMessage = async (req, res, next) => {
 
             // Only send email if recipient is OFFLINE and cooldown has passed
             if (!isRecipientOnline && (now - lastEmailSent > EMAIL_COOLDOWN)) {
-                // Construct property link (assuming client structure)
-                const propertyLink = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/listing/${chat.listingId._id}`;
+
+                let propertyLink = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+                let subjectName = "General Inquiry";
+
+                if (chat.listingId) {
+                    propertyLink = `${propertyLink}/listing/${chat.listingId._id}`;
+                    subjectName = chat.listingId.name;
+                } else {
+                    propertyLink = `${propertyLink}/user/messages`; // Direct to inbox
+                }
 
                 // Update lastEmailSentAt immediately to lock
                 await PreBookingChat.findByIdAndUpdate(chat._id, { lastEmailSentAt: now });
@@ -142,7 +158,7 @@ export const sendMessage = async (req, res, next) => {
                     recipient.email,
                     recipient.username,
                     sender.username,
-                    chat.listingId.name,
+                    subjectName,
                     propertyLink
                 ).catch(err => console.error('Email sending failed:', err));
             }

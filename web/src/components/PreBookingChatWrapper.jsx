@@ -7,9 +7,20 @@ import { socket } from '../utils/socket';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle }) {
+export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle, isOpen: externalIsOpen, onClose, showFloatingButton = true }) {
     const { currentUser } = useSelector((state) => state.user);
-    const [isOpen, setIsOpen] = useState(false);
+    const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+    const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+
+    const setIsOpen = (value) => {
+        setInternalIsOpen(value);
+        // If closing and controlled, trigger callback
+        if (!value && onClose) {
+            onClose();
+        }
+    };
+
     const location = useLocation();
 
     // Check query params to auto-open chat
@@ -446,7 +457,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
                                                 {chat.lastMessage?.timestamp && new Date(chat.lastMessage.timestamp).toLocaleDateString('en-GB')}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-gray-500 truncate">{chat.listingId?.name}</p>
+                                        <p className="text-xs text-gray-500 truncate">{chat.listingId?.name || "Agent Inquiry"}</p>
                                         <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
                                             {chat.lastMessage?.content || 'No messages'}
                                         </p>
@@ -519,7 +530,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
 
                             <div className="leading-tight">
                                 <div className="font-semibold text-sm">
-                                    {isOwner ? getAnonymizedName(otherParticipant?._id) : 'Property Owner'}
+                                    {isOwner ? getAnonymizedName(otherParticipant?._id) : (listingId ? 'Property Owner' : 'Agent')}
                                 </div>
                                 <div className="text-[10px] opacity-90 flex items-center gap-1.5">
                                     <FaCircle className="w-2 h-2 text-green-400" /> Online
@@ -619,7 +630,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
     return (
         <>
             {/* Floating Entry Button */}
-            {!isOpen && (
+            {showFloatingButton && !isOpen && (
                 <div className="fixed bottom-24 right-6 z-40">
                     <button
                         onClick={toggleChat}
