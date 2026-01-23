@@ -264,7 +264,7 @@ export default function MyDeletedListings() {
                                                     </div>
                                                 ) : (
                                                     <span className="text-xs text-gray-400 dark:text-gray-500">
-                                                        {item.deletionType === 'admin' ? 'Contact Admin to Restore' : 'Cannot Auto-Restore'}
+                                                        {item.deletionType === 'admin' ? 'Contact Support to Restore' : 'Cannot Auto-Restore'}
                                                     </span>
                                                 )}
                                             </td>

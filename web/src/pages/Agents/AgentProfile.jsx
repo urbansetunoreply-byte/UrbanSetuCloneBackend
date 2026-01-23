@@ -34,20 +34,9 @@ const AgentProfile = () => {
 
     useEffect(() => {
         fetchAgent();
-        fetchReviews();
     }, [id]);
 
-    const fetchReviews = async () => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/agent/reviews/${id}`);
-            const data = await res.json();
-            if (res.ok) {
-                setReviews(data);
-            }
-        } catch (error) {
-            console.error("Error fetching reviews:", error);
-        }
-    };
+
 
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
@@ -201,6 +190,8 @@ const AgentProfile = () => {
                 // Fetch listings using the user ID associated with this agent
                 const userId = data.userId._id || data.userId;
                 fetchListings(userId);
+                // Fetch reviews for this agent
+                fetchReviews(data._id);
             } else {
                 console.error("Failed to fetch agent profile");
             }
@@ -220,6 +211,18 @@ const AgentProfile = () => {
             }
         } catch (error) {
             console.error("Error fetching listings:", error);
+        }
+    };
+
+    const fetchReviews = async (agentId) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/agent/reviews/${agentId}`);
+            const data = await res.json();
+            if (res.ok) {
+                setReviews(data);
+            }
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
         }
     };
 
@@ -670,242 +673,263 @@ const AgentProfile = () => {
                                         </form>
                                     </div>
                                 )}
+
+                                {currentUser && isOwner && (
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800 text-center">
+                                        <p className="text-blue-600 dark:text-blue-400 font-medium">This is your public profile. You cannot write a review for yourself.</p>
+                                    </div>
+                                )}
+
+                                {!currentUser && (
+                                    <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                                        <p className="text-gray-500 dark:text-gray-400 mb-3">Please log in to write a review.</p>
+                                        <Link to="/sign-in" className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Login Now</Link>
+                                    </div>
+                                )}
                             </section>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Edit Modal */}
-            {showEditModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 transform transition-all scale-100 my-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Profile</h2>
-                            <button onClick={() => setShowEditModal(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-                                <FaTimes size={24} />
-                            </button>
+                {/* Edit Modal */}
+                {
+                    showEditModal && (
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 transform transition-all scale-100 my-8">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Profile</h2>
+                                    <button onClick={() => setShowEditModal(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                                        <FaTimes size={24} />
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                value={editFormData.name}
+                                                onChange={handleEditChange}
+                                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mobile Number</label>
+                                            <input
+                                                type="text"
+                                                name="mobileNumber"
+                                                value={editFormData.mobileNumber}
+                                                onChange={handleEditChange}
+                                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Operating City</label>
+                                            <input
+                                                type="text"
+                                                name="city"
+                                                value={editFormData.city}
+                                                onChange={handleEditChange}
+                                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Experience (Years)</label>
+                                            <input
+                                                type="number"
+                                                name="experience"
+                                                value={editFormData.experience}
+                                                onChange={handleEditChange}
+                                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Agency Name</label>
+                                            <input
+                                                type="text"
+                                                name="agencyName"
+                                                value={editFormData.agencyName}
+                                                onChange={handleEditChange}
+                                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">RERA ID</label>
+                                            <input
+                                                type="text"
+                                                name="reraId"
+                                                value={editFormData.reraId}
+                                                onChange={handleEditChange}
+                                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Areas Served (comma separated)</label>
+                                        <input
+                                            type="text"
+                                            name="areas"
+                                            value={editFormData.areas}
+                                            onChange={handleEditChange}
+                                            className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                            placeholder="e.g. Area1, Area2"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio / About</label>
+                                        <textarea
+                                            name="about"
+                                            rows="4"
+                                            value={editFormData.about}
+                                            onChange={handleEditChange}
+                                            className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                        ></textarea>
+                                    </div>
+
+                                    <div className="flex gap-3 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowEditModal(false)}
+                                            className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-xl transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={updating}
+                                            className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-transform hover:scale-105 disabled:opacity-70 disabled:scale-100 flex justify-center items-center gap-2"
+                                        >
+                                            {updating ? <FaSpinner className="animate-spin" /> : 'Save Changes'}
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-4 text-center">
+                                        By saving changes, you agree to our <a href="/user/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Terms and Conditions for Partners</a>.
+                                    </p>
+                                </form>
+                            </div>
                         </div>
-
-                        <form onSubmit={handleUpdateProfile} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={editFormData.name}
-                                        onChange={handleEditChange}
-                                        className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                        required
-                                    />
+                    )
+                }
+                {/* Approve Modal */}
+                {
+                    showApproveModal && (
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fade-in">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform transition-all scale-100">
+                                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-green-600 dark:text-green-400">
+                                    <FaCheck size={28} />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mobile Number</label>
-                                    <input
-                                        type="text"
-                                        name="mobileNumber"
-                                        value={editFormData.mobileNumber}
-                                        onChange={handleEditChange}
-                                        className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Operating City</label>
-                                    <input
-                                        type="text"
-                                        name="city"
-                                        value={editFormData.city}
-                                        onChange={handleEditChange}
-                                        className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Experience (Years)</label>
-                                    <input
-                                        type="number"
-                                        name="experience"
-                                        value={editFormData.experience}
-                                        onChange={handleEditChange}
-                                        className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Agency Name</label>
-                                    <input
-                                        type="text"
-                                        name="agencyName"
-                                        value={editFormData.agencyName}
-                                        onChange={handleEditChange}
-                                        className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">RERA ID</label>
-                                    <input
-                                        type="text"
-                                        name="reraId"
-                                        value={editFormData.reraId}
-                                        onChange={handleEditChange}
-                                        className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    />
+                                <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">Approve Agent?</h3>
+                                <p className="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
+                                    Are you sure you want to approve <strong>{agent.name}</strong>? They will gain access to agent features immediately.
+                                </p>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setShowApproveModal(false)}
+                                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => handleUpdateStatus('approved')}
+                                        className="flex-1 px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium transition-colors shadow-lg shadow-green-500/30"
+                                    >
+                                        Approve
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+                    )
+                }
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Areas Served (comma separated)</label>
-                                <input
-                                    type="text"
-                                    name="areas"
-                                    value={editFormData.areas}
-                                    onChange={handleEditChange}
-                                    className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="e.g. Area1, Area2"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio / About</label>
+                {/* Reject Modal */}
+                {
+                    showRejectModal && (
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fade-in">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
+                                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600 dark:text-red-400">
+                                    <FaExclamationTriangle size={24} />
+                                </div>
+                                <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
+                                    {agent.status === 'approved' ? 'Revoke Access' : 'Reject Application'}
+                                </h3>
+                                <p className="text-center text-gray-500 dark:text-gray-400 mb-4 text-sm">
+                                    {agent.status === 'approved'
+                                        ? <span>You are regarding to revoke access for <strong>{agent.name}</strong>.</span>
+                                        : <span>You are about to reject <strong>{agent.name}</strong>.</span>
+                                    }
+                                    Please provide a reason below.
+                                </p>
                                 <textarea
-                                    name="about"
-                                    rows="4"
-                                    value={editFormData.about}
-                                    onChange={handleEditChange}
-                                    className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none resize-none h-32 text-sm mb-4"
+                                    placeholder="Reason for rejection (required)..."
+                                    value={rejectReason}
+                                    onChange={(e) => setRejectReason(e.target.value)}
                                 ></textarea>
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        onClick={() => setShowRejectModal(false)}
+                                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => handleUpdateStatus('rejected', rejectReason)}
+                                        className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/30"
+                                    >
+                                        Reject Agent
+                                    </button>
+                                </div>
                             </div>
+                        </div>
+                    )
+                }
 
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowEditModal(false)}
-                                    className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-xl transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={updating}
-                                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-transform hover:scale-105 disabled:opacity-70 disabled:scale-100 flex justify-center items-center gap-2"
-                                >
-                                    {updating ? <FaSpinner className="animate-spin" /> : 'Save Changes'}
-                                </button>
+                {/* Delete Review Modal */}
+                {
+                    showDeleteReviewModal && (
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-fade-in">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all scale-100">
+                                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600 dark:text-red-400">
+                                    <FaTrash size={28} />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Review?</h3>
+                                <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+                                    Are you sure you want to delete this review? This action cannot be undone.
+                                </p>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setShowDeleteReviewModal(false)}
+                                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={confirmDeleteReview}
+                                        className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/30"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
-                            <p className="text-xs text-gray-500 mt-4 text-center">
-                                By saving changes, you agree to our <a href="/user/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Terms and Conditions for Partners</a>.
-                            </p>
-                        </form>
-                    </div>
-                </div>
-            )}
-            {/* Approve Modal */}
-            {showApproveModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fade-in">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 transform transition-all scale-100">
-                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-green-600 dark:text-green-400">
-                            <FaCheck size={28} />
                         </div>
-                        <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">Approve Agent?</h3>
-                        <p className="text-center text-gray-500 dark:text-gray-400 mb-6 text-sm">
-                            Are you sure you want to approve <strong>{agent.name}</strong>? They will gain access to agent features immediately.
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setShowApproveModal(false)}
-                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => handleUpdateStatus('approved')}
-                                className="flex-1 px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium transition-colors shadow-lg shadow-green-500/30"
-                            >
-                                Approve
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                    )
+                }
 
-            {/* Reject Modal */}
-            {showRejectModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fade-in">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
-                        <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600 dark:text-red-400">
-                            <FaExclamationTriangle size={24} />
-                        </div>
-                        <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
-                            {agent.status === 'approved' ? 'Revoke Access' : 'Reject Application'}
-                        </h3>
-                        <p className="text-center text-gray-500 dark:text-gray-400 mb-4 text-sm">
-                            {agent.status === 'approved'
-                                ? <span>You are regarding to revoke access for <strong>{agent.name}</strong>.</span>
-                                : <span>You are about to reject <strong>{agent.name}</strong>.</span>
-                            }
-                            Please provide a reason below.
-                        </p>
-                        <textarea
-                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none resize-none h-32 text-sm mb-4"
-                            placeholder="Reason for rejection (required)..."
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
-                        ></textarea>
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setShowRejectModal(false)}
-                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => handleUpdateStatus('rejected', rejectReason)}
-                                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/30"
-                            >
-                                Reject Agent
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Delete Review Modal */}
-            {showDeleteReviewModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4 animate-fade-in">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all scale-100">
-                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600 dark:text-red-400">
-                            <FaTrash size={28} />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Review?</h3>
-                        <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
-                            Are you sure you want to delete this review? This action cannot be undone.
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setShowDeleteReviewModal(false)}
-                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDeleteReview}
-                                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/30"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <style>{`
+                <style>{`
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
+            </div>
         </div>
     );
 };
