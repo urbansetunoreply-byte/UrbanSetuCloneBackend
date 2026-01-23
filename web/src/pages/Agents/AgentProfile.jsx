@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ListingItem from '../../components/ListingItem';
 import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaTimes, FaSpinner, FaTrash, FaCheck, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa';
@@ -738,7 +739,7 @@ const AgentProfile = () => {
 
                 {/* Edit Modal */}
                 {
-                    showEditModal && (
+                    showEditModal && createPortal(
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto">
                             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 transform transition-all scale-100 my-8">
                                 <div className="flex justify-between items-center mb-6">
@@ -860,7 +861,8 @@ const AgentProfile = () => {
                                     </p>
                                 </form>
                             </div>
-                        </div>
+                        </div>,
+                        document.body
                     )
                 }
                 {/* Approve Modal */}
@@ -979,8 +981,6 @@ const AgentProfile = () => {
                 {
                     agent && (
                         <PreBookingChatWrapper
-                            isOpen={isChatOpen}
-                            onClose={() => setIsChatOpen(false)}
                             ownerId={agent.userId?._id || agent.userId}
                             listingId={null}
                             listingTitle={`Chat with ${agent.name}`}

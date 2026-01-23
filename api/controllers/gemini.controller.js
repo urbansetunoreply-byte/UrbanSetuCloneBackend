@@ -319,6 +319,10 @@ export const chatWithGemini = async (req, res) => {
             - Privacy Policy: https://urbansetu.vercel.app/privacy
             - Cookie Policy: https://urbansetu.vercel.app/cookie-policy
             - Blogs: https://urbansetu.vercel.app/blogs
+            - Agents: https://urbansetu.vercel.app/agents
+            - Agent Profile: https://urbansetu.vercel.app/agent/AGENT_ID (Replace AGENT_ID with actual ID)
+            - Help Center: https://urbansetu.vercel.app/help-center
+            - Help Center Article: https://urbansetu.vercel.app/help-center/article/ARTICLE_ID (Replace ARTICLE_ID with actual ID)
             - Community: https://urbansetu.vercel.app/community
             - Blog Detail: https://urbansetu.vercel.app/blog/BLOG_TITLE (Replace BLOG_TITLE with actual slug/title)
             - Forgot Password: https://urbansetu.vercel.app/forgot-password?email= (Append email if known)
