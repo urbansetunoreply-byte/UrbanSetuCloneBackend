@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch, FaMapMarkerAlt, FaFilter, FaUserPlus, FaUserTie } from 'react-icons/fa';
+import { FaSearch, FaMapMarkerAlt, FaFilter, FaUserPlus, FaUserTie, FaInfoCircle } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import AgentCard from '../../components/AgentCard';
+import AgentInfoModal from '../../components/AgentInfoModal';
 import { usePageTitle } from '../../hooks/usePageTitle';
 
 const FindAgent = () => {
@@ -14,6 +15,7 @@ const FindAgent = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [cityFilter, setCityFilter] = useState('');
+    const [showInfoModal, setShowInfoModal] = useState(false);
 
     // Debounce search
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -48,13 +50,21 @@ const FindAgent = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16 pb-12 transition-colors duration-300">
+            <AgentInfoModal isOpen={showInfoModal} onClose={() => setShowInfoModal(false)} />
 
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-16 mb-10 relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/city-fields.png')]"></div>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-                    <h1 className="text-4xl md:text-5xl font-extrabold mb-4 animate-fade-in-down">
+                    <h1 className="text-4xl md:text-5xl font-extrabold mb-4 animate-fade-in-down flex items-center justify-center gap-3">
                         Find Your Perfect Real Estate Agent
+                        <button
+                            onClick={() => setShowInfoModal(true)}
+                            className="text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+                            title="About Agents"
+                        >
+                            <FaInfoCircle className="text-2xl sm:text-3xl" />
+                        </button>
                     </h1>
                     <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8 animate-fade-in-up">
                         Connect with verified professionals who can help you buy, sell, or rent with confidence.

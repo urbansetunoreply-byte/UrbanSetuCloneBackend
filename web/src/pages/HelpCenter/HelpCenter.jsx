@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { FaSearch, FaArrowRight, FaChevronLeft, FaEdit } from 'react-icons/fa';
 import { helpCategories } from '../../utils/helpCategories';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import HelpCenterChat from '../../components/HelpCenterChat';
 
 const HelpCenter = () => {
     usePageTitle('Help Center - UrbanSetu');
@@ -181,6 +182,11 @@ const HelpCenter = () => {
                                     </p>
                                 </button>
                             ))}
+                        </div>
+
+                        {/* Instant AI Help Section */}
+                        <div className="mb-16">
+                            <HelpCenterChat />
                         </div>
 
                         {/* Popular Articles Section */}

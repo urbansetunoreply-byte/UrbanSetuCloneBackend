@@ -1,11 +1,12 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { FaTimes, FaUserTie, FaHandshake, FaBullseye, FaQuestionCircle, FaShieldAlt } from 'react-icons/fa';
 
 export default function AgentInfoModal({ isOpen, onClose }) {
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fadeIn">
+    return createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[99999] p-4 animate-fadeIn" style={{ isolation: 'isolate' }}>
             <div
                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all scale-100 animate-slideUp"
                 onClick={(e) => e.stopPropagation()}
@@ -123,6 +124,7 @@ export default function AgentInfoModal({ isOpen, onClose }) {
         .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
         .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
       `}</style>
-        </div>
+        </div>,
+        document.body
     );
 }
