@@ -405,12 +405,6 @@ const AgentProfile = () => {
                             {/* Action Buttons: Show contact ONLY if NOT owner */}
                             {!isOwner && currentUser && (
                                 <div className="space-y-3">
-                                    <button
-                                        onClick={handleMessageAgent}
-                                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold shadow-md transition-all hover:scale-105"
-                                    >
-                                        <FaCommentDots /> Message Agent
-                                    </button>
                                     <button className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold shadow-md transition-all hover:scale-105">
                                         <FaCalendarCheck /> Book Appointment
                                     </button>
@@ -989,7 +983,8 @@ const AgentProfile = () => {
                             onClose={() => setIsChatOpen(false)}
                             ownerId={agent.userId?._id || agent.userId}
                             listingId={null}
-                            showFloatingButton={false}
+                            listingTitle={`Chat with ${agent.name}`}
+                            showFloatingButton={true}
                         />
                     )
                 }
