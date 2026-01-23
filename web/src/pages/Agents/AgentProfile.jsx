@@ -511,182 +511,187 @@ const AgentProfile = () => {
                             </section>
 
                             {/* Listings Section (Placeholder for now) */}
-                            <section className="mb-10">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-b dark:border-gray-700 pb-2 flex justify-between items-center">
-                                    <span>Active Listings</span>
-                                    {listings.length > 0 && <span className="text-sm font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">{listings.length}</span>}
-                                </h3>
-                                {listings.length > 0 ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-                                        {listings.map((listing) => (
-                                            <ListingItem key={listing._id} listing={listing} />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl text-center border border-dashed border-gray-300 dark:border-gray-600">
-                                        <p className="text-gray-500 dark:text-gray-400">No active listings at the moment.</p>
-                                    </div>
-                                )}
-                            </section>
+                            {/* Listings Section */}
+                            {currentUser && (
+                                <section className="mb-10">
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-b dark:border-gray-700 pb-2 flex justify-between items-center">
+                                        <span>Active Listings</span>
+                                        {listings.length > 0 && <span className="text-sm font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">{listings.length}</span>}
+                                    </h3>
+                                    {listings.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                                            {listings.map((listing) => (
+                                                <ListingItem key={listing._id} listing={listing} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl text-center border border-dashed border-gray-300 dark:border-gray-600">
+                                            <p className="text-gray-500 dark:text-gray-400">No active listings at the moment.</p>
+                                        </div>
+                                    )}
+                                </section>
+                            )}
 
                             {/* Reviews Section */}
-                            <section>
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 border-b dark:border-gray-700 pb-2 flex justify-between items-center">
-                                    <span>Client Reviews</span>
-                                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                        {agent.reviewCount} review{agent.reviewCount !== 1 ? 's' : ''}
-                                    </span>
-                                </h3>
+                            {currentUser && (
+                                <section>
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 border-b dark:border-gray-700 pb-2 flex justify-between items-center">
+                                        <span>Client Reviews</span>
+                                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                            {agent.reviewCount} review{agent.reviewCount !== 1 ? 's' : ''}
+                                        </span>
+                                    </h3>
 
-                                {/* Review List */}
-                                <div className="space-y-6 mb-10">
-                                    {reviews.length > 0 ? (
-                                        reviews.map((review) => (
-                                            <div key={review._id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                                                {editingReviewId === review._id ? (
-                                                    <form onSubmit={handleUpdateReview} className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-4 transition-all animate-fade-in-up">
-                                                        <h4 className="font-bold text-gray-900 dark:text-white mb-3">Edit Review</h4>
+                                    {/* Review List */}
+                                    <div className="space-y-6 mb-10">
+                                        {reviews.length > 0 ? (
+                                            reviews.map((review) => (
+                                                <div key={review._id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                    {editingReviewId === review._id ? (
+                                                        <form onSubmit={handleUpdateReview} className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-4 transition-all animate-fade-in-up">
+                                                            <h4 className="font-bold text-gray-900 dark:text-white mb-3">Edit Review</h4>
 
-                                                        <div className="mb-3">
-                                                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Rating</label>
-                                                            <div className="flex gap-2">
-                                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                                    <button
-                                                                        type="button"
-                                                                        key={star}
-                                                                        onClick={() => setEditReviewData({ ...editReviewData, rating: star })}
-                                                                        className={`text-lg transition-colors ${star <= editReviewData.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
-                                                                    >
-                                                                        <FaStar />
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="mb-3">
-                                                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Your Experience</label>
-                                                            <textarea
-                                                                value={editReviewData.comment}
-                                                                onChange={(e) => setEditReviewData({ ...editReviewData, comment: e.target.value })}
-                                                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
-                                                                rows="3"
-                                                                placeholder="Update your review..."
-                                                            ></textarea>
-                                                        </div>
-
-                                                        <div className="flex gap-3">
-                                                            <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Save Changes</button>
-                                                            <button type="button" onClick={() => setEditingReviewId(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
-                                                        </div>
-                                                    </form>
-                                                ) : (
-                                                    <>
-                                                        <div className="flex items-center gap-3 mb-2">
-                                                            <img src={review.userAvatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"} alt={review.userName} className="w-10 h-10 rounded-full object-cover" />
-                                                            <div>
-                                                                <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{review.userName}</h4>
-                                                                <div className="flex text-yellow-400 text-xs">
-                                                                    {[...Array(5)].map((_, i) => (
-                                                                        <FaStar key={i} className={i < review.rating ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"} />
+                                                            <div className="mb-3">
+                                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Rating</label>
+                                                                <div className="flex gap-2">
+                                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                                        <button
+                                                                            type="button"
+                                                                            key={star}
+                                                                            onClick={() => setEditReviewData({ ...editReviewData, rating: star })}
+                                                                            className={`text-lg transition-colors ${star <= editReviewData.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                                                                        >
+                                                                            <FaStar />
+                                                                        </button>
                                                                     ))}
                                                                 </div>
                                                             </div>
-                                                            <span className="ml-auto flex items-center gap-2">
-                                                                <span className="text-xs text-gray-400">
-                                                                    {new Date(review.createdAt).toLocaleDateString()}
-                                                                    {(review.isEdited || (review.updatedAt && new Date(review.updatedAt).getTime() > new Date(review.createdAt).getTime())) && (
-                                                                        <span className="italic ml-1">(edited)</span>
-                                                                    )}
-                                                                </span>
-                                                                {currentUser && (
-                                                                    (currentUser._id === review.userId || currentUser.role === 'admin' || currentUser.role === 'rootadmin')
-                                                                ) && (
-                                                                        <div className="flex gap-2 ml-2">
-                                                                            {currentUser._id === review.userId && (
+
+                                                            <div className="mb-3">
+                                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Your Experience</label>
+                                                                <textarea
+                                                                    value={editReviewData.comment}
+                                                                    onChange={(e) => setEditReviewData({ ...editReviewData, comment: e.target.value })}
+                                                                    className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
+                                                                    rows="3"
+                                                                    placeholder="Update your review..."
+                                                                ></textarea>
+                                                            </div>
+
+                                                            <div className="flex gap-3">
+                                                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Save Changes</button>
+                                                                <button type="button" onClick={() => setEditingReviewId(null)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                                                            </div>
+                                                        </form>
+                                                    ) : (
+                                                        <>
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                <img src={review.userAvatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"} alt={review.userName} className="w-10 h-10 rounded-full object-cover" />
+                                                                <div>
+                                                                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{review.userName}</h4>
+                                                                    <div className="flex text-yellow-400 text-xs">
+                                                                        {[...Array(5)].map((_, i) => (
+                                                                            <FaStar key={i} className={i < review.rating ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"} />
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                                <span className="ml-auto flex items-center gap-2">
+                                                                    <span className="text-xs text-gray-400">
+                                                                        {new Date(review.createdAt).toLocaleDateString()}
+                                                                        {(review.isEdited || (review.updatedAt && new Date(review.updatedAt).getTime() > new Date(review.createdAt).getTime())) && (
+                                                                            <span className="italic ml-1">(edited)</span>
+                                                                        )}
+                                                                    </span>
+                                                                    {currentUser && (
+                                                                        (currentUser._id === review.userId || currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                                                                    ) && (
+                                                                            <div className="flex gap-2 ml-2">
+                                                                                {currentUser._id === review.userId && (
+                                                                                    <button
+                                                                                        onClick={() => startEditing(review)}
+                                                                                        className="text-blue-500 hover:text-blue-700 transition-colors"
+                                                                                        title="Edit Review"
+                                                                                    >
+                                                                                        <FaEdit size={12} />
+                                                                                    </button>
+                                                                                )}
                                                                                 <button
-                                                                                    onClick={() => startEditing(review)}
-                                                                                    className="text-blue-500 hover:text-blue-700 transition-colors"
-                                                                                    title="Edit Review"
+                                                                                    onClick={() => handleDeleteReview(review._id)}
+                                                                                    className="text-red-500 hover:text-red-700 transition-colors"
+                                                                                    title="Delete Review"
                                                                                 >
-                                                                                    <FaEdit size={12} />
+                                                                                    <FaTrash size={12} />
                                                                                 </button>
-                                                                            )}
-                                                                            <button
-                                                                                onClick={() => handleDeleteReview(review._id)}
-                                                                                className="text-red-500 hover:text-red-700 transition-colors"
-                                                                                title="Delete Review"
-                                                                            >
-                                                                                <FaTrash size={12} />
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-gray-600 dark:text-gray-300 text-sm pl-13">{review.comment}</p>
-                                                    </>
-                                                )}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-gray-500 dark:text-gray-400 italic">No reviews yet. Be the first to review!</p>
-                                    )}
-                                </div>
-
-                                {/* Review Form */}
-                                {currentUser && !isOwner && (
-                                    <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                                        <h4 className="font-bold text-gray-900 dark:text-white mb-4">Write a Review</h4>
-                                        <form onSubmit={handleReviewSubmit}>
-                                            <div className="mb-4">
-                                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Rating</label>
-                                                <div className="flex gap-2">
-                                                    {[1, 2, 3, 4, 5].map((star) => (
-                                                        <button
-                                                            type="button"
-                                                            key={star}
-                                                            onClick={() => setNewReview({ ...newReview, rating: star })}
-                                                            className={`text-2xl transition-colors ${star <= newReview.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-200'}`}
-                                                        >
-                                                            <FaStar />
-                                                        </button>
-                                                    ))}
+                                                                            </div>
+                                                                        )}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-gray-600 dark:text-gray-300 text-sm pl-13">{review.comment}</p>
+                                                        </>
+                                                    )}
                                                 </div>
-                                            </div>
-                                            <div className="mb-4">
-                                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Your Experience</label>
-                                                <textarea
-                                                    rows="3"
-                                                    value={newReview.comment}
-                                                    onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                                                    className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                                    placeholder="Share your experience working with this agent..."
-                                                    required
-                                                ></textarea>
-                                            </div>
-                                            <button
-                                                type="submit"
-                                                disabled={submittingReview}
-                                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-70"
-                                            >
-                                                {submittingReview ? 'Submitting...' : 'Submit Review'}
-                                            </button>
-                                        </form>
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-500 dark:text-gray-400 italic">No reviews yet. Be the first to review!</p>
+                                        )}
                                     </div>
-                                )}
 
-                                {currentUser && isOwner && (
-                                    <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800 text-center">
-                                        <p className="text-blue-600 dark:text-blue-400 font-medium">This is your public profile. You cannot write a review for yourself.</p>
-                                    </div>
-                                )}
+                                    {/* Review Form */}
+                                    {currentUser && !isOwner && (
+                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                            <h4 className="font-bold text-gray-900 dark:text-white mb-4">Write a Review</h4>
+                                            <form onSubmit={handleReviewSubmit}>
+                                                <div className="mb-4">
+                                                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Rating</label>
+                                                    <div className="flex gap-2">
+                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                                            <button
+                                                                type="button"
+                                                                key={star}
+                                                                onClick={() => setNewReview({ ...newReview, rating: star })}
+                                                                className={`text-2xl transition-colors ${star <= newReview.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-200'}`}
+                                                            >
+                                                                <FaStar />
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="mb-4">
+                                                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Your Experience</label>
+                                                    <textarea
+                                                        rows="3"
+                                                        value={newReview.comment}
+                                                        onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                                        className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        placeholder="Share your experience working with this agent..."
+                                                        required
+                                                    ></textarea>
+                                                </div>
+                                                <button
+                                                    type="submit"
+                                                    disabled={submittingReview}
+                                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-70"
+                                                >
+                                                    {submittingReview ? 'Submitting...' : 'Submit Review'}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    )}
 
-                                {!currentUser && (
-                                    <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
-                                        <p className="text-gray-500 dark:text-gray-400 mb-3">Please log in to write a review.</p>
-                                        <Link to="/sign-in" className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Login Now</Link>
-                                    </div>
-                                )}
-                            </section>
+                                    {currentUser && isOwner && (
+                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800 text-center">
+                                            <p className="text-blue-600 dark:text-blue-400 font-medium">This is your public profile. You cannot write a review for yourself.</p>
+                                        </div>
+                                    )}
+
+                                    {!currentUser && (
+                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                                            <p className="text-gray-500 dark:text-gray-400 mb-3">Please log in to write a review.</p>
+                                            <Link to="/sign-in" className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Login Now</Link>
+                                        </div>
+                                    )}
+                                </section>
+                            )}
                         </div>
                     </div>
                 </div>
