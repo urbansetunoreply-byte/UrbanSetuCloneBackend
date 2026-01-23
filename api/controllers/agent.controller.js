@@ -193,11 +193,14 @@ export const updateAgentStatus = async (req, res, next) => {
         const previousStatus = agent.status;
 
         agent.status = status;
-        if (status === 'rejected' && rejectionReason) {
-            agent.rejectionReason = rejectionReason;
+        if (status === 'rejected') {
+            if (rejectionReason) agent.rejectionReason = rejectionReason;
+            // Set revokedAt if specifically revoked (previously approved), else null
+            agent.revokedAt = previousStatus === 'approved' ? new Date() : null;
         }
         if (status === 'approved') {
             agent.isVerified = true;
+            agent.revokedAt = null; // Clear if approved
         }
 
         await agent.save();

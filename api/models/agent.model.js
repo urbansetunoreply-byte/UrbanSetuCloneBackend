@@ -84,6 +84,10 @@ const agentSchema = new mongoose.Schema({
     rejectionReason: {
         type: String
     },
+    revokedAt: {
+        type: Date,
+        default: null
+    },
 
     // Performance (Admin internal)
     leadsReceived: {

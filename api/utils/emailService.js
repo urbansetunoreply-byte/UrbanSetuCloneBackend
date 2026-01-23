@@ -828,7 +828,7 @@ export const sendAgentRejectionEmail = async (email, name, reason) => {
               <span style="color: #ef4444;">${reason || 'Does not meet current requirements.'}</span>
             </div>
             <p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.6;">
-              You are welcome to re-apply after ${new Date(new Date().setDate(new Date().getDate() + 30)).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}.
+              You are welcome to re-apply at any time after addressing the above points.
             </p>
           </div>
 
@@ -878,6 +878,9 @@ export const sendAgentRevokedEmail = async (email, name, reason) => {
               <span style="color: #ef4444;">${reason || 'Violation of terms or policy.'}</span>
             </div>
             <p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.6;">
+              You may re-apply for agent status after ${new Date(new Date().setDate(new Date().getDate() + 30)).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}.
+            </p>
+            <p style="color: #4b5563; margin: 10px 0 0 0; line-height: 1.6;">
               If you believe this is an error or would like to appeal this decision, please contact our support team.
             </p>
           </div>

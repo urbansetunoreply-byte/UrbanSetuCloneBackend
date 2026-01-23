@@ -60,17 +60,17 @@ const BecomeAgent = () => {
         }
 
         try {
-            // Check for rejection freeze
-            if (existingAgent && existingAgent.status === 'rejected') {
-                const rejectedDate = new Date(existingAgent.updatedAt);
+            // Check for rejection freeze (Only if Revoked)
+            if (existingAgent && existingAgent.status === 'rejected' && existingAgent.revokedAt) {
+                const revokedDate = new Date(existingAgent.revokedAt);
                 const now = new Date();
-                const diffTime = Math.abs(now - rejectedDate);
+                const diffTime = Math.abs(now - revokedDate);
                 const daysPassed = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 const freezePeriod = 30;
 
                 if (daysPassed < freezePeriod) {
                     const daysLeft = freezePeriod - daysPassed;
-                    toast.error(`Application rejected. You can re-apply in ${daysLeft} days.`);
+                    toast.error(`Account revoked. You can re-apply in ${daysLeft} days.`);
                     return;
                 }
             }

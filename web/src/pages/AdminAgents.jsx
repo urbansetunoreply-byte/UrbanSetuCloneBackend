@@ -171,10 +171,10 @@ const AdminAgents = () => {
                                                 }`}>
                                                 {agent.status}
                                             </span>
-                                            {agent.status === 'rejected' && (
+                                            {agent.status === 'rejected' && agent.revokedAt && (
                                                 <div className="text-xs text-red-500 mt-1 font-medium">
                                                     {(() => {
-                                                        const daysPassed = Math.ceil(Math.abs(new Date() - new Date(agent.updatedAt)) / (1000 * 60 * 60 * 24));
+                                                        const daysPassed = Math.ceil(Math.abs(new Date() - new Date(agent.revokedAt)) / (1000 * 60 * 60 * 24));
                                                         const daysLeft = 30 - daysPassed;
                                                         return daysLeft > 0 ? `${daysLeft} days freeze` : 'Action Required';
                                                     })()}
