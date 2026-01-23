@@ -1306,3 +1306,22 @@ export const rootAdminBypassVerification = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getAgentListings = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const query = {
+      userRef: userId,
+      isVerified: true,
+      visibility: 'public',
+      availabilityStatus: { $ne: 'suspended' }
+    };
+
+    const listings = await Listing.find(query).sort({ createdAt: -1 });
+
+    res.status(200).json(listings);
+  } catch (error) {
+    next(error);
+  }
+};

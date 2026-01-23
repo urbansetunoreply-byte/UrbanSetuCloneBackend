@@ -1,5 +1,5 @@
 import express from 'express'
-import { createListing, deleteListing, updateListing, getListing, getListings, getUserListings, reassignPropertyOwner, deassignPropertyOwner, republishListing, rootAdminBypassVerification, getAIRecommendations, getDeletedListings, restoreDeletedListing } from '../controllers/listing.controller.js'
+import { createListing, deleteListing, updateListing, getListing, getListings, getUserListings, reassignPropertyOwner, deassignPropertyOwner, republishListing, rootAdminBypassVerification, getAIRecommendations, getDeletedListings, restoreDeletedListing, getAgentListings } from '../controllers/listing.controller.js'
 import { verifyToken, optionalAuth } from '../utils/verify.js'
 import User from '../models/user.model.js'
 import Listing from '../models/listing.model.js'
@@ -254,6 +254,7 @@ router.post("/report/:listingId", verifyToken, async (req, res, next) => {
 router.get("/get/:id", getListing)
 router.get("/ai-search", optionalAuth, getAIRecommendations)
 router.get("/get", optionalAuth, getListings)
+router.get("/agent/listings/:userId", getAgentListings)
 
 // Count listings
 router.get('/count', async (req, res) => {

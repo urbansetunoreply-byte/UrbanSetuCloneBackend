@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import ListingItem from '../../components/ListingItem';
 import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaTimes, FaSpinner, FaTrash, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
@@ -13,6 +14,7 @@ const AgentProfile = () => {
     const [agent, setAgent] = useState(null);
     const [loading, setLoading] = useState(true);
     const { currentUser } = useSelector(state => state.user);
+    const [listings, setListings] = useState([]);
 
     // Edit Mode State
     const [showEditModal, setShowEditModal] = useState(false);
@@ -196,6 +198,9 @@ const AgentProfile = () => {
 
             if (res.ok) {
                 setAgent(data);
+                // Fetch listings using the user ID associated with this agent
+                const userId = data.userId._id || data.userId;
+                fetchListings(userId);
             } else {
                 console.error("Failed to fetch agent profile");
             }
@@ -203,6 +208,18 @@ const AgentProfile = () => {
             console.error(error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchListings = async (userId) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/listing/agent/listings/${userId}`);
+            const data = await res.json();
+            if (res.ok) {
+                setListings(data);
+            }
+        } catch (error) {
+            console.error("Error fetching listings:", error);
         }
     };
 
@@ -492,10 +509,21 @@ const AgentProfile = () => {
 
                             {/* Listings Section (Placeholder for now) */}
                             <section className="mb-10">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-b dark:border-gray-700 pb-2">Active Listings</h3>
-                                <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl text-center border border-dashed border-gray-300 dark:border-gray-600">
-                                    <p className="text-gray-500 dark:text-gray-400">Listings integration coming soon...</p>
-                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-b dark:border-gray-700 pb-2 flex justify-between items-center">
+                                    <span>Active Listings</span>
+                                    {listings.length > 0 && <span className="text-sm font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">{listings.length}</span>}
+                                </h3>
+                                {listings.length > 0 ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                                        {listings.map((listing) => (
+                                            <ListingItem key={listing._id} listing={listing} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl text-center border border-dashed border-gray-300 dark:border-gray-600">
+                                        <p className="text-gray-500 dark:text-gray-400">No active listings at the moment.</p>
+                                    </div>
+                                )}
                             </section>
 
                             {/* Reviews Section */}
