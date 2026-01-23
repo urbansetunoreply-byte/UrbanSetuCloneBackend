@@ -4,10 +4,12 @@ import { toast } from 'react-toastify';
 import { authenticatedFetch } from '../../utils/csrf';
 import { helpCategories } from '../../utils/helpCategories';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const AdminHelpCenter = () => {
+    usePageTitle('Admin Help Center - UrbanSetu');
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');

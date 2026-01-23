@@ -5,8 +5,10 @@ import AgentInfoModal from '../../components/AgentInfoModal';
 import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const AgentDashboard = () => {
+    usePageTitle('Agent Dashboard - UrbanSetu');
     const { currentUser } = useSelector((state) => state.user);
     const [agentProfile, setAgentProfile] = useState(null);
     const [loading, setLoading] = useState(true);

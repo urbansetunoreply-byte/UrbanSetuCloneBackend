@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FaSearch, FaArrowRight, FaChevronLeft, FaEdit } from 'react-icons/fa';
 import { helpCategories } from '../../utils/helpCategories';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const HelpCenter = () => {
+    usePageTitle('Help Center - UrbanSetu');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [articles, setArticles] = useState([]);

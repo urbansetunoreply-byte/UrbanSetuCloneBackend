@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaThumbsUp, FaThumbsDown, FaChevronLeft, FaCalendarAlt } from 'react-icons/fa';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const ArticleView = () => {
     const { slug } = useParams();
+    const [title, setTitle] = useState('Help Center - UrbanSetu');
+    usePageTitle(title);
     const [article, setArticle] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -21,6 +24,7 @@ const ArticleView = () => {
                 if (!res.ok) throw new Error(data.message || 'Article not found');
 
                 setArticle(data);
+                setTitle(`${data.title} - UrbanSetu Help`);
                 if (data.userVote) {
                     setVoteStatus(data.userVote);
                 }

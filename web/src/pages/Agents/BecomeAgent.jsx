@@ -5,8 +5,10 @@ import { toast } from 'react-toastify';
 import { FaUserShield, FaCheckCircle, FaBuilding, FaIdCard, FaSpinner, FaArrowLeft } from 'react-icons/fa';
 import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const BecomeAgent = () => {
+    usePageTitle('Become an Agent - UrbanSetu');
     const { currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);

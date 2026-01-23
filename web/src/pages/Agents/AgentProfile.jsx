@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ListingItem from '../../components/ListingItem';
-import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaTimes, FaSpinner, FaTrash, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaStar, FaBuilding, FaUserTie, FaCheckCircle, FaCommentDots, FaCalendarCheck, FaIdCard, FaArrowLeft, FaEdit, FaTimes, FaSpinner, FaTrash, FaCheck, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../config/api';
 import { authenticatedFetch } from '../../utils/auth';
@@ -9,10 +9,15 @@ import { toast } from 'react-toastify';
 import AgentProfileSkeleton from '../../components/skeletons/AgentProfileSkeleton';
 import PreBookingChatWrapper from '../../components/PreBookingChatWrapper';
 import AgentInfoModal from '../../components/AgentInfoModal';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const AgentProfile = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+
+    // Set Page Title
+    const [title, setTitle] = useState("Agent Profile - UrbanSetu");
+    usePageTitle(title);
     const [agent, setAgent] = useState(null);
     const [loading, setLoading] = useState(true);
     const { currentUser } = useSelector(state => state.user);
@@ -193,6 +198,7 @@ const AgentProfile = () => {
 
             if (res.ok) {
                 setAgent(data);
+                setTitle(`${data.name} - UrbanSetu Agent`);
                 // Fetch listings using the user ID associated with this agent
                 const userId = data.userId._id || data.userId;
                 fetchListings(userId);
@@ -970,6 +976,12 @@ const AgentProfile = () => {
                         showFloatingButton={false}
                     />
                 )}
+
+                {/* Info Modal */}
+                <AgentInfoModal
+                    isOpen={showInfoModal}
+                    onClose={() => setShowInfoModal(false)}
+                />
 
             </div>
         </div>

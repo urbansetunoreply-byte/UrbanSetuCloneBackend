@@ -4,8 +4,10 @@ import { FaCheck, FaTimes, FaSearch, FaUserTie, FaArrowLeft, FaArrowRight, FaExc
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../config/api';
 import { authenticatedFetch } from '../utils/auth';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const AdminAgents = () => {
+    usePageTitle('Manage Agents - UrbanSetu');
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all'); // all, pending, approved, rejected

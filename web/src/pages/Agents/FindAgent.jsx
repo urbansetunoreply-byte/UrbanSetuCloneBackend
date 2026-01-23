@@ -4,8 +4,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import AgentCard from '../../components/AgentCard';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const FindAgent = () => {
+    usePageTitle('Find Agents - UrbanSetu');
     const navigate = useNavigate();
     const { currentUser } = useSelector(state => state.user);
     const [agents, setAgents] = useState([]);
