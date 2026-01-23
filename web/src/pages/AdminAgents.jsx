@@ -89,6 +89,12 @@ const AdminAgents = () => {
 
     const filteredAgents = agents.filter(agent => {
         if (filter === 'all') return true;
+        if (filter === 'revoked') {
+            return agent.status === 'rejected' && agent.revokedAt;
+        }
+        if (filter === 'rejected') {
+            return agent.status === 'rejected' && !agent.revokedAt;
+        }
         return agent.status === filter;
     });
 
@@ -105,12 +111,12 @@ const AdminAgents = () => {
                 </h1>
 
                 {/* Filter Tabs */}
-                <div className="flex bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                    {['all', 'pending', 'approved', 'rejected'].map(f => (
+                <div className="flex bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-x-auto">
+                    {['all', 'pending', 'approved', 'rejected', 'revoked'].map(f => (
                         <button
                             key={f}
                             onClick={() => { setFilter(f); setCurrentPage(1); }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${filter === f
+                            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap ${filter === f
                                 ? 'bg-blue-600 text-white shadow-md transform scale-105'
                                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                 }`}
@@ -124,6 +130,7 @@ const AdminAgents = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
+                        {/* ... (Header remains same) ... */}
                         <thead>
                             <tr className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 text-sm uppercase tracking-wider">
                                 <th className="p-4 font-semibold border-b dark:border-gray-700">Agent Details</th>
@@ -167,9 +174,10 @@ const AdminAgents = () => {
                                         <td className="p-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${agent.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300' :
                                                 agent.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                                                    'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300'
+                                                    (agent.status === 'rejected' && agent.revokedAt) ? 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300' :
+                                                        'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300'
                                                 }`}>
-                                                {agent.status}
+                                                {agent.status === 'rejected' && agent.revokedAt ? 'REVOKED' : agent.status}
                                             </span>
                                             {agent.status === 'rejected' && agent.revokedAt && (
                                                 <div className="text-xs text-red-500 mt-1 font-medium">
