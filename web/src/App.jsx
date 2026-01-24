@@ -57,6 +57,7 @@ const PublicAbout = lazy(() => import('./pages/PublicAbout'));
 const About = lazy(() => import('./pages/About'));
 const PublicBlogs = lazy(() => import('./pages/PublicBlogs'));
 const PublicBlogDetail = lazy(() => import('./pages/PublicBlogDetail'));
+const PublicGuides = lazy(() => import('./pages/PublicGuides'));
 const PublicFAQs = lazy(() => import('./pages/PublicFAQs'));
 const AdminBlogs = lazy(() => import('./pages/AdminBlogs'));
 const AdminBlogDetail = lazy(() => import('./pages/AdminBlogDetail'));
@@ -254,7 +255,7 @@ function normalizeRoute(path, role) {
   }
 
   // List of base routes that have public-facing versions
-  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community", "help-center", "agents"];
+  const publicBases = ["about", "blogs", "guides", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community", "help-center", "agents"];
 
   // List of base routes that exist for both user and admin but are NOT public
   const parallelBases = [
@@ -836,6 +837,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/about" element={currentUser ? <Navigate to="/user/about" /> : <PublicAbout bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/blogs" element={currentUser ? <Navigate to="/user/blogs" /> : <PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/blog/:slug" element={currentUser ? <BlogRedirect /> : <PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/guides" element={currentUser ? <Navigate to="/user/guides" /> : <PublicGuides bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/faqs" element={currentUser ? <Navigate to="/user/faqs" /> : <PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/search" element={currentUser ? <Navigate to="/user/search" /> : <PublicSearch bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/listing/:listingId" element={currentUser ? <NotFound /> : <Listing />} />
@@ -873,6 +875,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/about" element={<About />} />
               <Route path="/user/blogs" element={<PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
               <Route path="/user/blog/:slug" element={<PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+              <Route path="/user/guides" element={<PublicGuides bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
               <Route path="/user/faqs" element={<PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
               <Route path="/user/search" element={<Search />} />
               <Route path="/user/profile" element={<Profile />} />
@@ -940,6 +943,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/call-history" element={<AdminCallHistory />} />
               <Route path="/admin/about" element={<AdminAbout />} />
               <Route path="/admin/blogs" element={<AdminBlogs />} />
+              <Route path="/admin/guides" element={<AdminBlogs type="guide" />} />
               <Route path="/admin/blog/:slug" element={<AdminBlogDetail />} />
               <Route path="/admin/faqs" element={<AdminFAQs />} />
               <Route path="/admin/explore" element={<AdminExplore />} />

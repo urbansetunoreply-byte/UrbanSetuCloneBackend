@@ -113,6 +113,8 @@ export const getBlogs = async (req, res, next) => {
             tag,
             search,
             published,
+            type,
+            featured,
             page = 1,
             limit = 10
         } = req.query;
@@ -130,6 +132,17 @@ export const getBlogs = async (req, res, next) => {
         } else if (!published) {
             // Default to published only if no published parameter is provided
             query.published = true;
+        }
+
+        // Filter by type (default to showing all if specific type not requested, or maybe default to 'blog' if strict?)
+        // The requirement implies /blogs shows everything (or maybe just blogs), /guides shows guides.
+        // Let's allow filtering. If type is provided, use it.
+        if (type) {
+            query.type = type;
+        }
+
+        if (featured === 'true') {
+            query.featured = true;
         }
 
         if (propertyId) {
@@ -322,6 +335,8 @@ export const createBlog = async (req, res, next) => {
             propertyId,
             tags,
             category,
+            type,
+            featured,
             published
         } = req.body;
         const author = req.user.id;
@@ -355,7 +370,10 @@ export const createBlog = async (req, res, next) => {
             propertyId: propertyId || null,
             author,
             tags: tags || [],
+            tags: tags || [],
             category: category || 'Real Estate Tips',
+            type: type || 'blog',
+            featured: featured || false,
             published: published || false,
             publishedAt: published ? new Date() : null
         };
@@ -415,6 +433,8 @@ export const updateBlog = async (req, res, next) => {
             propertyId,
             tags,
             category,
+            type,
+            featured,
             published
         } = req.body;
 
@@ -451,6 +471,8 @@ export const updateBlog = async (req, res, next) => {
         }
         if (tags) blog.tags = tags;
         if (category) blog.category = category;
+        if (type) blog.type = type;
+        if (featured !== undefined) blog.featured = featured;
         if (published !== undefined) {
             blog.published = published;
             if (published && !blog.publishedAt) {

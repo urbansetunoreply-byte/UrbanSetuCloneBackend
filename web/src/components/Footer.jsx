@@ -271,7 +271,14 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/guides" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
+                <Link to={
+                  currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
+                    ? "/admin/guides"
+                    : currentUser
+                      ? "/user/guides"
+                      : "/guides"
+                }
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Property Guides
                 </Link>
               </li>

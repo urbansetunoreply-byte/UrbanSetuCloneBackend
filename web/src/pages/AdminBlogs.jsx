@@ -13,7 +13,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { authenticatedFetch } from '../utils/auth';
 
-const AdminBlogs = () => {
+const AdminBlogs = ({ type }) => {
   // Set page title
   usePageTitle("Blogs - Admin Panel");
   const { currentUser } = useSelector((state) => state.user);
@@ -25,7 +25,8 @@ const AdminBlogs = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingBlog, setEditingBlog] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all'); // all, global, property
+  const [filterPropertyScope, setFilterPropertyScope] = useState('all'); // Renamed from filterType
+  const [filterPostType, setFilterPostType] = useState(type || 'all'); // New filter for Blog vs Guide
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all'); // all, published, draft
   const [categories, setCategories] = useState([]);
@@ -60,6 +61,10 @@ const AdminBlogs = () => {
     fetchProperties();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (type) setFilterPostType(type);
+  }, [type]);
 
   // Debounced search effect
   useEffect(() => {
@@ -98,7 +103,7 @@ const AdminBlogs = () => {
     } else {
       setPagination(prev => ({ ...prev, current: 1 }));
     }
-  }, [filterType, filterCategory, filterStatus]);
+  }, [filterPropertyScope, filterPostType, filterCategory, filterStatus]);
 
   // Pagination effect
   useEffect(() => {
@@ -126,8 +131,9 @@ const AdminBlogs = () => {
       });
 
       if (searchTerm) params.append('search', searchTerm);
-      if (filterType === 'global') params.append('propertyId', 'null');
-      if (filterType === 'property') params.append('propertyId', 'exists');
+      if (filterPropertyScope === 'global') params.append('propertyId', 'null');
+      if (filterPropertyScope === 'property') params.append('propertyId', 'exists');
+      if (filterPostType !== 'all') params.append('type', filterPostType);
       if (filterCategory !== 'all') params.append('category', filterCategory);
       if (filterStatus === 'published') params.append('published', 'true');
       if (filterStatus === 'draft') params.append('published', 'false');
@@ -202,6 +208,8 @@ const AdminBlogs = () => {
       propertyId: '',
       tags: [],
       category: 'Real Estate Tips',
+      type: filterPostType !== 'all' ? filterPostType : 'blog',
+      featured: false,
       published: false
     });
     setShowModal(true);
@@ -219,6 +227,8 @@ const AdminBlogs = () => {
       propertyId: blog.propertyId?._id || '',
       tags: blog.tags || [],
       category: blog.category,
+      type: blog.type || 'blog',
+      featured: blog.featured || false,
       published: blog.published
     });
     setShowModal(true);
@@ -407,18 +417,34 @@ const AdminBlogs = () => {
               )}
             </div>
 
-            {/* Type Filter */}
+            {/* Post Type Filter */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FileText className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+              </div>
+              <select
+                value={filterPostType}
+                onChange={(e) => setFilterPostType(e.target.value)}
+                className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50 focus:border-blue-400 dark:focus:border-blue-500 transition-all appearance-none cursor-pointer font-medium"
+              >
+                <option value="all">All Content</option>
+                <option value="blog">Blogs</option>
+                <option value="guide">Guides</option>
+              </select>
+            </div>
+
+            {/* Property Scope Filter (Renamed from Type) */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <LayoutTemplate className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               </div>
               <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
+                value={filterPropertyScope}
+                onChange={(e) => setFilterPropertyScope(e.target.value)}
                 className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50 focus:border-blue-400 dark:focus:border-blue-500 transition-all appearance-none cursor-pointer font-medium"
               >
-                <option value="all">All Types</option>
-                <option value="global">Global Blogs</option>
+                <option value="all">All Scopes</option>
+                <option value="global">Global Only</option>
                 <option value="property">Property Specific</option>
               </select>
             </div>
@@ -490,7 +516,8 @@ const AdminBlogs = () => {
                     <tr>
                       <th className="px-6 py-4 text-left">Article</th>
                       {currentUser?.role === 'rootadmin' && <th className="px-6 py-4 text-left">Author</th>}
-                      <th className="px-6 py-4 text-left">Type</th>
+                      <th className="px-6 py-4 text-left">Scope</th>
+                      <th className="px-6 py-4 text-left">Content Type</th>
                       <th className="px-6 py-4 text-left">Category</th>
                       <th className="px-6 py-4 text-left">Property</th>
                       <th className="px-6 py-4 text-center">Status</th>
@@ -542,6 +569,14 @@ const AdminBlogs = () => {
                             }`}>
                             {!blog.propertyId ? <Globe className="w-3 h-3" /> : <Home className="w-3 h-3" />}
                             {!blog.propertyId ? 'Global' : 'Property'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${blog.type === 'guide'
+                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-800'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'
+                            }`}>
+                            {blog.type === 'guide' ? 'Guide' : 'Blog'}
                           </span>
                         </td>
                         <td className="px-6 py-4">

@@ -45,8 +45,17 @@ const blogSchema = new mongoose.Schema({
     }],
     category: {
         type: String,
-        enum: ['Real Estate Tips', 'Market Updates', 'Investment Guide', 'Home Buying', 'Home Selling', 'Property Management', 'Legal', 'Finance', 'Rent', 'Investment'],
+        enum: ['Real Estate Tips', 'Market Updates', 'Investment Guide', 'Home Buying', 'Home Selling', 'Property Management', 'Legal', 'Finance', 'Rent', 'Investment', 'City Guide'],
         default: 'Real Estate Tips'
+    },
+    type: {
+        type: String,
+        enum: ['blog', 'guide'],
+        default: 'blog'
+    },
+    featured: {
+        type: Boolean,
+        default: false
     },
     published: {
         type: Boolean,
@@ -92,7 +101,7 @@ blogSchema.index({ published: 1, publishedAt: -1 });
 // Note: slug index is automatically created by unique: true
 
 // Generate slug from title before saving
-blogSchema.pre('save', function(next) {
+blogSchema.pre('save', function (next) {
     if (this.isModified('title') && !this.slug) {
         this.slug = this.title
             .toLowerCase()

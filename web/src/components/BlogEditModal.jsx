@@ -467,6 +467,60 @@ const BlogEditModal = ({
               </div>
             </div>
 
+            {/* Content Type & Featured Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-blue-50/50 dark:bg-blue-900/10 p-6 rounded-3xl border border-blue-100 dark:border-blue-800">
+              {/* Content Type */}
+              <div>
+                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">📌 Content Type</label>
+                <div className="flex gap-4">
+                  <label className={`flex-1 cursor-pointer p-4 rounded-xl border transition-all ${formData.type === 'blog' ? 'bg-blue-600 border-blue-600 text-white shadow-lg scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-300'}`}>
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="blog"
+                      checked={!formData.type || formData.type === 'blog'}
+                      onChange={() => setFormData(prev => ({ ...prev, type: 'blog' }))}
+                      className="hidden"
+                    />
+                    <div className="text-center font-bold">Blog Post</div>
+                    <div className={`text-xs text-center mt-1 ${formData.type === 'blog' ? 'text-blue-100' : 'text-gray-500'}`}>Standard article</div>
+                  </label>
+                  <label className={`flex-1 cursor-pointer p-4 rounded-xl border transition-all ${formData.type === 'guide' ? 'bg-purple-600 border-purple-600 text-white shadow-lg scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-purple-300'}`}>
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="guide"
+                      checked={formData.type === 'guide'}
+                      onChange={() => setFormData(prev => ({ ...prev, type: 'guide' }))}
+                      className="hidden"
+                    />
+                    <div className="text-center font-bold">Guide</div>
+                    <div className={`text-xs text-center mt-1 ${formData.type === 'guide' ? 'text-purple-100' : 'text-gray-500'}`}>Structured learning</div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Featured Toggle */}
+              <div>
+                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">🌟 Visibility</label>
+                <label className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 transition-colors h-[82px]">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.featured}
+                      onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-yellow-400"></div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-gray-900 dark:text-white">Mark as Featured</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{formData.type === 'guide' ? 'Show in top carousel' : 'Highlight on home page'}</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             {/* Categorization Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div>
