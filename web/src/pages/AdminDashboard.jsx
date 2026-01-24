@@ -1655,7 +1655,10 @@ export default function AdminDashboard() {
             )}
           </div>
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaGem className="text-blue-500 mr-2" /> Top Listing Volume Leaders</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center"><FaGem className="text-blue-500 mr-2" /> Top Listing Volume Leaders</h3>
+              <Link to="/admin/listings" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">View All Stats</Link>
+            </div>
             {!analytics.performance.topOwnersByListings || analytics.performance.topOwnersByListings.length === 0 ? (
               <p className="text-sm text-gray-500 dark:text-gray-400">No listing data available.</p>
             ) : (
