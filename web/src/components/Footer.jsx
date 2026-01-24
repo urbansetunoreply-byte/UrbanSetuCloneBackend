@@ -33,25 +33,19 @@ const Footer = () => {
         }
 
         // 2. Fetch Total Count (If not found yet)
+        // 2. Fetch Total Count (If not found yet)
         if (total === 0) {
-          try {
-            // Attempt to fetch from generic count endpoint
-            const totalRes = await authenticatedFetch(`${API_BASE_URL}/api/visitors/count`);
-            if (totalRes.ok) {
-              const totalData = await totalRes.json();
-              if (totalData.success) total = totalData.count;
-            } else {
-              // Fallback: If user is admin, use the protected stats endpoint
-              if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
-                const statsRes = await authenticatedFetch(`${API_BASE_URL}/api/visitors/stats?days=36500`);
-                if (statsRes.ok) {
-                  const statsData = await statsRes.json();
-                  if (statsData.success && statsData.stats) total = statsData.stats.totalVisitors;
-                }
+          // Only attempt fetch if user acts as admin, as we know the public 'count' endpoints don't exist
+          if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+            try {
+              const statsRes = await authenticatedFetch(`${API_BASE_URL}/api/visitors/stats?days=36500`);
+              if (statsRes.ok) {
+                const statsData = await statsRes.json();
+                if (statsData.success && statsData.stats) total = statsData.stats.totalVisitors;
               }
+            } catch (e) {
+              // Silent fail
             }
-          } catch (e) {
-            // Silent fail
           }
         }
 
