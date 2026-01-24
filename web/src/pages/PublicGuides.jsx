@@ -57,6 +57,27 @@ const PublicGuides = () => {
     const [unsubscribeStep, setUnsubscribeStep] = useState('REASON'); // 'REASON', 'VERIFY_OTP'
     const [unsubscribeOtp, setUnsubscribeOtp] = useState('');
     const [otpError, setOtpError] = useState(''); // Error message for OTP verification
+    const [resendTimer, setResendTimer] = useState(0);
+    const [canResend, setCanResend] = useState(true);
+
+    // Timer effect for resend OTP
+    useEffect(() => {
+        let interval = null;
+        if (resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prevTimer) => {
+                    if (prevTimer <= 1) {
+                        setCanResend(true);
+                        return 0;
+                    }
+                    return prevTimer - 1;
+                });
+            }, 1000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [resendTimer]);
 
 
     useEffect(() => {
@@ -148,6 +169,8 @@ const PublicGuides = () => {
             if (data.success) {
                 toast.success(data.message);
                 setSubscribeStep('VERIFY_OTP');
+                setResendTimer(30);
+                setCanResend(false);
             } else {
                 toast.error(data.message || 'Failed to send OTP');
             }
@@ -211,6 +234,8 @@ const PublicGuides = () => {
             if (data.success) {
                 toast.success('OTP sent for verification');
                 setUnsubscribeStep('VERIFY_OTP');
+                setResendTimer(30);
+                setCanResend(false);
             } else {
                 toast.error(data.message || 'Failed to send OTP');
             }
@@ -654,29 +679,53 @@ const PublicGuides = () => {
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
-                                        <input
-                                            type="text"
-                                            placeholder="Enter OTP"
-                                            value={subscribeOtp}
-                                            onChange={(e) => setSubscribeOtp(e.target.value)}
-                                            maxLength={6}
-                                            className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-auto text-center tracking-widest text-xl"
-                                        />
-                                        <button
-                                            onClick={handleVerifySubscribeOtp}
-                                            disabled={otpLoading}
-                                            className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-purple-900/20 w-full sm:w-auto hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed"
-                                        >
-                                            {otpLoading ? 'Verifying...' : 'Verify'}
-                                        </button>
-                                        <button
-                                            onClick={() => setSubscribeStep('INPUT_EMAIL')}
-                                            className="px-4 py-4 text-white/70 hover:text-white font-medium underline"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
+                                    <>
+                                        <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto animate-fade-in">
+                                            <input
+                                                type="text"
+                                                placeholder="Enter OTP"
+                                                value={subscribeOtp}
+                                                onChange={(e) => setSubscribeOtp(e.target.value)}
+                                                maxLength={6}
+                                                className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all font-medium text-center tracking-widest text-xl"
+                                            />
+                                            <button
+                                                onClick={handleVerifySubscribeOtp}
+                                                disabled={otpLoading}
+                                                className="px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
+                                            >
+                                                {otpLoading ? 'Verifying...' : 'Verify'}
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center justify-between mt-4 max-w-md mx-auto">
+                                            <div className="flex items-center gap-2">
+                                                {resendTimer > 0 ? (
+                                                    <span className="text-sm text-blue-100 italic transition-all animate-pulse">
+                                                        Resend OTP in {resendTimer}s
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleSendSubscribeOtp}
+                                                        disabled={otpLoading || !canResend}
+                                                        className="text-sm text-white hover:text-blue-100 font-bold underline transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                                                    >
+                                                        <RotateCcw className="w-4 h-4" /> Resend OTP
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    setSubscribeStep('INPUT_EMAIL');
+                                                    setResendTimer(0);
+                                                    setCanResend(true);
+                                                }}
+                                                className="text-sm text-white/70 hover:text-white font-medium underline transition-colors"
+                                            >
+                                                Change Email
+                                            </button>
+                                        </div>
+                                    </>
                                 )}
                             </>
                         )}
@@ -746,21 +795,45 @@ const PublicGuides = () => {
                                             </p>
                                         )}
                                     </div>
-                                    <div className="flex justify-end gap-3">
-                                        <button
-                                            onClick={() => setUnsubscribeStep('REASON')}
-                                            disabled={otpLoading}
-                                            className="px-4 py-2 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                        >
-                                            Back
-                                        </button>
+                                    <div className="flex flex-col gap-4">
                                         <button
                                             onClick={handleVerifyUnsubscribeOtp}
-                                            disabled={otpLoading}
-                                            className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-70"
+                                            disabled={otpLoading || !unsubscribeOtp || unsubscribeOtp.length !== 6}
+                                            className="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                                         >
-                                            {otpLoading ? 'Verifying...' : 'Unsubscribe'}
+                                            {otpLoading ? 'Verifying...' : 'Confirm Unsubscribe'}
                                         </button>
+
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                {resendTimer > 0 ? (
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+                                                        Resend in {resendTimer}s
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleSendUnsubscribeOtp}
+                                                        disabled={otpLoading || !canResend}
+                                                        className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-bold underline transition-colors disabled:opacity-50 flex items-center gap-1"
+                                                    >
+                                                        <RotateCcw className="w-3 h-3" /> Resend
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <button
+                                                onClick={() => {
+                                                    setUnsubscribeStep('REASON');
+                                                    setResendTimer(0);
+                                                    setCanResend(true);
+                                                }}
+                                                disabled={otpLoading}
+                                                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium underline transition-colors"
+                                            >
+                                                Back
+                                            </button>
+                                        </div>
                                     </div>
                                 </>
                             )}
