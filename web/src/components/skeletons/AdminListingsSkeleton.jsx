@@ -12,7 +12,8 @@ const AdminListingsSkeleton = () => {
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 mt-4 md:mt-0">
                             <div className="h-10 w-24 bg-gray-400 dark:bg-gray-600 rounded-lg"></div>
                             <div className="h-10 w-24 bg-red-200 dark:bg-red-900/40 rounded-lg"></div>
-                            <div className="h-10 w-48 bg-purple-200 dark:bg-purple-900/40 rounded-lg"></div>
+                            <div className="h-10 w-24 bg-purple-200 dark:bg-purple-900/40 rounded-lg"></div>
+                            <div className="h-10 w-48 bg-blue-200 dark:bg-blue-900/40 rounded-lg"></div>
                         </div>
                     </div>
 

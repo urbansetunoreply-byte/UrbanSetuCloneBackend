@@ -576,10 +576,19 @@ export default function AdminDashboard() {
         .slice(0, 5);
 
       const topOwnersByListings = Object.values(ownerMap)
-        .map(o => ({
-          ...o,
-          ownerName: userIdToName[o.ownerId] || o.ownerId
-        }))
+        .map(o => {
+          // Find user object
+          const userObj = usersData.find(u => (u._id || u.id) === o.ownerId);
+          // Prioritize Username > Name > Email > ID
+          const name = userObj ? (userObj.username || userObj.name || userObj.email) : (userIdToName[o.ownerId] || o.ownerId);
+          const email = userObj ? userObj.email : '';
+
+          return {
+            ...o,
+            ownerName: name,
+            ownerEmail: email
+          };
+        })
         .sort((a, b) => b.listings - a.listings)
         .slice(0, 5);
 
@@ -1653,8 +1662,11 @@ export default function AdminDashboard() {
               <div className="space-y-2">
                 {analytics.performance.topOwnersByListings.map((o, idx) => (
                   <div key={idx} className="flex items-center justify-between text-sm border-b last:border-b-0 border-gray-100 dark:border-gray-700 py-2">
-                    <span className="text-gray-600 dark:text-gray-400 truncate max-w-[150px]" title={o.ownerName}>{o.ownerName}</span>
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">{o.listings} Listings</span>
+                    <div className="flex flex-col max-w-[180px]">
+                      <span className="text-gray-800 dark:text-gray-200 font-medium truncate" title={o.ownerName}>{o.ownerName}</span>
+                      {o.ownerEmail && <span className="text-xs text-gray-500 dark:text-gray-400 truncate" title={o.ownerEmail}>{o.ownerEmail}</span>}
+                    </div>
+                    <span className="font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap ml-2">{o.listings} Listings</span>
                   </div>
                 ))}
               </div>

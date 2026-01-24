@@ -332,13 +332,29 @@ export default function AdminListings() {
       data.forEach(l => {
         const ownerId = (l.userRef && (l.userRef._id || l.userRef)) || 'Unknown';
         // Try to get name from userRef if populated
-        const ownerName = (l.userRef && (l.userRef.username || l.userRef.name || l.userRef.email)) || 'Unknown Owner';
+        const username = (l.userRef && l.userRef.username) || '';
+        const name = (l.userRef && l.userRef.name) || ''; // Assuming 'name' field exists or combining firstName/lastName if available
+        const email = (l.userRef && l.userRef.email) || '';
 
-        if (!ownerMap[ownerId]) ownerMap[ownerId] = { id: ownerId, name: ownerName, count: 0 };
+        let displayName = 'Unknown Owner';
+        if (username) displayName = username;
+        else if (name) displayName = name;
+        else if (email) displayName = email.split('@')[0];
+
+        if (!ownerMap[ownerId]) {
+          ownerMap[ownerId] = {
+            id: ownerId,
+            name: displayName,
+            email: email,
+            count: 0
+          };
+        }
+
         ownerMap[ownerId].count++;
-        // If we found a better name (not 'Unknown Owner'), update it
-        if (ownerName !== 'Unknown Owner' && ownerMap[ownerId].name === 'Unknown Owner') {
-          ownerMap[ownerId].name = ownerName;
+        // Update with better Details if initially unknown but found later (though rare in single pass)
+        if (displayName !== 'Unknown Owner' && ownerMap[ownerId].name === 'Unknown Owner') {
+          ownerMap[ownerId].name = displayName;
+          ownerMap[ownerId].email = email;
         }
       });
 
@@ -1030,11 +1046,14 @@ export default function AdminListings() {
                           {listingStats.topOwners.map((owner, idx) => (
                             <tr key={idx} className="hover:bg-white dark:hover:bg-gray-800 transition-colors">
                               <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
                                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${idx < 3 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : 'bg-gray-400'}`}>
                                     {idx + 1}
                                   </span>
-                                  {owner.name}
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-sm">{owner.name}</span>
+                                    {owner.email && <span className="text-xs text-gray-500 dark:text-gray-400">{owner.email}</span>}
+                                  </div>
                                 </div>
                               </td>
                               <td className="px-4 py-3 text-right font-medium text-purple-600 dark:text-purple-400">

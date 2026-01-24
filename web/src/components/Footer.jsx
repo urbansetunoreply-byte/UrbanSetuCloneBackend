@@ -14,22 +14,49 @@ const Footer = () => {
   useEffect(() => {
     const fetchVisitorStats = async () => {
       try {
-        // Using the same endpoint as SessionAuditLogs to get consistent data
-        // For public footer, we need a lightweight stats fetch.
-        // If /api/visitors/stats is admin-only, we might fall back or need a public endpoint.
-        // Assuming /api/visitors/stats might adjust response based on auth or we use the existing specific structure effectively.
-        // Actually, let's try to get the stats object which includes totalVisitors.
-        const res = await authenticatedFetch(`${API_BASE_URL}/api/visitors/stats?days=1`);
-        const data = await res.json();
-        if (data.success && data.stats) {
-          setVisitorStats({
-            todayCount: data.stats.todayCount || 0,
-            totalVisitors: data.stats.totalVisitors || 0
-          });
-        } else if (data.count !== undefined) {
-          // Fallback if the endpoint is actually the daily one (backward compatibility if revert happens)
-          setVisitorStats(prev => ({ ...prev, todayCount: data.count }));
+        let today = 0;
+        let total = 0;
+
+        // 1. Fetch Daily Count (Confirmed Public Endpoint)
+        try {
+          const dailyRes = await authenticatedFetch(`${API_BASE_URL}/api/visitors/count/daily`);
+          if (dailyRes.ok) {
+            const dailyData = await dailyRes.json();
+            if (dailyData.success) {
+              today = dailyData.count;
+              // Check if total is coincidentally returned here
+              if (dailyData.total !== undefined) total = dailyData.total;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to fetch daily stats', e);
         }
+
+        // 2. Fetch Total Count (If not found yet)
+        if (total === 0) {
+          try {
+            // Attempt to fetch from stats endpoint (Likely Admin only, but worth a try if logged in)
+            // Or try a public 'total' endpoint pattern first
+            const totalRes = await authenticatedFetch(`${API_BASE_URL}/api/visitors/count/total`);
+            if (totalRes.ok) {
+              const totalData = await totalRes.json();
+              if (totalData.success) total = totalData.count;
+            } else {
+              // Fallback: If user is admin, use the protected stats endpoint
+              if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+                const statsRes = await authenticatedFetch(`${API_BASE_URL}/api/visitors/stats?days=36500`);
+                if (statsRes.ok) {
+                  const statsData = await statsRes.json();
+                  if (statsData.success && statsData.stats) total = statsData.stats.totalVisitors;
+                }
+              }
+            }
+          } catch (e) {
+            // Silent fail for total count on public view if endpoint doesn't exist
+          }
+        }
+
+        setVisitorStats({ todayCount: today, totalVisitors: total });
       } catch (error) {
         console.error('Failed to fetch visitor stats:', error);
       }
