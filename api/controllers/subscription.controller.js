@@ -371,6 +371,8 @@ export const verifySubscriptionOtp = async (req, res, next) => {
         subscription.verificationOtp = undefined;
         subscription.verificationOtpExpires = undefined;
 
+        let message = '';
+
         // Ensure preference is set
         // If user was already approved, we keep them approved AND activate the preference immediately.
         // Trust propagates for existing verified users.
