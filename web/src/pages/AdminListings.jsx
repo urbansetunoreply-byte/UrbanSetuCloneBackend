@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash, FaEye, FaPlus, FaLock, FaFlag, FaTimes, FaSync, FaCheckCircle } from "react-icons/fa";
+import { FaEdit, FaTrash, FaEye, FaPlus, FaLock, FaFlag, FaTimes, FaSync, FaChartBar, FaCheckCircle } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { maskAddress } from '../utils/addressMasking';
 import { useSelector, useDispatch } from "react-redux";
@@ -52,9 +52,14 @@ export default function AdminListings() {
     sortOrder: 'desc'
   });
 
+  // Stats Modal State
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [listingStats, setListingStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+
   // Lock body scroll when deletion modals are open on Admin Listings
   useEffect(() => {
-    const shouldLock = showReasonModal || showPasswordModal || showPropertyReportsModal;
+    const shouldLock = showReasonModal || showPasswordModal || showPropertyReportsModal || showStatsModal;
     if (shouldLock) {
       document.body.classList.add('modal-open');
     } else {
@@ -308,6 +313,48 @@ export default function AdminListings() {
     }
   };
 
+  const fetchStats = async () => {
+    setStatsLoading(true);
+    try {
+      // Fetch a larger set of listings for stats
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=2000`);
+      if (!res.ok) throw new Error("Failed to fetch data");
+      const data = await res.json();
+
+      // Aggregate Data
+      const total = data.length;
+      const sale = data.filter(l => l.type === 'sale').length;
+      const rent = data.filter(l => l.type === 'rent').length;
+      const offer = data.filter(l => l.offer).length;
+
+      // Top Owners
+      const ownerMap = {};
+      data.forEach(l => {
+        const ownerId = (l.userRef && (l.userRef._id || l.userRef)) || 'Unknown';
+        // Try to get name from userRef if populated
+        const ownerName = (l.userRef && (l.userRef.username || l.userRef.name || l.userRef.email)) || 'Unknown Owner';
+
+        if (!ownerMap[ownerId]) ownerMap[ownerId] = { id: ownerId, name: ownerName, count: 0 };
+        ownerMap[ownerId].count++;
+        // If we found a better name (not 'Unknown Owner'), update it
+        if (ownerName !== 'Unknown Owner' && ownerMap[ownerId].name === 'Unknown Owner') {
+          ownerMap[ownerId].name = ownerName;
+        }
+      });
+
+      const topOwners = Object.values(ownerMap)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+      setListingStats({ total, sale, rent, offer, topOwners });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+      toast.error("Failed to load statistics");
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
   // Fetch property reports only when modal opens
   useEffect(() => {
     if (showPropertyReportsModal) {
@@ -435,6 +482,17 @@ export default function AdminListings() {
                 >
                   <FaFlag />
                   <span className="hidden sm:inline">Reports</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setShowStatsModal(true);
+                    fetchStats();
+                  }}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 transition shadow text-sm sm:text-base"
+                  title="View Statistics"
+                >
+                  <FaChartBar />
+                  <span className="hidden sm:inline">Stats</span>
                 </button>
                 <Link
                   to="/admin/create-listing"
@@ -906,6 +964,97 @@ export default function AdminListings() {
             <div className="p-4 bg-gray-50 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
               <p>UrbanSetu Moderation Tools</p>
               <p>{filteredPropertyReports.length} Reports Found</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stats Modal */}
+      {showStatsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col transition-colors duration-300 transform scale-100 animate-scaleIn">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <FaChartBar className="text-purple-600" />
+                Listing Statistics
+              </h2>
+              <button
+                onClick={() => setShowStatsModal(false)}
+                className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-2 transition-colors"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              {statsLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                  <p className="mt-4 text-gray-500 dark:text-gray-400">Loading statistics...</p>
+                </div>
+              ) : listingStats ? (
+                <div className="space-y-8">
+                  {/* Overview Cards */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-center">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total</p>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{listingStats.total}</p>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl text-center">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">For Sale</p>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">{listingStats.sale}</p>
+                    </div>
+                    <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl text-center">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">For Rent</p>
+                      <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{listingStats.rent}</p>
+                    </div>
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-xl text-center">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">Offers</p>
+                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{listingStats.offer}</p>
+                    </div>
+                  </div>
+
+                  {/* Top Owners Table */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                      <FaFlag className="text-purple-500" /> Top Listing Owners
+                    </h3>
+                    <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                          <tr>
+                            <th className="px-4 py-3 font-semibold">Owner Name</th>
+                            <th className="px-4 py-3 font-semibold text-right">Listings Count</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                          {listingStats.topOwners.map((owner, idx) => (
+                            <tr key={idx} className="hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                              <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${idx < 3 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : 'bg-gray-400'}`}>
+                                    {idx + 1}
+                                  </span>
+                                  {owner.name}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-right font-medium text-purple-600 dark:text-purple-400">
+                                {owner.count}
+                              </td>
+                            </tr>
+                          ))}
+                          {listingStats.topOwners.length === 0 && (
+                            <tr>
+                              <td colSpan="2" className="px-4 py-8 text-center text-gray-500">No owner data available</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-red-500">Failed to load statistics.</div>
+              )}
             </div>
           </div>
         </div>

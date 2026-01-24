@@ -574,6 +574,14 @@ export default function AdminDashboard() {
         .sort((a, b) => b.avgRating - a.avgRating)
         .slice(0, 5);
 
+      const topOwnersByListings = Object.values(ownerMap)
+        .map(o => ({
+          ...o,
+          ownerName: userIdToName[o.ownerId] || o.ownerId
+        }))
+        .sort((a, b) => b.listings - a.listings)
+        .slice(0, 5);
+
       // Sentiment Analysis: simple rule-based scoring over review comments
       const positiveWords = ['good', 'great', 'excellent', 'amazing', 'love', 'nice', 'helpful', 'fast', 'clean', 'spacious', 'recommended', 'recommend'];
       const negativeWords = ['bad', 'poor', 'terrible', 'awful', 'hate', 'dirty', 'small', 'slow', 'rude', 'noisy', 'not recommended', 'worst'];
@@ -813,7 +821,7 @@ export default function AdminDashboard() {
         priceStats,
         bedroomsDistribution,
         marketInsights: { monthlyAvgPrices, demandByCity },
-        performance: { topOwnersByRating },
+        performance: { topOwnersByRating, topOwnersByListings },
         sentiment: { positive: pos, negative: neg, neutral: neu, topWords },
         userBehavior: { popularFilters, dropoffs },
         watchlist: {
@@ -1631,6 +1639,21 @@ export default function AdminDashboard() {
                   <div key={idx} className="flex items-center justify-between text-sm border-b last:border-b-0 border-gray-100 dark:border-gray-700 py-2">
                     <span className="text-gray-600 dark:text-gray-400">{o.ownerName}</span>
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{o.avgRating} ⭐ ({o.listings} listings)</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaGem className="text-blue-500 mr-2" /> Top Listing Volume Leaders</h3>
+            {!analytics.performance.topOwnersByListings || analytics.performance.topOwnersByListings.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No listing data available.</p>
+            ) : (
+              <div className="space-y-2">
+                {analytics.performance.topOwnersByListings.map((o, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-sm border-b last:border-b-0 border-gray-100 dark:border-gray-700 py-2">
+                    <span className="text-gray-600 dark:text-gray-400 truncate max-w-[150px]" title={o.ownerName}>{o.ownerName}</span>
+                    <span className="font-semibold text-blue-600 dark:text-blue-400">{o.listings} Listings</span>
                   </div>
                 ))}
               </div>
