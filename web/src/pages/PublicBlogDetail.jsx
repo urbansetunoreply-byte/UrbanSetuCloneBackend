@@ -69,7 +69,7 @@ const PublicBlogDetail = () => {
   const fetchBlog = async () => {
     try {
       setLoading(true);
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${slug}`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${slug}`, { autoRedirect: false });
 
       if (response.ok) {
         const data = await response.json();
@@ -91,7 +91,7 @@ const PublicBlogDetail = () => {
   const fetchRelatedBlogs = async (category, currentBlogId) => {
     try {
       // Fetch more items to ensure we have enough to randomize
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=10`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=10`, { autoRedirect: false });
       if (response.ok) {
         const data = await response.json();
         // Filter out current blog
@@ -113,7 +113,7 @@ const PublicBlogDetail = () => {
   const checkAuthStatus = async () => {
     try {
       if (blog) {
-        const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`, { autoRedirect: false });
         if (response.ok) {
           const data = await response.json();
           setLiked(data.data.isLiked);
@@ -129,7 +129,7 @@ const PublicBlogDetail = () => {
 
   const checkLikeStatus = async () => {
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`, { autoRedirect: false });
 
       if (response.ok) {
         const data = await response.json();

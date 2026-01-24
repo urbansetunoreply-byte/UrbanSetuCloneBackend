@@ -44,7 +44,7 @@ export default function PublicAbout() {
   useEffect(() => {
     const fetchAboutData = async () => {
       try {
-        const response = await authenticatedFetch(`${API_BASE_URL}/api/about`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/about`, { autoRedirect: false });
         if (response.ok) {
           const data = await response.json();
           setAboutData(data);

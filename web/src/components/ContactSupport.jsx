@@ -285,6 +285,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+        autoRedirect: false
       });
 
       const data = await response.json();

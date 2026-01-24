@@ -25,42 +25,57 @@ export const createAuthenticatedFetchOptions = (options = {}) => {
 };
 
 export const authenticatedFetch = async (url, options = {}) => {
-  const opts = createAuthenticatedFetchOptions(options);
+  const { autoRedirect = true, ...fetchOptions } = options;
+  const opts = createAuthenticatedFetchOptions(fetchOptions);
   let response = await fetch(url, opts);
 
   if (response.status === 401 && !options._retry) {
-    try {
-      const refreshToken = localStorage.getItem('refreshToken');
-      const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ refreshToken }),
-        credentials: 'include'
-      });
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem('refreshToken');
 
-      if (refreshRes.ok) {
-        const data = await refreshRes.json();
-        if (data.token) {
-          localStorage.setItem("accessToken", data.token);
-          // Retry original request with new token
-          const newOpts = createAuthenticatedFetchOptions({ ...options, _retry: true });
-          response = await fetch(url, newOpts);
+    // ONLY attempt refresh if we have a refresh token
+    if (refreshToken) {
+      try {
+        const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ refreshToken }),
+          credentials: 'include'
+        });
+
+        if (refreshRes.ok) {
+          const data = await refreshRes.json();
+          if (data.token) {
+            localStorage.setItem("accessToken", data.token);
+            // Retry original request with new token
+            const newOpts = createAuthenticatedFetchOptions({ ...fetchOptions, _retry: true });
+            response = await fetch(url, newOpts);
+            return response;
+          }
         }
-      } else {
-        // Refresh failed (e.g. refresh token expired)
-        // Optionally clear auth data here, but usually we let the UI handle the final 401.
-        clearAuthData();
-        // We could also redirect to sign-in, but that might be intrusive for a utility function.
-        // Checking if we are in a browser environment to safely redirect
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/sign-in')) {
-          window.location.href = '/sign-in';
-        }
+      } catch (error) {
+        console.error("Error refreshing token:", error);
       }
-    } catch (error) {
-      console.error("Error refreshing token:", error);
+    }
+
+    // If we reach here, either refresh failed or No refresh token was present.
+    // If it was meant to be an authenticated request (we had a token) and refresh failed, 
+    // OR if the endpoint is strictly requiring auth and we want to redirect.
+
+    // WE SHOULD ONLY REDIRECT IF:
+    // 1. autoRedirect is true
+    // 2. We are in a browser
+    // 3. We are not already on sign-in
+    // 4. IMPORTANT: Only if we HAD an accessToken or refreshToken (meaning the user IS logged in but session expired).
+    // Guest users should NOT be redirected for 401s on public pages.
+
+    if (autoRedirect && (accessToken || refreshToken)) {
       clearAuthData();
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/sign-in')) {
+        window.location.href = '/sign-in';
+      }
     }
   }
   return response;

@@ -123,7 +123,7 @@ const PublicBlogs = () => {
         params.append('tag', selectedTags.join(','));
       }
 
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?${params}`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?${params}`, { autoRedirect: false });
 
       if (response.ok) {
         const data = await response.json();
@@ -145,7 +145,7 @@ const PublicBlogs = () => {
         limit: 5
       });
 
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?${params}`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?${params}`, { autoRedirect: false });
 
       if (response.ok) {
         const data = await response.json();
@@ -158,7 +158,7 @@ const PublicBlogs = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/categories`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/categories`, { autoRedirect: false });
       if (response.ok) {
         const data = await response.json();
         setCategories(data.data);
@@ -170,7 +170,7 @@ const PublicBlogs = () => {
 
   const fetchTags = async () => {
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/tags`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/tags`, { autoRedirect: false });
       if (response.ok) {
         const data = await response.json();
         setTags(data.data);

@@ -165,7 +165,7 @@ const PublicFAQs = () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify`, { autoRedirect: false });
 
       if (response.ok) {
         setIsLoggedIn(true);
@@ -183,7 +183,7 @@ const PublicFAQs = () => {
       const reactions = {};
       for (const faq of faqs) {
         try {
-          const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`);
+          const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`, { autoRedirect: false });
           if (response.ok) {
             const data = await response.json();
             reactions[faq._id] = data.data.reaction;

@@ -187,7 +187,7 @@ export default function Listing() {
   const availabilityLockedAt = listing?.availabilityMeta?.lockedAt;
   const refreshWatchlistCount = async () => {
     try {
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`, { autoRedirect: false });
       if (res.ok) {
         const data = await res.json();
         setWatchlistCount(data.count || 0);
@@ -267,7 +267,7 @@ export default function Listing() {
 
   const fetchWishlistCount = async () => {
     try {
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/wishlist/property-count/${params.listingId}`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/wishlist/property-count/${params.listingId}`, { autoRedirect: false });
       if (res.ok) {
         const data = await res.json();
         setWishlistCount(data.count || 0);
@@ -286,7 +286,7 @@ export default function Listing() {
     if (!currentUser || currentUser.role === 'admin' || currentUser.role === 'rootadmin') return;
 
     try {
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/check/${listing._id}`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/check/${listing._id}`, { autoRedirect: false });
       if (res.ok) {
         const data = await res.json();
         setIsInWatchlist(data.isInWatchlist);
@@ -306,7 +306,7 @@ export default function Listing() {
       const reactions = {};
       for (const faq of faqs) {
         try {
-          const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`);
+          const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`, { autoRedirect: false });
           if (response.ok) {
             const data = await response.json();
             reactions[faq._id] = data.data.reaction;
@@ -642,7 +642,7 @@ export default function Listing() {
   const checkOwnerStatus = async () => {
     if (listing && listing.userRef) {
       try {
-        const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${listing.userRef}`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${listing.userRef}`, { autoRedirect: false });
         if (res.ok) {
           const ownerData = await res.json();
           if (ownerData && ownerData.status !== 'suspended') {
@@ -803,7 +803,8 @@ export default function Listing() {
       // Fire-and-forget; backend dedupes by user/guest within 6h and ignores admin/owner
       authenticatedFetch(`${API_BASE_URL}/api/properties/${listing._id}/view`, {
         method: 'POST',
-        keepalive: true
+        keepalive: true,
+        autoRedirect: false
       }).catch(() => { });
     } finally {
       setViewTracked(true);
@@ -1301,6 +1302,7 @@ export default function Listing() {
         setRtAnalyticsError(null);
         const res = await authenticatedFetch(`${API_BASE_URL}/api/analytics/property/${listing._id}/analytics`, {
           method: 'GET',
+          autoRedirect: false
         });
         if (!res.ok) throw new Error('Failed to load analytics');
         const json = await res.json();
