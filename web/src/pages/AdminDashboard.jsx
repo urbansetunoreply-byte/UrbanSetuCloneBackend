@@ -21,6 +21,7 @@ import {
   FaSync,
   FaShieldAlt,
   FaCoins,
+  FaGem,
   FaTrophy
 } from "react-icons/fa";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";

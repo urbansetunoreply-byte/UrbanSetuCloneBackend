@@ -8,27 +8,38 @@ import { API_BASE_URL } from '../config/api';
 
 const Footer = () => {
   const { currentUser } = useSelector((state) => state.user);
-  const [dailyVisitorCount, setDailyVisitorCount] = useState(0);
+  const [visitorStats, setVisitorStats] = useState({ todayCount: 0, totalVisitors: 0 });
 
-  // Fetch daily visitor count
+  // Fetch visitor stats
   useEffect(() => {
-    const fetchDailyVisitorCount = async () => {
+    const fetchVisitorStats = async () => {
       try {
-        const res = await authenticatedFetch(`${API_BASE_URL}/api/visitors/count/daily`);
+        // Using the same endpoint as SessionAuditLogs to get consistent data
+        // For public footer, we need a lightweight stats fetch.
+        // If /api/visitors/stats is admin-only, we might fall back or need a public endpoint.
+        // Assuming /api/visitors/stats might adjust response based on auth or we use the existing specific structure effectively.
+        // Actually, let's try to get the stats object which includes totalVisitors.
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/visitors/stats?days=1`);
         const data = await res.json();
-        if (data.success) {
-          setDailyVisitorCount(data.count);
+        if (data.success && data.stats) {
+          setVisitorStats({
+            todayCount: data.stats.todayCount || 0,
+            totalVisitors: data.stats.totalVisitors || 0
+          });
+        } else if (data.count !== undefined) {
+          // Fallback if the endpoint is actually the daily one (backward compatibility if revert happens)
+          setVisitorStats(prev => ({ ...prev, todayCount: data.count }));
         }
       } catch (error) {
-        console.error('Failed to fetch daily visitor count:', error);
+        console.error('Failed to fetch visitor stats:', error);
       }
     };
 
-    fetchDailyVisitorCount();
+    fetchVisitorStats();
 
     // Listen for visitor tracked events to update count immediately (for same browser)
     const handleVisitorTracked = () => {
-      fetchDailyVisitorCount();
+      fetchVisitorStats();
     };
 
     window.addEventListener('visitorTracked', handleVisitorTracked);
@@ -36,7 +47,7 @@ const Footer = () => {
     // Refresh count every 30 seconds for real-time updates across all users
     // This ensures when a new visitor accepts cookies on another device,
     // all users see the updated count within 30 seconds without page refresh
-    const interval = setInterval(fetchDailyVisitorCount, 30 * 1000);
+    const interval = setInterval(fetchVisitorStats, 30 * 1000);
 
     return () => {
       clearInterval(interval);
@@ -349,8 +360,10 @@ const Footer = () => {
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 transition-colors">
                 <FaEye className="text-blue-500 dark:text-blue-400" />
-                <span className="text-gray-600 dark:text-gray-300">
-                  Today's Visitors: <span className="font-semibold text-blue-600 dark:text-blue-400">{dailyVisitorCount}</span>
+                <span className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                  <span>Today: <span className="font-semibold text-blue-600 dark:text-blue-400">{visitorStats.todayCount}</span></span>
+                  <span className="text-gray-300 dark:text-gray-700">|</span>
+                  <span>All Time: <span className="font-semibold text-purple-600 dark:text-purple-400">{visitorStats.totalVisitors}</span></span>
                 </span>
               </div>
               <span>Made with ❤️ for real estate</span>
