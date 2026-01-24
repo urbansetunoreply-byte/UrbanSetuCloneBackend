@@ -19,6 +19,16 @@ const BlogEditModal = ({
   setPropertySearch,
   isEdit = false
 }) => {
+  const GUIDE_CATEGORIES = [
+    'Home Buying',
+    'Rent',
+    'Home Selling',
+    'Legal',
+    'Investment',
+    'City Guide'
+  ];
+
+  const currentCategories = formData.type === 'guide' ? GUIDE_CATEGORIES : categories;
   const [tagInput, setTagInput] = useState('');
   const [uploading, setUploading] = useState(false); // Global uploading state for thumbnail
   const [uploadingMedia, setUploadingMedia] = useState({}); // Per-index uploading state
@@ -532,7 +542,8 @@ const BlogEditModal = ({
                   onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                   className="w-full px-5 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/30 font-bold appearance-none cursor-pointer transition-all"
                 >
-                  {categories.map(category => (
+                  <option value="" disabled>Select a {contentLabel} Category</option>
+                  {currentCategories.map(category => (
                     <option key={category} value={category}>{category}</option>
                   ))}
                 </select>
