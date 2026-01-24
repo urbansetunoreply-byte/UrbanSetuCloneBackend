@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { authenticatedFetch } from '../utils/auth';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { FaHeadset, FaTimes, FaPaperPlane, FaEnvelope, FaUser, FaFileAlt, FaClock, FaTrash, FaImage, FaPaperclip, FaSpinner } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ConfirmationModal from './ConfirmationModal';
