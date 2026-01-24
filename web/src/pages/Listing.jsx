@@ -1829,10 +1829,10 @@ export default function Listing() {
                   </SwiperSlide>
                 )) : (
                   <SwiperSlide>
-                    <div className="w-full h-64 md:h-96 bg-gray-200 flex items-center justify-center">
-                      <div className="text-center text-gray-500">
+                    <div className="w-full h-64 md:h-96 bg-gray-200 dark:bg-gray-800 flex items-center justify-center transition-colors duration-300">
+                      <div className="text-center text-gray-500 dark:text-gray-400">
                         <div className="text-6xl mb-4">🏠</div>
-                        <p className="text-lg">No images available</p>
+                        <p className="text-lg font-medium">No images available</p>
                       </div>
                     </div>
                   </SwiperSlide>
