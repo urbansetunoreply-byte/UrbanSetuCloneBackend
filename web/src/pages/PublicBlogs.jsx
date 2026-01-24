@@ -152,19 +152,21 @@ const PublicBlogs = () => {
   };
 
   const handleSendSubscribeOtp = async () => {
-    if ((!email || !email.includes('@')) && !currentUser) {
+    // Always validate the email field, regardless of login status
+    if (!email || !email.includes('@')) {
       toast.error('Please enter a valid email address');
       return;
     }
 
-    const emailToSubscribe = currentUser ? currentUser.email : email;
+    // Always use the email field value, not currentUser.email
+    // This allows logged-in users to subscribe with a different email
     setOtpLoading(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/subscription/send-subscribe-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailToSubscribe, source: 'blogs_page' })
+        body: JSON.stringify({ email: email, source: 'blogs_page' })
       });
       const data = await response.json();
 
@@ -187,14 +189,14 @@ const PublicBlogs = () => {
       return;
     }
 
-    const emailToSubscribe = currentUser ? currentUser.email : email;
+    // Use the email field value, not currentUser.email
     setOtpLoading(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/subscription/verify-subscribe-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailToSubscribe, otp: subscribeOtp, source: 'blogs_page' })
+        body: JSON.stringify({ email: email, otp: subscribeOtp, source: 'blogs_page' })
       });
       const data = await response.json();
 
@@ -210,7 +212,7 @@ const PublicBlogs = () => {
         toast.error(data.message || 'Invalid OTP');
       }
     } catch (error) {
-      toast.error('Failed to verification');
+      toast.error('Failed to verify OTP');
     } finally {
       setOtpLoading(false);
     }
