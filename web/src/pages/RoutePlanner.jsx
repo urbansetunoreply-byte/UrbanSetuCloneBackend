@@ -1448,7 +1448,7 @@ export default function RoutePlanner() {
               <div ref={mapRef} className="w-full h-full" />
 
               {/* Advanced Co-Branding Map Overlay */}
-              <div className="absolute bottom-4 right-0 z-20 hidden sm:block">
+              <div className="absolute bottom-4 right-0 z-20">
                 <div
                   onClick={() => setBrandExpanded(!brandExpanded)}
                   className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-md px-4 py-2 border-y border-l border-gray-200 dark:border-gray-700 shadow-2xl flex items-center gap-3 transition-all duration-700 ease-in-out cursor-pointer group ${brandExpanded ? 'rounded-l-2xl translate-x-0' : 'rounded-l-xl translate-x-[calc(100%-12px)] hover:translate-x-[calc(100%-24px)]'}`}
