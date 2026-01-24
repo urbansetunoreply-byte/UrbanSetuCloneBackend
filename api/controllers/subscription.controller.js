@@ -188,6 +188,9 @@ export const updateSubscriptionStatus = async (req, res, next) => {
             if (subscription.preferences) {
                 subscription.preferences[targetType] = false;
             }
+            if (subscription.pendingPreferences) {
+                subscription.pendingPreferences[targetType] = false;
+            }
 
             // Check if any other subscription is still active/approved
             const hasOtherActive = Object.values(subscription.preferences || {}).some(val => val === true);
@@ -198,15 +201,18 @@ export const updateSubscriptionStatus = async (req, res, next) => {
                 if (reason) subscription.rejectionReason = reason;
             } else {
                 // If others are active, we stay approved, just removed one permission
-                // We don't change global status to revoked
                 subscription.status = 'approved';
             }
         }
         else if (status === 'rejected') {
-            // Similar logic for rejection: remove preference
+            // Similar logic for rejection: remove preference & pending
             if (subscription.preferences) {
                 subscription.preferences[targetType] = false;
             }
+            if (subscription.pendingPreferences) {
+                subscription.pendingPreferences[targetType] = false;
+            }
+
             const hasOtherActive = Object.values(subscription.preferences || {}).some(val => val === true);
 
             if (!hasOtherActive) {
@@ -217,8 +223,21 @@ export const updateSubscriptionStatus = async (req, res, next) => {
                 subscription.status = 'approved';
             }
         }
+        else if (status === 'approved') {
+            // Explicit Approval Logic
+            subscription.status = 'approved';
+
+            if (!subscription.preferences) subscription.preferences = {};
+            subscription.preferences[targetType] = true; // Activate the specific type
+
+            if (subscription.pendingPreferences) {
+                subscription.pendingPreferences[targetType] = false; // clear pending flag
+            }
+
+            if (reason) subscription.rejectionReason = reason;
+        }
         else {
-            // Approved or other statuses apply globally or as standard flow
+            // Fallback for other statuses if any
             subscription.status = status;
             if (reason) subscription.rejectionReason = reason;
         }
@@ -299,7 +318,8 @@ export const sendSubscriptionOtp = async (req, res, next) => {
                 status: 'verifying',
                 verificationOtp: otp,
                 verificationOtpExpires: otpExpires,
-                preferences: {
+                preferences: { blog: false, guide: false }, // Initially false until verified & approved
+                pendingPreferences: {
                     blog: type === 'blog',
                     guide: type === 'guide'
                 }
@@ -352,19 +372,23 @@ export const verifySubscriptionOtp = async (req, res, next) => {
         subscription.verificationOtpExpires = undefined;
 
         // Ensure preference is set
-        if (!subscription.preferences) subscription.preferences = {};
-        subscription.preferences[type] = true;
-
-        let message = 'Email verified! ';
-
-        // If user was already approved, we keep them approved. 
-        // We assume trust propagates. This fixes the issue where an existing 'Blog' subscriber 
-        // gets blocked from Blogs because they asked for 'Guides' and went to 'Pending'.
+        // If user was already approved, we keep them approved AND activate the preference immediately.
+        // Trust propagates for existing verified users.
         if (subscription.status === 'approved') {
+            subscription.preferences[type] = true;
+            if (subscription.pendingPreferences) subscription.pendingPreferences[type] = false; // Clear pending if any
+
             subscription.source = source;
             message += `You have successfully subscribed to ${type}s!`;
         } else {
+            // If Pending/New: Mark as PENDING request.
+            // Do NOT set preference=true yet. Admin must approve.
             subscription.status = 'pending';
+
+            if (!subscription.pendingPreferences) subscription.pendingPreferences = {};
+            subscription.pendingPreferences[type] = true;
+            subscription.preferences[type] = false; // Ensure it's not active yet
+
             subscription.rejectionReason = undefined;
             subscription.source = source || subscription.source;
             message += 'Your subscription request has been submitted for approval.';

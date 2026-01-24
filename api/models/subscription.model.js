@@ -18,6 +18,10 @@ const subscriptionSchema = new mongoose.Schema({
         blog: { type: Boolean, default: false },
         guide: { type: Boolean, default: false }
     },
+    pendingPreferences: {
+        blog: { type: Boolean, default: false },
+        guide: { type: Boolean, default: false }
+    },
     rejectionReason: {
         type: String,
         default: null
