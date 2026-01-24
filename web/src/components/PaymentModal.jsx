@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FaCreditCard, FaDollarSign, FaShieldAlt, FaDownload, FaCheckCircle, FaTimes, FaSpinner, FaCoins } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 
 // Generate unique tab ID for cross-tab communication
 const getTabId = () => {
@@ -25,12 +26,11 @@ const createPaymentLockManager = (appointmentId) => {
   const acquireLock = async () => {
     try {
       // First, try to acquire backend lock (works across browsers/devices)
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/acquire`, {
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/acquire`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ appointmentId })
       });
 
@@ -111,12 +111,11 @@ const createPaymentLockManager = (appointmentId) => {
 
     // Release backend lock
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/release`, {
+      await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/release`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ appointmentId })
       });
     } catch (error) {
@@ -173,12 +172,11 @@ const createPaymentLockManager = (appointmentId) => {
     }
     backendHeartbeatInterval = setInterval(async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/heartbeat`, {
+        const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/heartbeat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({ appointmentId })
         });
 
@@ -198,10 +196,7 @@ const createPaymentLockManager = (appointmentId) => {
   const isLockedByAnotherTab = async () => {
     // First check backend lock (cross-browser)
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/check/${appointmentId}`, {
-        method: 'GET',
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/check/${appointmentId}`);
 
       const data = await response.json();
       if (data.ok && data.locked === true && !data.ownedByUser) {
@@ -293,12 +288,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
   const cancelPayment = async () => {
     if (paymentData && paymentData.payment && (paymentData.payment.status === 'pending' || paymentData.payment.status === 'processing')) {
       try {
-        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/cancel`, {
+        await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/cancel`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({
             paymentId: paymentData.payment.paymentId
           })
@@ -505,12 +499,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
     const currentPaymentData = paymentDataRef.current;
     if (currentPaymentData && currentPaymentData.payment && (currentPaymentData.payment.status === 'pending' || currentPaymentData.payment.status === 'processing')) {
       try {
-        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/cancel`, {
+        await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/cancel`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({
             paymentId: currentPaymentData.payment.paymentId
           })
@@ -709,10 +702,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
 
       // Special handling for Monthly Rent: Use /monthly-rent endpoint to recreate payment
       if (monthlyRentContext) {
-        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/monthly-rent`, {
+        response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/monthly-rent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
             contractId: monthlyRentContext.contractId,
             walletId: monthlyRentContext.walletId,
@@ -725,10 +717,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
         });
       } else if (isServicePayment && servicePaymentDetails) {
         // Special handling for Service Requests
-        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/service-request`, {
+        response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/service-request`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
             requestId: servicePaymentDetails.requestId,
             type: servicePaymentDetails.type,
@@ -737,10 +728,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
         });
       } else {
         // Standard flow for Advance/Security Deposit
-        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {
+        response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
             appointmentId: appointment._id,
             paymentType: appointment.paymentType || (appointment.isRentalPayment ? 'security_deposit' : 'advance'),
@@ -894,10 +884,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
         window.paypal.Buttons({
           createOrder: async (_data, actions) => {
             try {
-              const orderRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/paypal/create-order`, {
+              const orderRes = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/paypal/create-order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ amount: Number(amount).toFixed(2), currency: 'USD' })
               });
               const text = await orderRes.text();
@@ -919,10 +908,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
               try {
                 await actions.order.capture();
               } catch (e) {
-                await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/paypal/capture-order`, {
+                await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/paypal/capture-order`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  credentials: 'include',
                   body: JSON.stringify({ orderId: data.orderID })
                 });
               }
@@ -960,12 +948,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
 
   const handlePaymentFailure = async (reason) => {
     try {
-      const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/verify`, {
+      const verifyResponse = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           paymentId: paymentData.payment.paymentId,
           paymentStatus: 'failed',
@@ -991,12 +978,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
 
   const verifyPayment = async (response) => {
     try {
-      const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/verify`, {
+      const verifyResponse = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           paymentId: paymentData.payment.paymentId,
           paypalOrderId: response.paypal_order_id || response.paypalOrderId || response.orderID,
@@ -1027,10 +1013,9 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
 
   const verifyRazorpay = async (response) => {
     try {
-      const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/razorpay/verify`, {
+      const verifyResponse = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/razorpay/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           paymentId: paymentData.payment.paymentId,
           razorpay_payment_id: response.razorpay_payment_id,

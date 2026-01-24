@@ -5,6 +5,7 @@ import { FaSearch, FaArrowRight, FaChevronLeft, FaEdit } from 'react-icons/fa';
 import { helpCategories } from '../../utils/helpCategories';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import HelpCenterChat from '../../components/HelpCenterChat';
+import { authenticatedFetch } from '../../utils/auth';
 
 const HelpCenter = () => {
     usePageTitle('Help Center - UrbanSetu');
@@ -28,7 +29,7 @@ const HelpCenter = () => {
                 url += `&sort=popular`;
             }
 
-            const res = await fetch(url);
+            const res = await authenticatedFetch(url);
             const data = await res.json();
             setArticles(data);
         } catch (error) {

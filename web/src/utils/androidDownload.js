@@ -1,6 +1,8 @@
 // Android App Download Utility
 // Handles APK download with proper MIME type and filename
 
+import { authenticatedFetch } from './auth';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Cache for active deployments
@@ -11,16 +13,16 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 // Get active deployments from admin system
 const getActiveDeployments = async () => {
   const now = Date.now();
-  
+
   // Return cached data if still valid
   if (activeDeploymentsCache && (now - cacheTimestamp) < CACHE_DURATION) {
     return activeDeploymentsCache;
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/deployment/active`);
+    const response = await authenticatedFetch(`${API_BASE_URL}/api/deployment/active`);
     const data = await response.json();
-    
+
     if (data.success) {
       activeDeploymentsCache = data.data;
       cacheTimestamp = now;
@@ -29,25 +31,23 @@ const getActiveDeployments = async () => {
   } catch (error) {
     console.error('Error fetching active deployments:', error);
   }
-  
+
   return [];
 };
 
 // Get all deployments (not cached, for fallback)
 const getAllDeployments = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/deployment`, {
-      credentials: 'include'
-    });
+    const response = await authenticatedFetch(`${API_BASE_URL}/api/deployment`);
     const data = await response.json();
-    
+
     if (data.success) {
       return data.data;
     }
   } catch (error) {
     console.error('Error fetching all deployments:', error);
   }
-  
+
   return [];
 };
 
@@ -56,40 +56,40 @@ const getLatestAndroidApkUrl = async () => {
   try {
     const activeDeployments = await getActiveDeployments();
     console.log('Active deployments:', activeDeployments);
-    
+
     // Find the latest Android APK from active deployments
-    const androidApk = activeDeployments.find(file => 
+    const androidApk = activeDeployments.find(file =>
       file.platform === 'android' && file.format === 'apk'
     );
-    
+
     if (androidApk) {
       console.log('Found active Android APK:', androidApk);
       // Use public presigned URL endpoint on demand
       const encoded = encodeURIComponent(androidApk.id);
-      const res = await fetch(`${API_BASE_URL}/api/deployment/public-download-url?id=${encoded}`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/deployment/public-download-url?id=${encoded}`);
       const d = await res.json();
       if (d && d.success && d.url) return d.url;
     }
-    
+
     console.log('No active Android APK found, checking all deployments...');
-    
+
     // If no active Android APK, get the latest one from all deployments
     const allDeployments = await getAllDeployments();
     const latestAndroidApk = allDeployments
       .filter(file => file.platform === 'android' && file.format === 'apk')
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-    
+
     if (latestAndroidApk) {
       console.log('Found latest Android APK:', latestAndroidApk);
       const encoded2 = encodeURIComponent(latestAndroidApk.id);
-      const res2 = await fetch(`${API_BASE_URL}/api/deployment/public-download-url?id=${encoded2}`);
+      const res2 = await authenticatedFetch(`${API_BASE_URL}/api/deployment/public-download-url?id=${encoded2}`);
       const d2 = await res2.json();
       if (d2 && d2.success && d2.url) return d2.url;
     }
   } catch (error) {
     console.error('Error getting latest Android APK:', error);
   }
-  
+
   // Final fallback - return null to indicate no APK available
   console.warn('No Android APK found in deployments');
   return null;
@@ -106,25 +106,25 @@ export const downloadAndroidApp = async (filename = 'UrbanSetu_debug.apk') => {
   try {
     // Get the latest Android APK URL
     const apkUrl = await getLatestAndroidApkUrl();
-    
+
     if (!apkUrl) {
       return {
         success: false,
         message: 'No Android app is currently available for download. Please contact support or check back later.'
       };
     }
-    
+
     // Create a temporary anchor element
     const link = document.createElement('a');
     link.href = apkUrl;
     link.download = filename;
     link.style.display = 'none';
-    
+
     // Add to DOM, click, and remove
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Show success message
     return {
       success: true,
@@ -132,18 +132,18 @@ export const downloadAndroidApp = async (filename = 'UrbanSetu_debug.apk') => {
     };
   } catch (error) {
     console.error('Download failed:', error);
-    
+
     // Try fallback URL
     try {
       const fallbackLink = document.createElement('a');
       fallbackLink.href = APK_FALLBACK_URL;
       fallbackLink.download = filename;
       fallbackLink.style.display = 'none';
-      
+
       document.body.appendChild(fallbackLink);
       fallbackLink.click();
       document.body.removeChild(fallbackLink);
-      
+
       return {
         success: true,
         message: 'Your download has started — thanks for choosing our app!'
@@ -187,7 +187,7 @@ export const getDownloadMessage = async () => {
   } catch (error) {
     console.error('Error checking APK availability:', error);
   }
-  
+
   if (isAndroidDevice()) {
     return 'Download our Android app for the best mobile experience!';
   } else if (isMobileDevice()) {
@@ -219,7 +219,7 @@ export const getDownloadButtonText = () => {
 export const handleAndroidDownload = async (showToast, filename = 'UrbanSetu_debug.apk') => {
   try {
     const result = await downloadAndroidApp(filename);
-    
+
     if (result.success) {
       showToast.success(result.message);
     } else {

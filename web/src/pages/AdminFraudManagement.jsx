@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import AdminFraudManagementSkeleton from '../components/skeletons/AdminFraudManagementSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminFraudManagement() {
@@ -33,9 +34,9 @@ export default function AdminFraudManagement() {
       setLoading(true);
       setError('');
       const [fraudRes, allListingsRes, allReviewsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/ai/fraud/stats`),
-        fetch(`${API_BASE_URL}/api/listing/get?limit=10000`),
-        fetch(`${API_BASE_URL}/api/review/admin/all?status=approved&limit=1000&sort=date&order=desc`, { credentials: 'include' })
+        authenticatedFetch(`${API_BASE_URL}/api/ai/fraud/stats`),
+        authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=10000`),
+        authenticatedFetch(`${API_BASE_URL}/api/review/admin/all?status=approved&limit=1000&sort=date&order=desc`)
       ]);
       const fraud = await fraudRes.json();
       const allListings = await allListingsRes.json();

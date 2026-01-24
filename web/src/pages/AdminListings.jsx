@@ -5,6 +5,7 @@ import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { maskAddress } from '../utils/addressMasking';
 import { useSelector, useDispatch } from "react-redux";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
+import { authenticatedFetch } from "../utils/auth";
 import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -132,7 +133,7 @@ export default function AdminListings() {
         setError(null);
         const limit = 12;
         const params = buildParams(0, limit);
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`, { credentials: 'include', signal: controller.signal });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`, { signal: controller.signal });
         if (res.ok) {
           const data = await res.json();
           setListings(data);
@@ -157,7 +158,7 @@ export default function AdminListings() {
     try {
       const limit = 12;
       const params = buildParams(listings.length, limit);
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?${params.toString()}`);
       if (!res.ok) return;
       const data = await res.json();
       setListings((prev) => [...prev, ...data]);
@@ -193,10 +194,9 @@ export default function AdminListings() {
     setDeleteError("");
     try {
       // Verify password
-      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: deletePassword }),
       });
       if (!verifyRes.ok) {
@@ -211,7 +211,7 @@ export default function AdminListings() {
           toast.error("Too many incorrect attempts. You've been signed out for security.");
           dispatch(signoutUserStart());
           try {
-            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
             const signoutData = await signoutRes.json();
             if (signoutData.success === false) {
               dispatch(signoutUserFailure(signoutData.message));
@@ -239,9 +239,8 @@ export default function AdminListings() {
       localStorage.removeItem('deleteAdminListingPwAttempts');
 
       // Proceed to delete
-      const res = await fetch(`${API_BASE_URL}/api/listing/delete/${pendingDeleteId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/delete/${pendingDeleteId}`, {
         method: 'DELETE',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: deleteReason }),
       });
@@ -292,9 +291,7 @@ export default function AdminListings() {
       params.append('sortBy', propertyReportsFilters.sortBy);
       params.append('sortOrder', propertyReportsFilters.sortOrder);
 
-      const res = await fetch(`${API_BASE_URL}/api/notifications/reports/properties?${params}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/reports/properties?${params}`);
       const data = await res.json();
 
       if (data.success) {

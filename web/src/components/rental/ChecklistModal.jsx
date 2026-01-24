@@ -3,6 +3,7 @@ import { FaTimes, FaCheckCircle, FaClock, FaHome, FaSignInAlt, FaSignOutAlt, FaI
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import ConditionImageUpload from './ConditionImageUpload';
+import { authenticatedFetch } from '../../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -84,9 +85,8 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
 
       // Create checklist if it doesn't exist
       if (!checklistId) {
-        const createRes = await fetch(`${API_BASE_URL}/api/rental/checklist/${contract._id}`, {
+        const createRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/checklist/${contract._id}`, {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: checklistType })
         });
@@ -104,9 +104,8 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
         ? `${API_BASE_URL}/api/rental/checklist/move-in/${checklistId}`
         : `${API_BASE_URL}/api/rental/checklist/move-out/${checklistId}`;
 
-      const updateRes = await fetch(endpoint, {
+      const updateRes = await authenticatedFetch(endpoint, {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           images,
@@ -140,9 +139,8 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/checklist/${checklist._id}/approve`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/checklist/${checklist._id}/approve`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes })
       });

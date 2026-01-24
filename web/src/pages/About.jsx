@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react'
+import { authenticatedFetch } from '../utils/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaDownload, FaAndroid, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -61,7 +62,7 @@ export default function About() {
   useEffect(() => {
     const fetchAboutData = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/about`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/about`);
         if (response.ok) {
           const data = await response.json();
           setAboutData(data);

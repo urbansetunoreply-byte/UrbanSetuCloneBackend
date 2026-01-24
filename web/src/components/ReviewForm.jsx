@@ -4,6 +4,7 @@ import { FaStar, FaEdit, FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { EmojiButton } from './EmojiPicker';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -39,7 +40,7 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
       }
 
       // Check if user is property owner by fetching listing details
-      const res = await fetch(`${API_BASE_URL}/api/listing/get/${listingId}`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get/${listingId}`);
       const listingData = await res.json();
 
       if (res.ok && listingData.userRef === currentUser._id) {
@@ -49,9 +50,7 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
       }
 
       // Check if user has already reviewed this property
-      const reviewRes = await fetch(`${API_BASE_URL}/api/review/user`, {
-        credentials: 'include',
-      });
+      const reviewRes = await authenticatedFetch(`${API_BASE_URL}/api/review/user`);
 
       if (reviewRes.ok) {
         const userReviews = await reviewRes.json();
@@ -110,12 +109,11 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
 
       const method = isEditing ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await authenticatedFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           listingId,
           rating,

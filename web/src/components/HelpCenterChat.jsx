@@ -41,7 +41,7 @@ const HelpCenterChat = () => {
         // Fetch help articles for context
         const fetchArticles = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/api/help?limit=50`);
+                const res = await authenticatedFetch(`${API_BASE_URL}/api/help`);
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     setHelpArticles(data.map(a => ({ title: a.title, slug: a.slug, description: a.description, category: a.category })));

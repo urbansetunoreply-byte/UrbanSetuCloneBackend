@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { FaCompass, FaPlay } from "react-icons/fa";
 import VideoPreview from '../components/VideoPreview';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function EditListing() {
@@ -110,7 +111,7 @@ export default function EditListing() {
     const fetchListing = async () => {
       const listingId = params.listingId;
       const apiUrl = `${API_BASE_URL}/api/listing/get/${listingId}`;
-      const res = await fetch(apiUrl, { credentials: 'include' });
+      const res = await authenticatedFetch(apiUrl);
       const data = await res.json();
       if (data.success === false) {
         setError(data.message);
@@ -229,9 +230,8 @@ export default function EditListing() {
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('image', file);
-      const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
-        credentials: 'include',
         body: uploadFormData,
       });
       const data = await res.json();
@@ -297,9 +297,8 @@ export default function EditListing() {
       const uploadFormData = new FormData();
       uploadFormData.append('image', file);
 
-      const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
-        credentials: 'include',
         body: uploadFormData,
       });
 
@@ -356,9 +355,8 @@ export default function EditListing() {
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('video', file);
-      const res = await fetch(`${API_BASE_URL}/api/upload/video`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/video`, {
         method: 'POST',
-        credentials: 'include',
         body: uploadFormData,
       });
       const data = await res.json();
@@ -460,10 +458,9 @@ export default function EditListing() {
       const options = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
         body: JSON.stringify(requestBody),
       };
-      const res = await fetch(apiUrl, options);
+      const res = await authenticatedFetch(apiUrl, options);
       const data = await res.json();
 
       if (res.ok) {

@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import AdminMyListingsSkeleton from "../components/skeletons/AdminMyListingsSkeleton";
+import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminMyListings() {
@@ -50,9 +51,7 @@ export default function AdminMyListings() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`${API_BASE_URL}/api/listing/user`, {
-          credentials: 'include'
-        });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/user`);
 
         if (res.ok) {
           const data = await res.json();
@@ -88,10 +87,9 @@ export default function AdminMyListings() {
     setDeleteError("");
     try {
       // Verify password
-      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: deletePassword }),
       });
 
@@ -107,7 +105,7 @@ export default function AdminMyListings() {
           toast.error("Too many incorrect attempts. You've been signed out for security.");
           dispatch(signoutUserStart());
           try {
-            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
             const signoutData = await signoutRes.json();
             if (signoutData.success === false) {
               dispatch(signoutUserFailure(signoutData.message));
@@ -134,9 +132,8 @@ export default function AdminMyListings() {
       // Success - Clear attempts
       localStorage.removeItem('adminMyListingPwAttempts');
 
-      const res = await fetch(`/api/listing/delete/${pendingDeleteId}`, {
-        method: "DELETE",
-        credentials: 'include'
+      const res = await authenticatedFetch(`/api/listing/delete/${pendingDeleteId}`, {
+        method: "DELETE"
       });
 
       if (res.ok) {

@@ -11,6 +11,7 @@ import { reconnectSocket } from "../utils/socket";
 import { toast } from 'react-toastify';
 import { LogOut } from "lucide-react";
 import { useSignout } from '../hooks/useSignout';
+import { authenticatedFetch } from '../utils/auth';
 import SearchSuggestions from './SearchSuggestions';
 import ThemeToggle from "./ThemeToggle.jsx";
 import SeasonalEffects from './SeasonalEffects';
@@ -272,12 +273,7 @@ export default function AdminHeader() {
 
   const fetchPendingCount = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/pending-requests`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/pending-requests`);
       if (res.ok) {
         const data = await res.json();
         setPendingCount(data.length);
@@ -289,12 +285,7 @@ export default function AdminHeader() {
 
   const fetchAppointmentCount = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/bookings`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings`);
       if (res.ok) {
         const data = await res.json();
         setAppointmentCount(data.length);

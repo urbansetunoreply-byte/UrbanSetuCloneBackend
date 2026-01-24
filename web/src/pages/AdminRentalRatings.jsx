@@ -6,6 +6,7 @@ import { FaStar, FaUser, FaHome, FaSpinner, FaSearch, FaCheckCircle, FaClock, Fa
 import { usePageTitle } from '../hooks/usePageTitle';
 import RatingDisplay from '../components/ratings/RatingDisplay';
 import AdminRentalRatingsSkeleton from '../components/skeletons/AdminRentalRatingsSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -45,9 +46,7 @@ export default function AdminRentalRatings() {
         setLoading(true);
       }
       // Always fetch all ratings, apply filters client-side
-      const res = await fetch(`${API_BASE_URL}/api/rental/ratings/all`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/ratings/all`);
 
       const data = await res.json();
       if (res.ok && data.success) {

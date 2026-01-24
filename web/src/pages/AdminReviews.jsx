@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import UserAvatar from '../components/UserAvatar';
 import AdminReviewsSkeleton from '../components/skeletons/AdminReviewsSkeleton';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import { authenticatedFetch } from '../utils/auth';
 import axios from 'axios';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -257,9 +258,7 @@ export default function AdminReviews() {
         params.append('status', selectedStatus);
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/review/admin/all?${params}`, {
-        credentials: 'include',
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/admin/all?${params}`);
 
       const data = await res.json();
 
@@ -281,17 +280,13 @@ export default function AdminReviews() {
   const fetchAnalytics = async () => {
     try {
       // Fetch review statistics
-      const statsRes = await axios.get(`${API_BASE_URL}/api/review/admin/stats`, {
-        withCredentials: true
-      });
+      const statsRes = await authenticatedFetch(`${API_BASE_URL}/api/review/admin/stats`);
+      const stats = await statsRes.json();
 
       // Fetch all reviews for analytics
-      const allReviewsRes = await axios.get(`${API_BASE_URL}/api/review/admin/all?limit=1000&sort=date&order=desc`, {
-        withCredentials: true
-      });
-
-      const allReviews = allReviewsRes.data.reviews || allReviewsRes.data || [];
-      const stats = statsRes.data;
+      const allReviewsRes = await authenticatedFetch(`${API_BASE_URL}/api/review/admin/all?limit=1000&sort=date&order=desc`);
+      const allReviewsData = await allReviewsRes.json();
+      const allReviews = allReviewsData.reviews || allReviewsData || [];
 
       // Calculate rating distribution
       const ratingDistribution = {};
@@ -405,12 +400,11 @@ export default function AdminReviews() {
 
   const handleStatusChange = async (reviewId, newStatus, adminNote = '') => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/admin/status/${reviewId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/admin/status/${reviewId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ status: newStatus, adminNote }),
       });
 
@@ -435,12 +429,11 @@ export default function AdminReviews() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/admin/remove/${reviewToRemove._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/admin/remove/${reviewToRemove._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           reason: removalReason,
           note: removalNote
@@ -468,9 +461,8 @@ export default function AdminReviews() {
 
   const handleRestoreReview = async (reviewId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/admin/restore/${reviewId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/admin/restore/${reviewId}`, {
         method: 'PUT',
-        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok) {
@@ -501,10 +493,9 @@ export default function AdminReviews() {
     setResponseLoading((prev) => ({ ...prev, [reviewId]: true }));
     setResponseError((prev) => ({ ...prev, [reviewId]: '' }));
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/respond/${reviewId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/respond/${reviewId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ ownerResponse: responseEdit[reviewId] }),
       });
       const data = await res.json();
@@ -634,9 +625,7 @@ export default function AdminReviews() {
 
 
 
-      const res = await fetch(`${API_BASE_URL}/api/notifications/reports/reviews?${params}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/reports/reviews?${params}`);
       const data = await res.json();
 
 
@@ -1706,7 +1695,7 @@ export default function AdminReviews() {
                                   } else {
                                     // Fallback: try to fetch from API listings endpoint
                                     toast.info("Fetching review details...");
-                                    const fetchRes = await fetch(`${API_BASE_URL}/api/review/listing/${report.listingId}`);
+                                    const fetchRes = await authenticatedFetch(`${API_BASE_URL}/api/review/listing/${report.listingId}`);
                                     if (fetchRes.ok) {
                                       const listingReviews = await fetchRes.json();
                                       const found = listingReviews.find(r => r._id === report.reviewId);

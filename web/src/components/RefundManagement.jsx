@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaUndo, FaDollarSign, FaRupeeSign, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner, FaSearch, FaFilter, FaRedo, FaInfo } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 
 const RefundManagement = ({ onRefundProcessed }) => {
   const [payments, setPayments] = useState([]);
@@ -141,9 +142,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
         queryParams.set('q', filters.search);
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${queryParams}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${queryParams}`);
 
       const data = await response.json();
       if (response.ok) {
@@ -176,9 +175,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
         }
       });
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-requests?${queryParams}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-requests?${queryParams}`);
 
       const data = await response.json();
       if (response.ok) {
@@ -213,12 +210,11 @@ const RefundManagement = ({ onRefundProcessed }) => {
 
     try {
       setProcessingRefund(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund`, {
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           paymentId: selectedPayment.paymentId,
           refundAmount: parseFloat(refundForm.refundAmount),
@@ -272,12 +268,11 @@ const RefundManagement = ({ onRefundProcessed }) => {
         setProcessingReject(true);
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request/${selectedRefundRequest._id}`, {
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request/${selectedRefundRequest._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           status: action,
           adminNotes: adminNotes,
@@ -322,12 +317,11 @@ const RefundManagement = ({ onRefundProcessed }) => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request/${selectedInfoRequest._id}/reopen`, {
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request/${selectedInfoRequest._id}/reopen`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           reason: reopenReason
         })

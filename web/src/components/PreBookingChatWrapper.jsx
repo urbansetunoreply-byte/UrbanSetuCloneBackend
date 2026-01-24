@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FaComments, FaTimes, FaPaperPlane, FaUser, FaCircle, FaCheck, FaTrash, FaEdit, FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 import { socket } from '../utils/socket';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -116,12 +117,7 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
     const fetchOwnerChats = async (showLoading = true) => {
         if (showLoading) setIsLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/pre-booking-chat/user-chats`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` } // If using bearer, or relies on cookie
-            });
-            // Note: The fetch setup in this project usually relies on cookies ('credentials: include').
-            // I'll use standard fetch with credentials.
-            const data = await (await fetch(`${API_BASE_URL}/api/pre-booking-chat/user-chats`, { credentials: 'include' })).json();
+            const data = await (await authenticatedFetch(`${API_BASE_URL}/api/pre-booking-chat/user-chats`)).json();
 
             if (data.success) {
                 setInboxChats(data.chats);
@@ -138,10 +134,9 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
     const initiateOrGetChat = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/pre-booking-chat/initiate`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/pre-booking-chat/initiate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ listingId, ownerId })
             });
             const data = await res.json();
@@ -207,10 +202,9 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
         setSendIconAnimating(true);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/pre-booking-chat/send`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/pre-booking-chat/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ chatId: activeChat._id, content: newMessage })
             });
             const data = await res.json();
@@ -245,9 +239,8 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
         if (!activeChat) return;
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/pre-booking-chat/${activeChat._id}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/pre-booking-chat/${activeChat._id}`, {
                 method: 'DELETE',
-                credentials: 'include'
             });
             const data = await res.json();
             if (data.success) {
@@ -292,10 +285,9 @@ export default function PreBookingChatWrapper({ listingId, ownerId, listingTitle
         setShowDeleteConfirm(false);
         setIsLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/pre-booking-chat/delete-batch`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/pre-booking-chat/delete-batch`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ chatIds: Array.from(selectedChatIds) })
             });
             const data = await res.json();

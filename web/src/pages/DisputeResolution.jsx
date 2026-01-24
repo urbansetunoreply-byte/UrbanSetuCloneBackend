@@ -8,6 +8,7 @@ import DisputeForm from '../components/dispute/DisputeForm';
 import DisputeList from '../components/dispute/DisputeList';
 import DisputeDetail from '../components/dispute/DisputeDetail';
 import UserDisputesSkeleton from '../components/skeletons/UserDisputesSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -100,9 +101,7 @@ export default function DisputeResolution() {
         setLoading(true);
       }
       // Fetch all disputes, apply filters client-side
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/disputes`);
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -142,9 +141,7 @@ export default function DisputeResolution() {
 
   const fetchContract = async (contractId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`);
       const data = await res.json();
       if (res.ok && data.success) {
         return data.contract;
@@ -158,9 +155,7 @@ export default function DisputeResolution() {
 
   const fetchDispute = async (disputeId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes/${disputeId}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/disputes/${disputeId}`);
       const data = await res.json();
       if (res.ok && data.success) {
         return data.dispute;

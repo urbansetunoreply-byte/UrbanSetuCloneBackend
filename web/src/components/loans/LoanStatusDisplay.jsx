@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { FaCheckCircle, FaClock, FaTimesCircle, FaCreditCard, FaFile, FaDownload, FaHome, FaUser, FaMoneyBillWave, FaCalendarAlt } from 'react-icons/fa';
+import { authenticatedFetch } from '../../utils/auth';
 
 export default function LoanStatusDisplay({ loan, currentUser, onUpdate, STATUS_COLORS, STATUS_LABELS, LOAN_TYPE_LABELS }) {
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
@@ -24,7 +25,7 @@ export default function LoanStatusDisplay({ loan, currentUser, onUpdate, STATUS_
     try {
       if (!docUrl) return;
 
-      const response = await fetch(docUrl, { mode: 'cors' });
+      const response = await authenticatedFetch(docUrl, { mode: 'cors' });
       if (!response.ok) throw new Error('Failed to fetch document');
 
       const contentType = response.headers.get('content-type') || '';

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Cookie, X, Settings, Check, Shield, BarChart, FileText, ChevronRight } from 'lucide-react';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -38,7 +39,7 @@ const CookieConsent = () => {
         const todayKey = `visitor_tracked_${new Date().toISOString().slice(0, 10)}`;
         if (localStorage.getItem(todayKey) === '1') return;
         // Fire-and-forget minimal tracking with necessary-only defaults
-        await fetch(`${API_BASE_URL}/api/visitors/track`, {
+        await authenticatedFetch(`${API_BASE_URL}/api/visitors/track`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -91,7 +92,7 @@ const CookieConsent = () => {
   // Track visitor with cookie preferences
   const trackVisitor = async (preferences) => {
     try {
-      await fetch(`${API_BASE_URL}/api/visitors/track`, {
+      await authenticatedFetch(`${API_BASE_URL}/api/visitors/track`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

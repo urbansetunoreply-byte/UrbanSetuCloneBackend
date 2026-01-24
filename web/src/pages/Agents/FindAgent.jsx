@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import AgentCard from '../../components/AgentCard';
 import AgentInfoModal from '../../components/AgentInfoModal';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import { authenticatedFetch } from '../../utils/auth';
 
 const FindAgent = () => {
     usePageTitle('Find Agents - UrbanSetu');
@@ -36,7 +37,7 @@ const FindAgent = () => {
             if (debouncedSearch) query += `&search=${encodeURIComponent(debouncedSearch)}`;
             if (cityFilter) query += `&city=${encodeURIComponent(cityFilter)}`;
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/agent${query}`);
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/agent${query}`);
             const data = await res.json();
             if (res.ok) {
                 setAgents(data.agents || []);

@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FaSpinner, FaDownload, FaArrowLeft, FaFilePdf, FaImage, FaFileAlt, FaLock } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -52,7 +53,7 @@ export default function ViewDocument() {
                 setFileType(derivedType);
 
                 if (derivedType === 'pdf' && !isMobile) {
-                    fetch(url, { mode: 'cors' })
+                    authenticatedFetch(url, { mode: 'cors' })
                         .then(r => r.blob())
                         .then(blob => {
                             const cleanBlob = new Blob([blob], { type: 'application/pdf' });
@@ -75,9 +76,9 @@ export default function ViewDocument() {
                     ? `${API_BASE_URL}/api/rental/public/documents/${documentId}`
                     : `${API_BASE_URL}/api/rental/loans/documents/${documentId}`;
 
-                const res = await fetch(endpoint, {
-                    credentials: isPublic ? 'omit' : 'include'
-                });
+                const res = isPublic
+                    ? await fetch(endpoint, { credentials: 'omit' })
+                    : await authenticatedFetch(endpoint);
                 const data = await res.json();
 
                 if (res.ok && data.success) {
@@ -105,7 +106,7 @@ export default function ViewDocument() {
                     // If PDF and NOT mobile, fetch blob immediately to render locally
                     if (type === 'pdf' && !isMobile) {
                         try {
-                            const fileRes = await fetch(data.document.url, { mode: 'cors' });
+                            const fileRes = await authenticatedFetch(data.document.url, { mode: 'cors' });
                             const blob = await fileRes.blob();
                             const cleanBlob = new Blob([blob], { type: 'application/pdf' });
                             const blobUrl = URL.createObjectURL(cleanBlob);

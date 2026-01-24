@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { authenticatedFetch } from '../utils/auth';
 import { toast } from 'react-toastify';
 import {
   FaTimes,
@@ -170,7 +171,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
 
       try {
         setIsLoading(true);
-        const response = await fetch(currentVideoUrl);
+        const response = await authenticatedFetch(currentVideoUrl);
         if (!response.ok) throw new Error('Network response was not ok');
         const blob = await response.blob();
 
@@ -588,7 +589,7 @@ const VideoPreview = ({ isOpen, onClose, videos = [], initialIndex = 0 }) => {
     showFeedback("Downloading...");
 
     try {
-      const response = await fetch(url);
+      const response = await authenticatedFetch(url);
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');

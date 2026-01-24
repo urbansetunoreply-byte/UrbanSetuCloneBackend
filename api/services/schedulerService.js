@@ -12,6 +12,7 @@ import {
   checkAndSendLeaseRenewalReminders,
   checkAndSendIncompleteListingNudges
 } from './engagementService.js';
+import { cleanupAllStaleSessions } from '../utils/sessionManager.js';
 
 // Schedule appointment reminders to run every day at 9:00 AM
 const scheduleAppointmentReminders = () => {
@@ -216,6 +217,28 @@ const scheduleEngagementJobs = () => {
   console.log('✅ Engagement schedulers set up: Alerts (7PM), Leases (11AM), Nudges (6PM)');
 };
 
+// Schedule session records cleanup to run every day at 4:00 AM
+const scheduleSessionCleanup = () => {
+  console.log('🧹 Setting up stale session cleanup scheduler...');
+
+  // Run every day at 4:00 AM
+  cron.schedule('0 4 * * *', async () => {
+    console.log('⏰ Running scheduled stale session cleanup...');
+    try {
+      const result = await cleanupAllStaleSessions();
+      console.log('✅ Scheduled stale session cleanup completed:', result);
+    } catch (error) {
+      console.error('❌ Error in scheduled stale session cleanup:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kolkata"
+  });
+
+  console.log('✅ Stale session cleanup scheduler set up successfully');
+  console.log('📋 Schedule: Every day at 4:00 AM (Asia/Kolkata timezone)');
+};
+
 // Start the scheduler
 export const startScheduler = (app) => {
   console.log('🚀 Starting scheduler service...');
@@ -228,6 +251,7 @@ export const startScheduler = (app) => {
   scheduleLoanReminders();
   scheduleRentReminders();
   scheduleEngagementJobs();
+  scheduleSessionCleanup();
   console.log('✅ Scheduler service started successfully');
 };
 

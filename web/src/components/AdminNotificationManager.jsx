@@ -3,6 +3,7 @@ import { FaBell, FaTimes, FaPaperPlane, FaUsers, FaEnvelope } from 'react-icons/
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { authenticatedFetch } from '../utils/auth';
 
 export default function AdminNotificationManager() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,11 +18,9 @@ export default function AdminNotificationManager() {
   const fetchUsers = async () => {
     setFetchingUsers(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/admin/users`, {
-        credentials: 'include',
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/admin/users`);
       const data = await res.json();
-      
+
       if (res.ok) {
         setUsers(data);
       } else {
@@ -38,7 +37,7 @@ export default function AdminNotificationManager() {
   // Send notification
   const sendNotification = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedUser || !title.trim() || !message.trim()) {
       toast.error('Please fill in all fields');
       return;
@@ -46,12 +45,11 @@ export default function AdminNotificationManager() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/admin/send`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/admin/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           userId: selectedUser,
           title: title.trim(),
@@ -61,7 +59,7 @@ export default function AdminNotificationManager() {
       });
 
       const data = await res.json();
-      
+
       if (res.ok) {
         toast.success(data.message);
         // Reset form

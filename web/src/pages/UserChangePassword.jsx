@@ -98,7 +98,7 @@ export default function UserChangePassword() {
         // Proper logout process
         dispatch(signoutUserStart());
         try {
-          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           const signoutData = await signoutRes.json();
           if (signoutData.success === false) {
             dispatch(signoutUserFailure(signoutData.message));

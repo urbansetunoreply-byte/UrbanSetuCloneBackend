@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import ImagePreview from "../components/ImagePreview";
 import VideoPreview from "../components/VideoPreview";
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -76,9 +77,7 @@ export default function AdminUpdates() {
         try {
             setLoading(true);
             // Ensure we hit the admin route which returns ALL updates
-            const res = await fetch(`${API_BASE_URL}/api/updates`, {
-                credentials: 'include'
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/updates`);
             const data = await res.json();
             if (data.success) {
                 setUpdates(data.data);
@@ -138,9 +137,8 @@ export default function AdminUpdates() {
         if (!deleteTargetId) return;
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/updates/${deleteTargetId}`, {
-                method: 'DELETE',
-                credentials: 'include'
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/updates/${deleteTargetId}`, {
+                method: 'DELETE'
             });
             const data = await res.json();
             if (data.success) {
@@ -217,9 +215,8 @@ export default function AdminUpdates() {
             uploadFormData.append(type === 'image' ? 'image' : 'video', file);
             const endpoint = type === 'image' ? '/api/upload/image' : '/api/upload/video';
 
-            const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}${endpoint}`, {
                 method: 'POST',
-                credentials: 'include',
                 body: uploadFormData,
             });
 
@@ -315,11 +312,10 @@ export default function AdminUpdates() {
                 method = 'PUT';
             }
 
-            const res = await fetch(url, {
+            const res = await authenticatedFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                credentials: 'include'
+                body: JSON.stringify(payload)
             });
 
             const data = await res.json();

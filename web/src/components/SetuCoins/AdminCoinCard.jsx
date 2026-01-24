@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaCoins, FaUsers, FaChartLine, FaArrowTrendUp, FaGear } from 'react-icons/fa6';
 import { Link } from 'react-router-dom';
+import { authenticatedFetch } from '../../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -11,7 +12,7 @@ const AdminCoinCard = ({ loading: parentLoading }) => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/api/coins/admin/stats`, { credentials: 'include' });
+                const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/admin/stats`);
                 const data = await res.json();
                 if (data.success) {
                     setStats(data.stats);

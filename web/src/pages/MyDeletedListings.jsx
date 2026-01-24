@@ -7,6 +7,7 @@ import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import MyDeletedListingsSkeleton from "../components/skeletons/MyDeletedListingsSkeleton";
 
 import { usePageTitle } from "../hooks/usePageTitle";
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -49,9 +50,7 @@ export default function MyDeletedListings() {
             if (filters.searchTerm) queryParams.append('searchTerm', filters.searchTerm);
             queryParams.append('limit', '100'); // Fetch more to handle client-side pagination smoothly for now
 
-            const res = await fetch(`${API_BASE_URL}/api/listing/user/get-deleted?${queryParams.toString()}`, {
-                credentials: 'include'
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/user/get-deleted?${queryParams.toString()}`);
 
             const data = await res.json();
 
@@ -78,9 +77,8 @@ export default function MyDeletedListings() {
         const id = selectedListingToRestore._id;
         try {
             setRestoringId(id);
-            const res = await fetch(`${API_BASE_URL}/api/listing/restore-deleted/${id}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/restore-deleted/${id}`, {
                 method: 'POST',
-                credentials: 'include'
             });
             const data = await res.json();
             if (data.success) {

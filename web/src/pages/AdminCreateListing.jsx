@@ -8,6 +8,7 @@ import { FaCompass, FaPlay } from "react-icons/fa";
 import VideoPreview from '../components/VideoPreview';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminCreateListing() {
@@ -120,9 +121,7 @@ export default function AdminCreateListing() {
   const fetchAllUsers = async () => {
     try {
       setLoadingUsers(true);
-      const res = await fetch(`${API_BASE_URL}/api/user/all-users-autocomplete`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/all-users-autocomplete`);
 
       if (res.ok) {
         const users = await res.json();
@@ -235,9 +234,8 @@ export default function AdminCreateListing() {
       const uploadFormData = new FormData();
       uploadFormData.append('image', file);
 
-      const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
-        credentials: 'include',
         body: uploadFormData,
       });
 
@@ -294,9 +292,8 @@ export default function AdminCreateListing() {
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('video', file);
-      const res = await fetch(`${API_BASE_URL}/api/upload/video`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/video`, {
         method: 'POST',
-        credentials: 'include',
         body: uploadFormData,
       });
       const data = await res.json();
@@ -370,9 +367,8 @@ export default function AdminCreateListing() {
       const uploadFormData = new FormData();
       uploadFormData.append('image', file);
 
-      const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
-        credentials: 'include',
         body: uploadFormData,
       });
 
@@ -448,9 +444,7 @@ export default function AdminCreateListing() {
 
     try {
       setEmailValidationLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/user/validate-email/${encodeURIComponent(email.trim())}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/validate-email/${encodeURIComponent(email.trim())}`);
 
       if (res.ok) {
         return true;
@@ -531,10 +525,9 @@ export default function AdminCreateListing() {
         submissionData.discountPrice = 0;
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/listing/create`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
         body: JSON.stringify(submissionData),
       });
 

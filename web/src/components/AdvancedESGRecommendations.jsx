@@ -6,6 +6,7 @@ import { FaLeaf, FaUsers, FaShieldAlt, FaChartLine, FaCogs, FaLightbulb, FaSpinn
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { authenticatedFetch } from '../utils/auth';
 
 const AdvancedESGRecommendations = ({
   userId,
@@ -41,12 +42,7 @@ const AdvancedESGRecommendations = ({
   const testESGAuth = async () => {
     try {
       console.log('🌱 Testing ESG authentication...');
-      const response = await fetch(`${API_BASE_URL}/api/esg-ai/test-auth`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/esg-ai/test-auth`);
 
       const data = await response.json();
       console.log('🌱 ESG Auth Test Result:', data);
@@ -78,12 +74,7 @@ const AdvancedESGRecommendations = ({
       const timestamp = Date.now();
       console.log('🌱 Fetching ESG recommendations for user:', userId);
 
-      const response = await fetch(`${API_BASE_URL}/api/esg-ai/recommendations?limit=${limit}&includeExplanation=true&t=${timestamp}`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/esg-ai/recommendations?limit=${limit}&includeExplanation=true&t=${timestamp}`);
 
       console.log('🌱 ESG API Response:', response.status, response.statusText);
 
@@ -133,9 +124,7 @@ const AdvancedESGRecommendations = ({
 
   const fetchESGPreferences = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/esg-ai/preferences`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/esg-ai/preferences`);
 
       if (response.ok) {
         const data = await response.json();
@@ -150,9 +139,7 @@ const AdvancedESGRecommendations = ({
 
   const fetchESGAnalytics = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/esg-ai/analytics?timeframe=30d`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/esg-ai/analytics?timeframe=30d`);
 
       if (response.ok) {
         const data = await response.json();

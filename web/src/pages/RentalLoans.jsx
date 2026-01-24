@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import LoanApplicationForm from '../components/loans/LoanApplicationForm';
 import LoanStatusDisplay from '../components/loans/LoanStatusDisplay';
 import UserRentalLoansSkeleton from '../components/skeletons/UserRentalLoansSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -89,9 +90,7 @@ export default function RentalLoans() {
         setLoading(true);
       }
       // Fetch all loans, apply filters client-side
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/loans`);
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -140,9 +139,7 @@ export default function RentalLoans() {
 
   const fetchContracts = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts?status=active`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts?status=active`);
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -164,9 +161,7 @@ export default function RentalLoans() {
 
   const handleViewLoan = async (loan) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans/${loan._id}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/loans/${loan._id}`);
 
       const data = await res.json();
       if (res.ok && data.success) {

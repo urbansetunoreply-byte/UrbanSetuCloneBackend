@@ -6,6 +6,7 @@ import { socket } from '../utils/socket.js';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -81,9 +82,8 @@ export default function NotificationBell({ mobile = false }) {
     if (!currentUser) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}`, {
-        credentials: 'include',
-      });
+
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}`);
       const data = await res.json();
 
       if (res.ok) {
@@ -112,9 +112,8 @@ export default function NotificationBell({ mobile = false }) {
     if (!currentUser) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/unread-count`, {
-        credentials: 'include',
-      });
+
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/unread-count`);
       const data = await res.json();
 
       if (res.ok) {
@@ -146,9 +145,9 @@ export default function NotificationBell({ mobile = false }) {
     setFetchingUsers(true);
     try {
 
-      const res = await fetch(`${API_BASE_URL}/api/notifications/admin/users`, {
-        credentials: 'include',
-      });
+
+
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/admin/users`);
       const data = await res.json();
 
 
@@ -179,12 +178,12 @@ export default function NotificationBell({ mobile = false }) {
 
     setSendingUserNotification(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/admin/send`, {
+
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/admin/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           userId: selectedUser,
           title: title.trim(),
@@ -225,12 +224,12 @@ export default function NotificationBell({ mobile = false }) {
 
     setSendingAllNotification(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/admin/send-all`, {
+
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/admin/send-all`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           title: allUsersTitle.trim(),
           message: allUsersMessage.trim(),
@@ -261,12 +260,12 @@ export default function NotificationBell({ mobile = false }) {
   // Mark notification as read
   const markAsRead = async (notificationId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
+
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ userId: currentUser._id }),
       });
 
@@ -302,9 +301,8 @@ export default function NotificationBell({ mobile = false }) {
         successMessage = 'All notifications marked as read';
       }
 
-      const res = await fetch(endpoint, {
+      const res = await authenticatedFetch(endpoint, {
         method: 'PUT',
-        credentials: 'include',
       });
 
       if (res.ok) {
@@ -323,12 +321,12 @@ export default function NotificationBell({ mobile = false }) {
   // Delete notification
   const deleteNotification = async (notificationId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/${notificationId}`, {
+
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ userId: currentUser._id }),
       });
 
@@ -780,9 +778,8 @@ export default function NotificationBell({ mobile = false }) {
                                 <span className="text-[10px] font-bold text-gray-500">Confirm?</span>
                                 <button
                                   onClick={() => {
-                                    fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
-                                      method: 'DELETE',
-                                      credentials: 'include',
+                                    authenticatedFetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
+                                      method: 'DELETE'
                                     }).then(() => {
                                       setAllNotifications([]);
                                       setUnreadCount(0);
@@ -1303,9 +1300,8 @@ export default function NotificationBell({ mobile = false }) {
                                 <span className="text-[10px] font-bold text-gray-500 hidden sm:inline">Confirm?</span>
                                 <button
                                   onClick={() => {
-                                    fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
-                                      method: 'DELETE',
-                                      credentials: 'include',
+                                    authenticatedFetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
+                                      method: 'DELETE'
                                     }).then(() => {
                                       setAllNotifications([]);
                                       setUnreadCount(0);

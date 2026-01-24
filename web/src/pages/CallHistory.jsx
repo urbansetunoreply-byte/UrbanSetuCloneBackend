@@ -4,6 +4,7 @@ import { FaPhone, FaVideo, FaClock, FaCheckCircle, FaTimesCircle, FaTrash, FaSea
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../config/api';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 
 const CallHistorySkeleton = () => (
   <div className="space-y-4 animate-pulse">
@@ -62,9 +63,7 @@ const CallHistory = () => {
       const params = new URLSearchParams();
       params.append('limit', '1000'); // Fetch all for client-side filtering
 
-      const response = await fetch(`${API_BASE_URL}/api/calls/history?${params}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/calls/history?${params}`);
 
       if (response.ok) {
         const data = await response.json();

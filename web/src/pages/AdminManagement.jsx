@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { FaHome, FaUser, FaUserShield, FaEnvelope, FaTimes, FaCalendarAlt, FaCheckCircle, FaBan, FaTrash, FaUserLock, FaPhone, FaList, FaCalendar, FaArrowDown, FaSearch, FaLock } from "react-icons/fa";
 import { socket } from "../utils/socket";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
+import { authenticatedFetch } from "../utils/auth";
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { isMobileDevice } from '../utils/mobileUtils';
@@ -128,18 +129,18 @@ export default function AdminManagement() {
     setLoading(true);
     try {
       // Fetch users
-      const userRes = await fetch(`${API_BASE_URL}/api/admin/management/users`, { credentials: "include" });
+      const userRes = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/users`);
       const userData = await userRes.json();
       setUsers(userData);
       // Fetch admins if default admin
       if (currentUser.isDefaultAdmin) {
-        const adminRes = await fetch(`${API_BASE_URL}/api/admin/management/admins`, { credentials: "include" });
+        const adminRes = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/admins`);
         const adminData = await adminRes.json();
         setAdmins(adminData);
       }
       // Fetch active password lockouts (failed sign-in lockouts)
       try {
-        const lockRes = await fetch(`${API_BASE_URL}/api/auth/password-lockouts`, { credentials: 'include' });
+        const lockRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/password-lockouts`);
         const lockData = await lockRes.json();
         if (lockRes.ok && lockData && Array.isArray(lockData.items)) {
           setPasswordLockouts(lockData.items);
@@ -173,7 +174,7 @@ export default function AdminManagement() {
       if (softbannedFilters.softbannedBy) params.set('softbannedBy', softbannedFilters.softbannedBy);
       if (softbannedFilters.from) params.set('from', softbannedFilters.from);
       if (softbannedFilters.to) params.set('to', softbannedFilters.to);
-      const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts?${params.toString()}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/deleted-accounts?${params.toString()}`);
       const data = await res.json();
       if (res.ok && data && Array.isArray(data.items)) {
         // Filter out purged accounts (those with purgedAt)
@@ -197,7 +198,7 @@ export default function AdminManagement() {
       if (purgedFilters.purgedBy) params.set('purgedBy', purgedFilters.purgedBy);
       if (purgedFilters.from) params.set('from', purgedFilters.from);
       if (purgedFilters.to) params.set('to', purgedFilters.to);
-      const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts?${params.toString()}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/deleted-accounts?${params.toString()}`);
       const data = await res.json();
       if (res.ok && data && Array.isArray(data.items)) {
         // Filter only purged accounts (those with purgedAt)
@@ -249,9 +250,8 @@ export default function AdminManagement() {
         setAdmins(prev => prev.map(a => a._id === id ? { ...a, status: a.status === 'active' ? 'suspended' : 'active' } : a));
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/management/suspend/${type}/${id}`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/suspend/${type}/${id}`, {
           method: "PATCH",
-          credentials: "include",
           headers: {
             'Content-Type': 'application/json',
           },
@@ -326,9 +326,8 @@ export default function AdminManagement() {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/management/suspend/${type}/${id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/suspend/${type}/${id}`, {
         method: "PATCH",
-        credentials: "include",
         headers: {
           'Content-Type': 'application/json',
         },
@@ -417,9 +416,8 @@ export default function AdminManagement() {
         setAdmins(prev => prev.filter(a => a._id !== id));
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/management/delete/${type}/${id}`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/delete/${type}/${id}`, {
           method: "DELETE",
-          credentials: "include",
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             reason: finalReason,
@@ -497,15 +495,15 @@ export default function AdminManagement() {
     setAccountStats({ listings: 0, appointments: 0 });
     try {
       // Fetch full user/admin details
-      const res = await fetch(`${API_BASE_URL}/api/user/id/${account._id}`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${account._id}`);
       const data = await res.json();
       if (res.ok) {
         setSelectedAccount({ ...data, type });
         // Fetch stats
         try {
           const [listingsRes, appointmentsRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/api/listing/user/${account._id}`, { credentials: 'include' }),
-            fetch(`${API_BASE_URL}/api/bookings/user/${account._id}`, { credentials: 'include' })
+            authenticatedFetch(`${API_BASE_URL}/api/listing/user/${account._id}`),
+            authenticatedFetch(`${API_BASE_URL}/api/bookings/user/${account._id}`)
           ]);
 
           let listingsCount = 0;
@@ -570,9 +568,8 @@ export default function AdminManagement() {
         ]);
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/management/promote/${id}`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/promote/${id}`, {
           method: "PATCH",
-          credentials: "include",
         });
         const data = await res.json();
         if (res.ok) {
@@ -661,9 +658,8 @@ export default function AdminManagement() {
       ]);
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/management/demote/${id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/demote/${id}`, {
         method: "PATCH",
-        credentials: "include",
         headers: {
           'Content-Type': 'application/json',
         },
@@ -708,9 +704,8 @@ export default function AdminManagement() {
   // Add this handler at the top-level of the component
   const handleReapprove = async (adminId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/management/reapprove/${adminId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/reapprove/${adminId}`, {
         method: "PATCH",
-        credentials: "include",
       });
       const data = await res.json();
       if (res.ok) {
@@ -823,9 +818,8 @@ export default function AdminManagement() {
       setActionLoading(prev => ({ ...prev, restore: true }));
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${accountId}`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${accountId}`, {
           method: 'POST',
-          credentials: 'include'
         });
         const data = await res.json();
         if (res.ok) {
@@ -862,9 +856,8 @@ export default function AdminManagement() {
       setActionLoading(prev => ({ ...prev, purge: true }));
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${accountId}`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${accountId}`, {
           method: 'DELETE',
-          credentials: 'include'
         });
         const data = await res.json();
         if (res.ok) {
@@ -982,10 +975,9 @@ export default function AdminManagement() {
     setManagementPasswordLoading(true);
     setManagementPasswordError("");
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/management/verify-password`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/verify-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: managementPassword })
       });
       if (res.ok) {
@@ -1006,7 +998,7 @@ export default function AdminManagement() {
           toast.error("Too many incorrect attempts. You've been signed out for security.");
           dispatch(signoutUserStart());
           try {
-            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
             const signoutData = await signoutRes.json();
             if (signoutData.success === false) {
               dispatch(signoutUserFailure(signoutData.message));

@@ -96,7 +96,7 @@ export default function AdminChangePassword() {
         // Proper logout process
         dispatch(signoutUserStart());
         try {
-          const signoutRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          const signoutRes = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/signout`);
           const signoutData = await signoutRes.json();
           if (signoutData.success === false) {
             dispatch(signoutUserFailure(signoutData.message));

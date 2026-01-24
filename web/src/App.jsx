@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { verifyAuthStart, verifyAuthSuccess, verifyAuthFailure, signoutUserSuccess, updateUserSuccess } from "./redux/user/userSlice.js";
 import { persistor } from './redux/store';
 import { socket } from "./utils/socket";
+import { authenticatedFetch, isAuthenticated } from './utils/auth';
 import Header from './components/Header';
 import AdminHeader from './components/AdminHeader';
 import Private from "./components/Private";
@@ -240,7 +241,7 @@ const LoadingSpinner = () => (
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-import { isAuthenticated } from "./utils/auth";
+
 
 // Utility function to normalize route based on role
 function normalizeRoute(path, role) {
@@ -466,13 +467,8 @@ function AppRoutes({ bootstrapped }) {
       try {
         const token = localStorage.getItem('accessToken');
         const sessionId = localStorage.getItem('sessionId');
-        const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            ...(sessionId ? { 'X-Session-Id': sessionId } : {})
-          }
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify`, {
+          method: 'GET'
         });
         const data = await res.json();
         if (res.ok && data.authenticated !== false) {
@@ -541,6 +537,21 @@ function AppRoutes({ bootstrapped }) {
 
     socket.on('force_signout', handleForceSignout);
 
+    // Global socket event listener for session-specific forced logout
+    const handleForceLogoutSession = (data) => {
+      const currentSessionId = localStorage.getItem('sessionId');
+      // If the event targets this specific session
+      if (data.sessionId === currentSessionId) {
+        dispatch(signoutUserSuccess());
+        toast.error(data.reason || "Your session has expired or was revoked.");
+        setTimeout(() => {
+          navigate("/sign-in");
+        }, 1800);
+      }
+    };
+
+    socket.on('force_logout_session', handleForceLogoutSession);
+
     // Global socket event listeners for user and admin updates
     const handleUserUpdate = (data) => {
       if (data.userId === currentUser._id || data.user?._id === currentUser._id) {
@@ -589,6 +600,7 @@ function AppRoutes({ bootstrapped }) {
       clearInterval(regInterval);
       socket.off('account_suspended', handleAccountSuspended);
       socket.off('force_signout', handleForceSignout);
+      socket.off('force_logout_session', handleForceLogoutSession);
       socket.off('user_update', handleUserUpdate);
       socket.off('admin_update', handleAdminUpdate);
     };
@@ -679,9 +691,7 @@ function AppRoutes({ bootstrapped }) {
         } else {
           // For regular users, try to get a better name if available
           try {
-            const res = await fetch(`${API_BASE_URL}/api/user/check-email/${encodeURIComponent(data.comment.senderEmail)}`, {
-              credentials: 'include'
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/user/check-email/${encodeURIComponent(data.comment.senderEmail)}`);
 
             if (res.ok) {
               const userData = await res.json();
@@ -767,13 +777,7 @@ function AppRoutes({ bootstrapped }) {
       try {
         const token = localStorage.getItem('accessToken');
         const sessionId = localStorage.getItem('sessionId');
-        const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
-          credentials: 'include',
-          headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            ...(sessionId ? { 'X-Session-Id': sessionId } : {})
-          }
-        });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify`);
 
         // Handle Account Suspension (403) eagerly for security
         if (res.status === 403) {
@@ -1062,15 +1066,7 @@ export default function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const sessionId = localStorage.getItem('sessionId');
-        const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
-          credentials: 'include',
-          headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            ...(sessionId ? { 'X-Session-Id': sessionId } : {})
-          }
-        });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify`);
         const data = await res.json();
         if (data.success === false) {
           localStorage.removeItem('accessToken');

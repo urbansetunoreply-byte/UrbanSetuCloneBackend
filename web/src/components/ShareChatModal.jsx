@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { FaShareAlt, FaCopy, FaTrash, FaClock, FaCheck, FaTimes, FaGlobe, FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 
 export default function ShareChatModal({ isOpen, onClose, sessionId, currentChatName }) {
     const [loading, setLoading] = useState(false);
@@ -19,10 +20,9 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
     const fetchShareInfo = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/shared-chat/manage/${sessionId}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/shared-chat/manage/${sessionId}`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include'
+                headers: { 'Content-Type': 'application/json' }
             });
             const data = await res.json();
             if (data.success && data.sharedChat) {
@@ -42,10 +42,9 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
     const handleCreateLink = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/shared-chat/create`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/shared-chat/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({
                     sessionId,
                     title: customTitle,
@@ -71,9 +70,8 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
     const handleRevokeLink = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/shared-chat/${shareData.shareToken}`, {
-                method: 'DELETE',
-                credentials: 'include'
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/shared-chat/${shareData.shareToken}`, {
+                method: 'DELETE'
             });
             const data = await res.json();
             if (data.success) {
@@ -94,10 +92,9 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
     const handleUpdate = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/shared-chat/${shareData.shareToken}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/shared-chat/${shareData.shareToken}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({
                     title: customTitle,
                     expiresType: expiryType,

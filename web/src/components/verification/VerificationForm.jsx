@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FaUpload, FaTimes, FaSpinner, FaFile, FaCheckCircle } from 'react-icons/fa';
 import ImagePreview from '../ImagePreview';
+import { authenticatedFetch } from '../../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -70,9 +71,8 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
       const formDataObj = new FormData();
       formDataObj.append('document', file);
 
-      const res = await fetch(`${API_BASE_URL}/api/upload/document`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/document`, {
         method: 'POST',
-        credentials: 'include',
         body: formDataObj
       });
 
@@ -132,9 +132,8 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/verification/${listing._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/verification/${listing._id}`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ownershipProof: formData.ownershipProof,

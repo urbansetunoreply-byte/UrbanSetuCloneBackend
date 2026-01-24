@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { socket } from './utils/socket';
 import { toast } from 'react-toastify';
 import { signoutUserSuccess } from './redux/user/userSlice';
+import { authenticatedFetch } from './utils/auth';
 
 const WishlistContext = createContext();
 
@@ -24,9 +25,7 @@ const WishlistProvider = ({ children }) => {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/wishlist/user/${currentUser._id}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/wishlist/user/${currentUser._id}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -94,12 +93,11 @@ const WishlistProvider = ({ children }) => {
     // Emit socket event
     socket.emit('wishlist_update', { type: 'add', listing: product });
     try {
-      const response = await fetch(`${API_BASE_URL}/api/wishlist/add`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/wishlist/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ listingId: product._id }),
       });
       if (!response.ok) {
@@ -125,9 +123,8 @@ const WishlistProvider = ({ children }) => {
     // Emit socket event
     socket.emit('wishlist_update', { type: 'remove', listing: { _id: id } });
     try {
-      const response = await fetch(`${API_BASE_URL}/api/wishlist/remove/${id}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/wishlist/remove/${id}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
       if (!response.ok) {
         // Rollback

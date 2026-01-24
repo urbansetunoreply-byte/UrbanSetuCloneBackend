@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -72,7 +73,7 @@ export default function AdminAppointmentListing() {
     try {
       // --- Check for existing active appointments for this user and property ---
       const userIdToCheck = buyerId || currentUser._id;
-      const resUser = await fetch(`${API_BASE_URL}/api/bookings/user/${userIdToCheck}`, { credentials: 'include' });
+      const resUser = await authenticatedFetch(`${API_BASE_URL}/api/bookings/user/${userIdToCheck}`);
       let blockBooking = false;
       if (resUser.ok) {
         const data = await resUser.json();
@@ -109,10 +110,9 @@ export default function AdminAppointmentListing() {
         buyerEmail: buyerEmail || currentUser.email,
         buyerId: buyerId || currentUser._id
       };
-      const res = await fetch(`${API_BASE_URL}/api/bookings/admin`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/admin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
         body: JSON.stringify(payload)
       });
       const data = await res.json();
@@ -138,7 +138,7 @@ export default function AdminAppointmentListing() {
       if (!listingId) return;
       setOwnerCheckLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get/${listingId}`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get/${listingId}`);
         const data = await res.json();
         setListing(data);
       } catch (error) {
@@ -157,7 +157,7 @@ export default function AdminAppointmentListing() {
 
   const fetchAllUsers = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/user/all-users-autocomplete`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/all-users-autocomplete`);
       if (res.ok) {
         const users = await res.json();
         setAllUsers(users);

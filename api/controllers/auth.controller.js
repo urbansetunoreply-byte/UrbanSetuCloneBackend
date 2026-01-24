@@ -332,7 +332,7 @@ export const SignIn = async (req, res, next) => {
         const session = await createEnhancedSession(validUser._id, req);
 
         // Enforce role-based session limits
-        await enforceSessionLimits(validUser._id, validUser.role);
+        await enforceSessionLimits(validUser._id, validUser.role, req.app.get('io'));
 
         // Check for concurrent logins
         const concurrentInfo = detectConcurrentLogins(validUser._id, session.sessionId);
@@ -490,7 +490,7 @@ export const Google = async (req, res, next) => {
             const session = await createEnhancedSession(validUser._id, req);
 
             // Enforce role-based session limits
-            await enforceSessionLimits(validUser._id, validUser.role);
+            await enforceSessionLimits(validUser._id, validUser.role, req.app.get('io'));
 
             // Set secure cookies
             setSecureCookies(res, accessToken, refreshToken);
@@ -719,7 +719,7 @@ export const Google = async (req, res, next) => {
             const session = await createEnhancedSession(newUser._id, req);
 
             // Enforce role-based session limits
-            await enforceSessionLimits(newUser._id, newUser.role);
+            await enforceSessionLimits(newUser._id, newUser.role, req.app.get('io'));
 
             // Set secure cookies
             setSecureCookies(res, accessToken, refreshToken);

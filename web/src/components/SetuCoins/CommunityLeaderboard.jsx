@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaCoins, FaTrophy, FaFire, FaCrown, FaMedal, FaStar, FaInfoCircle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
+import { authenticatedFetch } from '../../utils/auth';
 import LeaderboardSkeleton from '../skeletons/LeaderboardSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -18,7 +19,7 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
     const fetchLeaderboard = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${API_BASE_URL}/api/coins/leaderboard?limit=${limit}`, { credentials: 'include' });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/leaderboard?limit=${limit}`);
             const data = await res.json();
             if (data.success) {
                 setLeaderboard(data.leaderboard);

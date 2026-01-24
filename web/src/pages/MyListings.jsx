@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { useDispatch } from "react-redux";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
 import MyListingsSkeleton from '../components/skeletons/MyListingsSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -50,9 +51,7 @@ export default function MyListings() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`${API_BASE_URL}/api/listing/user`, {
-          credentials: 'include'
-        });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/user`);
 
         if (res.ok) {
           const data = await res.json();
@@ -84,10 +83,9 @@ export default function MyListings() {
     setDeleteError("");
     try {
       // Verify password
-      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: deletePassword }),
       });
 
@@ -103,7 +101,7 @@ export default function MyListings() {
           toast.error("Too many incorrect attempts. You've been signed out for security.");
           dispatch(signoutUserStart());
           try {
-            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
             const signoutData = await signoutRes.json();
             if (signoutData.success === false) {
               dispatch(signoutUserFailure(signoutData.message));
@@ -131,9 +129,8 @@ export default function MyListings() {
       localStorage.removeItem('deleteListingPwAttempts');
 
       // Proceed to delete
-      const res = await fetch(`${API_BASE_URL}/api/listing/delete/${pendingDeleteId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/delete/${pendingDeleteId}`, {
         method: "DELETE",
-        credentials: 'include'
       });
       if (res.ok) {
         setListings((prev) => prev.filter((listing) => listing._id !== pendingDeleteId));

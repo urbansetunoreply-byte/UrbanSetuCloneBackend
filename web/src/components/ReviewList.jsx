@@ -6,6 +6,7 @@ import ReviewForm from './ReviewForm.jsx';
 import ReplyForm from './ReplyForm.jsx';
 import { socket } from '../utils/socket';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 import UserAvatar from './UserAvatar';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -173,7 +174,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       if (!currentUser) return;
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
         if (res.ok) {
           const updatedUser = await res.json();
           if (updatedUser.username !== currentUser.username || updatedUser.avatar !== currentUser.avatar) {
@@ -207,9 +208,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
 
   const fetchReviews = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/listing/${listingId}?sort=${sortBy}&order=${sortOrder}`, {
-        credentials: 'include',
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/listing/${listingId}?sort=${sortBy}&order=${sortOrder}`);
       const data = await res.json();
 
       if (res.ok) {
@@ -230,9 +229,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/delete/${reviewId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/delete/${reviewId}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
 
       const data = await res.json();
@@ -257,12 +255,11 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/admin/remove/${reviewToRemove._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/admin/remove/${reviewToRemove._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           reason: removalReason,
           note: removalNote
@@ -295,9 +292,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
     if (!reviewToDelete) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/delete/${reviewToDelete._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/delete/${reviewToDelete._id}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
 
       const data = await res.json();
@@ -323,9 +319,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
     if (!replyToDelete) return;
     setReplyDeleteLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/reply/${replyToDelete._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/reply/${replyToDelete._id}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok) {
@@ -382,9 +377,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       })
     );
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/helpful/${reviewId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/helpful/${reviewId}`, {
         method: 'POST',
-        credentials: 'include',
       });
       // No need to update state here; socket event will sync final state
     } catch (error) {
@@ -400,10 +394,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
     setResponseLoading((prev) => ({ ...prev, [reviewId]: true }));
     setResponseError((prev) => ({ ...prev, [reviewId]: '' }));
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/respond/${reviewId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/respond/${reviewId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ ownerResponse: responseEdit[reviewId] }),
       });
       const data = await res.json();
@@ -485,7 +478,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
 
   const fetchReplies = async (reviewId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/reply/${reviewId}`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/reply/${reviewId}`);
       if (res.ok) {
         const data = await res.json();
         setReplies(prev => ({ ...prev, [reviewId]: data }));
@@ -565,10 +558,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
           }
         }
       }
-      const res = await fetch(`${API_BASE_URL}/api/review/reply/like/${replyId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/reply/like/${replyId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ action: actualAction }),
       });
       // No need to call fetchReplies here; socket will update UI
@@ -608,9 +600,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
           return review;
         })
       );
-      const res = await fetch(`${API_BASE_URL}/api/review/dislike/${reviewId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/dislike/${reviewId}`, {
         method: 'POST',
-        credentials: 'include',
       });
       // No need to update state here; socket event will sync final state
     } catch (error) {
@@ -624,10 +615,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
 
   const handleUpdateReply = async () => {
     if (!editingReply || !editingReply.comment.trim()) return;
-    await fetch(`${API_BASE_URL}/api/review/reply/${editingReply._id}`, {
+    await authenticatedFetch(`${API_BASE_URL}/api/review/reply/${editingReply._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ comment: editingReply.comment }),
     });
     setEditingReply(null);
@@ -650,9 +640,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
 
   const handleDeleteOwnerResponse = async (reviewId) => {
     if (!window.confirm('Delete owner response?')) return;
-    await fetch(`${API_BASE_URL}/api/review/respond/${reviewId}`, {
+    await authenticatedFetch(`${API_BASE_URL}/api/review/respond/${reviewId}`, {
       method: 'DELETE',
-      credentials: 'include',
     });
     setEditingOwnerResponse(false);
   };
@@ -693,10 +682,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       })
     );
     try {
-      await fetch(`${API_BASE_URL}/api/review/respond/like/${reviewId}`, {
+      await authenticatedFetch(`${API_BASE_URL}/api/review/respond/like/${reviewId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ action }),
       });
     } catch { }
@@ -724,10 +712,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
     }
     setReportLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/report/${reportingReview._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/report/${reportingReview._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           category: reportCategory,
           reason: (reportReason || '').trim()

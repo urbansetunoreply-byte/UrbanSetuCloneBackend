@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaThumbsUp, FaThumbsDown, FaChevronLeft, FaCalendarAlt } from 'react-icons/fa';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import { authenticatedFetch } from '../../utils/auth';
 
 const ArticleView = () => {
     const { slug } = useParams();
@@ -18,7 +19,7 @@ const ArticleView = () => {
         const fetchArticle = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${API_BASE_URL}/api/help/article/${slug}`);
+                const res = await authenticatedFetch(`${API_BASE_URL}/api/help/article/${slug}`);
                 const data = await res.json();
 
                 if (!res.ok) throw new Error(data.message || 'Article not found');
@@ -47,11 +48,10 @@ const ArticleView = () => {
         setVoteStatus(newStatus);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/help/${article._id}/vote`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/help/${article._id}/vote`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}` // Ensure auth header
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ type })
             });

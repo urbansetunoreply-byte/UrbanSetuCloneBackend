@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { FaLeaf, FaUsers, FaShieldAlt, FaChartLine, FaArrowUp, FaTrendingDown, FaStar, FaGlobe, FaRecycle, FaSolarPanel, FaWater, FaTrash, FaAccessibleIcon, FaHeart, FaBuilding, FaGavel, FaEye, FaInfoCircle } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminESGAnalytics() {
     usePageTitle("ESG Analytics - Admin Dashboard");
-    
+
     const { currentUser } = useSelector((state) => state.user);
     const [esgAnalytics, setEsgAnalytics] = useState({
         totalProperties: 0,
@@ -30,10 +31,8 @@ export default function AdminESGAnalytics() {
     const fetchESGAnalytics = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/api/analytics/esg?timeframe=${selectedTimeframe}`, {
-                credentials: 'include'
-            });
-            
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/analytics/esg?timeframe=${selectedTimeframe}`);
+
             if (response.ok) {
                 const data = await response.json();
                 setEsgAnalytics(data);

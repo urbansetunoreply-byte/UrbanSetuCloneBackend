@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaSearch, FaMapMarkerAlt, FaHome, FaRupeeSign } from 'react-icons/fa';
+import { authenticatedFetch } from '../utils/auth';
 
 const SearchSuggestions = ({
   searchTerm,
@@ -25,7 +26,7 @@ const SearchSuggestions = ({
 
       setLoading(true);
       try {
-        const response = await fetch(
+        const response = await authenticatedFetch(
           `${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(searchTerm)}&limit=8`
         );
         const data = await response.json();

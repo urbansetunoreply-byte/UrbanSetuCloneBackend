@@ -832,9 +832,7 @@ export default function AdminAppointments() {
 
       // 2. Fallback to API fetch
       try {
-        const response = await fetch(`${API_BASE_URL}/api/bookings/${chatIdFromUrl}`, {
-          credentials: 'include'
-        });
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${chatIdFromUrl}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -1719,9 +1717,7 @@ export default function AdminAppointments() {
       params.append('sortBy', filters.sortBy);
       params.append('sortOrder', filters.sortOrder);
 
-      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`);
       const data = await res.json();
       if (data?.success) setAdminReports(data.reports || []);
       else setAdminReportsError(data?.message || 'Failed to load reports');
@@ -2591,7 +2587,7 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   React.useEffect(() => {
     async function fetchPayment() {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, { credentials: 'include' });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`);
         const data = await res.json();
         if (res.ok && Array.isArray(data.payments) && data.payments.length > 0) {
           setPayment(data.payments[0]);
@@ -2628,26 +2624,24 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
     setShowStatusOptions(false);
     try {
       if (newStatus) {
-        const res = await fetch(`${API_BASE_URL}/api/payments/admin/mark-paid`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/payments/admin/mark-paid`, {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appointmentId })
         });
         if (res.ok) {
-          const hist = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, { credentials: 'include' });
+          const hist = await authenticatedFetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`);
           const data = await hist.json();
           if (hist.ok && Array.isArray(data.payments)) setPayment(data.payments[0] || null);
         }
       } else {
-        const res = await fetch(`${API_BASE_URL}/api/payments/admin/mark-unpaid`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/payments/admin/mark-unpaid`, {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appointmentId })
         });
         if (res.ok) {
-          const hist = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, { credentials: 'include' });
+          const hist = await authenticatedFetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`);
           const data = await hist.json();
           if (hist.ok && Array.isArray(data.payments)) setPayment(data.payments[0] || null);
         }
@@ -2956,9 +2950,7 @@ function AdminAppointmentRow({
       params.append('sortBy', filters.sortBy);
       params.append('sortOrder', filters.sortOrder);
 
-      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/reports?${params.toString()}`);
       const data = await res.json();
       if (data?.success) setReports(data.reports || []);
       else setReportsError(data?.message || 'Failed to load reports');
@@ -3000,7 +2992,7 @@ function AdminAppointmentRow({
   const fetchReportedMessageIds = useCallback(async (appointmentId) => {
     if (!appointmentId) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/reports/message-ids?appointmentId=${appointmentId}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/reports/message-ids?appointmentId=${appointmentId}`);
       const data = await res.json();
       if (data?.success) setReportedMessageIds(data.messageIds || []);
     } catch (_) { }
@@ -3009,7 +3001,7 @@ function AdminAppointmentRow({
   // Fetch report details for a specific message
   const fetchReportDetails = useCallback(async (messageId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications/reports?messageId=${messageId}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/notifications/reports?messageId=${messageId}`);
       const data = await res.json();
       if (data?.success && data.reports && data.reports.length > 0) {
         return data.reports[0]; // Return the first (most recent) report
@@ -3112,9 +3104,7 @@ function AdminAppointmentRow({
   const fetchLatestActiveCall = React.useCallback(async () => {
     if (!appt?._id) return null;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/calls/history/${appt._id}`);
       if (!response.ok) return null;
       const data = await response.json();
       if (Array.isArray(data.calls)) {
@@ -3147,9 +3137,8 @@ function AdminAppointmentRow({
 
       // Send email notifications to both buyer and seller
       try {
-        const emailResponse = await fetch(`${API_BASE_URL}/api/calls/admin/terminate-notification`, {
+        const emailResponse = await authenticatedFetch(`${API_BASE_URL}/api/calls/admin/terminate-notification`, {
           method: 'POST',
-          credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
           },
@@ -4218,9 +4207,7 @@ function AdminAppointmentRow({
 
     const fetchCallHistory = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
-          credentials: 'include'
-        });
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/calls/history/${appt._id}`);
 
         if (response.ok) {
           const data = await response.json();
@@ -4243,9 +4230,7 @@ function AdminAppointmentRow({
     const fetchCallHistory = async () => {
       if (!appt?._id) return;
       try {
-        const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
-          credentials: 'include'
-        });
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/calls/history/${appt._id}`);
 
         if (response.ok) {
           const data = await response.json();
@@ -4707,7 +4692,7 @@ function AdminAppointmentRow({
     if (!hasMentionTrigger || propertiesLoaded) return;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=300`, { credentials: 'include' });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=300`);
         const data = await res.json();
         const mapped = Array.isArray(data) ? data.map(l => ({
           id: l._id,
@@ -4859,7 +4844,7 @@ function AdminAppointmentRow({
 
       // Try to fetch the image to handle CORS and get proper blob
       try {
-        const response = await fetch(imageUrl, {
+        const response = await authenticatedFetch(imageUrl, {
           mode: 'cors',
           cache: 'no-cache'
         });
@@ -7006,7 +6991,7 @@ function AdminAppointmentRow({
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          const response = await authenticatedFetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
@@ -7044,7 +7029,7 @@ function AdminAppointmentRow({
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                          const response = await authenticatedFetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
@@ -7119,7 +7104,7 @@ function AdminAppointmentRow({
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          const response = await authenticatedFetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
@@ -7157,7 +7142,7 @@ function AdminAppointmentRow({
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                          const response = await authenticatedFetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
@@ -8012,7 +7997,7 @@ function AdminAppointmentRow({
                                             className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                             onClick={async () => {
                                               try {
-                                                const response = await fetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                                const response = await authenticatedFetch(selectedMessageForHeaderOptions && selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                 const blob = await response.blob();
                                                 const blobUrl = window.URL.createObjectURL(blob);
@@ -8199,7 +8184,7 @@ function AdminAppointmentRow({
                                                   onClick={async (e) => {
                                                     e.stopPropagation();
                                                     try {
-                                                      const response = await fetch(c && c.audioUrl ? c.audioUrl : '', { mode: 'cors' });
+                                                      const response = await authenticatedFetch(c && c.audioUrl ? c.audioUrl : '', { mode: 'cors' });
                                                       if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                       const blob = await response.blob();
                                                       const blobUrl = window.URL.createObjectURL(blob);
@@ -8524,7 +8509,7 @@ function AdminAppointmentRow({
                                             onClick={async (e) => {
                                               e.stopPropagation();
                                               try {
-                                                const response = await fetch(c && c.documentUrl ? c.documentUrl : '', { mode: 'cors' });
+                                                const response = await authenticatedFetch(c && c.documentUrl ? c.documentUrl : '', { mode: 'cors' });
                                                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                 const blob = await response.blob();
                                                 const blobUrl = window.URL.createObjectURL(blob);
@@ -10783,7 +10768,7 @@ function AdminAppointmentRow({
                                               onClick={async (e) => {
                                                 e.stopPropagation();
                                                 try {
-                                                  const response = await fetch(message.documentUrl, { mode: 'cors' });
+                                                  const response = await authenticatedFetch(message.documentUrl, { mode: 'cors' });
                                                   if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                   const blob = await response.blob();
                                                   const blobUrl = window.URL.createObjectURL(blob);

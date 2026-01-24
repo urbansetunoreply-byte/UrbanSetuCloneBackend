@@ -6,6 +6,7 @@ import { persistor } from '../redux/store';
 import { reconnectSocket } from '../utils/socket';
 import { socket } from '../utils/socket';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 
 export const useSignout = () => {
   const dispatch = useDispatch();
@@ -24,7 +25,7 @@ export const useSignout = () => {
 
     try {
       dispatch(signoutUserStart());
-      const res = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
       const data = await res.json();
 
       if (data.success === false) {

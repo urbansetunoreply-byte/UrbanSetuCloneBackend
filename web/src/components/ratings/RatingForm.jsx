@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FaStar, FaSpinner, FaCheckCircle } from 'react-icons/fa';
+import { authenticatedFetch } from '../../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -75,9 +76,8 @@ export default function RatingForm({ contract, role, currentUser, onSuccess, onC
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/ratings/${contract._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/ratings/${contract._id}`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ratings,

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { EmojiButton } from './EmojiPicker';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -37,10 +38,9 @@ export default function ReplyForm({ reviewId, onReplyAdded }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/api/review/reply/${reviewId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/reply/${reviewId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ comment }),
       });
       const data = await res.json();

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { toast } from 'react-toastify';
 import AdminRequestsSkeleton from '../components/skeletons/AdminRequestsSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -36,12 +37,7 @@ const AdminRequests = () => {
   const fetchAllRequests = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/admin/all-requests`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/all-requests`);
       const data = await res.json();
 
       if (!res.ok) {
@@ -58,12 +54,11 @@ const AdminRequests = () => {
 
   const handleApprove = async (userId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/approve/${userId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/approve/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           currentUserId: currentUser._id,
           rootAdminPassword: 'Salendra@2004' // Root admin password
@@ -92,12 +87,11 @@ const AdminRequests = () => {
 
   const handleReject = async (userId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/reject/${userId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/reject/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           currentUserId: currentUser._id,
           rootAdminPassword: 'Salendra@2004' // Root admin password
@@ -126,12 +120,11 @@ const AdminRequests = () => {
 
   const handleReapprove = async (userId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/reapprove/${userId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/reapprove/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           currentUserId: currentUser._id,
           rootAdminPassword: 'Salendra@2004' // Root admin password

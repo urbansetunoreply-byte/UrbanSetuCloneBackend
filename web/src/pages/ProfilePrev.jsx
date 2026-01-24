@@ -225,7 +225,7 @@ const AnimatedCounter = ({ end, duration = 1000, delay = 0 }) => {
       }, 50);
       return () => clearInterval(counter);
     }, delay);
-    
+
     return () => clearTimeout(timer);
   }, [end, duration, delay]);
 
@@ -256,7 +256,7 @@ export default function Profile() {
   });
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [admins, setAdmins] = useState([]);
-  
+
   // Refs for OTP input fields auto-focus
   const deleteOtpRef = useRef(null);
   const transferOtpRef = useRef(null);
@@ -312,7 +312,7 @@ export default function Profile() {
   const [showUpdatePasswordModal, setShowUpdatePasswordModal] = useState(false);
   const [updatePassword, setUpdatePassword] = useState("");
   const [updatePasswordError, setUpdatePasswordError] = useState("");
-  
+
   // Lock body scroll when profile modals are open (delete/transfer flows)
   useEffect(() => {
     const shouldLock = showPasswordModal || showTransferPasswordModal || showTransferModal || showAdminModal;
@@ -361,7 +361,7 @@ export default function Profile() {
       transferDeleteOtpRef.current.focus();
     }
   }, [transferOtpSent]);
-  
+
   // Real-time validation states
   const [emailValidation, setEmailValidation] = useState({ loading: false, message: "", available: null });
   const [mobileValidation, setMobileValidation] = useState({ loading: false, message: "", available: null });
@@ -369,7 +369,7 @@ export default function Profile() {
   const [mobileDebounceTimer, setMobileDebounceTimer] = useState(null);
   const [originalEmail, setOriginalEmail] = useState("");
   const [originalMobile, setOriginalMobile] = useState("");
-  
+
   // Email verification OTP states
   const [emailVerified, setEmailVerified] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -378,14 +378,14 @@ export default function Profile() {
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [emailEditMode, setEmailEditMode] = useState(false);
-  
+
   // OTP field ref for focus
   const otpInputRef = useRef(null);
-  
+
   // Timer states for resend OTP
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
-  
+
   // Profile email OTP reCAPTCHA states
   const [profileRecaptchaToken, setProfileRecaptchaToken] = useState(null);
   const [profileRecaptchaError, setProfileRecaptchaError] = useState("");
@@ -393,11 +393,11 @@ export default function Profile() {
   const [profileRequiresCaptcha, setProfileRequiresCaptcha] = useState(false);
   const [profileRecaptchaKey, setProfileRecaptchaKey] = useState(0);
   const profileRecaptchaRef = useRef(null);
-  
+
   // Animation states
   const [isVisible, setIsVisible] = useState(false);
   const [statsAnimated, setStatsAnimated] = useState(false);
-  
+
   const navigate = useNavigate();
 
   // Hide My Appointments button in admin context
@@ -409,10 +409,10 @@ export default function Profile() {
     const style = document.createElement('style');
     style.textContent = customAnimations;
     document.head.appendChild(style);
-    
+
     // Trigger visibility for animations
     const timer = setTimeout(() => setIsVisible(true), 100);
-    
+
     return () => {
       document.head.removeChild(style);
       clearTimeout(timer);
@@ -459,7 +459,7 @@ export default function Profile() {
   const fetchWatchlistCount = async () => {
     if (!currentUser?._id) return 0;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`);
       if (res.ok) {
         const data = await res.json();
         return data.length || 0;
@@ -601,33 +601,33 @@ export default function Profile() {
       setEmailValidation({ loading: true, message: "", available: null });
       const res = await authenticatedFetch(`${API_BASE_URL}/api/user/check-email/${encodeURIComponent(email.trim())}`);
       const data = await res.json();
-      
+
       if (data.available === false) {
         // Email already exists
-        setEmailValidation({ 
-          loading: false, 
-          message: "Email already exists. Please use a different one.", 
-          available: false 
+        setEmailValidation({
+          loading: false,
+          message: "Email already exists. Please use a different one.",
+          available: false
         });
         setEmailVerified(false);
         setOtpSent(false);
         setOtp("");
       } else {
         // Email is available, show blue tick and send OTP option
-        setEmailValidation({ 
-          loading: false, 
-          message: "Email is available. Click 'Send OTP' to verify.", 
-          available: true 
+        setEmailValidation({
+          loading: false,
+          message: "Email is available. Click 'Send OTP' to verify.",
+          available: true
         });
         setEmailVerified(false);
         setOtpSent(false);
         setOtp("");
       }
     } catch (error) {
-      setEmailValidation({ 
-        loading: false, 
-        message: "Error checking email availability", 
-        available: false 
+      setEmailValidation({
+        loading: false,
+        message: "Error checking email availability",
+        available: false
       });
       setEmailVerified(false);
       setOtpSent(false);
@@ -655,16 +655,16 @@ export default function Profile() {
       setMobileValidation({ loading: true, message: "", available: null });
       const res = await authenticatedFetch(`${API_BASE_URL}/api/user/check-mobile/${encodeURIComponent(mobile.trim())}`);
       const data = await res.json();
-      setMobileValidation({ 
-        loading: false, 
-        message: data.message, 
-        available: data.available 
+      setMobileValidation({
+        loading: false,
+        message: data.message,
+        available: data.available
       });
     } catch (error) {
-      setMobileValidation({ 
-        loading: false, 
-        message: "Error checking mobile availability", 
-        available: false 
+      setMobileValidation({
+        loading: false,
+        message: "Error checking mobile availability",
+        available: false
       });
     }
   };
@@ -740,7 +740,7 @@ export default function Profile() {
 
     try {
       const requestBody = { email: formData.email };
-      
+
       // Include reCAPTCHA token if required
       if (profileRequiresCaptcha && profileRecaptchaToken) {
         requestBody.recaptchaToken = profileRecaptchaToken;
@@ -756,25 +756,25 @@ export default function Profile() {
       if (data.success) {
         setOtpSent(true);
         toast.success("OTP sent successfully to your email");
-        
+
         // Update validation message to show OTP sent status
-        setEmailValidation({ 
-          loading: false, 
-           
-          available: true 
+        setEmailValidation({
+          loading: false,
+
+          available: true
         });
-        
+
         // Reset reCAPTCHA after successful OTP send
         if (profileRequiresCaptcha) {
           resetProfileRecaptcha();
           setShowProfileRecaptcha(false);
           setProfileRequiresCaptcha(false);
         }
-        
+
         // Start timer for resend
         setResendTimer(30); // 30 seconds
         setCanResend(false);
-        
+
         // Focus on OTP field after a short delay
         setTimeout(() => {
           if (otpInputRef.current) {
@@ -789,8 +789,8 @@ export default function Profile() {
           setProfileRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
           // Avoid duplicate messaging in OTP error area
           setOtpError("");
-      } else {
-        setOtpError(data.message);
+        } else {
+          setOtpError(data.message);
         }
       }
     } catch (error) {
@@ -813,9 +813,9 @@ export default function Profile() {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: formData.email,
-          otp: otp 
+          otp: otp
         }),
       });
 
@@ -828,10 +828,10 @@ export default function Profile() {
         setOtp("");
         setEmailEditMode(false); // Make field uneditable after verification
         // Update validation message to show verification success
-        setEmailValidation({ 
-          loading: false, 
-          message: "Email verified successfully!", 
-          available: true 
+        setEmailValidation({
+          loading: false,
+          message: "Email verified successfully!",
+          available: true
         });
       } else {
         // Handle reCAPTCHA requirements
@@ -841,8 +841,8 @@ export default function Profile() {
           setProfileRecaptchaError("reCAPTCHA verification is required due to multiple failed attempts or requests");
           // Avoid duplicate messaging in OTP error area
           setOtpError("");
-      } else {
-        setOtpError(data.message);
+        } else {
+          setOtpError(data.message);
         }
       }
     } catch (error) {
@@ -856,24 +856,24 @@ export default function Profile() {
   const handleChangeWithValidation = (e) => {
     const { id } = e.target;
     let { value } = e.target;
-    
+
     // Ensure only digits for mobile number field
     if (id === 'mobileNumber') {
       value = value.replace(/[^0-9]/g, '');
     }
-    
+
     setFormData({
       ...formData,
       [id]: value,
     });
-    
+
     // Clear existing errors
     if (id === 'email') {
       setEmailError("");
     } else if (id === 'mobileNumber') {
       setMobileError("");
     }
-    
+
     // Trigger validation
     if (id === 'email') {
       // If email is changed while in edit mode, reset verification state
@@ -895,36 +895,36 @@ export default function Profile() {
     setUpdateSuccess(false);
     setEmailError("");
     setMobileError("");
-    
+
     // Check if email is provided
     if (!formData.email || !formData.email.trim()) {
       setEmailError("Please provide valid email id");
       return;
     }
-    
+
     // Check validation status
     if (emailValidation.available === false) {
       setEmailError("Email already exists. Please use a different one.");
       return;
     }
-    
+
     if (mobileValidation.available === false) {
       setMobileError("Mobile number already exists. Please use a different one.");
       return;
     }
-    
+
     // Validate mobile number format
     if (!formData.mobileNumber || !/^[0-9]{10}$/.test(formData.mobileNumber)) {
       setMobileError("Please provide a valid 10-digit mobile number");
       return;
     }
-    
+
     // Check if email needs verification (only if email changed)
     if (formData.email !== originalEmail && !emailVerified) {
       setEmailError("Please verify your new email with OTP before saving.");
       return;
     }
-    
+
     // Show password modal for confirmation
     localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
     setUpdatePassword("");
@@ -938,7 +938,7 @@ export default function Profile() {
       setUpdatePasswordError("Password is required");
       return;
     }
-    
+
     setLoading(true);
     try {
       // Step 1: Verify password first
@@ -946,16 +946,16 @@ export default function Profile() {
         method: 'POST',
         body: JSON.stringify({ password: updatePassword })
       });
-      
+
       if (!verifyRes.ok) {
         // Password verification failed
         const previousAttempts = parseInt(localStorage.getItem(PROFILE_PASSWORD_ATTEMPT_KEY) || '0');
         const nextAttempts = previousAttempts + 1;
         localStorage.setItem(PROFILE_PASSWORD_ATTEMPT_KEY, String(nextAttempts));
-        
+
         setLoading(false);
         setUpdatePassword("");
-        
+
         if (nextAttempts >= 3) {
           // Too many attempts - sign out
           localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY);
@@ -963,7 +963,7 @@ export default function Profile() {
           toast.error("Too many incorrect password attempts. You've been signed out for security.");
           dispatch(signoutUserStart());
           try {
-            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+            const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
             const signoutData = await signoutRes.json();
             if (signoutData.success === false) {
               dispatch(signoutUserFailure(signoutData.message));
@@ -989,11 +989,11 @@ export default function Profile() {
         }
         return;
       }
-      
+
       // Step 2: Password verified - proceed with profile update
       dispatch(updateUserStart());
       const apiUrl = `${API_BASE_URL}/api/user/update/${currentUser._id}`;
-      const options = createAuthenticatedFetchOptions({
+      const res = await authenticatedFetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1004,7 +1004,6 @@ export default function Profile() {
           password: updatePassword,
         }),
       });
-      const res = await fetch(apiUrl, options);
       const data = await res.json();
 
       // Handle backend validation responses
@@ -1052,9 +1051,9 @@ export default function Profile() {
         if (data.updatedUser.mobileNumber && data.updatedUser.mobileNumber !== originalMobile) {
           setOriginalMobile(data.updatedUser.mobileNumber);
         }
-        
+
         // Emit socket event to notify other users about profile update
-        
+
         // Add acknowledgment callback to see if event is sent successfully
         socket.emit('profileUpdated', {
           userId: updatedUser._id,
@@ -1063,7 +1062,7 @@ export default function Profile() {
           mobileNumber: updatedUser.mobileNumber,
           email: updatedUser.email
         });
-        
+
         setUpdateSuccess(true);
         setIsEditing(false);
         setLoading(false);
@@ -1119,12 +1118,12 @@ export default function Profile() {
     if (!deletePassword) { setDeleteError('Password is required'); return; }
     // Step 1: verify password
     setDeleteVerifying(true);
-    const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, { method:'POST', body: JSON.stringify({ password: deletePassword }) });
+    const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, { method: 'POST', body: JSON.stringify({ password: deletePassword }) });
     if (!res.ok) {
       setShowPasswordModal(false);
       toast.error("For security reasons, you've been signed out automatically.");
       dispatch(signoutUserStart());
-      const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+      const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
       const signoutData = await signoutRes.json();
       if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
       navigate('/sign-in', { replace: true });
@@ -1144,7 +1143,7 @@ export default function Profile() {
     setDeleteOtpSent(false);
     try {
       setDeleteProcessing(true);
-      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email }) });
       const sendData = await sendRes.json();
       if (!sendRes.ok || sendData.success === false) {
         setDeleteError(sendData.message || 'Failed to send OTP');
@@ -1161,7 +1160,7 @@ export default function Profile() {
   const resendDeleteOtp = async () => {
     try {
       setDeleteResending(true);
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email }) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -1175,7 +1174,7 @@ export default function Profile() {
     if (!deleteOtp || deleteOtp.length !== 6) { setDeleteOtpError('Enter 6-digit OTP'); return; }
     try {
       setDeleteDeleting(true);
-      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'account_deletion') {
         const att = deleteOtpAttempts + 1; setDeleteOtpAttempts(att);
@@ -1184,7 +1183,7 @@ export default function Profile() {
           setShowPasswordModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
           dispatch(signoutUserStart());
-          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+          const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           const signoutData = await signoutRes.json();
           if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
           navigate('/sign-in', { replace: true });
@@ -1196,7 +1195,7 @@ export default function Profile() {
       // OTP verified -> proceed to delete
       const apiUrl = `${API_BASE_URL}/api/user/delete/${currentUser._id}`;
       const payload = { password: deletePassword, reason: deleteReason === 'other' ? 'other' : deleteReason, otherReason: deleteReason === 'other' ? deleteOtherReason : undefined };
-      const options = { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload), credentials:'include' };
+      const options = { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' };
       const res = await authenticatedFetch(apiUrl, options);
       const data = await res.json();
       if (!res.ok) { setDeleteError(data.message || 'Account deletion failed'); setDeleteDeleting(false); return; }
@@ -1214,11 +1213,9 @@ export default function Profile() {
   const fetchAdmins = async () => {
     try {
       setLoadingAdmins(true);
-      const res = await fetch(`${API_BASE_URL}/api/user/approved-admins/${currentUser._id}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/approved-admins/${currentUser._id}`);
       const data = await res.json();
-      
+
       if (res.ok) {
         setAdmins(data);
       } else {
@@ -1266,7 +1263,7 @@ export default function Profile() {
       if (!verifyRes.ok) {
         setShowTransferPasswordModal(false);
         toast.error("For security reasons, you've been signed out automatically.");
-        await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+        await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
         navigate('/sign-in', { replace: true });
         return;
       }
@@ -1296,7 +1293,7 @@ export default function Profile() {
     try {
       setTransferResending(true);
       setTransferDeleteResending(true);
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email }) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -1311,7 +1308,7 @@ export default function Profile() {
     if (!transferOtp || transferOtp.length !== 6) { setTransferOtpError('Enter 6-digit OTP'); return; }
     try {
       setTransferDeleteDeleting(true);
-      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
         const att = transferOtpAttempts + 1; setTransferOtpAttempts(att);
@@ -1319,25 +1316,23 @@ export default function Profile() {
         if (att >= 5) {
           setShowTransferPasswordModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
-          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+          await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           navigate('/sign-in', { replace: true });
         }
         setTransferDeleteDeleting(false);
         return;
       }
       // OTP verified -> transfer rights then delete
-      const transferRes = await fetch(`${API_BASE_URL}/api/user/transfer-default-admin`, {
+      const transferRes = await authenticatedFetch(`${API_BASE_URL}/api/user/transfer-default-admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ currentAdminId: currentUser._id, newDefaultAdminId: selectedAdmin })
       });
       const transferData = await transferRes.json();
       if (!transferRes.ok) { setTransferOtpError(transferData.message || 'Failed to transfer default admin rights'); return; }
-      const deleteRes = await fetch(`${API_BASE_URL}/api/user/delete/${currentUser._id}`, {
+      const deleteRes = await authenticatedFetch(`${API_BASE_URL}/api/user/delete/${currentUser._id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: transferDeletePassword })
       });
       const deleteData = await deleteRes.json();
@@ -1391,7 +1386,7 @@ export default function Profile() {
   const fetchTransferAdmins = async () => {
     try {
       setLoadingAdmins(true);
-      const res = await fetch(`${API_BASE_URL}/api/admin/management/admins`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/admins`);
       const data = await res.json();
       if (res.ok) {
         setTransferAdmins(data.filter(a => a.role === 'admin' || a.role === 'rootadmin'));
@@ -1444,7 +1439,7 @@ export default function Profile() {
       if (!verifyRes.ok) {
         setShowTransferModal(false);
         toast.error("For security reasons, you've been signed out automatically.");
-        await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+        await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
         navigate('/sign-in', { replace: true });
         return;
       }
@@ -1479,7 +1474,7 @@ export default function Profile() {
     }
     try {
       setTransferTransferring(true);
-      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
         const att = transferOtpAttempts + 1; setTransferOtpAttempts(att);
@@ -1487,17 +1482,16 @@ export default function Profile() {
         if (att >= 5) {
           setShowTransferModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
-          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+          await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           navigate('/sign-in', { replace: true });
         }
         setTransferTransferring(false);
         return;
       }
       // OTP verified -> transfer rights
-      const res = await fetch(`${API_BASE_URL}/api/admin/transfer-rights`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/transfer-rights`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ targetAdminId: selectedTransferAdmin, password: transferPassword })
       });
       const data = await res.json();
@@ -1526,7 +1520,7 @@ export default function Profile() {
         gender: currentUser.gender || '',
         avatar: currentUser.avatar || "",
       });
-      
+
       // Trigger validation for current values
       if (currentUser.email) {
         validateEmail(currentUser.email);
@@ -1543,7 +1537,7 @@ export default function Profile() {
       if (currentUser && currentUser._id) {
         try {
 
-          const res = await fetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
+          const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
           if (res.ok) {
             const user = await res.json();
 
@@ -1619,9 +1613,8 @@ export default function Profile() {
       const uploadFormData = new FormData();
       uploadFormData.append('image', file);
 
-      const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
-        credentials: 'include',
         body: uploadFormData,
       });
 
@@ -1680,9 +1673,9 @@ export default function Profile() {
             <div className="flex flex-col sm:flex-row items-center sm:space-x-6 w-full text-center sm:text-left mb-4 md:mb-0">
               <div className={`relative flex-shrink-0 mx-auto sm:mx-0 group ${isVisible ? animationClasses.scaleIn + ' animation-delay-150' : 'opacity-0 scale-95'}`}>
                 <div className="transform transition-all duration-300 group-hover:scale-110">
-                  <UserAvatar 
-                    user={currentUser} 
-                    size="h-24 w-24" 
+                  <UserAvatar
+                    user={currentUser}
+                    size="h-24 w-24"
                     textSize="text-2xl"
                   />
                 </div>
@@ -1744,7 +1737,7 @@ export default function Profile() {
                       <div className="min-w-0 flex-1">
                         <p className="text-xs text-gray-500 font-medium mb-1">Mobile</p>
                         <p className="text-gray-700 text-sm">
-                          {currentUser.mobileNumber && currentUser.mobileNumber !== "0000000000" 
+                          {currentUser.mobileNumber && currentUser.mobileNumber !== "0000000000"
                             ? `+91 ${currentUser.mobileNumber.slice(0, 5)} ${currentUser.mobileNumber.slice(5)}`
                             : "Not provided"
                           }
@@ -1801,10 +1794,10 @@ export default function Profile() {
               <button
                 onClick={() => setIsEditing(!isEditing)}
                 className={`bg-gradient-to-r from-blue-500 to-purple-500 text-white px-5 sm:px-4 py-4 sm:py-2 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 hover:rotate-1 shadow-lg font-semibold flex items-center gap-2 sm:gap-2 text-base sm:text-sm w-full sm:w-auto justify-center group ${isVisible ? animationClasses.fadeInRight + ' animation-delay-450' : 'opacity-0 translate-x-8'}`}
-               >
-                 <FaEdit className={`w-5 h-5 transition-transform duration-300 ${isEditing ? 'rotate-180' : ''} group-hover:${animationClasses.wiggle}`} />
-                 {isEditing ? 'Cancel Edit' : 'Edit Profile'}
-               </button>
+              >
+                <FaEdit className={`w-5 h-5 transition-transform duration-300 ${isEditing ? 'rotate-180' : ''} group-hover:${animationClasses.wiggle}`} />
+                {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+              </button>
             </div>
           </div>
         </div>
@@ -1821,9 +1814,9 @@ export default function Profile() {
             <form onSubmit={onSubmitForm} className="space-y-6">
               <div className="flex flex-col items-center mb-6">
                 <div className="mb-2">
-                  <UserAvatar 
-                    user={{ ...currentUser, avatar: formData.avatar }} 
-                    size="w-24 h-24" 
+                  <UserAvatar
+                    user={{ ...currentUser, avatar: formData.avatar }}
+                    size="w-24 h-24"
                     textSize="text-2xl"
                   />
                 </div>
@@ -1831,24 +1824,24 @@ export default function Profile() {
                   <>
                     <div className="flex flex-wrap gap-2 justify-center mt-2">
                       {defaultAvatars.map((url, idx) => (
-                        <button 
-                          key={url} 
-                          type="button" 
-                          onClick={() => setFormData({ ...formData, avatar: url })} 
+                        <button
+                          key={url}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, avatar: url })}
                           className={`w-12 h-12 rounded-full border-2 transition-all duration-300 transform hover:scale-110 hover:shadow-lg ${formData.avatar === url ? 'border-blue-500 shadow-lg scale-105' : 'border-gray-300 hover:border-blue-400'} focus:outline-none focus:ring-2 focus:ring-blue-400 ${animationClasses.bounceIn} animation-delay-${idx * 50}`}
                         >
-                          <img 
-                            src={url} 
-                            alt={`Avatar ${idx+1}`} 
-                            className="w-full h-full rounded-full object-cover transition-all duration-300 hover:brightness-110" 
+                          <img
+                            src={url}
+                            alt={`Avatar ${idx + 1}`}
+                            className="w-full h-full rounded-full object-cover transition-all duration-300 hover:brightness-110"
                           />
                         </button>
                       ))}
                       <label className={`w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-100 hover:bg-gray-200 transition-all duration-300 transform hover:scale-110 hover:shadow-lg hover:border-blue-400 group ${animationClasses.bounceIn} animation-delay-${defaultAvatars.length * 50} ${uploadingAvatar ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
                           onChange={handleAvatarUpload}
                           disabled={uploadingAvatar}
                         />
@@ -1858,9 +1851,9 @@ export default function Profile() {
                           <FaEdit className={`text-gray-500 group-hover:text-blue-500 transition-colors duration-300 group-hover:${animationClasses.wiggle}`} title="Upload custom avatar" />
                         )}
                       </label>
-                      <button 
-                        type="button" 
-                        onClick={() => setFormData({ ...formData, avatar: "" })} 
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, avatar: "" })}
                         className={`w-12 h-12 rounded-full border-2 border-red-400 flex items-center justify-center bg-red-50 hover:bg-red-100 transition-all duration-300 transform hover:scale-110 hover:shadow-lg hover:border-red-500 group ${animationClasses.bounceIn} animation-delay-${(defaultAvatars.length + 1) * 50}`}
                       >
                         <FaTrash className={`text-red-500 group-hover:text-red-600 transition-colors duration-300 group-hover:${animationClasses.wiggle}`} />
@@ -1942,10 +1935,9 @@ export default function Profile() {
                             const url = buildDicebearUrl();
                             setFormData({ ...formData, avatar: url });
                             try {
-                              const res = await fetch(`${API_BASE_URL}/api/user/${currentUser._id}`, {
+                              const res = await authenticatedFetch(`${API_BASE_URL}/api/user/${currentUser._id}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
-                                credentials: 'include',
                                 body: JSON.stringify({ avatar: url }),
                               });
                               const data = await res.json();
@@ -1980,24 +1972,24 @@ export default function Profile() {
                     <FaUser className="w-4 h-4 mr-2" />
                     Username
                   </label>
-            <div className="relative">
-              <input
-                type="text"
-                id="username"
-                placeholder="Enter username"
-                value={formData.username || ''}
-                onChange={handleChangeWithValidation}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-12"
-              />
-              {/* Show green tick for username (always accepted) */}
-              {formData.username && formData.username.trim() && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 z-20">
-                  <FaCheck className="text-xl" />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="username"
+                      placeholder="Enter username"
+                      value={formData.username || ''}
+                      onChange={handleChangeWithValidation}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-12"
+                    />
+                    {/* Show green tick for username (always accepted) */}
+                    {formData.username && formData.username.trim() && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 z-20">
+                        <FaCheck className="text-xl" />
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-                </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <FaEnvelope className="w-4 h-4 mr-2" />
@@ -2012,15 +2004,14 @@ export default function Profile() {
                       onChange={handleChangeWithValidation}
                       readOnly={!emailEditMode || (emailEditMode && otpSent) || otpLoading}
                       disabled={otpLoading}
-                      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
-                        !emailEditMode || (emailEditMode && otpSent) || otpLoading
-                          ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-20'
-                          : emailValidation.available === false 
+                      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${!emailEditMode || (emailEditMode && otpSent) || otpLoading
+                        ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-20'
+                        : emailValidation.available === false
                           ? 'border-red-500 focus:ring-red-500 pr-12'
-                          : emailValidation.available === true 
-                          ? 'border-green-500 focus:ring-green-500 pr-12'
-                          : 'border-gray-300 focus:ring-blue-500 pr-12'
-                      }`}
+                          : emailValidation.available === true
+                            ? 'border-green-500 focus:ring-green-500 pr-12'
+                            : 'border-gray-300 focus:ring-blue-500 pr-12'
+                        }`}
                     />
                     {emailValidation.loading && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -2120,7 +2111,7 @@ export default function Profile() {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Show reCAPTCHA below email when OTP field is closed and captcha required */}
                   {showProfileRecaptcha && emailValidation.available === true && !emailValidation.loading && !otpSent && !emailVerified && formData.email !== originalEmail && emailEditMode && (
                     <div className="mt-3">
@@ -2141,14 +2132,14 @@ export default function Profile() {
                   {otpError && !otpSent && (
                     <p className="text-red-500 text-sm mt-2">{otpError}</p>
                   )}
-                  
+
                   {/* OTP sent message */}
                   {otpSent && !emailVerified && (
                     <p className="text-sm text-gray-600 mt-2">
                       OTP sent to {formData.email}
                     </p>
                   )}
-                  
+
                   {/* OTP Verification Field */}
                   {otpSent && !emailVerified && (
                     <div className="mt-3">
@@ -2177,9 +2168,8 @@ export default function Profile() {
                               }
                             }
                           }}
-                          className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base ${
-                            verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
-                          }`}
+                          className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                            }`}
                           maxLength="6"
                         />
                         <button
@@ -2234,20 +2224,19 @@ export default function Profile() {
                       )}
                     </div>
                   )}
-                  
+
                   {emailError && (
                     <div className="text-red-600 text-sm mt-1">{emailError}</div>
                   )}
                   {emailValidation.message && !emailError && (
-                    <div className={`text-sm mt-1 ${
-                      emailValidation.available === true ? 'text-green-600' : 
+                    <div className={`text-sm mt-1 ${emailValidation.available === true ? 'text-green-600' :
                       emailValidation.available === false ? 'text-red-600' : 'text-gray-600'
-                    }`}>
+                      }`}>
                       {emailValidation.message}
                     </div>
                   )}
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <FaPhone className="w-4 h-4 mr-2" />
@@ -2262,13 +2251,12 @@ export default function Profile() {
                       onChange={handleChangeWithValidation}
                       pattern="[0-9]{10}"
                       maxLength="10"
-                      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
-                        mobileValidation.available === false 
-                          ? 'border-red-500 focus:ring-red-500' 
-                          : mobileValidation.available === true 
-                          ? 'border-green-500 focus:ring-green-500' 
+                      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${mobileValidation.available === false
+                        ? 'border-red-500 focus:ring-red-500'
+                        : mobileValidation.available === true
+                          ? 'border-green-500 focus:ring-green-500'
                           : 'border-gray-300 focus:ring-blue-500'
-                      }`}
+                        }`}
                     />
                     {mobileValidation.loading && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -2293,15 +2281,14 @@ export default function Profile() {
                     <div className="text-red-600 text-sm mt-1">{mobileError}</div>
                   )}
                   {mobileValidation.message && !mobileError && (
-                    <div className={`text-sm mt-1 ${
-                      mobileValidation.available === true ? 'text-green-600' : 
+                    <div className={`text-sm mt-1 ${mobileValidation.available === true ? 'text-green-600' :
                       mobileValidation.available === false ? 'text-red-600' : 'text-gray-600'
-                    }`}>
+                      }`}>
                       {mobileValidation.message}
                     </div>
                   )}
                 </div>
-                
+
                 <div>
                   <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <FaUser className="w-4 h-4 mr-2" />
@@ -2328,7 +2315,7 @@ export default function Profile() {
                     )}
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <FaHome className="w-4 h-4 mr-2" />
@@ -2352,7 +2339,7 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-end space-x-4">
                 <button
                   type="button"
@@ -2372,20 +2359,19 @@ export default function Profile() {
                 </button>
                 <button
                   type="submit"
-                  className={`bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 ${
-                    loading || 
-                    emailValidation.loading || 
-                    mobileValidation.loading || 
-                    emailValidation.available === false || 
+                  className={`bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 ${loading ||
+                    emailValidation.loading ||
+                    mobileValidation.loading ||
+                    emailValidation.available === false ||
                     mobileValidation.available === false ||
                     (formData.email !== originalEmail && !emailVerified)
-                      ? 'opacity-60 cursor-not-allowed transform-none' : ''
-                  }`}
+                    ? 'opacity-60 cursor-not-allowed transform-none' : ''
+                    }`}
                   disabled={
-                    loading || 
-                    emailValidation.loading || 
-                    mobileValidation.loading || 
-                    emailValidation.available === false || 
+                    loading ||
+                    emailValidation.loading ||
+                    mobileValidation.loading ||
+                    emailValidation.available === false ||
                     mobileValidation.available === false ||
                     (formData.email !== originalEmail && !emailVerified)
                   }
@@ -2447,15 +2433,15 @@ export default function Profile() {
             </p>
           </div>
           {!isAdmin && (
-          <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
-              <FaEye className="w-5 h-5 text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
+            <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
+              <div className={`bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+                <FaEye className="w-5 h-5 text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 group-hover:text-purple-600 transition-colors duration-300">
+                {statsAnimated ? <AnimatedCounter end={userStats.watchlist} delay={950} /> : userStats.watchlist}
+              </h3>
+              <p className="text-sm text-gray-600 group-hover:text-purple-500 transition-colors duration-300">Watchlist Items</p>
             </div>
-            <h3 className="text-xl font-bold text-gray-800 group-hover:text-purple-600 transition-colors duration-300">
-              {statsAnimated ? <AnimatedCounter end={userStats.watchlist} delay={950} /> : userStats.watchlist}
-            </h3>
-            <p className="text-sm text-gray-600 group-hover:text-purple-500 transition-colors duration-300">Watchlist Items</p>
-          </div>
           )}
         </div>
 
@@ -2474,7 +2460,7 @@ export default function Profile() {
               <FaHome className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
               <span className="font-medium text-xs sm:text-sm">My Listings</span>
             </button>
-            
+
             <Link
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/appointments" : "/user/my-appointments"}
               className={`bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-600`}
@@ -2482,7 +2468,7 @@ export default function Profile() {
               <FaCalendarAlt className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
               <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Appointments' : 'My Appointments'}</span>
             </Link>
-            
+
             {!(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <Link
                 to="/user/wishlist"
@@ -2492,7 +2478,7 @@ export default function Profile() {
                 <span className="font-medium text-xs sm:text-sm">My Wishlist</span>
               </Link>
             )}
-            
+
             {!(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <Link
                 to="/user/watchlist"
@@ -2505,15 +2491,15 @@ export default function Profile() {
 
             {/* About link for quick actions */}
             {!(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
-            <Link
-              to="/about"
-              className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-850`}
-            >
-              <FaInfoCircle className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
-              <span className="font-medium text-xs sm:text-sm">About</span>
-            </Link>
+              <Link
+                to="/about"
+                className={`bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-850`}
+              >
+                <FaInfoCircle className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
+                <span className="font-medium text-xs sm:text-sm">About</span>
+              </Link>
             )}
-            
+
             <Link
               to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/reviews" : "/user/reviews"}
               className={`bg-yellow-500 text-white p-3 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-900`}
@@ -2521,7 +2507,7 @@ export default function Profile() {
               <FaStar className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:scale-110`} />
               <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Reviews' : 'My Reviews'}</span>
             </Link>
-            
+
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? (
               <>
                 <Link
@@ -2585,7 +2571,7 @@ export default function Profile() {
                 >
                   <FaTools className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Services</span>
-                </Link> 
+                </Link>
                 <Link
                   to="/user/investment-tools"
                   className={`bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1000`}
@@ -2633,7 +2619,7 @@ export default function Profile() {
               Account Management
             </span>
           </h2>
-          
+
           <div className="space-y-4">
             <button
               onClick={() => navigate((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/change-password' : '/user/change-password')}
@@ -2642,7 +2628,7 @@ export default function Profile() {
               <FaKey className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
               Change Password
             </button>
-            
+
             {/* Device Management for all users */}
             <button
               onClick={() => navigate((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/device-management' : '/user/device-management')}
@@ -2694,7 +2680,7 @@ export default function Profile() {
                 <span className="group-hover:animate-pulse">Audit Logs</span>
               </button>
             )}
-              
+
             {currentUser.isDefaultAdmin && (
               <button
                 onClick={onShowTransferModal}
@@ -2704,7 +2690,7 @@ export default function Profile() {
                 Transfer Rights
               </button>
             )}
-            
+
             {/* Note for default admin about account deletion */}
             {currentUser.isDefaultAdmin && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -2722,7 +2708,7 @@ export default function Profile() {
                 </div>
               </div>
             )}
-              
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 onClick={onHandleSignout}
@@ -2731,7 +2717,7 @@ export default function Profile() {
                 <FaSignOutAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:-translate-x-1`} />
                 Sign Out
               </button>
-              
+
               <button
                 onClick={onHandleDelete}
                 className={`bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp} animation-delay-1800`}
@@ -2761,12 +2747,12 @@ export default function Profile() {
                   <FaTimes className="w-5 h-5" />
                 </button>
               </div>
-              
+
               <div className="mb-4">
                 <p className="text-gray-600 mb-4">
                   As the default admin, you must select another approved admin to transfer your default admin rights before deleting your account.
                 </p>
-                
+
                 {loadingAdmins ? (
                   <div className="flex justify-center py-4">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -2796,7 +2782,7 @@ export default function Profile() {
                   </div>
                 )}
               </div>
-              
+
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => {
@@ -2887,12 +2873,12 @@ export default function Profile() {
                         type="text"
                         maxLength="6"
                         value={deleteOtp}
-                        onChange={e=> setDeleteOtp(e.target.value.replace(/[^0-9]/g,''))}
+                        onChange={e => setDeleteOtp(e.target.value.replace(/[^0-9]/g, ''))}
                         className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${deleteResending || deleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         placeholder="6-digit OTP"
                         disabled={deleteResending || deleteDeleting}
                       />
-                      <button type="button" disabled={deleteOtpLoading || !deleteCanResend || deleteResendTimer>0 || deleteResending || deleteDeleting} onClick={async()=>{ if(deleteResendTimer>0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if(ok){ setDeleteCanResend(false); setDeleteResendTimer(30);} }} className="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start">{deleteResending ? 'Sending...' : (deleteResendTimer>0?`Resend in ${deleteResendTimer}s`:'Resend OTP')}</button>
+                      <button type="button" disabled={deleteOtpLoading || !deleteCanResend || deleteResendTimer > 0 || deleteResending || deleteDeleting} onClick={async () => { if (deleteResendTimer > 0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if (ok) { setDeleteCanResend(false); setDeleteResendTimer(30); } }} className="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start">{deleteResending ? 'Sending...' : (deleteResendTimer > 0 ? `Resend in ${deleteResendTimer}s` : 'Resend OTP')}</button>
                     </div>
                     {deleteOtpError && <div className="text-red-600 text-sm mt-1">{deleteOtpError}</div>}
                     <div className="text-green-600 text-sm mt-2 flex items-center">
@@ -2906,13 +2892,13 @@ export default function Profile() {
                 <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                   <button
                     type="button"
-                    onClick={() => { 
-                      setShowPasswordModal(false); 
-                      setDeletePassword(""); 
-                      setDeleteError(""); 
-                      setDeleteReasonOpen(false); 
-                      setDeleteReason(""); 
-                      setDeleteOtherReason(""); 
+                    onClick={() => {
+                      setShowPasswordModal(false);
+                      setDeletePassword("");
+                      setDeleteError("");
+                      setDeleteReasonOpen(false);
+                      setDeleteReason("");
+                      setDeleteOtherReason("");
                       setDeleteOtpSent(false);
                       setDeleteOtp("");
                       setDeleteOtpError("");
@@ -2957,8 +2943,8 @@ export default function Profile() {
                   <div className="mt-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
                     <div className="flex gap-2">
-                      <input ref={transferDeleteOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeleteResending || transferDeleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferDeleteResending || transferDeleteDeleting} />
-                      <button type="button" disabled={!transferCanResend || transferResendTimer>0 || transferDeleteResending || transferDeleteDeleting} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferDeleteResending ? 'Sending...' : (transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP')}</button>
+                      <input ref={transferDeleteOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e => setTransferOtp(e.target.value.replace(/[^0-9]/g, ''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeleteResending || transferDeleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferDeleteResending || transferDeleteDeleting} />
+                      <button type="button" disabled={!transferCanResend || transferResendTimer > 0 || transferDeleteResending || transferDeleteDeleting} onClick={async () => { if (transferResendTimer > 0) return; const ok = await resendTransferOtp(); if (ok) { setTransferCanResend(false); setTransferResendTimer(30); } }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferDeleteResending ? 'Sending...' : (transferResendTimer > 0 ? `Resend in ${transferResendTimer}s` : 'Resend OTP')}</button>
                     </div>
                     {transferOtpError && <div className="text-red-600 text-sm mt-1">{transferOtpError}</div>}
                     <div className="text-green-600 text-sm mt-2 flex items-center">
@@ -2972,10 +2958,10 @@ export default function Profile() {
                 <div className="flex justify-end space-x-3">
                   <button
                     type="button"
-                    onClick={() => { 
-                      setShowTransferPasswordModal(false); 
-                      setTransferDeletePassword(""); 
-                      setTransferDeleteError(""); 
+                    onClick={() => {
+                      setShowTransferPasswordModal(false);
+                      setTransferDeletePassword("");
+                      setTransferDeleteError("");
                       setTransferOtpSent(false);
                       setTransferOtp("");
                       setTransferOtpError("");
@@ -3112,8 +3098,8 @@ export default function Profile() {
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
                       <div className="flex gap-2">
-                        <input ref={transferRightsOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${transferResending || transferTransferring ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferResending || transferTransferring} />
-                        <button type="button" disabled={!transferCanResend || transferResendTimer>0 || transferResending || transferTransferring} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResending ? 'Sending...' : (transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP')}</button>
+                        <input ref={transferRightsOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e => setTransferOtp(e.target.value.replace(/[^0-9]/g, ''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${transferResending || transferTransferring ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferResending || transferTransferring} />
+                        <button type="button" disabled={!transferCanResend || transferResendTimer > 0 || transferResending || transferTransferring} onClick={async () => { if (transferResendTimer > 0) return; const ok = await resendTransferOtp(); if (ok) { setTransferCanResend(false); setTransferResendTimer(30); } }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResending ? 'Sending...' : (transferResendTimer > 0 ? `Resend in ${transferResendTimer}s` : 'Resend OTP')}</button>
                       </div>
                       {transferError && <div className="text-red-600 text-sm mt-2">{transferError}</div>}
                       <div className="text-green-600 text-sm mt-2 flex items-center">

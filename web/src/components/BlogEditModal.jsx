@@ -3,6 +3,9 @@ import { FaTimes, FaImage, FaVideo, FaTags, FaPencilAlt, FaPlus, FaCloudUploadAl
 import { toast } from 'react-toastify';
 import ImagePreview from './ImagePreview';
 import VideoPreview from './VideoPreview';
+import { authenticatedFetch } from '../utils/auth';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
 const BlogEditModal = ({
   isOpen,
@@ -76,10 +79,9 @@ const BlogEditModal = ({
       const bodyFormData = new FormData();
       bodyFormData.append(type === 'image' ? 'image' : 'video', file);
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com'}/api/upload/${type}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/upload/${type}`, {
         method: 'POST',
-        body: bodyFormData,
-        credentials: 'include'
+        body: bodyFormData
       });
 
       if (!response.ok) throw new Error('Upload failed');
@@ -159,10 +161,9 @@ const BlogEditModal = ({
     try {
       const bodyFormData = new FormData();
       bodyFormData.append('image', file);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com'}/api/upload/image`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
-        body: bodyFormData,
-        credentials: 'include'
+        body: bodyFormData
       });
       if (!response.ok) throw new Error('Failed to upload thumbnail');
       const data = await response.json();

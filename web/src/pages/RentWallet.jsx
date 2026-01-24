@@ -8,6 +8,7 @@ import PaymentSchedule from '../components/rental/PaymentSchedule';
 import AutoDebitSettings from '../components/rental/AutoDebitSettings';
 import RentPaymentHistory from '../components/rental/RentPaymentHistory';
 import RentWalletSkeleton from '../components/skeletons/RentWalletSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -50,9 +51,7 @@ export default function RentWallet() {
       }
 
       // Fetch wallet
-      const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`, {
-        credentials: 'include'
-      });
+      const walletRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`);
 
       if (!walletRes.ok) {
         throw new Error("Failed to fetch wallet");
@@ -64,9 +63,7 @@ export default function RentWallet() {
       }
 
       // Fetch contract
-      const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
-        credentials: 'include'
-      });
+      const contractRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`);
 
       if (contractRes.ok) {
         const contractData = await contractRes.json();

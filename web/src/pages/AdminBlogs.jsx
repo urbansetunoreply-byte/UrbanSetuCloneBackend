@@ -11,6 +11,7 @@ import {
 import BlogEditModal from '../components/BlogEditModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 
 const AdminBlogs = () => {
   // Set page title
@@ -132,9 +133,7 @@ const AdminBlogs = () => {
       if (filterStatus === 'draft') params.append('published', 'false');
       if (filterStatus === 'all') params.append('published', 'all');
 
-      const response = await fetch(`${API_BASE_URL}/api/blogs?${params}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?${params}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -156,9 +155,7 @@ const AdminBlogs = () => {
         limit: 5
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/blogs?${params}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?${params}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -171,9 +168,7 @@ const AdminBlogs = () => {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/listing/get?limit=1000&type=all&offer=false&furnished=false&parking=false`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=1000&type=all&offer=false&furnished=false&parking=false`);
       if (response.ok) {
         const data = await response.json();
         setProperties(Array.isArray(data) ? data : []);
@@ -185,7 +180,7 @@ const AdminBlogs = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/categories`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/categories`);
       if (response.ok) {
         const data = await response.json();
         setCategories(data.data);
@@ -238,12 +233,11 @@ const AdminBlogs = () => {
 
       const method = editingBlog ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await authenticatedFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({
           ...formData,
           propertyId: formData.propertyId || null
@@ -272,9 +266,8 @@ const AdminBlogs = () => {
   const confirmDelete = async () => {
     if (!blogToDelete) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blogToDelete}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blogToDelete}`, {
         method: 'DELETE',
-        credentials: 'include'
       });
 
       if (response.ok) {
@@ -298,12 +291,11 @@ const AdminBlogs = () => {
 
   const togglePublish = async (blog) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({
           published: !blog.published
         })

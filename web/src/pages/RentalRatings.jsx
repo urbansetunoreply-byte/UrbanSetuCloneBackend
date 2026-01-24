@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import RatingForm from '../components/ratings/RatingForm';
 import RatingDisplay from '../components/ratings/RatingDisplay';
 import UserRentalRatingsSkeleton from '../components/skeletons/UserRentalRatingsSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -82,18 +83,14 @@ export default function RentalRatings() {
   const fetchContractById = async (contractId, role) => {
     try {
       // Try fetching by _id first (MongoDB ObjectId format)
-      let res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
-        credentials: 'include'
-      });
+      let res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`);
 
       let data = await res.json();
 
       // If not found, try with contractId field instead
       if (!res.ok || !data.success || !data.contract) {
         // The endpoint should handle both _id and contractId, but let's also try the contractId field format
-        const contracts = await fetch(`${API_BASE_URL}/api/rental/contracts?status=active,expired`, {
-          credentials: 'include'
-        });
+        const contracts = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts?status=active,expired`);
         const contractsData = await contracts.json();
 
         if (contractsData.success && contractsData.contracts) {
@@ -133,9 +130,7 @@ export default function RentalRatings() {
         setLoading(true);
       }
       // Fetch all ratings, apply filters client-side
-      const res = await fetch(`${API_BASE_URL}/api/rental/ratings`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/ratings`);
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -155,9 +150,7 @@ export default function RentalRatings() {
 
   const fetchContracts = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts?status=active,expired`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts?status=active,expired`);
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -176,9 +169,7 @@ export default function RentalRatings() {
 
   const handleViewRating = async (contract) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/ratings/${contract._id}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/ratings/${contract._id}`);
 
       const data = await res.json();
       if (res.ok && data.success) {

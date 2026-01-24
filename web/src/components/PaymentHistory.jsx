@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaDollarSign, FaDownload, FaEye, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 
 const PaymentHistory = ({ userId }) => {
   const [payments, setPayments] = useState([]);
@@ -25,9 +26,7 @@ const PaymentHistory = ({ userId }) => {
         ...filters
       });
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${queryParams}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${queryParams}`);
 
       const data = await response.json();
       if (response.ok) {
@@ -89,7 +88,7 @@ const PaymentHistory = ({ userId }) => {
     }
     (async () => {
       try {
-        const res = await fetch(receiptUrl, { credentials: 'include' });
+        const res = await authenticatedFetch(receiptUrl);
         if (!res.ok) {
           toast.error('Failed to download receipt');
           return;
@@ -169,9 +168,9 @@ const PaymentHistory = ({ userId }) => {
         <div className="space-y-4">
           {payments.map((payment) => (
             <div key={payment._id} className={`border dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow ${payment.status === 'completed' ? 'border-green-200 dark:border-green-800 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20' :
-                payment.status === 'failed' ? 'border-red-200 dark:border-red-800 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20' :
-                  payment.status === 'refunded' || payment.status === 'partially_refunded' ? 'border-blue-200 dark:border-blue-800 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20' :
-                    'border-yellow-200 dark:border-yellow-800 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20'
+              payment.status === 'failed' ? 'border-red-200 dark:border-red-800 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20' :
+                payment.status === 'refunded' || payment.status === 'partially_refunded' ? 'border-blue-200 dark:border-blue-800 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20' :
+                  'border-yellow-200 dark:border-yellow-800 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20'
               }`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">

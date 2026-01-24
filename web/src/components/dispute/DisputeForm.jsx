@@ -7,6 +7,7 @@ import ImagePreview from '../ImagePreview';
 import VideoPreview from '../VideoPreview';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { authenticatedFetch } from '../../utils/auth';
 
 const DISPUTE_CATEGORIES = [
   { value: 'payment_issue', label: 'Payment Issue' },
@@ -50,9 +51,7 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
 
   const fetchContracts = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts?status=active`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts?status=active`);
       const data = await res.json();
       if (res.ok && data.success) {
         setContracts(data.contracts || []);
@@ -71,7 +70,7 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
     try {
       if (!docUrl) return;
 
-      const response = await fetch(docUrl, { mode: 'cors' });
+      const response = await authenticatedFetch(docUrl, { mode: 'cors' });
       if (!response.ok) throw new Error('Failed to fetch document');
 
       const contentType = response.headers.get('content-type') || '';
@@ -142,9 +141,8 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
           endpoint = '/api/upload/document';
         }
 
-        const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}${endpoint}`, {
           method: 'POST',
-          credentials: 'include',
           body: formData
         });
 
@@ -201,9 +199,8 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes/${formData.contractId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/disputes/${formData.contractId}`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           category: formData.category,

@@ -24,7 +24,7 @@ const AgentDashboard = () => {
             const data = await res.json();
             if (res.ok && data.isAgent) {
                 // Now fetch full profile details
-                const profileRes = await fetch(`${API_BASE_URL}/api/agent/profile/${data.agentId}`);
+                const profileRes = await authenticatedFetch(`${API_BASE_URL}/api/agent/profile/${data.agentId}`);
                 const profileData = await profileRes.json();
                 setAgentProfile(profileData);
             }

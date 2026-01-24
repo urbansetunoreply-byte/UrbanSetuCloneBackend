@@ -8,6 +8,7 @@ import ContractPreview from '../components/rental/ContractPreview';
 import DigitalSignature from '../components/rental/DigitalSignature';
 import UserRentalContractsSkeleton from '../components/skeletons/UserRentalContractsSkeleton';
 import axios from 'axios';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://urbansetu.vercel.app';
@@ -86,9 +87,7 @@ export default function RentalContracts() {
         setLoading(true);
       }
       // Fetch all contracts, apply filters client-side
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts`);
 
       const data = await res.json();
       if (res.ok && data.contracts) {
@@ -114,9 +113,7 @@ export default function RentalContracts() {
 
   const handleDownload = async (contract) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rental/contracts/${contract.contractId || contract._id}/download`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contract.contractId || contract._id}/download`);
 
       if (!response.ok) {
         throw new Error('Failed to download contract');
@@ -194,10 +191,9 @@ export default function RentalContracts() {
         throw new Error("Contract ID not found. Please refresh and try again.");
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}/sign`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractId}/sign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           signatureData: signatureData
         })

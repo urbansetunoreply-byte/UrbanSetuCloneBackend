@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaGlobe, FaHome, FaEye, FaEyeSlash, FaTimes, FaExternalLinkAlt, FaThumbsUp, FaThumbsDown, FaQuestionCircle } from 'react-icons/fa';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -46,9 +47,7 @@ const AdminFAQs = () => {
   // Check authentication status
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify`);
 
       if (response.ok) {
         setAuthWarning(false);
@@ -149,9 +148,7 @@ const AdminFAQs = () => {
       if (filterType === 'property') params.append('propertyId', 'exists');
       if (filterCategory !== 'all') params.append('category', filterCategory);
 
-      const response = await fetch(`${API_BASE_URL}/api/faqs?${params}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs?${params}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -167,9 +164,7 @@ const AdminFAQs = () => {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/listing/get?limit=1000&type=all&offer=false&furnished=false&parking=false`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=1000&type=all&offer=false&furnished=false&parking=false`);
       if (response.ok) {
         const data = await response.json();
         setProperties(Array.isArray(data) ? data : []);
@@ -188,9 +183,7 @@ const AdminFAQs = () => {
         limit: 5
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/faqs?${params}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs?${params}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -203,7 +196,7 @@ const AdminFAQs = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/faqs/categories`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/categories`);
       if (response.ok) {
         const data = await response.json();
         setCategories(data.data);
@@ -264,12 +257,11 @@ const AdminFAQs = () => {
         isGlobal: !formData.propertyId // Ensure isGlobal is correct based on propertyId
       };
 
-      const response = await fetch(url, {
+      const response = await authenticatedFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify(requestBody)
       });
 
@@ -295,9 +287,8 @@ const AdminFAQs = () => {
     if (!deleteModal.id) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/faqs/${deleteModal.id}`, {
-        method: 'DELETE',
-        credentials: 'include'
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${deleteModal.id}`, {
+        method: 'DELETE'
       });
 
       if (response.ok) {
@@ -319,12 +310,11 @@ const AdminFAQs = () => {
 
   const toggleActive = async (faq) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/faqs/${faq._id}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${faq._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({
           isActive: !faq.isActive
         })

@@ -17,6 +17,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import SocialSharePanel from '../components/SocialSharePanel';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 
 const PublicBlogDetail = () => {
   // Set page title
@@ -68,7 +69,7 @@ const PublicBlogDetail = () => {
   const fetchBlog = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${slug}`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${slug}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -90,7 +91,7 @@ const PublicBlogDetail = () => {
   const fetchRelatedBlogs = async (category, currentBlogId) => {
     try {
       // Fetch more items to ensure we have enough to randomize
-      const response = await fetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=10`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=10`);
       if (response.ok) {
         const data = await response.json();
         // Filter out current blog
@@ -112,9 +113,7 @@ const PublicBlogDetail = () => {
   const checkAuthStatus = async () => {
     try {
       if (blog) {
-        const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`, {
-          credentials: 'include'
-        });
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`);
         if (response.ok) {
           const data = await response.json();
           setLiked(data.data.isLiked);
@@ -130,9 +129,7 @@ const PublicBlogDetail = () => {
 
   const checkLikeStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`);
 
       if (response.ok) {
         const data = await response.json();
@@ -152,9 +149,8 @@ const PublicBlogDetail = () => {
 
     setLikeLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like`, {
-        method: 'POST',
-        credentials: 'include'
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like`, {
+        method: 'POST'
       });
 
       if (response.ok) {
@@ -196,12 +192,11 @@ const PublicBlogDetail = () => {
     if (!comment.trim()) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({ content: comment })
       });
 
@@ -234,9 +229,8 @@ const PublicBlogDetail = () => {
       isDestructive: true,
       onConfirm: async () => {
         try {
-          const res = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
-            method: 'DELETE',
-            credentials: 'include'
+          const res = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
+            method: 'DELETE'
           });
           if (res.ok) {
             setComments(prev => prev.filter(c => c._id !== commentId));
@@ -265,10 +259,9 @@ const PublicBlogDetail = () => {
   const handleUpdateComment = async (commentId) => {
     if (!editContent.trim()) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ content: editContent })
       });
       if (res.ok) {

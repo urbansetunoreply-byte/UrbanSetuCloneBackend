@@ -8,6 +8,7 @@ import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
 import PayMonthlyRentSkeleton from '../components/skeletons/PayMonthlyRentSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -41,7 +42,7 @@ export default function PayMonthlyRent() {
   useEffect(() => {
     if (currentUser) {
       // Fetch coin balance
-      fetch(`${API_BASE_URL}/api/coins/balance`, { credentials: 'include' })
+      authenticatedFetch(`${API_BASE_URL}/api/coins/balance`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -73,9 +74,7 @@ export default function PayMonthlyRent() {
       setPageLoading(true);
 
       // Fetch contract
-      const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
-        credentials: 'include'
-      });
+      const contractRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`);
 
       if (!contractRes.ok) {
         throw new Error("Failed to fetch contract");
@@ -102,9 +101,7 @@ export default function PayMonthlyRent() {
 
       // Fetch wallet - try to fetch regardless of walletId field
       // The API endpoint uses contractId to find the wallet
-      const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`, {
-        credentials: 'include'
-      });
+      const walletRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`);
 
       if (!walletRes.ok) {
         toast.error("Wallet not found for this contract.");
@@ -147,9 +144,7 @@ export default function PayMonthlyRent() {
 
       // Fetch booking for payment modal
       if (contractObj.bookingId) {
-        const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${contractObj.bookingId._id || contractObj.bookingId}`, {
-          credentials: 'include'
-        });
+        const bookingRes = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${contractObj.bookingId._id || contractObj.bookingId}`);
         if (bookingRes.ok) {
           const bookingData = await bookingRes.json();
           setBooking(bookingData.booking || bookingData);
@@ -223,9 +218,7 @@ export default function PayMonthlyRent() {
     // Refetch wallet silently to get the latest status before initiating payment
     try {
       // Don't set global loading yet to avoid UI flicker if already paid
-      const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contract._id}`, {
-        credentials: 'include'
-      });
+      const walletRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/wallet/${contract._id}`);
 
       if (walletRes.ok) {
         const walletData = await walletRes.json();
@@ -267,10 +260,9 @@ export default function PayMonthlyRent() {
       setCreatingPayment(true);
 
       // Create monthly rent payment via API
-      const res = await fetch(`${API_BASE_URL}/api/payments/monthly-rent`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/payments/monthly-rent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           contractId: contract._id,
           walletId: wallet._id,

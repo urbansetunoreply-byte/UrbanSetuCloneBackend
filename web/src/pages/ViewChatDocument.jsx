@@ -4,6 +4,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { FaSpinner, FaDownload, FaArrowLeft, FaFilePdf, FaImage, FaFileAlt, FaLock } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -77,7 +78,7 @@ export default function ViewChatDocument() {
             // Fetch blob for PDF or Text to view safely
             if (derivedType === 'pdf' || derivedType === 'text') {
                 setLoading(true);
-                fetch(url, { mode: 'cors' })
+                authenticatedFetch(url, { mode: 'cors' })
                     .then(r => r.blob())
                     .then(blob => {
                         // Force correct MIME type for PDF, otherwise trust blob for text
@@ -145,7 +146,7 @@ export default function ViewChatDocument() {
             // For other files, direct open/download
             // Use fetch to trigger download to avoid browser opening it in tab if possible
             try {
-                const response = await fetch(docUrl, { mode: 'cors' });
+                const response = await authenticatedFetch(docUrl, { mode: 'cors' });
                 const blob = await response.blob();
                 const blobUrl = window.URL.createObjectURL(blob);
                 const link = window.document.createElement('a');

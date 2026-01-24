@@ -9,6 +9,7 @@ import { socket } from '../utils/socket.js';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaFire, FaArrowDown, FaArrowUp, FaExclamationTriangle, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX } from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Watchlist() {
@@ -46,7 +47,7 @@ export default function Watchlist() {
   const fetchWatchlist = async () => {
     if (!currentUser?._id) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`);
       if (res.ok) {
         const data = await res.json();
         setWatchlistItems(data);
@@ -165,7 +166,7 @@ export default function Watchlist() {
 
   const handleRemove = async (listingId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/watchlist/remove/${listingId}`, { method: 'DELETE', credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/remove/${listingId}`, { method: 'DELETE' });
       if (res.ok) {
         setItems(prev => prev.filter(l => l._id !== listingId));
         setWatchlistItems(prev => prev.filter(w => (w.listingId?.['_id'] || w.listingIdRaw) !== listingId));
@@ -179,9 +180,7 @@ export default function Watchlist() {
     if (!q) return;
     setSearching(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(q)}&limit=20`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(q)}&limit=20`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -208,9 +207,7 @@ export default function Watchlist() {
 
     setSuggestionLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(q)}&limit=5`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(q)}&limit=5`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -241,10 +238,9 @@ export default function Watchlist() {
 
   const addToWatchlist = async (listing) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/watchlist/add`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ listingId: listing._id })
       });
       if (res.ok) {
@@ -292,9 +288,8 @@ export default function Watchlist() {
 
     try {
       const promises = selectedItems.map(listingId =>
-        fetch(`${API_BASE_URL}/api/watchlist/remove/${listingId}`, {
+        authenticatedFetch(`${API_BASE_URL}/api/watchlist/remove/${listingId}`, {
           method: 'DELETE',
-          credentials: 'include'
         })
       );
 

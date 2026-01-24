@@ -14,6 +14,7 @@ import { toast } from 'react-toastify';
 import html2canvas from 'html2canvas';
 import SocialSharePanel from '../components/SocialSharePanel';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -40,7 +41,7 @@ const YearInReview = ({ isAdmin = false }) => {
                     ? `${API_BASE_URL}/api/year-in-review/admin/${year}`
                     : `${API_BASE_URL}/api/year-in-review/user/${year}`;
 
-                const res = await fetch(endpoint, { credentials: 'include' });
+                const res = await authenticatedFetch(endpoint);
                 const json = await res.json();
 
                 if (res.ok) {
@@ -354,11 +355,10 @@ const YearInReview = ({ isAdmin = false }) => {
 
             const base64Image = canvas.toDataURL('image/png');
 
-            const res = await fetch(`${API_BASE_URL}/api/year-in-review/upload`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/year-in-review/upload`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image: base64Image, year }),
-                credentials: 'include'
             });
 
             const json = await res.json();

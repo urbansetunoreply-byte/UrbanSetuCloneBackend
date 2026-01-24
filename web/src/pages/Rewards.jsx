@@ -13,6 +13,7 @@ import CommunityLeaderboard from '../components/SetuCoins/CommunityLeaderboard';
 import SocialSharePanel from '../components/SocialSharePanel';
 import { getCoinValue, COIN_CONFIG } from '../utils/coinUtils';
 import RewardsSkeleton from '../components/skeletons/RewardsSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -70,7 +71,7 @@ export default function Rewards() {
 
     const fetchUserInfo = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/coins/balance`, { credentials: 'include' });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/balance`);
             const data = await res.json();
             if (data.success) {
                 setCoinData({
@@ -90,7 +91,7 @@ export default function Rewards() {
 
     const fetchActiveContract = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, { credentials: 'include' });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts`);
             const data = await res.json();
             if (data.success && data.contracts) {
                 // Find first active contract where user is tenant
@@ -110,7 +111,7 @@ export default function Rewards() {
     const fetchHistory = async () => {
         try {
             setHistoryLoading(true);
-            const res = await fetch(`${API_BASE_URL}/api/coins/history?limit=50`, { credentials: 'include' });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/history?limit=50`);
             const data = await res.json();
             if (data.success) {
                 setHistory(data.transactions);
@@ -125,7 +126,7 @@ export default function Rewards() {
 
     const fetchReferralStats = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/coins/referral-stats`, { credentials: 'include' });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/referral-stats`);
             const data = await res.json();
             if (data.success) {
                 setReferralStats({

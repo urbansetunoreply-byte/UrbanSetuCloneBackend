@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FaCheckCircle, FaTimesCircle, FaClock, FaShieldAlt, FaFileAlt, FaMapMarkerAlt, FaImage, FaHome, FaTimes, FaDownload, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import ImagePreview from '../ImagePreview';
+import { authenticatedFetch } from '../../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -29,10 +30,9 @@ export default function VerificationStatus({ verification, listing, currentUser,
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/verification/${verification._id}/approve`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/verification/${verification._id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           ownershipVerified: true,
           identityVerified: true,
@@ -73,10 +73,9 @@ export default function VerificationStatus({ verification, listing, currentUser,
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/verification/${verification._id}/reject`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/verification/${verification._id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           rejectionReason: rejectionReason,
           adminNotes: adminNotes || ''
@@ -110,7 +109,7 @@ export default function VerificationStatus({ verification, listing, currentUser,
       const fetchUrl = docUrl;
 
       // Fetch the document
-      const response = await fetch(fetchUrl, { mode: 'cors' });
+      const response = await authenticatedFetch(fetchUrl, { mode: 'cors' });
       if (!response.ok) throw new Error('Failed to fetch document');
 
       const contentType = response.headers.get('content-type') || '';

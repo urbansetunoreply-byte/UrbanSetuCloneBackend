@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { FaDollarSign, FaCreditCard, FaDownload, FaCheck, FaClock, FaCheckCircle, FaTimes, FaExclamationTriangle, FaSpinner, FaMoneyBill, FaLock, FaShare, FaCopy, FaEye, FaExternalLinkAlt, FaCalendar, FaSync, FaWallet, FaHome, FaKey } from 'react-icons/fa';
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../redux/user/userSlice';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+// import axios from 'axios'; // Removed as authenticatedFetch is used
 import PaymentModal from '../components/PaymentModal';
 import MyPaymentsSkeleton from '../components/skeletons/MyPaymentsSkeleton';
 import SocialSharePanel from '../components/SocialSharePanel';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -102,7 +103,7 @@ const MyPayments = () => {
       // Let's rely on a specific fetch to be safe, similar to MyAppointments.
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE_URL}/api/payments/history?paymentId=${paymentId}`, { credentials: 'include' });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/payments/history?paymentId=${paymentId}`);
         const data = await res.json();
 
         if (res.ok && data.payments && data.payments.length > 0) {
@@ -178,7 +179,7 @@ const MyPayments = () => {
       if (filters.toDate) params.set('toDate', filters.toDate);
       // Show all payments (high cap)
       params.set('limit', '1000');
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${params.toString()}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?${params.toString()}`);
       const data = await res.json();
       if (res.ok) {
         setAllPayments(data.payments || []);
@@ -286,9 +287,7 @@ const MyPayments = () => {
 
       // Check if payment is already completed before proceeding
       try {
-        const paymentCheckRes = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, {
-          credentials: 'include'
-        });
+        const paymentCheckRes = await authenticatedFetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`);
         const paymentCheckData = await paymentCheckRes.json();
 
         if (paymentCheckRes.ok && paymentCheckData.payments && paymentCheckData.payments.length > 0) {
@@ -319,10 +318,7 @@ const MyPayments = () => {
           if (activePayment) {
             // Check if another tab/window/browser has the payment modal open using backend lock
             try {
-              const lockCheckResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/check/${appointmentId}`, {
-                method: 'GET',
-                credentials: 'include'
-              });
+              const lockCheckResponse = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/check/${appointmentId}`);
 
               const lockCheckData = await lockCheckResponse.json();
 
@@ -394,9 +390,7 @@ const MyPayments = () => {
       }
 
       // Fetch appointment details - API returns the booking object directly (not wrapped)
-      const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${appointmentId}`);
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ message: 'Failed to load appointment' }));
@@ -416,12 +410,11 @@ const MyPayments = () => {
 
       // Initialize appointment lock before opening modal (timer is tied to appointment slot, not payment ID)
       try {
-        const lockInitResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/initialize`, {
+        const lockInitResponse = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/initialize`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({ appointmentId: appointment._id })
         });
 
@@ -478,7 +471,7 @@ const MyPayments = () => {
   const downloadReceipt = async (url) => {
     if (!url) return;
     try {
-      const res = await fetch(url, { credentials: 'include' });
+      const res = await authenticatedFetch(url);
       if (!res.ok) return;
       const blob = await res.blob();
       const objUrl = window.URL.createObjectURL(blob);
@@ -1038,13 +1031,12 @@ const MyPayments = () => {
               setExportPasswordLoading(true);
               setExportPasswordError("");
               try {
-                const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`,
-                  { password: exportPassword },
-                  {
-                    withCredentials: true,
-                    headers: { "Content-Type": "application/json" }
-                  }
-                );
+                const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, {
+                  method: 'POST',
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ password: exportPassword })
+                });
+                const data = await res.json();
                 if (data.success) {
                   // Reset attempts on successful password
                   localStorage.removeItem('userPaymentExportPwAttempts');
@@ -1062,7 +1054,7 @@ const MyPayments = () => {
                     if (filters.toDate) params.set('toDate', filters.toDate);
                     const qs = params.toString();
                     const url = `${API_BASE_URL}/api/payments/export-csv${qs ? `?${qs}` : ''}`;
-                    const res = await fetch(url, { credentials: 'include' });
+                    const res = await authenticatedFetch(url);
                     if (!res.ok) {
                       toast.error('Failed to export payments');
                       return;
@@ -1097,7 +1089,7 @@ const MyPayments = () => {
                   toast.error("Too many incorrect attempts. You've been signed out for security.");
                   dispatch(signoutUserStart());
                   try {
-                    const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+                    const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
                     const signoutData = await signoutRes.json();
                     if (signoutData.success === false) {
                       dispatch(signoutUserFailure(signoutData.message));

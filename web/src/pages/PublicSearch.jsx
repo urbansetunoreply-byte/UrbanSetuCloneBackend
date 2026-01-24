@@ -11,6 +11,8 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { Search, Filter, MapPin, Home, DollarSign, GripVertical, ChevronDown, RefreshCw } from "lucide-react";
 import ListingSkeletonGrid from "../components/skeletons/ListingSkeletonGrid";
 
+import { authenticatedFetch } from '../utils/auth';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PublicSearch() {
@@ -71,7 +73,7 @@ export default function PublicSearch() {
             try {
                 const fetchParams = new URLSearchParams(urlParams);
                 fetchParams.set('visibility', 'public');
-                const res = await fetch(`${API_BASE_URL}/api/listing/get?${fetchParams.toString()}`);
+                const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?${fetchParams.toString()}`);
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
@@ -135,7 +137,7 @@ export default function PublicSearch() {
             const urlParams = new URLSearchParams(location.search);
             urlParams.set("startIndex", listings.length);
             urlParams.set("visibility", "public");
-            const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }

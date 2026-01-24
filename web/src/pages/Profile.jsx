@@ -504,7 +504,7 @@ export default function Profile() {
   const fetchWatchlistCount = async () => {
     if (!currentUser?._id) return 0;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`);
       if (res.ok) {
         const data = await res.json();
         return data.length || 0;
@@ -1047,7 +1047,7 @@ export default function Profile() {
           toast.error("Too many incorrect password attempts. You've been signed out for security.");
           dispatch(signoutUserStart());
           try {
-            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+            const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
             const signoutData = await signoutRes.json();
             if (signoutData.success === false) {
               dispatch(signoutUserFailure(signoutData.message));
@@ -1081,7 +1081,7 @@ export default function Profile() {
       // Step 2: Password verified - proceed with profile update
       dispatch(updateUserStart());
       const apiUrl = `${API_BASE_URL}/api/user/update/${currentUser._id}`;
-      const options = createAuthenticatedFetchOptions({
+      const res = await authenticatedFetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1092,7 +1092,6 @@ export default function Profile() {
           password: updatePassword,
         }),
       });
-      const res = await fetch(apiUrl, options);
       const data = await res.json();
 
       // Handle backend validation responses
@@ -1259,7 +1258,7 @@ export default function Profile() {
       if (currentUser && currentUser._id) {
         try {
 
-          const res = await fetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
+          const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
           if (res.ok) {
             const user = await res.json();
 
@@ -1335,9 +1334,8 @@ export default function Profile() {
       const uploadFormData = new FormData();
       uploadFormData.append('image', file);
 
-      const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
-        credentials: 'include',
         body: uploadFormData,
       });
 
@@ -1723,10 +1721,9 @@ export default function Profile() {
                             const url = buildDicebearUrl();
                             setFormData({ ...formData, avatar: url });
                             try {
-                              const res = await fetch(`${API_BASE_URL}/api/user/${currentUser._id}`, {
+                              const res = await authenticatedFetch(`${API_BASE_URL}/api/user/${currentUser._id}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
-                                credentials: 'include',
                                 body: JSON.stringify({ avatar: url }),
                               });
                               const data = await res.json();

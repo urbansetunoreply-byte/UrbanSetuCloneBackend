@@ -35,6 +35,7 @@ import ListingSkeleton from "../components/skeletons/ListingSkeleton"; // Import
 import SeasonalEffects from "../components/SeasonalEffects";
 import VerifiedModal from "../components/VerifiedModal";
 import PreBookingChatWrapper from "../components/PreBookingChatWrapper";
+import { authenticatedFetch } from "../utils/auth";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UNAVAILABLE_STATUSES = ['reserved', 'under_contract', 'rented', 'sold', 'suspended'];
@@ -186,7 +187,7 @@ export default function Listing() {
   const availabilityLockedAt = listing?.availabilityMeta?.lockedAt;
   const refreshWatchlistCount = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`);
       if (res.ok) {
         const data = await res.json();
         setWatchlistCount(data.count || 0);
@@ -233,7 +234,7 @@ export default function Listing() {
           if (!showPropertyRatings && !propertyRatings) {
             setRatingsLoading(true);
             try {
-              const res = await fetch(`${API_BASE_URL}/api/rental/ratings/property/${listing._id}`);
+              const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/ratings/property/${listing._id}`);
               const data = await res.json();
               if (res.ok && data.success) {
                 setPropertyRatings(data);
@@ -266,7 +267,7 @@ export default function Listing() {
 
   const fetchWishlistCount = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/wishlist/property-count/${params.listingId}`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/wishlist/property-count/${params.listingId}`);
       if (res.ok) {
         const data = await res.json();
         setWishlistCount(data.count || 0);
@@ -285,9 +286,7 @@ export default function Listing() {
     if (!currentUser || currentUser.role === 'admin' || currentUser.role === 'rootadmin') return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/watchlist/check/${listing._id}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/check/${listing._id}`);
       if (res.ok) {
         const data = await res.json();
         setIsInWatchlist(data.isInWatchlist);
@@ -307,9 +306,7 @@ export default function Listing() {
       const reactions = {};
       for (const faq of faqs) {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`, {
-            credentials: 'include'
-          });
+          const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`);
           if (response.ok) {
             const data = await response.json();
             reactions[faq._id] = data.data.reaction;
@@ -335,12 +332,11 @@ export default function Listing() {
     setFaqReactionLoading(prev => ({ ...prev, [faqId]: type }));
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/faqs/${faqId}/react`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${faqId}/react`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({ type })
       });
 
@@ -388,9 +384,8 @@ export default function Listing() {
     try {
       if (isInWatchlist) {
         // Remove from watchlist
-        const res = await fetch(`${API_BASE_URL}/api/watchlist/remove/${listing._id}`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/remove/${listing._id}`, {
           method: 'DELETE',
-          credentials: 'include'
         });
         if (res.ok) {
           setIsInWatchlist(false);
@@ -400,12 +395,11 @@ export default function Listing() {
         }
       } else {
         // Add to watchlist
-        const res = await fetch(`${API_BASE_URL}/api/watchlist/add`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/add`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({ listingId: listing._id })
         });
         if (res.ok) {
@@ -450,12 +444,11 @@ export default function Listing() {
       }
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/root-verify/${listing._id}`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/root-verify/${listing._id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({ reason: rootVerificationReason })
         });
         const data = await res.json();
@@ -575,10 +568,9 @@ export default function Listing() {
     setDeleteError("");
     try {
       // Verify password
-      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: deletePassword }),
       });
 
@@ -594,7 +586,7 @@ export default function Listing() {
           toast.error("Too many incorrect attempts. You've been signed out for security.");
           dispatch(signoutUserStart());
           try {
-            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
             const signoutData = await signoutRes.json();
             if (signoutData.success === false) {
               dispatch(signoutUserFailure(signoutData.message));
@@ -622,9 +614,8 @@ export default function Listing() {
       localStorage.removeItem('deleteListingPwAttempts');
 
       // Proceed to delete
-      const res = await fetch(`${API_BASE_URL}/api/listing/delete/${listing._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/delete/${listing._id}`, {
         method: 'DELETE',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: deleteReason }),
       });
@@ -651,7 +642,7 @@ export default function Listing() {
   const checkOwnerStatus = async () => {
     if (listing && listing.userRef) {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/user/id/${listing.userRef}`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${listing.userRef}`);
         if (res.ok) {
           const ownerData = await res.json();
           if (ownerData && ownerData.status !== 'suspended') {
@@ -669,9 +660,7 @@ export default function Listing() {
   // Function to fetch available users for owner assignment
   const fetchAvailableUsers = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/user/all-users-autocomplete`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/all-users-autocomplete`);
       if (res.ok) {
         const data = await res.json();
         setAvailableUsers(data);
@@ -698,10 +687,9 @@ export default function Listing() {
     setDeassignLoading(true);
     setDeassignError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/deassign-owner/${listing._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/deassign-owner/${listing._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ reason: deassignReason.trim() })
       });
       const data = await res.json().catch(() => ({}));
@@ -731,10 +719,9 @@ export default function Listing() {
 
     setReportLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/report/${listing._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/report/${listing._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           category: reportCategory,
           details: reportDetails.trim()
@@ -766,10 +753,9 @@ export default function Listing() {
 
     setAssignOwnerLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/reassign-owner/${listing._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/reassign-owner/${listing._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ newOwnerId: selectedNewOwner }),
       });
 
@@ -798,7 +784,7 @@ export default function Listing() {
 
     setLoadingSimilar(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}&visibility=public`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}&visibility=public`);
       if (res.ok) {
         const data = await res.json();
         setSimilarProperties(data.filter(prop => prop._id !== listing._id).slice(0, 3));
@@ -815,9 +801,8 @@ export default function Listing() {
     if (!listing || viewTracked) return;
     try {
       // Fire-and-forget; backend dedupes by user/guest within 6h and ignores admin/owner
-      fetch(`${API_BASE_URL}/api/properties/${listing._id}/view`, {
+      authenticatedFetch(`${API_BASE_URL}/api/properties/${listing._id}/view`, {
         method: 'POST',
-        credentials: 'include',
         keepalive: true
       }).catch(() => { });
     } finally {
@@ -939,7 +924,7 @@ export default function Listing() {
     setSearchLoading(true);
     try {
       // Use backend search functionality with forSuggestion=true to bypass strict filters
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?searchTerm=${encodeURIComponent(query)}&limit=10&forSuggestion=true`);
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?searchTerm=${encodeURIComponent(query)}&limit=10&forSuggestion=true`);
       if (res.ok) {
         const data = await res.json();
 
@@ -1189,7 +1174,7 @@ export default function Listing() {
     const fetchListing = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get/${params.listingId}`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get/${params.listingId}`);
         const data = await res.json();
         if (data.success === false) {
           return;
@@ -1217,7 +1202,7 @@ export default function Listing() {
       if (!listing?._id) return;
       setFaqLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/faqs?propertyId=${listing._id}`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs?propertyId=${listing._id}`);
         if (response.ok) {
           const data = await response.json();
           setFaqs(data.data || []);
@@ -1249,7 +1234,7 @@ export default function Listing() {
       if (!listing?._id) return;
       setBlogLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/blogs?propertyId=${listing._id}&published=true&limit=3`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?propertyId=${listing._id}&published=true&limit=3`);
         if (response.ok) {
           const data = await response.json();
           setRelatedBlogs(data.data || []);
@@ -1276,9 +1261,7 @@ export default function Listing() {
       if (!currentUser || !listing?._id || listing.type !== 'rent') return;
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/rental/contracts?status=active`, {
-          credentials: 'include'
-        });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts?status=active`);
         const data = await res.json();
         if (res.ok && data.success) {
           // Find contract for this listing where user is tenant or landlord
@@ -1299,7 +1282,7 @@ export default function Listing() {
   useEffect(() => {
     const fetchNeighborhood = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/ai/neighborhood/${params.listingId}`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/ai/neighborhood/${params.listingId}`);
         if (res.ok) {
           const data = await res.json();
           setNeighborhood(data);
@@ -1316,9 +1299,8 @@ export default function Listing() {
       try {
         setRtAnalyticsLoading(true);
         setRtAnalyticsError(null);
-        const res = await fetch(`${API_BASE_URL}/api/analytics/property/${listing._id}/analytics`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/analytics/property/${listing._id}/analytics`, {
           method: 'GET',
-          credentials: 'include'
         });
         if (!res.ok) throw new Error('Failed to load analytics');
         const json = await res.json();
@@ -1365,7 +1347,7 @@ export default function Listing() {
         setOwnerLoading(true);
         setOwnerError("");
         try {
-          const res = await fetch(`${API_BASE_URL}/api/user/id/${listing.userRef}`);
+          const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${listing.userRef}`);
           if (!res.ok) throw new Error("Failed to fetch owner details");
           const data = await res.json();
           setOwnerDetails(data);
@@ -2707,16 +2689,15 @@ export default function Listing() {
                       if (!showRentPrediction && !rentPrediction) {
                         setPredictionLoading(true);
                         try {
-                          const res = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`);
+                          const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`);
                           const data = await res.json();
                           if (res.ok && data.success) {
                             setRentPrediction(data.prediction);
                           } else if (res.status === 404 || !data.prediction) {
                             // Prediction doesn't exist, offer to generate
                             if (currentUser) {
-                              const generateRes = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`, {
-                                method: 'POST',
-                                credentials: 'include'
+                              const generateRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`, {
+                                method: 'POST'
                               });
                               const generateData = await generateRes.json();
                               if (generateRes.ok && generateData.success) {
@@ -2753,7 +2734,7 @@ export default function Listing() {
                       if (!showLocalityScore && !localityScore) {
                         setLocalityLoading(true);
                         try {
-                          const res = await fetch(`${API_BASE_URL}/api/rental/locality-score/${listing._id}`);
+                          const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/locality-score/${listing._id}`);
                           const data = await res.json();
                           if (res.ok && data.success) {
                             setLocalityScore(data.localityScore);
@@ -2793,9 +2774,8 @@ export default function Listing() {
                         }
                         setPredictionLoading(true);
                         try {
-                          const res = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`, {
-                            method: 'POST',
-                            credentials: 'include'
+                          const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`, {
+                            method: 'POST'
                           });
                           const data = await res.json();
                           if (res.ok && data.success) {
@@ -3067,9 +3047,7 @@ export default function Listing() {
                         }
 
                         try {
-                          const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, {
-                            credentials: 'include'
-                          });
+                          const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts`);
 
                           if (res.ok) {
                             const data = await res.json();

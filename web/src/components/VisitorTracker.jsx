@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -113,7 +114,7 @@ const VisitorTracker = () => {
             };
             if (utm.source || utm.medium || utm.campaign) body.utm = utm;
 
-            await fetch(`${API_BASE_URL}/api/visitors/track`, {
+            await authenticatedFetch(`${API_BASE_URL}/api/visitors/track`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)

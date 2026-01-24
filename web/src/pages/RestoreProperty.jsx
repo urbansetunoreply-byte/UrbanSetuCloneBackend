@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { authenticatedFetch } from '../utils/auth';
 import {
   CheckCircle2,
   XCircle,
@@ -49,7 +50,7 @@ const RestoreProperty = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/property-restoration/verify/${tokenToVerify}`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/property-restoration/verify/${tokenToVerify}`);
       const data = await response.json();
 
       if (data.success) {
@@ -81,7 +82,7 @@ const RestoreProperty = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/property-restoration/restore/${token}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/property-restoration/restore/${token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

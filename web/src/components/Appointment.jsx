@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import ContactSupportWrapper from './ContactSupportWrapper';
 import PaymentModal from './PaymentModal';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -61,7 +62,7 @@ export default function Appointment() {
       }
       setCheckingActive(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/bookings/my`, { credentials: 'include' });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings/my`);
         if (res.ok) {
           const data = await res.json();
           // Find active appointment for this property
@@ -133,12 +134,8 @@ export default function Appointment() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/bookings`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/bookings`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: 'include',
         body: JSON.stringify({
           ...formData,
           listingId,

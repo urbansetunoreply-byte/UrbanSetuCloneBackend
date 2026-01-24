@@ -11,6 +11,8 @@ import FilterChips from "../components/search/FilterChips";
 import LocationSelector from "../components/LocationSelector";
 import { Search as SearchIcon, IndianRupee, MapPin, Grid, List, RefreshCw, XCircle } from "lucide-react";
 
+import { authenticatedFetch } from "../utils/auth";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminExplore() {
@@ -82,7 +84,7 @@ export default function AdminExplore() {
     const fetchListings = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`, { credentials: 'include' });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
         const data = await res.json();
         setListings(data);
         setShowMoreListing(data.length > 8);
@@ -173,10 +175,9 @@ export default function AdminExplore() {
     setDeleteLoading(true);
     setDeleteError("");
     try {
-      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: deletePassword }),
       });
       if (!verifyRes.ok) {
@@ -184,9 +185,8 @@ export default function AdminExplore() {
         setDeleteLoading(false);
         return;
       }
-      const res = await fetch(`${API_BASE_URL}/api/listing/delete/${pendingDeleteId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/delete/${pendingDeleteId}`, {
         method: 'DELETE',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: deleteReason }),
       });
@@ -239,7 +239,7 @@ export default function AdminExplore() {
   const showMoreListingClick = async () => {
     const urlParams = new URLSearchParams(location.search);
     urlParams.set("startIndex", listings.length);
-    const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`, { credentials: 'include' });
+    const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
     const data = await res.json();
     setListings((prev) => [...prev, ...data]);
     setShowMoreListing(data.length >= 8);

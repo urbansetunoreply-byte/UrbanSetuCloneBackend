@@ -6,6 +6,7 @@ import { FaExclamationTriangle, FaSearch, FaFilter, FaTimes, FaFileAlt, FaCommen
 import { usePageTitle } from '../hooks/usePageTitle';
 import DisputeDetail from '../components/dispute/DisputeDetail';
 import AdminDisputesSkeleton from '../components/skeletons/AdminDisputesSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -79,9 +80,7 @@ export default function AdminDisputeResolution() {
         setLoading(true);
       }
       // Fetch all disputes, apply filters client-side
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/disputes`);
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -101,9 +100,7 @@ export default function AdminDisputeResolution() {
 
   const fetchDispute = async (disputeId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes/${disputeId}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/disputes/${disputeId}`);
       const data = await res.json();
       if (res.ok && data.success) {
         return data.dispute;
@@ -137,9 +134,8 @@ export default function AdminDisputeResolution() {
   const handleUpdateStatus = async (disputeId, status, priority, escalationReason) => {
     try {
       setUpdatingStatus(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes/${disputeId}/status`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/disputes/${disputeId}/status`, {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status,
@@ -166,9 +162,8 @@ export default function AdminDisputeResolution() {
   const handleResolveDispute = async (disputeId, resolution, resolutionNotes) => {
     try {
       setResolving(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes/${disputeId}/resolve`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/disputes/${disputeId}/resolve`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           resolution,

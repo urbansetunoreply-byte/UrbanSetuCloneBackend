@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FaUpload, FaSpinner, FaCheckCircle, FaFile } from 'react-icons/fa';
+import { authenticatedFetch } from '../../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -87,9 +88,8 @@ export default function LoanApplicationForm({ contract, currentUser, onSuccess, 
       const formDataObj = new FormData();
       formDataObj.append('document', file);
 
-      const res = await fetch(`${API_BASE_URL}/api/upload/document`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/document`, {
         method: 'POST',
-        credentials: 'include',
         body: formDataObj
       });
 
@@ -148,9 +148,8 @@ export default function LoanApplicationForm({ contract, currentUser, onSuccess, 
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans/${contract._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/loans/${contract._id}`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           loanType: formData.loanType,

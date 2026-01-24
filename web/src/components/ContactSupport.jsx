@@ -152,7 +152,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
   const fetchUserMessages = async () => {
     setLoadingMessages(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contact/user-messages/${encodeURIComponent(currentUser.email)}`, { credentials: 'include' });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/contact/user-messages/${encodeURIComponent(currentUser.email)}`);
       const data = await response.json();
       if (!Array.isArray(data)) {
         setUserMessages([]);
@@ -207,9 +207,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contact/user-messages/${messageToDelete}?email=${encodeURIComponent(currentUser.email)}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/contact/user-messages/${messageToDelete}?email=${encodeURIComponent(currentUser.email)}`, {
         method: 'DELETE',
-        credentials: 'include'
       });
 
       if (response.ok) {
@@ -280,12 +279,11 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     setSubmitStatus('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contact/support`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/contact/support`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify(formData),
       });
 

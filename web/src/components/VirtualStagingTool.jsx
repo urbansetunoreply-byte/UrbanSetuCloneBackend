@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { authenticatedFetch } from '../utils/auth';
 import { Sparkles, Upload, ArrowRight, RefreshCw, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
@@ -89,7 +90,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
         formData.append('image', file);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/upload/image`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
                 method: 'POST',
                 body: formData,
             });
@@ -146,7 +147,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
 
             // Fallback: If canvas is tainted or filter unparseable, download raw image
             try {
-                const response = await fetch(generatedImage, { mode: 'cors' });
+                const response = await authenticatedFetch(generatedImage, { mode: 'cors' });
                 const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');

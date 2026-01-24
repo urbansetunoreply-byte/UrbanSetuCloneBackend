@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { authenticatedFetch } from '../utils/auth';
 import {
   FaTimes,
   FaSearchPlus,
@@ -577,7 +578,7 @@ const ImagePreview = ({ isOpen, onClose, images, initialIndex = 0, listingId = n
 
       // Try to fetch the image to handle CORS and get proper blob
       try {
-        const response = await fetch(imageUrl, {
+        const response = await authenticatedFetch(imageUrl, {
           mode: 'cors',
           cache: 'no-cache'
         });

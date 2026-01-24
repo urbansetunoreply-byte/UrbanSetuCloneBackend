@@ -6,6 +6,7 @@ import {
   Info, ArrowRight, MessageSquare
 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 
 const PublicFAQs = () => {
   // Set page title
@@ -113,7 +114,7 @@ const PublicFAQs = () => {
         params.append('category', selectedCategories.join(','));
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/faqs?${params}`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs?${params}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -136,7 +137,7 @@ const PublicFAQs = () => {
         limit: 5
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/faqs?${params}`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs?${params}`);
       if (response.ok) {
         const data = await response.json();
         setSuggestions(data.data);
@@ -148,7 +149,7 @@ const PublicFAQs = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/faqs/categories`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/categories`);
       if (response.ok) {
         const data = await response.json();
         setCategories(data.data);
@@ -164,9 +165,7 @@ const PublicFAQs = () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify`);
 
       if (response.ok) {
         setIsLoggedIn(true);
@@ -184,9 +183,7 @@ const PublicFAQs = () => {
       const reactions = {};
       for (const faq of faqs) {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`, {
-            credentials: 'include'
-          });
+          const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${faq._id}/reaction-status`);
           if (response.ok) {
             const data = await response.json();
             reactions[faq._id] = data.data.reaction;
@@ -208,12 +205,11 @@ const PublicFAQs = () => {
     setReactionLoading(prev => ({ ...prev, [faqId]: true }));
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/faqs/${faqId}/react`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/faqs/${faqId}/react`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({ type })
       });
 

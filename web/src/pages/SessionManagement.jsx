@@ -10,6 +10,7 @@ import {
 import { usePageTitle } from '../hooks/usePageTitle';
 import { socket } from '../utils/socket';
 import AdminSessionManagementSkeleton from '../components/skeletons/AdminSessionManagementSkeleton';
+import { authenticatedFetch, clearAuthData } from '../utils/auth';
 
 
 const SessionManagement = () => {
@@ -100,8 +101,7 @@ const SessionManagement = () => {
       });
 
       const controller = new AbortController();
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/all-sessions?${params}`, {
-        credentials: 'include',
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/all-sessions?${params}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -150,9 +150,8 @@ const SessionManagement = () => {
   const forceLogoutSession = async (sessionId, userId, reason) => {
     setRevokingSession(sessionId);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/force-logout`, {
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/force-logout`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -173,10 +172,7 @@ const SessionManagement = () => {
         // If the admin is forcing logout of their own current session, ensure local logout
         const currentSessionId = document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1];
         if (currentSessionId && currentSessionId === sessionId) {
-          try { localStorage.removeItem('accessToken'); } catch (_) { }
-          document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
-          document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
-          document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+          clearAuthData();
           window.location.href = '/sign-in?error=forced_logout';
           return;
         }
@@ -197,9 +193,8 @@ const SessionManagement = () => {
 
   const forceLogoutAllUserSessions = async (userId, reason) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/force-logout-all`, {
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/force-logout-all`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

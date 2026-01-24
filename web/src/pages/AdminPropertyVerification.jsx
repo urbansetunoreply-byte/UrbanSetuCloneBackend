@@ -6,6 +6,7 @@ import { FaShieldAlt, FaCheckCircle, FaTimesCircle, FaClock, FaSearch, FaSpinner
 import { usePageTitle } from '../hooks/usePageTitle';
 import VerificationStatus from '../components/verification/VerificationStatus';
 import AdminPropertyVerificationSkeleton from '../components/skeletons/AdminPropertyVerificationSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 // Verification Status Modal Component with scroll prevention
 const VerificationStatusModal = ({ verification, listing, currentUser, onUpdate, onClose, STATUS_COLORS, STATUS_LABELS }) => {
@@ -104,9 +105,7 @@ export default function AdminPropertyVerification() {
         setLoading(true);
       }
       // Fetch all verifications, apply filters client-side
-      const res = await fetch(`${API_BASE_URL}/api/rental/verification`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/verification`);
 
       const data = await res.json();
       if (res.ok && data.success) {

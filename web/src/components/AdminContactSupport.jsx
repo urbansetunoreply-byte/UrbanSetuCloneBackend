@@ -8,6 +8,8 @@ import ConfirmationModal from './ConfirmationModal';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
+import { authenticatedFetch } from '../utils/auth';
+
 export default function AdminContactSupport({ forceModalOpen = false, onModalClose = null }) {
   const [isModalOpen, setIsModalOpen] = useState(forceModalOpen);
   const [messages, setMessages] = useState([]);
@@ -132,7 +134,7 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contact/messages`, { credentials: 'include' });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/contact/messages`);
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || "Failed to fetch messages.");
@@ -152,7 +154,7 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contact/unread-count`, { credentials: 'include' });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/contact/unread-count`);
       const data = await response.json();
       setUnreadCount(data.count);
     } catch (error) {
@@ -162,9 +164,8 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
 
   const markAsRead = async (messageId) => {
     try {
-      await fetch(`${API_BASE_URL}/api/contact/messages/${messageId}/read`, {
+      await authenticatedFetch(`${API_BASE_URL}/api/contact/messages/${messageId}/read`, {
         method: 'PUT',
-        credentials: 'include',
       });
 
       // Update local state instead of refetching all messages
@@ -185,9 +186,8 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
 
   const markAsReplied = async (messageId) => {
     try {
-      await fetch(`${API_BASE_URL}/api/contact/messages/${messageId}/replied`, {
+      await authenticatedFetch(`${API_BASE_URL}/api/contact/messages/${messageId}/replied`, {
         method: 'PUT',
-        credentials: 'include',
       });
 
       // Update local state instead of refetching all messages
@@ -216,9 +216,8 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
 
     setIsDeleting(true);
     try {
-      await fetch(`${API_BASE_URL}/api/contact/messages/${messageToDelete}`, {
+      await authenticatedFetch(`${API_BASE_URL}/api/contact/messages/${messageToDelete}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
 
       // Update local state instead of refetching all messages
@@ -243,9 +242,8 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
       const msgs = [...messages];
       for (const msg of msgs) {
         try {
-          await fetch(`${API_BASE_URL}/api/contact/messages/${msg._id}`, {
+          await authenticatedFetch(`${API_BASE_URL}/api/contact/messages/${msg._id}`, {
             method: 'DELETE',
-            credentials: 'include',
           });
         } catch (_) { /* ignore individual failures */ }
       }
@@ -269,12 +267,11 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
 
     setReplyLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contact/messages/${messageId}/reply`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/contact/messages/${messageId}/reply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ replyMessage: replyMessage.trim() }),
       });
 

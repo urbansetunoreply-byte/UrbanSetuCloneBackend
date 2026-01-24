@@ -11,6 +11,7 @@ import { socket } from '../utils/socket';
 import ReportModal from '../components/ReportModal';
 import UserAvatar from '../components/UserAvatar';
 import SocialSharePanel from '../components/SocialSharePanel';
+import { authenticatedFetch } from '../utils/auth';
 
 export default function Community() {
     usePageTitle("Community Hub - Neighborhood Forum");
@@ -158,7 +159,7 @@ export default function Community() {
             if (postId) params.append('postId', postId);
             // Auto-filter by user's location if available (optional enhancement)
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${params.toString()}`);
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${params.toString()}`);
             const data = await res.json();
 
             if (res.ok) {
@@ -174,7 +175,7 @@ export default function Community() {
         const delayDebounceFn = setTimeout(async () => {
             if (searchTerm.length > 2) {
                 try {
-                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/search/suggestions?q=${searchTerm}`);
+                    const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/search/suggestions?q=${searchTerm}`);
                     if (res.ok) {
                         const data = await res.json();
                         setSuggestions(data);
@@ -199,7 +200,7 @@ export default function Community() {
 
     const fetchStats = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/stats`);
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/stats`);
             if (res.ok) {
                 const data = await res.json();
                 setStats(data);
@@ -371,9 +372,8 @@ export default function Community() {
     const handleLike = async (postId) => {
         if (!currentUser) return toast.info('Please sign in to like this post');
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/like/${postId}`, {
-                method: 'PUT',
-                credentials: 'include'
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/like/${postId}`, {
+                method: 'PUT'
             });
             if (res.ok) {
                 const updatedPost = await res.json();
@@ -387,9 +387,8 @@ export default function Community() {
     const handleDislike = async (postId) => {
         if (!currentUser) return toast.info('Please sign in to dislike this post');
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/dislike/${postId}`, {
-                method: 'PUT',
-                credentials: 'include'
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/dislike/${postId}`, {
+                method: 'PUT'
             });
             if (res.ok) {
                 const updatedPost = await res.json();
@@ -403,9 +402,8 @@ export default function Community() {
     const handleCommentReaction = async (postId, commentId, reactionType) => {
         if (!currentUser) return toast.info('Please sign in to react');
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/${reactionType}`, {
-                method: 'PUT',
-                credentials: 'include'
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/${reactionType}`, {
+                method: 'PUT'
             });
             if (res.ok) {
                 // Optimistic/Manual update to preserve author info
@@ -451,9 +449,8 @@ export default function Community() {
     const handleReplyReaction = async (postId, commentId, replyId, reactionType) => {
         if (!currentUser) return toast.info('Please sign in to react');
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}/${reactionType}`, {
-                method: 'PUT',
-                credentials: 'include'
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}/${reactionType}`, {
+                method: 'PUT'
             });
             if (res.ok) {
                 // Optimistic/Manual update to preserve author info
@@ -508,7 +505,7 @@ export default function Community() {
     const searchProperties = async (query) => {
         try {
             setMentionSearchLoading(true);
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(query)}&limit=5`);
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(query)}&limit=5`);
             if (res.ok) {
                 const data = await res.json();
                 setPropertySuggestions(data.data || []);
@@ -665,9 +662,8 @@ export default function Community() {
             isDestructive: true,
             onConfirm: async () => {
                 try {
-                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}`, {
-                        method: 'DELETE',
-                        credentials: 'include'
+                    const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}`, {
+                        method: 'DELETE'
                     });
                     if (res.ok) {
                         setPosts(posts.map(post => {
@@ -699,13 +695,11 @@ export default function Community() {
         if (!currentUser) return toast.info('Please sign in to create a post');
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/create`, {
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                // Important: Include credentials for authentication (cookies)
-                credentials: 'include',
                 body: JSON.stringify(newPost),
             });
 
@@ -729,10 +723,9 @@ export default function Community() {
     const handleUpdatePost = async (e, postId) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${postId}`, {
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${postId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ content: editingPost.content })
             });
 
@@ -759,9 +752,8 @@ export default function Community() {
             isDestructive: true,
             onConfirm: async () => {
                 try {
-                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${postId}`, {
-                        method: 'DELETE',
-                        credentials: 'include'
+                    const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${postId}`, {
+                        method: 'DELETE'
                     });
                     if (res.ok) {
                         setPosts(posts.filter(p => p._id !== postId));
@@ -783,12 +775,11 @@ export default function Community() {
         if (!replyText.trim()) return;
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply`, {
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include',
                 body: JSON.stringify({
                     content: replyText,
                     replyToUser: replyingTo?.userId,
@@ -819,9 +810,8 @@ export default function Community() {
             isDestructive: true,
             onConfirm: async () => {
                 try {
-                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}`, {
-                        method: 'DELETE',
-                        credentials: 'include'
+                    const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}`, {
+                        method: 'DELETE'
                     });
                     if (res.ok) {
                         setPosts(posts.map(post => {
@@ -885,11 +875,10 @@ export default function Community() {
         else if (type === 'comment') url = `${import.meta.env.VITE_API_BASE_URL}/api/forum/report/comment/${id}/${commentId}`; // id is postId here
         else if (type === 'reply') url = `${import.meta.env.VITE_API_BASE_URL}/api/forum/report/reply/${id}/${commentId}/${replyId}`;
 
-        fetch(url, {
+        authenticatedFetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${currentUser.token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ reason })
         })
@@ -907,10 +896,9 @@ export default function Community() {
     const handleUpdateComment = async (e, postId, commentId) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}`, {
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ content: editingContent.content })
             });
 
@@ -940,10 +928,9 @@ export default function Community() {
     const handleUpdateReply = async (e, postId, commentId, replyId) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}`, {
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ content: editingContent.content })
             });
 
@@ -989,10 +976,9 @@ export default function Community() {
         if (!content || !content.trim()) return;
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}`, {
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ content })
             });
 

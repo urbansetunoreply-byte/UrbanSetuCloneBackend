@@ -1,15 +1,15 @@
+import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 class InvestmentAnalysisService {
   // Get market analysis data based on location and filters
   async getMarketAnalysis(location, filters) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/analytics/property/analytics`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/analytics/property/analytics`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           location,
           filters,
@@ -33,12 +33,11 @@ class InvestmentAnalysisService {
   // Get risk assessment data based on property details
   async getRiskAssessment(propertyData, location) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/analytics/property/analytics`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/analytics/property/analytics`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           propertyData,
           location,
@@ -62,12 +61,11 @@ class InvestmentAnalysisService {
   // Save calculation to backend
   async saveCalculation(calculationData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/calculations/save`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/calculations/save`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify(calculationData)
       });
 
@@ -90,14 +88,13 @@ class InvestmentAnalysisService {
         page: page.toString(),
         limit: limit.toString()
       });
-      
+
       if (calculationType) {
         params.append('calculationType', calculationType);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/calculations/history?${params}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/calculations/history?${params}`, {
         method: 'GET',
-        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -170,7 +167,7 @@ class InvestmentAnalysisService {
       'Pune': 0.8,
       'Kolkata': 0.7
     };
-    
+
     const stateMultipliers = {
       'Maharashtra': 1.1,
       'Delhi': 1.2,
@@ -182,7 +179,7 @@ class InvestmentAnalysisService {
 
     const cityMultiplier = cityMultipliers[city] || 0.8;
     const stateMultiplier = stateMultipliers[state] || 0.8;
-    
+
     return 5000 * cityMultiplier * stateMultiplier; // Base price per sq ft
   }
 
@@ -214,14 +211,14 @@ class InvestmentAnalysisService {
     const volatility = (Math.random() - 0.5) * 10; // -5% to +5%
     const timeFactor = timeMultiplier * 2; // 1% to 4% based on time frame
     const typeFactor = (typeMultiplier - 1) * 5; // -0.5% to +2% based on type
-    
+
     return volatility + timeFactor + typeFactor;
   }
 
   calculateMarketScore(city, state, propertyType) {
     // Base score influenced by location and property type
     let score = 60; // Base score
-    
+
     // City influence
     const cityScores = {
       'Mumbai': 20,
@@ -233,7 +230,7 @@ class InvestmentAnalysisService {
       'Kolkata': 5
     };
     score += cityScores[city] || 5;
-    
+
     // Property type influence
     const typeScores = {
       'apartment': 5,
@@ -245,10 +242,10 @@ class InvestmentAnalysisService {
       'commercial': 10
     };
     score += typeScores[propertyType] || 3;
-    
+
     // Add some randomness
     score += Math.floor(Math.random() * 10) - 5;
-    
+
     return Math.max(0, Math.min(100, score));
   }
 
@@ -343,7 +340,7 @@ class InvestmentAnalysisService {
       'Pune': 3,
       'Kolkata': 3
     };
-    
+
     const stateRisks = {
       'Maharashtra': 1,
       'Delhi': 1,
@@ -389,7 +386,7 @@ class InvestmentAnalysisService {
     if (tenantStability === 'low') factors.push('Low tenant stability');
     if (maintenanceHistory === 'poor') factors.push('Poor maintenance history');
     if (neighborhoodGrowth === 'declining') factors.push('Declining neighborhood');
-    
+
     const locationRisk = this.getLocationRiskScore(city, state);
     if (locationRisk >= 6) factors.push('Higher location risk');
 

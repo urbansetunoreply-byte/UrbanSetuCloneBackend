@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { authenticatedFetch } from '../utils/auth';
 import { motion } from 'framer-motion';
 import VideoPreview from '../components/VideoPreview';
 import ImagePreview from '../components/ImagePreview';
@@ -56,7 +57,7 @@ const Updates = () => {
                 ...(search.trim() && { search: search.trim() })
             });
 
-            const res = await fetch(`${API_BASE_URL}/api/updates/public?${query}`);
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/updates/public?${query}`);
             const data = await res.json();
 
             if (data.success) {

@@ -7,6 +7,7 @@ import { FaRobot, FaBrain, FaChartLine, FaCogs, FaLightbulb, FaSpinner, FaTimesC
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { authenticatedFetch } from '../utils/auth';
 
 const AdvancedAIRecommendations = ({
   userId,
@@ -135,9 +136,7 @@ const AdvancedAIRecommendations = ({
 
       try {
         // Fetch recommendations for the active model
-        const res = await fetch(`${API_BASE_URL}/api/advanced-ai/recommendations?limit=${limit}&model=${activeTab}`, {
-          credentials: 'include',
-        });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/advanced-ai/recommendations?limit=${limit}&model=${activeTab}`);
         const data = await res.json();
 
         if (data.success) {
@@ -171,8 +170,8 @@ const AdvancedAIRecommendations = ({
 
       try {
         const [insightsRes, performanceRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/advanced-ai/insights?model=${activeTab}`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/api/advanced-ai/model-performance`, { credentials: 'include' })
+          authenticatedFetch(`${API_BASE_URL}/api/advanced-ai/insights?model=${activeTab}`),
+          authenticatedFetch(`${API_BASE_URL}/api/advanced-ai/model-performance`)
         ]);
 
         if (insightsRes.ok) {

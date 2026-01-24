@@ -58,19 +58,7 @@ router.post('/revoke-session', verifyToken, async (req, res, next) => {
     }
 
     // Revoke session
-    await revokeSessionFromDB(userId, sessionId);
-
-    // Notify target session via socket to logout immediately; also user room with targeted sessionId as fallback
-    try {
-      const io = req.app.get('io');
-      if (io) {
-        io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'Session revoked by user' });
-        io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason: 'Session revoked by user' });
-        // Let clients refresh their session lists
-        io.to(userId.toString()).emit('sessionsUpdated');
-        io.emit('adminSessionsUpdated');
-      }
-    } catch (_) { }
+    await revokeSessionFromDB(userId, sessionId, req.app.get('io'));
 
     // Log action
     await logSessionAction(
@@ -105,26 +93,10 @@ router.post('/revoke-all-sessions', verifyToken, async (req, res, next) => {
   try {
     const userId = req.user._id;
     const currentSessionId = req.headers['x-session-id'] || req.cookies.session_id;
-    const { count: sessionCount, revokedSessionIds } = await revokeAllOtherUserSessionsFromDB(userId, currentSessionId);
+    const { count: sessionCount, revokedSessionIds } = await revokeAllOtherUserSessionsFromDB(userId, currentSessionId, req.app.get('io'));
 
     // Fetch user for email
     const user = await User.findById(userId).select('email');
-
-    // Notify all other sessions to logout immediately
-    try {
-      const io = req.app.get('io');
-      if (io) {
-        if (Array.isArray(revokedSessionIds)) {
-          revokedSessionIds.forEach(sessionId => {
-            io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'All sessions revoked by user' });
-            io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason: 'All sessions revoked by user' });
-          });
-        }
-        // Trigger UI refresh for remaining session(s)
-        io.to(userId.toString()).emit('sessionsUpdated');
-        io.emit('adminSessionsUpdated');
-      }
-    } catch (_) { }
 
     // Log action
     await logSessionAction(
@@ -325,18 +297,7 @@ router.post('/admin/force-logout', verifyToken, async (req, res, next) => {
     }
 
     // Revoke session
-    await revokeSessionFromDB(userId, sessionId);
-
-    // Notify target session for immediate logout; also notify user room with targeted sessionId as fallback
-    try {
-      const io = req.app.get('io');
-      if (io) {
-        io.to(`session_${sessionId}`).emit('forceLogout', { reason });
-        io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason });
-        io.to(userId.toString()).emit('sessionsUpdated');
-        io.emit('adminSessionsUpdated');
-      }
-    } catch (_) { }
+    await revokeSessionFromDB(userId, sessionId, req.app.get('io'));
 
     // Send notification email
     await sendForcedLogoutEmail(
@@ -389,17 +350,7 @@ router.post('/admin/force-logout-all', verifyToken, async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Admins cannot perform this action on other administrators' });
     }
 
-    const sessionCount = await revokeAllUserSessionsFromDB(userId);
-
-    // Notify all sessions of this user
-    try {
-      const io = req.app.get('io');
-      if (io) {
-        io.to(userId.toString()).emit('forceLogout', { reason });
-        io.to(userId.toString()).emit('sessionsUpdated');
-        io.emit('adminSessionsUpdated');
-      }
-    } catch (_) { }
+    const sessionCount = await revokeAllUserSessionsFromDB(userId, req.app.get('io'));
 
     // Send notification email
     await sendForcedLogoutEmail(

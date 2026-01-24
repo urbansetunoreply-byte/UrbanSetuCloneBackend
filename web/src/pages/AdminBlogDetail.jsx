@@ -16,6 +16,7 @@ import VideoPreview from '../components/VideoPreview';
 import BlogDetailSkeleton from '../components/skeletons/BlogDetailSkeleton';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SocialSharePanel from '../components/SocialSharePanel';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -86,9 +87,7 @@ const AdminBlogDetail = () => {
   const fetchBlog = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${slug}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${slug}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -110,9 +109,7 @@ const AdminBlogDetail = () => {
   const fetchRelatedBlogs = async (category, currentBlogId) => {
     try {
       // Fetch more items to ensure we have enough to randomize
-      const response = await fetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=10`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?category=${category}&published=true&limit=10`);
       if (response.ok) {
         const data = await response.json();
         // Filter out current blog
@@ -133,9 +130,7 @@ const AdminBlogDetail = () => {
 
   const checkLikeStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`);
 
       if (response.ok) {
         const data = await response.json();
@@ -151,9 +146,8 @@ const AdminBlogDetail = () => {
 
     setLikeLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/like`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like`, {
         method: 'POST',
-        credentials: 'include'
       });
 
       if (response.ok) {
@@ -189,12 +183,11 @@ const AdminBlogDetail = () => {
     if (!comment.trim()) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({ content: comment })
       });
 
@@ -227,9 +220,8 @@ const AdminBlogDetail = () => {
       isDestructive: true,
       onConfirm: async () => {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
+          const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
             method: 'DELETE',
-            credentials: 'include'
           });
 
           if (response.ok) {
@@ -255,9 +247,8 @@ const AdminBlogDetail = () => {
       isDestructive: true,
       onConfirm: async () => {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
+          const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
             method: 'DELETE',
-            credentials: 'include'
           });
 
           if (response.ok) {
@@ -291,12 +282,11 @@ const AdminBlogDetail = () => {
 
   const updatePublishStatus = async (newStatus) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({ published: newStatus })
       });
 
@@ -331,12 +321,11 @@ const AdminBlogDetail = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({
           ...formData,
           propertyId: formData.propertyId || null
@@ -359,9 +348,7 @@ const AdminBlogDetail = () => {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/listing/get?limit=1000&type=all&offer=false&furnished=false&parking=false`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=1000&type=all&offer=false&furnished=false&parking=false`);
       if (response.ok) {
         const data = await response.json();
         setProperties(Array.isArray(data) ? data : []);
@@ -373,7 +360,7 @@ const AdminBlogDetail = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/categories`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/categories`);
       if (response.ok) {
         const data = await response.json();
         setCategories(data.data);

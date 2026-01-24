@@ -402,9 +402,7 @@ export default function Settings() {
   const fetchAdmins = async () => {
     try {
       setLoadingAdmins(true);
-      const res = await fetch(`${API_BASE_URL}/api/user/approved-admins/${currentUser._id}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/approved-admins/${currentUser._id}`);
       const data = await res.json();
 
       if (res.ok) {
@@ -422,7 +420,7 @@ export default function Settings() {
   const fetchTransferAdmins = async () => {
     try {
       setLoadingAdmins(true);
-      const res = await fetch(`${API_BASE_URL}/api/admin/management/admins`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/management/admins`);
       const data = await res.json();
       if (res.ok) {
         // Only allow eligible targets: approved, active admins (not rootadmin/default)
@@ -478,7 +476,7 @@ export default function Settings() {
         setShowPasswordModal(false);
         toast.error(t('messages.auto_signout'));
         dispatch(signoutUserStart());
-        const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+        const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
         const signoutData = await signoutRes.json();
         if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
         navigate('/sign-in', { replace: true });
@@ -554,7 +552,7 @@ export default function Settings() {
           setShowPasswordModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
           dispatch(signoutUserStart());
-          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           const signoutData = await signoutRes.json();
           if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
           navigate('/sign-in', { replace: true });
@@ -626,7 +624,7 @@ export default function Settings() {
         if (attempts >= 3) {
           setShowTransferPasswordModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
-          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           navigate('/sign-in', { replace: true });
         } else {
           const remaining = 3 - attempts;
@@ -694,24 +692,22 @@ export default function Settings() {
         if (att >= 5) {
           setShowTransferPasswordModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
-          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           navigate('/sign-in', { replace: true });
         }
         setTransferDeleteDeleting(false);
         return;
       }
-      const transferRes = await fetch(`${API_BASE_URL}/api/user/transfer-default-admin`, {
+      const transferRes = await authenticatedFetch(`${API_BASE_URL}/api/user/transfer-default-admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ currentAdminId: currentUser._id, newDefaultAdminId: selectedAdmin })
       });
       const transferData = await transferRes.json();
       if (!transferRes.ok) { setTransferOtpError(transferData.message || 'Failed to transfer default admin rights'); return; }
-      const deleteRes = await fetch(`${API_BASE_URL}/api/user/delete/${currentUser._id}`, {
+      const deleteRes = await authenticatedFetch(`${API_BASE_URL}/api/user/delete/${currentUser._id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: transferDeletePassword })
       });
       const deleteData = await deleteRes.json();
@@ -798,7 +794,7 @@ export default function Settings() {
         if (attempts >= 3) {
           setShowTransferModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
-          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           navigate('/sign-in', { replace: true });
         } else {
           const remaining = 3 - attempts;
@@ -857,7 +853,7 @@ export default function Settings() {
         if (att >= 5) {
           setShowTransferModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
-          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           navigate('/sign-in', { replace: true });
         }
         setTransferTransferring(false);
@@ -1137,7 +1133,7 @@ export default function Settings() {
           setShowExportPasswordModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
           dispatch(signoutUserStart());
-          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
           const signoutData = await signoutRes.json();
           if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
           navigate('/sign-in', { replace: true });

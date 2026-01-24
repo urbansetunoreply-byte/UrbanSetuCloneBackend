@@ -11,6 +11,7 @@ import PaymentModal from '../components/PaymentModal';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
 import UserServicesSkeleton from '../components/skeletons/UserServicesSkeleton';
 import { getCoinValue, COIN_CONFIG } from '../utils/coinUtils';
+import { authenticatedFetch } from '../utils/auth';
 const services = [
   { key: 'cleaning', name: 'Cleaning', icon: <FaBroom className="text-blue-600" /> },
   { key: 'electrician', name: 'Electrician', icon: <FaBolt className="text-yellow-600" /> },
@@ -67,7 +68,7 @@ export default function OnDemandServices() {
   const fetchMyRequests = async () => {
     if (!currentUser) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/requests/services`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/requests/services`);
       const data = await res.json();
       setMyRequests(Array.isArray(data) ? data : []);
     } catch (_) { }
@@ -76,7 +77,7 @@ export default function OnDemandServices() {
   const fetchMyMoverRequests = async () => {
     if (!currentUser) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/requests/movers`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/requests/movers`);
       const data = await res.json();
       setMyMoverRequests(Array.isArray(data) ? data : []);
     } catch (_) { }
@@ -85,7 +86,7 @@ export default function OnDemandServices() {
   const fetchMyContracts = async () => {
     if (!currentUser) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts`);
       const data = await res.json();
       if (data.success) {
         setMyContracts(data.contracts || []);
@@ -95,7 +96,7 @@ export default function OnDemandServices() {
 
   const fetchChecklists = async (contractId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/checklist/${contractId}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/checklist/${contractId}`);
       const data = await res.json();
       if (data.success) {
         const moveIn = data.checklists.find(c => c.type === 'move_in');
@@ -112,7 +113,7 @@ export default function OnDemandServices() {
   const fetchCoinBalance = async () => {
     if (!currentUser) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/coins/balance`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/balance`);
       const data = await res.json();
       if (data.success) {
         setCoinBalance(data.setuCoinsBalance);
@@ -175,9 +176,8 @@ export default function OnDemandServices() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/requests/services`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/requests/services`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           services: selected,
@@ -204,9 +204,8 @@ export default function OnDemandServices() {
         fetchCoinBalance(); // Update balance
         // Notify admins
         try {
-          await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
+          await authenticatedFetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
             method: 'POST',
-            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               title: 'New Service Request',
@@ -230,9 +229,8 @@ export default function OnDemandServices() {
     }
     setMoversSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/requests/movers`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/requests/movers`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fromAddress: moversForm.from,
@@ -260,9 +258,8 @@ export default function OnDemandServices() {
         fetchCoinBalance();
         // Notify admins
         try {
-          await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
+          await authenticatedFetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
             method: 'POST',
-            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               title: 'New Movers Request',
@@ -468,10 +465,10 @@ export default function OnDemandServices() {
                     )}
                     <div className="mt-2 flex items-center gap-2">
                       {req.status === 'pending' && (
-                        <button onClick={async () => { try { await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Movers request cancelled'); fetchMyMoverRequests(); } catch (_) { toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 dark:text-gray-300">Cancel</button>
+                        <button onClick={async () => { try { await authenticatedFetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Movers request cancelled'); fetchMyMoverRequests(); } catch (_) { toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 dark:text-gray-300">Cancel</button>
                       )}
                       {req.status === 'cancelled' && (req.reinitiateCount ?? 0) < 2 && (
-                        <button onClick={async () => { try { const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}/reinitiate`, { method: 'POST', credentials: 'include' }); const data = await r.json(); if (r.ok) { toast.success('Movers request re-initiated'); fetchMyMoverRequests(); } else { toast.error(data.message || 'Failed to reinitiate'); } } catch (_) { toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount || 0)} left)</button>
+                        <button onClick={async () => { try { const r = await authenticatedFetch(`${API_BASE_URL}/api/requests/movers/${req._id}/reinitiate`, { method: 'POST' }); const data = await r.json(); if (r.ok) { toast.success('Movers request re-initiated'); fetchMyMoverRequests(); } else { toast.error(data.message || 'Failed to reinitiate'); } } catch (_) { toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount || 0)} left)</button>
                       )}
                       <button onClick={() => {
                         setConfirmationModal({
@@ -481,7 +478,7 @@ export default function OnDemandServices() {
                           isDestructive: true,
                           onConfirm: async () => {
                             try {
-                              const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method: 'DELETE', credentials: 'include' });
+                              const r = await authenticatedFetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method: 'DELETE' });
                               if (r.ok) {
                                 toast.success('Deleted');
                                 setMyMoverRequests(prev => prev.filter(x => x._id !== req._id));
@@ -836,10 +833,10 @@ export default function OnDemandServices() {
                   )}
                   <div className="mt-2 flex items-center gap-2">
                     {req.status === 'pending' && (
-                      <button onClick={async () => { try { await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Service request cancelled'); fetchMyRequests(); } catch (_) { toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
+                      <button onClick={async () => { try { await authenticatedFetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Service request cancelled'); fetchMyRequests(); } catch (_) { toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
                     )}
                     {req.status === 'cancelled' && (req.reinitiateCount ?? 0) < 2 && (
-                      <button onClick={async () => { try { const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}/reinitiate`, { method: 'POST', credentials: 'include' }); const data = await r.json(); if (r.ok) { toast.success('Service request re-initiated'); fetchMyRequests(); } else { toast.error(data.message || 'Failed to reinitiate'); } } catch (_) { toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/50">Re-initiate ({2 - (req.reinitiateCount || 0)} left)</button>
+                      <button onClick={async () => { try { const r = await authenticatedFetch(`${API_BASE_URL}/api/requests/services/${req._id}/reinitiate`, { method: 'POST' }); const data = await r.json(); if (r.ok) { toast.success('Service request re-initiated'); fetchMyRequests(); } else { toast.error(data.message || 'Failed to reinitiate'); } } catch (_) { toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/50">Re-initiate ({2 - (req.reinitiateCount || 0)} left)</button>
                     )}
                     <button onClick={() => {
                       setConfirmationModal({
@@ -849,7 +846,7 @@ export default function OnDemandServices() {
                         isDestructive: true,
                         onConfirm: async () => {
                           try {
-                            const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method: 'DELETE', credentials: 'include' });
+                            const r = await authenticatedFetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method: 'DELETE' });
                             if (r.ok) {
                               toast.success('Deleted');
                               setMyRequests(prev => prev.filter(x => x._id !== req._id));

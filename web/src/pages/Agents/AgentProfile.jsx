@@ -194,7 +194,7 @@ const AgentProfile = () => {
 
         try {
             const url = `${API_BASE_URL}/api/agent/profile/${id}`;
-            const res = await fetch(url);
+            const res = await authenticatedFetch(url);
             const data = await res.json();
 
             if (res.ok) {
@@ -217,7 +217,7 @@ const AgentProfile = () => {
 
     const fetchListings = async (userId) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/listing/agent/listings/${userId}`);
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/agent/listings/${userId}`);
             const data = await res.json();
             if (res.ok) {
                 setListings(data);
@@ -229,7 +229,7 @@ const AgentProfile = () => {
 
     const fetchReviews = async (agentId) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/agent/reviews/${agentId}`);
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/agent/reviews/${agentId}`);
             const data = await res.json();
             if (res.ok) {
                 setReviews(data);

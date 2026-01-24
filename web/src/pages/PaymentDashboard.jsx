@@ -11,6 +11,7 @@ import { socket } from '../utils/socket';
 
 import PaymentDashboardSkeleton from '../components/skeletons/PaymentDashboardSkeleton';
 import SocialSharePanel from '../components/SocialSharePanel';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -113,8 +114,8 @@ const PaymentDashboard = () => {
 
         // Search in both currencies
         const [usdRes, inrRes] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?q=${paymentId}&limit=1&currency=USD`, { credentials: 'include' }),
-          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?q=${paymentId}&limit=1&currency=INR`, { credentials: 'include' })
+          authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?q=${paymentId}&limit=1&currency=USD`),
+          authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?q=${paymentId}&limit=1&currency=INR`)
         ]);
 
         const usdData = await usdRes.json();
@@ -222,9 +223,7 @@ const PaymentDashboard = () => {
   const fetchPaymentStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/stats/overview`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/stats/overview`);
       const data = await response.json();
       if (response.ok) {
         setStats(data.overview);
@@ -252,8 +251,8 @@ const PaymentDashboard = () => {
       const fromDate = fromSel ? fromSel.value : '';
       const toDate = toSel ? toSel.value : '';
       const [usdRes, inrRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&paymentType=${encodeURIComponent(paymentType)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' }),
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&paymentType=${encodeURIComponent(paymentType)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`, { credentials: 'include' })
+        authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=USD&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&paymentType=${encodeURIComponent(paymentType)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`),
+        authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/admin/list?currency=INR&limit=1000&status=${encodeURIComponent(status)}&gateway=${encodeURIComponent(gateway)}&paymentType=${encodeURIComponent(paymentType)}&q=${encodeURIComponent(q)}&fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`)
       ]);
       const usdData = await usdRes.json();
       const inrData = await inrRes.json();
@@ -287,7 +286,7 @@ const PaymentDashboard = () => {
     if (!url) return;
     try {
       const receiptUrl = url.includes('?') ? `${url}&admin=true` : `${url}?admin=true`;
-      const res = await fetch(receiptUrl, { credentials: 'include' });
+      const res = await authenticatedFetch(receiptUrl);
       if (!res.ok) return;
       const blob = await res.blob();
       const objUrl = window.URL.createObjectURL(blob);
@@ -1103,7 +1102,7 @@ const PaymentDashboard = () => {
 
                     // Download export file
                     try {
-                      const res = await fetch(`${API_BASE_URL}/api/payments/admin/export`, { credentials: 'include' });
+                      const res = await authenticatedFetch(`${API_BASE_URL}/api/payments/admin/export`);
                       if (!res.ok) {
                         toast.error('Failed to export payments');
                         return;
@@ -1138,7 +1137,7 @@ const PaymentDashboard = () => {
                     toast.error("Too many incorrect attempts. You've been signed out for security.");
                     dispatch(signoutUserStart());
                     try {
-                      const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+                      const signoutRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signout`);
                       const signoutData = await signoutRes.json();
                       if (signoutData.success === false) {
                         dispatch(signoutUserFailure(signoutData.message));

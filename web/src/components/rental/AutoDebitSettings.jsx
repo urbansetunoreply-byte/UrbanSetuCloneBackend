@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaCog, FaToggleOn, FaToggleOff, FaCreditCard, FaCalendarAlt, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -23,10 +24,9 @@ export default function AutoDebitSettings({ wallet, contract, onUpdate }) {
       setLoading(true);
       const newEnabled = !settings.enabled;
 
-      const res = await fetch(`${API_BASE_URL}/api/rental/wallet/${contract.contractId}/auto-debit`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/wallet/${contract.contractId}/auto-debit`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           enabled: newEnabled,
           method: settings.method,
@@ -69,10 +69,9 @@ export default function AutoDebitSettings({ wallet, contract, onUpdate }) {
     try {
       setLoading(true);
 
-      const res = await fetch(`${API_BASE_URL}/api/rental/wallet/${contract.contractId}/auto-debit`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/wallet/${contract.contractId}/auto-debit`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           enabled: settings.enabled,
           method: settings.method,

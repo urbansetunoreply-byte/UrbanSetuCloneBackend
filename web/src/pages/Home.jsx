@@ -23,6 +23,7 @@ import SeasonalEffects from "../components/SeasonalEffects";
 import DailyQuote from "../components/DailyQuote";
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 import ThemeDetailModal from "../components/ThemeDetailModal";
+import { authenticatedFetch } from "../utils/auth";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -65,13 +66,13 @@ export default function Home() {
           trendingRes,
           statsRes
         ] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/api/watchlist/top?limit=6`, { credentials: 'include' }),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`),
+          authenticatedFetch(`${API_BASE_URL}/api/watchlist/top?limit=6`),
           Promise.all([
-            fetch(`${API_BASE_URL}/api/listing/count`),
-            fetch(`${API_BASE_URL}/api/user/count`)
+            authenticatedFetch(`${API_BASE_URL}/api/listing/count`),
+            authenticatedFetch(`${API_BASE_URL}/api/user/count`)
           ])
         ]);
 
@@ -122,7 +123,7 @@ export default function Home() {
         return;
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/ai/recommendations?userId=${currentUser._id}`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/ai/recommendations?userId=${currentUser._id}`);
         if (!res.ok) return;
         const data = await res.json();
         setRecommendedListings(Array.isArray(data) ? data : (data?.listings || []));

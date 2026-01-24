@@ -6,6 +6,7 @@ import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import AdminDeletedListingsSkeleton from "../components/skeletons/AdminDeletedListingsSkeleton";
 
 import { usePageTitle } from "../hooks/usePageTitle";
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -48,9 +49,7 @@ export default function AdminDeletedListings() {
             if (filters.deletionType !== 'all') queryParams.append('deletionType', filters.deletionType);
             queryParams.append('limit', '100'); // Fetch more for client side pagination
 
-            const res = await fetch(`${API_BASE_URL}/api/listing/get-deleted?${queryParams.toString()}`, {
-                credentials: 'include'
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get-deleted?${queryParams.toString()}`);
 
             const data = await res.json();
 
@@ -81,9 +80,8 @@ export default function AdminDeletedListings() {
 
         try {
             setRestoringId(id);
-            const res = await fetch(`${API_BASE_URL}/api/listing/restore-deleted/${id}`, {
-                method: 'POST',
-                credentials: 'include'
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/restore-deleted/${id}`, {
+                method: 'POST'
             });
 
             const data = await res.json();

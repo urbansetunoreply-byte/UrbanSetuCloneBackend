@@ -11,6 +11,7 @@ import {
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import AdminSessionAuditLogsSkeleton from '../components/skeletons/AdminSessionAuditLogsSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const SessionAuditLogs = () => {
   // Set page title
@@ -267,8 +268,7 @@ const SessionAuditLogs = () => {
       if (filterRole !== 'all') params.append('role', filterRole);
 
       const controller = new AbortController();
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs?${params}`, {
-        credentials: 'include',
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs?${params}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -309,8 +309,7 @@ const SessionAuditLogs = () => {
         functional: visitorFilters.functional
       });
 
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/stats?${params}`, {
-        credentials: 'include',
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/stats?${params}`, {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -346,8 +345,7 @@ const SessionAuditLogs = () => {
         functional: visitorFilters.functional
       });
 
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all?${params}`, {
-        credentials: 'include',
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all?${params}`, {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -447,8 +445,7 @@ const SessionAuditLogs = () => {
       });
 
       // Simple fetch of all recent visitors to get updated data
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all?limit=2000`, {
-        credentials: 'include',
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all?limit=2000`, {
         headers: { 'Content-Type': 'application/json' }
       });
 
@@ -1580,9 +1577,8 @@ const SessionAuditLogs = () => {
                     onClick={async () => {
                       try {
                         setIsClearing(true);
-                        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`, {
+                        const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`, {
                           method: 'DELETE',
-                          credentials: 'include',
                           headers: { 'Content-Type': 'application/json' }
                         });
                         const data = await res.json();
@@ -1726,8 +1722,7 @@ const SessionAuditLogs = () => {
                           ? `${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`
                           : `${import.meta.env.VITE_API_BASE_URL || ''}/api/visitors/all`;
 
-                        const res = await fetch(`${endpoint}?${params}`, {
-                          credentials: 'include',
+                        const res = await authenticatedFetch(`${endpoint}?${params}`, {
                           headers: { 'Content-Type': 'application/json' }
                         });
 

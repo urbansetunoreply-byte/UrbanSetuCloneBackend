@@ -1103,10 +1103,9 @@ export const useCall = () => {
     // Notify backend if call was active (not just ringing)
     if (activeCall?.callId && callState === 'active') {
       try {
-        await fetch(`${API_BASE_URL}/api/calls/end`, {
+        await authenticatedFetch(`${API_BASE_URL}/api/calls/end`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({ callId: activeCall.callId })
         });
 

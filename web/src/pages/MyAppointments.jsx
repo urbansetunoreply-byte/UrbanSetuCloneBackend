@@ -2189,9 +2189,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
     const fetchCallHistory = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
-          credentials: 'include'
-        });
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/calls/history/${appt._id}`);
 
         if (response.ok) {
           const data = await response.json();
@@ -2214,9 +2212,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     const fetchCallHistory = async () => {
       if (!appt?._id) return;
       try {
-        const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
-          credentials: 'include'
-        });
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/calls/history/${appt._id}`);
 
         if (response.ok) {
           const data = await response.json();
@@ -2253,7 +2249,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     if (!hasMentionTrigger || propertiesLoaded) return;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=300&forSuggestion=true`, { credentials: 'include' });
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=300&forSuggestion=true`);
         const data = await res.json();
         const mapped = Array.isArray(data) ? data.map(l => ({
           id: l._id,
@@ -2287,9 +2283,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     if (isCancelled && canShowReinitiate && appt._id) {
       const fetchPaymentStatus = async () => {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appt._id}`, {
-            credentials: 'include'
-          });
+          const response = await authenticatedFetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appt._id}`);
           if (response.ok) {
             const data = await response.json();
             if (data.payments && data.payments.length > 0) {
@@ -3034,7 +3028,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
 
       // Try to fetch the image to handle CORS and get proper blob
       try {
-        const response = await fetch(imageUrl, {
+        const response = await authenticatedFetch(imageUrl, {
           mode: 'cors',
           cache: 'no-cache'
         });
@@ -7510,7 +7504,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          const response = await authenticatedFetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
@@ -7548,7 +7542,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                          const response = await authenticatedFetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
@@ -7652,7 +7646,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          const response = await authenticatedFetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
@@ -7688,7 +7682,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                       className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                       onClick={async () => {
                                         try {
-                                          const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                          const response = await authenticatedFetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
                                           if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                           const blob = await response.blob();
                                           const blobUrl = window.URL.createObjectURL(blob);
@@ -8697,7 +8691,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                     onClick={async (e) => {
                                                       e.stopPropagation();
                                                       try {
-                                                        const response = await fetch(c.audioUrl, { mode: 'cors' });
+                                                        const response = await authenticatedFetch(c.audioUrl, { mode: 'cors' });
                                                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                         const blob = await response.blob();
                                                         const blobUrl = window.URL.createObjectURL(blob);
@@ -9026,7 +9020,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                               onClick={async (e) => {
                                                 e.stopPropagation();
                                                 try {
-                                                  const response = await fetch(c.documentUrl, { mode: 'cors' });
+                                                  const response = await authenticatedFetch(c.documentUrl, { mode: 'cors' });
                                                   if (!response.ok) throw new Error(`HTTP ${response.status}`);
                                                   const blob = await response.blob();
                                                   const blobUrl = window.URL.createObjectURL(blob);
@@ -12651,9 +12645,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       if (!skipLoading) {
         setLoading(true);
       }
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?appointmentId=${appointment._id}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?appointmentId=${appointment._id}`);
       const data = await response.json();
       if (response.ok && data.payments && data.payments.length > 0) {
         // Prioritize completed or admin-marked payments first
@@ -12692,9 +12684,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
   const fetchRefundRequestStatus = async (paymentId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request-status/${paymentId}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request-status/${paymentId}`);
       const data = await response.json();
       if (response.ok && data.refundRequest) {
         setRefundRequestStatus(data.refundRequest);
@@ -12712,9 +12702,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     setPaying(true);
     // Check if payment is already completed before opening modal
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?appointmentId=${appointment._id}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/history?appointmentId=${appointment._id}`);
       const data = await response.json();
 
       if (response.ok && data.payments && data.payments.length > 0) {
@@ -12756,10 +12744,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         if (activePayment) {
           // Check if another tab/window/browser has the payment modal open using backend lock
           try {
-            const lockCheckResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/check/${appointment._id}`, {
-              method: 'GET',
-              credentials: 'include'
-            });
+            const lockCheckResponse = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/check/${appointment._id}`);
 
             const lockCheckData = await lockCheckResponse.json();
 
@@ -12834,12 +12819,11 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
       // Initialize appointment lock before opening modal (timer is tied to appointment slot, not payment ID)
       try {
-        const lockInitResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/initialize`, {
+        const lockInitResponse = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/initialize`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({ appointmentId: appointment._id })
         });
 
@@ -12918,12 +12902,11 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
     try {
       setSubmittingRefundRequest(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request`, {
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           paymentId: paymentStatus.paymentId,
           appointmentId: appointment._id,
@@ -12957,12 +12940,11 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
     try {
       setSubmittingAppeal(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-appeal`, {
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-appeal`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           refundRequestId: refundRequestStatus._id,
           appealReason: appealForm.reason,

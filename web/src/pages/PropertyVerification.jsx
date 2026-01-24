@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import VerificationForm from '../components/verification/VerificationForm';
 import VerificationStatus from '../components/verification/VerificationStatus';
 import UserPropertyVerificationSkeleton from '../components/skeletons/UserPropertyVerificationSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -96,9 +97,7 @@ export default function PropertyVerification() {
     try {
       setLoading(true);
       // Fetch user's own listings (like MyListings page)
-      const res = await fetch(`${API_BASE_URL}/api/listing/user`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/user`);
 
       const data = await res.json();
       if (res.ok && Array.isArray(data)) {
@@ -122,9 +121,7 @@ export default function PropertyVerification() {
 
   const fetchVerificationStatus = async (listingId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/verification/${listingId}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/verification/${listingId}`);
 
       const data = await res.json();
       if (res.ok && data.success) {

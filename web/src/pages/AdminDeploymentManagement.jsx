@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { resetAndroidDownloadCache } from '../utils/androidDownload';
 import AdminDeploymentManagementSkeleton from '../components/skeletons/AdminDeploymentManagementSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminDeploymentManagement() {
@@ -44,9 +45,7 @@ export default function AdminDeploymentManagement() {
 
   const fetchFiles = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/deployment`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/deployment`);
       const data = await response.json();
       if (data.success) {
         setFiles(data.data);
@@ -61,7 +60,7 @@ export default function AdminDeploymentManagement() {
 
   const fetchActiveFiles = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/deployment/active`);
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/deployment/active`);
       const data = await response.json();
       if (data.success) {
         setActiveFiles(data.data);
@@ -179,9 +178,8 @@ export default function AdminDeploymentManagement() {
   const handleSetActive = async (fileId) => {
     try {
       const encodedId = encodeURIComponent(fileId);
-      const response = await fetch(`${API_BASE_URL}/api/deployment/set-active/${encodedId}`, {
-        method: 'PUT',
-        credentials: 'include'
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/deployment/set-active/${encodedId}`, {
+        method: 'PUT'
       });
 
       const data = await response.json();
@@ -214,9 +212,8 @@ export default function AdminDeploymentManagement() {
 
     try {
       const encodedId = encodeURIComponent(fileToDelete);
-      const response = await fetch(`${API_BASE_URL}/api/deployment/${encodedId}`, {
-        method: 'DELETE',
-        credentials: 'include'
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/deployment/${encodedId}`, {
+        method: 'DELETE'
       });
 
       const data = await response.json();
@@ -240,7 +237,7 @@ export default function AdminDeploymentManagement() {
   const handleDownloadFile = async (fileId) => {
     try {
       const encodedId = encodeURIComponent(fileId);
-      const res = await fetch(`${API_BASE_URL}/api/deployment/download-url?id=${encodedId}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/deployment/download-url?id=${encodedId}`);
       const data = await res.json();
       if (data && data.success && data.url) {
         window.location.href = data.url;

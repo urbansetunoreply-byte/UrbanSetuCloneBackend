@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaUpload, FaTrash, FaImage, FaVideo, FaSpinner, FaExpand, FaPlay } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../../utils/auth';
 import ImagePreview from '../ImagePreview';
 import VideoPreview from '../VideoPreview';
 
@@ -66,9 +67,8 @@ export default function ConditionImageUpload({
         const formData = new FormData();
         formData.append('image', file);
 
-        const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
           method: 'POST',
-          credentials: 'include',
           body: formData
         });
 
@@ -106,9 +106,8 @@ export default function ConditionImageUpload({
       const formData = new FormData();
       formData.append('video', file);
 
-      const res = await fetch(`${API_BASE_URL}/api/upload/video`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/upload/video`, {
         method: 'POST',
-        credentials: 'include',
         body: formData
       });
 

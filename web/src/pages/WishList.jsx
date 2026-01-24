@@ -7,6 +7,7 @@ import SavedPropertiesSkeleton from '../components/skeletons/SavedPropertiesSkel
 import SocialSharePanel from '../components/SocialSharePanel';
 import { toast } from 'react-toastify';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaArrowDown, FaArrowUp, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX, FaRobot } from 'react-icons/fa';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -43,7 +44,7 @@ const WishList = () => {
   const fetchWishlist = async () => {
     if (!currentUser?._id) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/wishlist/user/${currentUser._id}`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/wishlist/user/${currentUser._id}`);
       if (res.ok) {
         const data = await res.json();
         setWishlistItems(data);
@@ -74,7 +75,7 @@ const WishList = () => {
 
   const handleRemove = async (listingId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/wishlist/remove/${listingId}`, { method: 'DELETE', credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/wishlist/remove/${listingId}`, { method: 'DELETE' });
       if (res.ok) {
         setItems(prev => prev.filter(l => l._id !== listingId));
         setWishlistItems(prev => prev.filter(w => (w.listingId?.['_id'] || w.listingIdRaw) !== listingId));
@@ -101,7 +102,7 @@ const WishList = () => {
     }
     setSearching(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(query)}&limit=20`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(query)}&limit=20`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -126,7 +127,7 @@ const WishList = () => {
     }
     setSuggestionLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(searchQuery)}&limit=8`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(searchQuery)}&limit=8`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -156,10 +157,9 @@ const WishList = () => {
 
   const addToWishlist = async (listing) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/wishlist/add`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/wishlist/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ listingId: listing._id })
       });
       if (res.ok) {
@@ -207,7 +207,7 @@ const WishList = () => {
   const handleBulkRemove = async () => {
     if (selectedItems.length === 0) return;
     try {
-      const promises = selectedItems.map(listingId => fetch(`${API_BASE_URL}/api/wishlist/remove/${listingId}`, { method: 'DELETE', credentials: 'include' }));
+      const promises = selectedItems.map(listingId => authenticatedFetch(`${API_BASE_URL}/api/wishlist/remove/${listingId}`, { method: 'DELETE' }));
       await Promise.all(promises);
       setItems(prev => prev.filter(item => !selectedItems.includes(item._id)));
       setSelectedItems([]);

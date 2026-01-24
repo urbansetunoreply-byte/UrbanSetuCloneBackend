@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import SharedChatViewSkeleton from '../components/skeletons/SharedChatViewSkeleton';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import { authenticatedFetch } from '../utils/auth';
 
 export default function SharedChatView() {
     const { shareToken } = useParams();
@@ -28,7 +29,7 @@ export default function SharedChatView() {
                 const viewedKey = `viewed_${shareToken}`;
                 const alreadyViewed = sessionStorage.getItem(viewedKey);
 
-                const res = await fetch(`${API_BASE_URL}/api/shared-chat/view/${shareToken}${alreadyViewed ? '?inc=0' : ''}`);
+                const res = await authenticatedFetch(`${API_BASE_URL}/api/shared-chat/view/${shareToken}${alreadyViewed ? '?inc=0' : ''}`);
                 const data = await res.json();
 
                 if (data.success) {
@@ -56,12 +57,11 @@ export default function SharedChatView() {
 
         setImporting(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/shared-chat/import/${shareToken}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/shared-chat/import/${shareToken}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                credentials: 'include' // Important for auth cookies
+                }
             });
             const data = await res.json();
 

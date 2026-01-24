@@ -14,6 +14,7 @@ import { useHeader } from '../contexts/HeaderContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SocialSharePanel from '../components/SocialSharePanel';
+import { authenticatedFetch } from '../utils/auth';
 
 const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -621,12 +622,11 @@ export default function RoutePlanner() {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/save`, {
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/save`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify(routeToSave)
       });
 
@@ -655,9 +655,7 @@ export default function RoutePlanner() {
       if (!routeGeometry) {
         const loadingToast = toast.loading("Fetching route details...");
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${savedRoute._id}`, {
-            credentials: 'include'
-          });
+          const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${savedRoute._id}`);
 
           if (!response.ok) throw new Error("Failed to fetch details");
 
@@ -731,9 +729,7 @@ export default function RoutePlanner() {
   // Fetch saved routes from backend
   const fetchSavedRoutes = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved`);
 
       if (response.ok) {
         const data = await response.json();
@@ -754,9 +750,8 @@ export default function RoutePlanner() {
       isDestructive: true,
       onConfirm: async () => {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${routeId}`, {
-            method: 'DELETE',
-            credentials: 'include'
+          const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${routeId}`, {
+            method: 'DELETE'
           });
 
           if (response.ok) {
@@ -791,9 +786,8 @@ export default function RoutePlanner() {
       onConfirm: async () => {
         try {
           const deletePromises = savedRoutes.map(route =>
-            fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${route._id}`, {
-              method: 'DELETE',
-              credentials: 'include'
+            authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${route._id}`, {
+              method: 'DELETE'
             })
           );
 

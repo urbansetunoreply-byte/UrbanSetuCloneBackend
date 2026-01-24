@@ -11,6 +11,7 @@ import {
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import DeviceManagementSkeleton from '../components/skeletons/DeviceManagementSkeleton';
+import { authenticatedFetch, clearAuthData } from '../utils/auth';
 
 
 
@@ -143,8 +144,7 @@ const DeviceManagement = () => {
   const fetchSessions = async () => {
     try {
       const controller = new AbortController();
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/my-sessions`, {
-        credentials: 'include',
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/my-sessions`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -189,9 +189,8 @@ const DeviceManagement = () => {
   const revokeSession = async (sessionId) => {
     setRevokingSession(sessionId);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/revoke-session`, {
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/revoke-session`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -208,11 +207,7 @@ const DeviceManagement = () => {
         // If the revoked session is current, trigger immediate logout via socket handler fallback
         const currentSessionId = document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1];
         if (currentSessionId && currentSessionId === sessionId) {
-          // Clear local auth and redirect
-          try { localStorage.removeItem('accessToken'); } catch (_) { }
-          document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
-          document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
-          document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
+          clearAuthData();
           window.location.href = '/sign-in?error=session_revoked';
           return;
         }
@@ -232,9 +227,8 @@ const DeviceManagement = () => {
   const executeRevokeAllSessions = async () => {
     setIsRevokingAll(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/revoke-all-sessions`, {
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/revoke-all-sessions`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

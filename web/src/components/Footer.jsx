@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FaHome, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCookie, FaShieldAlt, FaFileContract, FaEye, FaHandshake } from 'react-icons/fa';
+import { authenticatedFetch } from '../utils/auth';
 
 import { API_BASE_URL } from '../config/api';
 
@@ -13,7 +14,7 @@ const Footer = () => {
   useEffect(() => {
     const fetchDailyVisitorCount = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/visitors/count/daily`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/visitors/count/daily`);
         const data = await res.json();
         if (data.success) {
           setDailyVisitorCount(data.count);

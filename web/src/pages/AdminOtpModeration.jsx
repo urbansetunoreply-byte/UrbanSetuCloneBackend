@@ -3,6 +3,7 @@ import { FaShieldAlt, FaSync, FaUnlockAlt, FaSearch } from "react-icons/fa";
 import { useSelector } from "react-redux";
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminOtpModeration() {
@@ -28,7 +29,7 @@ export default function AdminOtpModeration() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/otp/stats`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/stats`);
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || 'Failed to fetch');
       setStats({ recent: data.recent || [], activeLockouts: data.activeLockouts || 0 });
@@ -45,10 +46,9 @@ export default function AdminOtpModeration() {
     setError(""); setSuccess("");
     if (!emailToUnlock.trim()) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/otp/unlock-email`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/unlock-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email: emailToUnlock.trim() })
       });
       const data = await res.json();
@@ -63,10 +63,9 @@ export default function AdminOtpModeration() {
     setError(""); setSuccess("");
     if (!ipToUnlock.trim()) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/otp/unlock-ip`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/unlock-ip`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ ip: ipToUnlock.trim() })
       });
       const data = await res.json();

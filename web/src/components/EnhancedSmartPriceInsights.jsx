@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { FaChartLine, FaArrowUp, FaCalculator, FaHome, FaBuilding, FaPercentage, FaClock, FaMapMarkerAlt, FaStar, FaInfoCircle, FaShieldAlt, FaGraduationCap, FaBus, FaCloud, FaArrowDown, FaExclamationTriangle, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
 
+import { authenticatedFetch } from '../utils/auth';
+
 const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,12 +21,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/analytics/property/${listing._id}/analytics`, {
-        credentials: 'include',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
-      });
+      const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/analytics/property/${listing._id}/analytics`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch analytics data');
@@ -292,7 +289,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
                 <div className="space-y-2">
                   <p className="text-sm text-gray-600 dark:text-gray-300">Risk Level:
                     <span className={`ml-2 font-semibold ${investmentAnalysis.riskScore < 30 ? 'text-green-600 dark:text-green-400' :
-                        investmentAnalysis.riskScore < 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+                      investmentAnalysis.riskScore < 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                       {investmentAnalysis.riskScore < 30 ? 'Low' :
                         investmentAnalysis.riskScore < 60 ? 'Medium' : 'High'}
@@ -461,7 +458,7 @@ const EnhancedSmartPriceInsights = ({ listing, currentUser }) => {
               <div className="bg-white dark:bg-gray-700 p-4 rounded-lg text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-300">Market Sentiment</p>
                 <p className={`text-2xl font-bold ${trendsData.marketSentiment === 'Bullish' ? 'text-green-600 dark:text-green-400' :
-                    trendsData.marketSentiment === 'Bearish' ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'
+                  trendsData.marketSentiment === 'Bearish' ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'
                   }`}>
                   {trendsData.marketSentiment || 'Neutral'}
                 </p>

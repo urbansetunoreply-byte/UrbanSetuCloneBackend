@@ -15,6 +15,7 @@ export const createAuthenticatedFetchOptions = (options = {}) => {
 
   return {
     ...options,
+    credentials: 'include',
     headers: {
       ...options.headers,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

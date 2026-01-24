@@ -6,6 +6,7 @@ import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, F
 import { toast } from 'react-toastify';
 import { downloadAndroidApp, getDownloadButtonText } from '../utils/androidDownload';
 import { useSelector } from 'react-redux';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
@@ -48,7 +49,7 @@ export default function AdminAbout() {
   useEffect(() => {
     const fetchAboutData = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/about`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/about`);
         if (response.ok) {
           const data = await response.json();
           setAboutData(data);
@@ -130,10 +131,9 @@ export default function AdminAbout() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password }),
       });
       if (res.ok) {
@@ -153,11 +153,10 @@ export default function AdminAbout() {
     setError('');
     setSuccess(false);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/about`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/about`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editData),
-        credentials: 'include'
       });
       if (res.ok) {
         setAboutData(editData);

@@ -8,6 +8,7 @@ import VideoPreview from '../VideoPreview';
 import UserAvatar from '../UserAvatar';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { authenticatedFetch } from '../../utils/auth';
 
 export default function DisputeDetail({
   dispute,
@@ -58,9 +59,8 @@ export default function DisputeDetail({
         return;
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/listing/republish/${listingId}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/republish/${listingId}`, {
         method: 'POST',
-        credentials: 'include'
       });
 
       const data = await res.json();
@@ -96,9 +96,8 @@ export default function DisputeDetail({
 
     try {
       setSending(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/disputes/${dispute._id}/comments`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/disputes/${dispute._id}/comments`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: newMessage,
@@ -131,7 +130,7 @@ export default function DisputeDetail({
       const fetchUrl = docUrl;
 
       // Fetch the document
-      const response = await fetch(fetchUrl, { mode: 'cors' });
+      const response = await authenticatedFetch(fetchUrl, { mode: 'cors' });
       if (!response.ok) throw new Error('Failed to fetch document');
 
       const contentType = response.headers.get('content-type') || '';
@@ -212,9 +211,8 @@ export default function DisputeDetail({
           endpoint = '/api/upload/document';
         }
 
-        const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+        const res = await authenticatedFetch(`${API_BASE_URL}${endpoint}`, {
           method: 'POST',
-          credentials: 'include',
           body: formData
         });
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaArrowUp, FaArrowDown, FaExchangeAlt, FaHistory, FaCalendarAlt, FaChevronDown, FaChevronUp, FaUserFriends, FaStar, FaCheck } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../../utils/auth';
 
 const CoinHistory = ({ initialOpen = false, refreshTrigger = 0 }) => {
     const navigate = useNavigate();
@@ -14,9 +15,7 @@ const CoinHistory = ({ initialOpen = false, refreshTrigger = 0 }) => {
             try {
                 setLoading(true);
                 // We use authenticatedFetch logic or standard fetch with credentials
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/coins/history`, {
-                    credentials: 'include'
-                });
+                const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/coins/history`);
                 const data = await response.json();
                 if (data.success) {
                     setTransactions(data.transactions);

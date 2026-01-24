@@ -11,6 +11,7 @@ import {
 import ClientErrorSkeleton from '../components/skeletons/ClientErrorSkeleton';
 import VisitorDetailsModal from '../components/VisitorDetailsModal';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from '../utils/auth';
 
 const calculateDuration = (start, end) => {
     if (!start || !end) return 'N/A';
@@ -50,7 +51,7 @@ const ClientErrorMonitoring = () => {
         if (isVisitorLoading) return;
         setIsVisitorLoading(true);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/visitors/monitor/${visitorId}`, { credentials: 'include' });
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/visitors/monitor/${visitorId}`);
             const data = await res.json();
             if (data.success) {
                 setSelectedVisitor(data.visitor);
@@ -88,9 +89,7 @@ const ClientErrorMonitoring = () => {
                 deviceType
             });
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/visitors/client-errors?${queryParams}`, {
-                credentials: 'include'
-            });
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/visitors/client-errors?${queryParams}`);
 
             const data = await res.json();
 

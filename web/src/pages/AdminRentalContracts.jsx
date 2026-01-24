@@ -6,6 +6,7 @@ import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLo
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
 import AdminRentalContractsSkeleton from '../components/skeletons/AdminRentalContractsSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -93,9 +94,7 @@ export default function AdminRentalContracts() {
         setLoading(true);
       }
       // Always fetch all contracts, apply filters client-side
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/all`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/all`);
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -141,9 +140,7 @@ export default function AdminRentalContracts() {
 
   const handleDownload = async (contract) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rental/contracts/${contract.contractId || contract._id}/download`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contract.contractId || contract._id}/download`);
 
       if (!response.ok) {
         throw new Error('Failed to download contract');
@@ -192,10 +189,9 @@ export default function AdminRentalContracts() {
 
     try {
       setActionLoading(action);
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${selectedContract.contractId || selectedContract._id}/status`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${selectedContract.contractId || selectedContract._id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           status: newStatus,
           reason: statusReason || undefined

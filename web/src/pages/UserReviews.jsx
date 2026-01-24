@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function UserReviews() {
@@ -139,7 +140,7 @@ export default function UserReviews() {
       if (!currentUser) return;
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
         if (res.ok) {
           const updatedUser = await res.json();
           if (updatedUser.username !== currentUser.username || updatedUser.avatar !== currentUser.avatar) {
@@ -168,9 +169,7 @@ export default function UserReviews() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${API_BASE_URL}/api/review/user`, {
-        credentials: 'include',
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/user`);
 
       const data = await res.json();
 
@@ -296,9 +295,8 @@ export default function UserReviews() {
         toast.error('Invalid review. Please refresh and try again.');
         return;
       }
-      const res = await fetch(`${API_BASE_URL}/api/review/delete/${reviewToDelete._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/review/delete/${reviewToDelete._id}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
 
       const data = await res.json();

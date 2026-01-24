@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import ChecklistModal from '../components/rental/ChecklistModal';
 import AdminServicesSkeleton from '../components/skeletons/AdminServicesSkeleton';
 import { getCoinValue, COIN_CONFIG } from '../utils/coinUtils';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 export default function AdminServices() {
@@ -45,7 +46,7 @@ export default function AdminServices() {
     if (!currentUser) return;
     setLoadingServices(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/requests/services`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/requests/services`);
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
     } catch (_) { }
@@ -55,7 +56,7 @@ export default function AdminServices() {
     if (!currentUser) return;
     setLoadingMovers(true);
     try {
-      const mres = await fetch(`${API_BASE_URL}/api/requests/movers`, { credentials: 'include' });
+      const mres = await authenticatedFetch(`${API_BASE_URL}/api/requests/movers`);
       const mdata = await mres.json();
       setMovers(Array.isArray(mdata) ? mdata : []);
     } catch (_) { }
@@ -66,7 +67,7 @@ export default function AdminServices() {
     if (!currentUser) return;
     setLoadingChecklists(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/checklist/all`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/checklist/all`);
       const data = await res.json();
       if (data.success) {
         setChecklists(data.checklists || []);
@@ -108,9 +109,8 @@ export default function AdminServices() {
 
   const markAsRead = async (id) => {
     try {
-      await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
+      await authenticatedFetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUser._id })
       });
@@ -197,7 +197,7 @@ export default function AdminServices() {
                         {email && (
                           <a href={`mailto:${email}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope /> Email</a>
                         )}
-                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await authenticatedFetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                           {['pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         <button onClick={() => {
@@ -208,7 +208,7 @@ export default function AdminServices() {
                             isDestructive: true,
                             onConfirm: async () => {
                               try {
-                                const r = await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'DELETE', credentials: 'include' });
+                                const r = await authenticatedFetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'DELETE' });
                                 if (r.ok) {
                                   setItems(prev => prev.filter(x => x._id !== n._id));
                                 }
@@ -289,7 +289,7 @@ export default function AdminServices() {
                         {n.requesterEmail && (
                           <a href={`mailto:${n.requesterEmail}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope /> Email</a>
                         )}
-                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await authenticatedFetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                           {['pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         <button onClick={() => {
@@ -300,7 +300,7 @@ export default function AdminServices() {
                             isDestructive: true,
                             onConfirm: async () => {
                               try {
-                                const r = await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'DELETE', credentials: 'include' });
+                                const r = await authenticatedFetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'DELETE' });
                                 if (r.ok) {
                                   setMovers(prev => prev.filter(x => x._id !== n._id));
                                 }
@@ -494,9 +494,8 @@ export default function AdminServices() {
                                 isDestructive: true,
                                 onConfirm: async () => {
                                   try {
-                                    const res = await fetch(`${API_BASE_URL}/api/rental/checklist/${checklist._id}`, {
-                                      method: 'DELETE',
-                                      credentials: 'include'
+                                    const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/checklist/${checklist._id}`, {
+                                      method: 'DELETE'
                                     });
                                     const data = await res.json();
                                     if (res.ok && data.success) {

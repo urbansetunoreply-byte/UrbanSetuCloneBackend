@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { authenticatedFetch } from '../utils/auth';
 import { FaWindows, FaApple, FaAndroid, FaLinux, FaDownload, FaHistory, FaMobileAlt, FaDesktop, FaInfoCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import AdminDeploymentManagementSkeleton from '../components/skeletons/AdminDeploymentManagementSkeleton';
@@ -17,7 +18,7 @@ export default function Downloads() {
 
     const fetchDeploymentFiles = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/deployment/public`);
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/deployment/public`);
             const data = await response.json();
             if (data.success) {
                 setFiles(data.data);
@@ -37,7 +38,7 @@ export default function Downloads() {
                 window.location.href = file.url;
             } else {
                 // S3 Presigned URL
-                const res = await fetch(`${API_BASE_URL}/api/deployment/public-download-url?id=${encodeURIComponent(file.id)}`);
+                const res = await authenticatedFetch(`${API_BASE_URL}/api/deployment/public-download-url?id=${encodeURIComponent(file.id)}`);
                 const data = await res.json();
                 if (data.success && data.url) {
                     window.location.href = data.url;

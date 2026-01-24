@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPhone, FaVideo, FaClock, FaCheckCircle, FaTimesCircle, FaFilter, FaSearch, FaCalendarAlt, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { API_BASE_URL } from '../config/api';
+import { authenticatedFetch } from '../utils/auth';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const AdminCallHistorySkeleton = () => (
@@ -52,9 +53,7 @@ const AdminCallHistory = () => {
       const params = new URLSearchParams();
       params.append('limit', '1000');
 
-      const response = await fetch(`${API_BASE_URL}/api/calls/admin/history?${params}`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/calls/admin/history?${params}`);
 
       if (response.ok) {
         const data = await response.json();

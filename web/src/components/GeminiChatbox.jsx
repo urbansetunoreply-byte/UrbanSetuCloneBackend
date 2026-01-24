@@ -5,6 +5,7 @@ import ShareChatModal from './ShareChatModal';
 import VideoPreview from './VideoPreview';
 import { FaPlay } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { authenticatedFetch } from "../utils/auth";
 // import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { isMobileDevice } from '../utils/mobileUtils';
 import { useSelector } from 'react-redux';
@@ -1131,9 +1132,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-            const response = await fetch(`${API_BASE_URL}/api/gemini/rate-limit-status`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/rate-limit-status`, {
                 method: 'GET',
-                credentials: 'include', // Use cookies for authentication
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -1211,8 +1211,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
-                credentials: 'include',
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -1243,8 +1242,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
-                credentials: 'include',
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -1303,9 +1301,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
 
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
                 method: 'GET',
-                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -1366,9 +1363,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const url = `${API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(searchQuery)}&limit=5`;
 
-            const response = await fetch(url, {
+            const response = await authenticatedFetch(url, {
                 method: 'GET',
-                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -1401,7 +1397,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const url = `${API_BASE_URL}/api/property-search/${listingId}`;
-            const response = await fetch(url, { credentials: 'include' });
+            const response = await authenticatedFetch(url);
             if (!response.ok) return;
             const data = await response.json();
             if (data?.success && data.data) {
@@ -1602,9 +1598,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
-            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}/clear`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}/clear`, {
                 method: 'DELETE',
-                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -2327,9 +2322,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             if (enableStreaming === true || enableStreaming === 'true') {
                 console.log('Streaming enabled - setting up streaming request');
 
-                const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/chat`, {
                     method: 'POST',
-                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -2470,9 +2464,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 data = { success: true, response: streamingResponse, sessionId: currentSessionId };
             } else {
                 // Non-streaming response (original logic)
-                const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/chat`, {
                     method: 'POST',
-                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -2734,9 +2727,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             abortControllerRef.current?.abort();
             abortControllerRef.current = new AbortController();
 
-            const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/chat`, {
                 method: 'POST',
-                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -2842,9 +2834,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             if (isBookmarked) {
                 // Remove bookmark
-                const response = await fetch(`${API_BASE_URL}/api/gemini/bookmark`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/bookmark`, {
                     method: 'DELETE',
-                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -2864,9 +2855,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
             } else {
                 // Add bookmark
-                const response = await fetch(`${API_BASE_URL}/api/gemini/bookmark`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/bookmark`, {
                     method: 'POST',
-                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -2929,9 +2919,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
 
-            const response = await fetch(`${API_BASE_URL}/api/gemini/rate`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/rate`, {
                 method: 'POST',
-                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -3000,10 +2989,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const msgId = reportingMessage._id || `session_${getOrCreateSessionId()}_${reportingMessage.index}_${new Date(reportingMessage.timestamp).getTime()}`;
 
-            const response = await fetch(`${API_BASE_URL}/api/report-message/create`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/report-message/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({
                     messageId: msgId,
                     messageContent: reportingMessage.content,
@@ -3148,9 +3136,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             abortControllerRef.current?.abort();
             abortControllerRef.current = new AbortController();
 
-            const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/chat`, {
                 method: 'POST',
-                credentials: 'include', // Include cookies for authentication
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -3261,9 +3248,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         try {
             setAdminReportsLoading(true);
             const query = adminReportsFilter !== 'all' ? `?status=${adminReportsFilter}` : '';
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/getreports${query}`, {
-                credentials: 'include'
-            });
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/getreports${query}`);
             const data = await res.json();
             if (res.ok) {
                 setAdminReports(data.reports);
@@ -3290,10 +3275,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const body = { status };
             if (notes !== null) body.adminNotes = notes;
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/update/${reportId}`, {
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/update/${reportId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify(body)
             });
             const data = await res.json();
@@ -3326,9 +3310,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const confirmDeleteReport = async () => {
         if (!selectedReportToDelete) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/delete/${selectedReportToDelete}`, {
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/delete/${selectedReportToDelete}`, {
                 method: 'DELETE',
-                credentials: 'include'
             });
             if (res.ok) {
                 toast.success('Report deleted successfully');
@@ -3353,9 +3336,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const confirmDeleteRating = async () => {
         if (!selectedRatingToDelete) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/gemini/rating/${selectedRatingToDelete}`, {
+            const res = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/gemini/rating/${selectedRatingToDelete}`, {
                 method: 'DELETE',
-                credentials: 'include'
             });
             const data = await res.json();
             if (res.ok) {
@@ -3470,9 +3452,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
                 method: 'PUT',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name })
             });
@@ -3494,9 +3475,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/gemini/sessions`, {
-                credentials: 'include'
-            });
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/sessions`);
 
             if (response.ok) {
                 const data = await response.json();
@@ -3516,9 +3495,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const loadSessionHistory = async (sessionId) => {
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
-                credentials: 'include'
-            });
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`);
 
             if (response.ok) {
                 const data = await response.json();
@@ -3559,9 +3536,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/gemini/ratings/${sessionId}`, {
-                credentials: 'include'
-            });
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/ratings/${sessionId}`);
 
             if (response.ok) {
                 const data = await response.json();
@@ -3581,9 +3556,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/gemini/bookmarks/${sessionId}`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/bookmarks/${sessionId}`, {
                 method: 'GET',
-                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -3621,9 +3595,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const currentSessionId = getOrCreateSessionId();
             if (messages.length > 0) {
                 // Save current session to history
-                const saveResponse = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
+                const saveResponse = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
                     method: 'PUT',
-                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -3639,9 +3612,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
 
             // Now create a new session
-            const response = await fetch(`${API_BASE_URL}/api/gemini/sessions`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/sessions`, {
                 method: 'POST',
-                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -3690,9 +3662,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            const response = await fetch(`${API_BASE_URL}/api/gemini/sessions/${sessionId}`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/sessions/${sessionId}`, {
                 method: 'DELETE',
-                credentials: 'include'
             });
 
             if (response.ok) {
@@ -3968,9 +3939,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
 
                 // Upload to Cloudinary
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${uploadEndpoint}`, {
+                const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}${uploadEndpoint}`, {
                     method: 'POST',
-                    credentials: 'include',
                     body: formData,
                 });
 
@@ -4929,9 +4899,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             console.log('Auto-saving session:', currentSessionId, 'Messages:', messages.length);
 
-            const saveResponse = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
+            const saveResponse = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
                 method: 'PUT',
-                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -5193,7 +5162,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 try {
                                                                     setAllRatingsLoading(true);
                                                                     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                                                    const resp = await fetch(`${API_BASE_URL}/api/gemini/ratings-all?limit=500&days=90`, { credentials: 'include' });
+                                                                    const resp = await authenticatedFetch(`${API_BASE_URL}/api/gemini/ratings-all?limit=500&days=90`);
                                                                     if (resp.ok) {
                                                                         const data = await resp.json();
                                                                         setAllRatings(Array.isArray(data.ratings) ? data.ratings : []);
@@ -5540,7 +5509,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
                                                                     try {
-                                                                        const response = await fetch(message.imageUrl, { mode: 'cors' });
+                                                                        const response = await authenticatedFetch(message.imageUrl, { mode: 'cors' });
                                                                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                                                                         const contentType = response.headers.get('content-type') || 'image/jpeg';
@@ -5610,7 +5579,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
                                                                     try {
-                                                                        const response = await fetch(message.audioUrl, { mode: 'cors' });
+                                                                        const response = await authenticatedFetch(message.audioUrl, { mode: 'cors' });
                                                                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                                                                         const contentType = response.headers.get('content-type') || 'audio/mpeg';
@@ -5683,7 +5652,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
                                                                     try {
-                                                                        const response = await fetch(message.videoUrl, { mode: 'cors' });
+                                                                        const response = await authenticatedFetch(message.videoUrl, { mode: 'cors' });
                                                                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                                                                         const contentType = response.headers.get('content-type') || 'video/mp4';
@@ -5744,7 +5713,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 try {
                                                                     console.log('Starting download for URL:', message.documentUrl);
 
-                                                                    const response = await fetch(message.documentUrl, { mode: 'cors' });
+                                                                    const response = await authenticatedFetch(message.documentUrl, { mode: 'cors' });
                                                                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                                                                     // Get the actual file type from response headers
@@ -6837,7 +6806,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                                     }
                                                                                     try {
                                                                                         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                                                                        const resp = await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, { credentials: 'include' });
+                                                                                        const resp = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`);
                                                                                         const data = await resp.json();
                                                                                         if (!resp.ok || !data?.data?.messages) throw new Error('load');
                                                                                         const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'SetuAI'}: ${m.content}`);
@@ -6931,7 +6900,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <button onClick={async () => {
                                             try {
                                                 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                                await fetch(`${API_BASE_URL}/api/gemini/sessions`, { method: 'DELETE', credentials: 'include' });
+                                                await authenticatedFetch(`${API_BASE_URL}/api/gemini/sessions`, { method: 'DELETE' });
                                                 await createNewSession();
                                                 await loadChatSessions();
                                                 toast.success('All chats deleted');
@@ -7018,9 +6987,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             try {
                                                 const name = renameInput.trim();
                                                 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                                await fetch(`${API_BASE_URL}/api/chat-history/session/${renameTargetSessionId}`, {
+                                                await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${renameTargetSessionId}`, {
                                                     method: 'PUT',
-                                                    credentials: 'include',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({ name })
                                                 });
@@ -7919,7 +7887,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 try {
                                                     setAllRatingsLoading(true);
                                                     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                                    const resp = await fetch(`${API_BASE_URL}/api/gemini/ratings-all?limit=500&days=90`, { credentials: 'include' });
+                                                    const resp = await authenticatedFetch(`${API_BASE_URL}/api/gemini/ratings-all?limit=500&days=90`);
                                                     if (resp.ok) {
                                                         const data = await resp.json();
                                                         setAllRatings(Array.isArray(data.ratings) ? data.ratings : []);

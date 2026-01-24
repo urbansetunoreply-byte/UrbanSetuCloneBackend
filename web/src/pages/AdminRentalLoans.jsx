@@ -6,6 +6,7 @@ import { FaCreditCard, FaSpinner, FaSearch, FaTimes, FaCheckCircle, FaClock, FaT
 import { usePageTitle } from '../hooks/usePageTitle';
 import LoanStatusDisplay from '../components/loans/LoanStatusDisplay';
 import AdminRentalLoansSkeleton from '../components/skeletons/AdminRentalLoansSkeleton';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -92,9 +93,7 @@ export default function AdminRentalLoans() {
         setLoading(true);
       }
       // Fetch all loans, apply filters client-side
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/loans`);
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -144,9 +143,7 @@ export default function AdminRentalLoans() {
 
   const handleViewLoan = async (loan) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans/${loan._id}`, {
-        credentials: 'include'
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/loans/${loan._id}`);
 
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
@@ -170,10 +167,9 @@ export default function AdminRentalLoans() {
 
     try {
       setActionLoading('approve');
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans/${selectedLoan._id}/approve`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/loans/${selectedLoan._id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           eligibilityCheck,
           adminNotes: adminNotes || undefined,
@@ -209,10 +205,9 @@ export default function AdminRentalLoans() {
 
     try {
       setActionLoading('reject');
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans/${selectedLoan._id}/reject`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/loans/${selectedLoan._id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           rejectionReason,
           adminNotes: adminNotes || undefined
@@ -244,10 +239,9 @@ export default function AdminRentalLoans() {
 
     try {
       setActionLoading('disburse');
-      const res = await fetch(`${API_BASE_URL}/api/rental/loans/${selectedLoan._id}/disburse`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/loans/${selectedLoan._id}/disburse`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           disbursedAmount: disbursedAmount || undefined,
           disbursementReference: disbursementReference || undefined

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { FaUnlockAlt, FaShieldAlt, FaLock, FaEye, FaEyeSlash, FaFilter, FaSearch, FaRedo, FaExclamationTriangle, FaCheckCircle, FaClock, FaUser, FaGlobe, FaEnvelope, FaKey } from 'react-icons/fa';
+import { authenticatedFetch } from '../utils/auth';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -31,7 +32,7 @@ export default function AdminSecurityModeration() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/otp/stats`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/stats`);
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || 'Failed to fetch');
       const recent = data.recent || [];
@@ -51,7 +52,7 @@ export default function AdminSecurityModeration() {
     setOtpRefreshing(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/otp/stats`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/stats`);
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || 'Failed to fetch');
       const recent = data.recent || [];
@@ -68,7 +69,7 @@ export default function AdminSecurityModeration() {
   const fetchPasswordLockouts = async () => {
     setPasswordRefreshing(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/password-lockouts`, { credentials: 'include' });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/password-lockouts`);
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || 'Failed to fetch password lockouts');
       setPasswordLockouts(data.items || []);
@@ -88,10 +89,9 @@ export default function AdminSecurityModeration() {
   const unlockByEmail = async () => {
     if (!emailToUnlock) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/otp/unlock-email`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/unlock-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email: emailToUnlock })
       });
       await res.json();
@@ -103,10 +103,9 @@ export default function AdminSecurityModeration() {
   const unlockByIp = async () => {
     if (!ipToUnlock) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/otp/unlock-ip`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/unlock-ip`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ ip: ipToUnlock })
       });
       await res.json();
@@ -118,10 +117,9 @@ export default function AdminSecurityModeration() {
 
   const unlockPasswordByEmailOrUser = async (payload) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/password-lockouts/unlock`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/password-lockouts/unlock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(payload)
       });
       await res.json();
@@ -132,10 +130,9 @@ export default function AdminSecurityModeration() {
 
   const unlockPasswordByIp = async (ip) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/password-lockouts/unlock-ip`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/password-lockouts/unlock-ip`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ ip })
       });
       await res.json();
@@ -146,10 +143,9 @@ export default function AdminSecurityModeration() {
 
   const unlockPasswordByIdentifier = async (identifier) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/password-lockouts/unlock-identifier`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/password-lockouts/unlock-identifier`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ identifier })
       });
       await res.json();
@@ -448,13 +444,13 @@ export default function AdminSecurityModeration() {
                           onClick={async () => {
                             try {
                               if (r.email) {
-                                const res = await fetch(`${API_BASE_URL}/api/auth/otp/unlock-email`, {
-                                  method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ email: r.email })
+                                const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/unlock-email`, {
+                                  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: r.email })
                                 });
                                 await res.json();
                               } else if (r.ipAddress) {
-                                const res = await fetch(`${API_BASE_URL}/api/auth/otp/unlock-ip`, {
-                                  method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ ip: r.ipAddress })
+                                const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/otp/unlock-ip`, {
+                                  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip: r.ipAddress })
                                 });
                                 await res.json();
                               }

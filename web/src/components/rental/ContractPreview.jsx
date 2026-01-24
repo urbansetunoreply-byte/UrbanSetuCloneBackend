@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaDownload, FaFileContract, FaCalendarAlt, FaMoneyBillWave, FaLock, FaHome, FaCheckCircle } from 'react-icons/fa';
+import { authenticatedFetch } from '../../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -8,9 +9,7 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rental/contracts/${contract.contractId || contract._id}/download`, {
-        credentials: 'include'
-      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contract.contractId || contract._id}/download`);
 
       if (!response.ok) {
         throw new Error('Failed to download contract');

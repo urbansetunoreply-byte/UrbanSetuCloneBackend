@@ -417,7 +417,7 @@ export const checkSuspiciousLogin = async (userId, ip, device) => {
 };
 
 // Enforce role-based session limits
-export const enforceSessionLimits = async (userId, userRole) => {
+export const enforceSessionLimits = async (userId, userRole, io) => {
     const limit = SESSION_LIMITS[userRole] || SESSION_LIMITS.user;
     const user = await User.findById(userId);
 
@@ -443,9 +443,17 @@ export const enforceSessionLimits = async (userId, userRole) => {
             }
         });
 
-        // Remove from active sessions map
+        // Remove from active sessions map and notify clients
         sessionsToRemove.forEach(session => {
             revokeSession(session.sessionId);
+
+            // Notify client via socket if io is provided
+            if (io) {
+                io.to(`session_${session.sessionId}`).emit('force_logout_session', {
+                    sessionId: session.sessionId,
+                    reason: 'Session limit exceeded. You have been logged out on this device because you logged in on a new device.'
+                });
+            }
         });
 
         // Log session cleanup
@@ -549,7 +557,7 @@ export const getUserActiveSessions = async (userId) => {
 };
 
 // Revoke session from database
-export const revokeSessionFromDB = async (userId, sessionId) => {
+export const revokeSessionFromDB = async (userId, sessionId, io) => {
     await User.findByIdAndUpdate(userId, {
         $pull: {
             activeSessions: { sessionId }
@@ -558,14 +566,23 @@ export const revokeSessionFromDB = async (userId, sessionId) => {
 
     // Also remove from active sessions map
     revokeSession(sessionId);
+
+    // Notify client via socket if io is provided
+    if (io) {
+        io.to(`session_${sessionId}`).emit('force_logout_session', {
+            sessionId,
+            reason: 'Session revoked'
+        });
+    }
 };
 
 // Revoke all user sessions from database
-export const revokeAllUserSessionsFromDB = async (userId) => {
+export const revokeAllUserSessionsFromDB = async (userId, io) => {
     const user = await User.findById(userId);
     if (!user || !user.activeSessions) return 0;
 
     const sessionCount = user.activeSessions.length;
+    const sessionIds = user.activeSessions.map(s => s.sessionId);
 
     // Clear from database
     await User.findByIdAndUpdate(userId, {
@@ -577,11 +594,27 @@ export const revokeAllUserSessionsFromDB = async (userId) => {
         revokeSession(session.sessionId);
     });
 
+    // Notify clients via socket if io is provided
+    if (io) {
+        sessionIds.forEach(sessionId => {
+            io.to(`session_${sessionId}`).emit('force_logout_session', {
+                sessionId,
+                reason: 'All sessions revoked'
+            });
+        });
+
+        // Also ensure we target the user's room just in case
+        io.to(userId.toString()).emit('force_signout', {
+            userId,
+            message: 'All sessions revoked'
+        });
+    }
+
     return sessionCount;
 };
 
 // Revoke all other user sessions except the provided sessionId
-export const revokeAllOtherUserSessionsFromDB = async (userId, keepSessionId) => {
+export const revokeAllOtherUserSessionsFromDB = async (userId, keepSessionId, io) => {
     const user = await User.findById(userId);
     if (!user || !user.activeSessions) return { count: 0, revokedSessionIds: [] };
 
@@ -599,8 +632,16 @@ export const revokeAllOtherUserSessionsFromDB = async (userId, keepSessionId) =>
         }
     });
 
-    // Remove from active map
-    sessionIdsToRemove.forEach(id => revokeSession(id));
+    // Remove from active map and notify
+    sessionIdsToRemove.forEach(id => {
+        revokeSession(id);
+        if (io) {
+            io.to(`session_${id}`).emit('force_logout_session', {
+                sessionId: id,
+                reason: 'All other sessions revoked'
+            });
+        }
+    });
 
     return {
         count: sessionIdsToRemove.length,
@@ -624,4 +665,33 @@ export const updateSessionActivityInDB = async (userId, sessionId) => {
 
     // Also update in memory
     updateSessionActivity(sessionId);
+};
+
+// Automatically cleanup stale sessions for ALL users (sessions inactive for > 7 days)
+export const cleanupAllStaleSessions = async () => {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    try {
+        // Find all users who have at least one session older than 7 days
+        const result = await User.updateMany(
+            { "activeSessions.lastActive": { $lt: sevenDaysAgo } },
+            {
+                $pull: {
+                    activeSessions: {
+                        lastActive: { $lt: sevenDaysAgo }
+                    }
+                }
+            }
+        );
+
+        return {
+            success: true,
+            matchedCount: result.matchedCount,
+            modifiedCount: result.modifiedCount,
+            threshold: sevenDaysAgo
+        };
+    } catch (error) {
+        console.error('Error cleaning up stale sessions:', error);
+        throw error;
+    }
 };

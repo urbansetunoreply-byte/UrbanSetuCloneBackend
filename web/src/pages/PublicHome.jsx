@@ -23,6 +23,8 @@ import DailyQuote from "../components/DailyQuote";
 import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 import ThemeDetailModal from "../components/ThemeDetailModal";
 
+import { authenticatedFetch } from '../utils/auth';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PublicHome() {
@@ -53,12 +55,12 @@ export default function PublicHome() {
           saleRes,
           statsRes
         ] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`),
-          fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`),
-          fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`),
+          authenticatedFetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`),
           Promise.all([
-            fetch(`${API_BASE_URL}/api/listing/count`),
-            fetch(`${API_BASE_URL}/api/user/count`)
+            authenticatedFetch(`${API_BASE_URL}/api/listing/count`),
+            authenticatedFetch(`${API_BASE_URL}/api/user/count`)
           ])
         ]);
 

@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import ImagePreview from "../components/ImagePreview.jsx";
 import SmartPriceInsights from "../components/SmartPriceInsights.jsx";
 import { usePageTitle } from '../hooks/usePageTitle';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -46,9 +47,7 @@ export default function AdminListing() {
 
   const refreshWatchlistCount = async () => {
     try {
-      const watchlistRes = await fetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`, {
-        credentials: 'include'
-      });
+      const watchlistRes = await authenticatedFetch(`${API_BASE_URL}/api/watchlist/count/${params.listingId}`);
       if (watchlistRes.ok) {
         const watchlistData = await watchlistRes.json();
         setWatchlistCount(watchlistData.count || 0);
@@ -67,9 +66,8 @@ export default function AdminListing() {
     if (!window.confirm('Are you sure you want to delete this property?')) return;
 
     try {
-      const res = await fetch(`/api/listing/delete/${listing._id}`, {
-        method: 'DELETE',
-        credentials: 'include'
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/delete/${listing._id}`, {
+        method: 'DELETE'
       });
 
       if (res.ok) {
@@ -113,10 +111,9 @@ export default function AdminListing() {
 
     try {
       // Verify password first
-      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+      const verifyRes = await authenticatedFetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ password: deassignPassword }),
       });
 
@@ -127,9 +124,8 @@ export default function AdminListing() {
       }
 
       // Proceed to deassign owner
-      const res = await fetch(`${API_BASE_URL}/api/listing/deassign-owner/${listing._id}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/deassign-owner/${listing._id}`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: deassignReason }),
       });
@@ -156,7 +152,7 @@ export default function AdminListing() {
     const fetchListing = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/listing/get/${params.listingId}`);
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get/${params.listingId}`);
         const data = await res.json();
         if (data.success === false) {
           return;
