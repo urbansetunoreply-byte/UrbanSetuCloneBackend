@@ -992,12 +992,14 @@ const AdminBlogs = ({ type }) => {
                                 None
                               </span>
                             )}
-                            {sub.preferences?.blog && (
+                            {/* Show Blog badge only if context is 'blog' or 'all' */}
+                            {(subscriberFilterType === 'all' || subscriberFilterType === 'blog') && sub.preferences?.blog && (
                               <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800">
                                 Blog
                               </span>
                             )}
-                            {sub.preferences?.guide && (
+                            {/* Show Guide badge only if context is 'guide' or 'all' */}
+                            {(subscriberFilterType === 'all' || subscriberFilterType === 'guide') && sub.preferences?.guide && (
                               <span className="px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-bold border border-purple-200 dark:border-purple-800">
                                 Guide
                               </span>
