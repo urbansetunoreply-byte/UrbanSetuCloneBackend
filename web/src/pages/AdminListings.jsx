@@ -1075,7 +1075,7 @@ export default function AdminListings() {
                         {/* Search Box */}
                         <input
                           type="text"
-                          placeholder="Search owner..."
+                          placeholder="Filter Properties by Owner..."
                           value={statsSearch}
                           onChange={(e) => setStatsSearch(e.target.value)}
                           className="px-3 py-1.5 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none"

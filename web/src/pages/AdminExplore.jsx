@@ -349,7 +349,7 @@ export default function AdminExplore() {
                       name="ownerSearch"
                       value={formData.ownerSearch}
                       onChange={handleChanges}
-                      placeholder="Search Owner..."
+                      placeholder="Filter Properties by Owner..."
                       className="w-full pl-12 pr-4 py-4 bg-gray-50/50 dark:bg-gray-900/50 border-2 border-transparent dark:border-gray-700 rounded-2xl focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 transition-all font-bold text-gray-800 dark:text-white"
                     />
                   </div>

@@ -160,6 +160,11 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     const file = e.target.files[0];
     if (!file) return;
 
+    if (attachments.length >= 3) {
+      toast.error('Maximum 3 attachments allowed');
+      return;
+    }
+
     // Validate size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size must be less than 5MB');
@@ -195,10 +200,15 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
   };
 
   const handleAddLink = () => {
-    if (imageLinkInput.trim()) {
-      setAttachments(prev => [...prev, imageLinkInput.trim()]);
-      setImageLinkInput('');
+    if (!imageLinkInput.trim()) return;
+
+    if (attachments.length >= 3) {
+      toast.error('Maximum 3 attachments allowed');
+      return;
     }
+
+    setAttachments(prev => [...prev, imageLinkInput.trim()]);
+    setImageLinkInput('');
   };
 
   const fetchUserMessages = async () => {
@@ -585,14 +595,16 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                       type="text"
                       value={imageLinkInput}
                       onChange={(e) => setImageLinkInput(e.target.value)}
-                      placeholder="Paste image URL..."
-                      className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={attachments.length >= 3}
+                      placeholder={attachments.length >= 3 ? "Limit reached (Max 3)" : "Paste image URL..."}
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLink())}
                     />
                     <button
                       type="button"
                       onClick={handleAddLink}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-colors"
+                      disabled={attachments.length >= 3}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                       Add
                     </button>
@@ -618,26 +630,28 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                       </div>
                     ))}
 
-                    <label className={`w-20 h-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${uploadingImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      {uploadingImage ? (
-                        <FaSpinner className="w-5 h-5 text-blue-500 animate-spin" />
-                      ) : (
-                        <>
-                          <FaImage className="w-5 h-5 text-gray-400 mb-1" />
-                          <span className="text-[10px] text-gray-500">Upload</span>
-                        </>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        disabled={uploadingImage}
-                        className="hidden"
-                      />
-                    </label>
+                    {attachments.length < 3 && (
+                      <label className={`w-20 h-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${uploadingImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        {uploadingImage ? (
+                          <FaSpinner className="w-5 h-5 text-blue-500 animate-spin" />
+                        ) : (
+                          <>
+                            <FaImage className="w-5 h-5 text-gray-400 mb-1" />
+                            <span className="text-[10px] text-gray-500">Upload</span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={uploadingImage}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    You can upload screenshots (JPG, PNG/WebP up to 5MB)
+                    Max 3 attachments • screenshots (JPG, PNG/WebP up to 5MB)
                   </p>
                 </div>
 
