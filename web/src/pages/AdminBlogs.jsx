@@ -71,6 +71,10 @@ const AdminBlogs = ({ type }) => {
   const [subscriberFilterStatus, setSubscriberFilterStatus] = useState('all'); // all, pending, approved, rejected, revoked, opted_out
   const [subscriberFilterSource, setSubscriberFilterSource] = useState('all'); // all, blogs_page, guides_page
 
+  // Subscriber Pagination
+  const [currentSubscriberPage, setCurrentSubscriberPage] = useState(1);
+  const subscribersPerPage = 10;
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
   // Separate useEffect for initial load and static data
@@ -404,6 +408,32 @@ const AdminBlogs = ({ type }) => {
       toast.error(`Failed to update ${contentLabel.toLowerCase()} status`);
     }
   };
+
+  const getFilteredSubscribers = () => {
+    return subscribers.filter(sub => {
+      if (subscriberSearchTerm && !sub.email.toLowerCase().includes(subscriberSearchTerm.toLowerCase())) {
+        return false;
+      }
+      if (subscriberFilterStatus !== 'all' && sub.status !== subscriberFilterStatus) {
+        return false;
+      }
+      if (subscriberFilterSource !== 'all' && sub.source !== subscriberFilterSource) {
+        return false;
+      }
+      return true;
+    });
+  };
+
+  const filteredSubscribers = getFilteredSubscribers();
+  const totalSubscriberPages = Math.ceil(filteredSubscribers.length / subscribersPerPage) || 1;
+  const paginatedSubscribers = filteredSubscribers.slice(
+    (currentSubscriberPage - 1) * subscribersPerPage,
+    currentSubscriberPage * subscribersPerPage
+  );
+
+  useEffect(() => {
+    setCurrentSubscriberPage(1);
+  }, [subscriberSearchTerm, subscriberFilterStatus, subscriberFilterSource]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col font-sans text-slate-800 dark:text-gray-100 transition-colors duration-300">
@@ -927,106 +957,115 @@ const AdminBlogs = ({ type }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {(() => {
-                    // Apply filters to subscribers
-                    const filteredSubscribers = subscribers.filter(sub => {
-                      // Search filter
-                      if (subscriberSearchTerm && !sub.email.toLowerCase().includes(subscriberSearchTerm.toLowerCase())) {
-                        return false;
-                      }
-                      // Status filter
-                      if (subscriberFilterStatus !== 'all' && sub.status !== subscriberFilterStatus) {
-                        return false;
-                      }
-                      // Source filter
-                      if (subscriberFilterSource !== 'all' && sub.source !== subscriberFilterSource) {
-                        return false;
-                      }
-                      return true;
-                    });
-
-                    return filteredSubscribers.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                          {subscriberSearchTerm || subscriberFilterStatus !== 'all' || subscriberFilterSource !== 'all'
-                            ? 'No subscribers match your filters.'
-                            : 'No subscribers found yet.'}
+                  {paginatedSubscribers.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        {subscriberSearchTerm || subscriberFilterStatus !== 'all' || subscriberFilterSource !== 'all'
+                          ? 'No subscribers match your filters.'
+                          : 'No subscribers found yet.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedSubscribers.map((sub, index) => (
+                      <tr
+                        key={sub._id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+                        style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                          {sub.email}
                         </td>
-                      </tr>
-                    ) : (
-                      filteredSubscribers.map((sub) => (
-                        <tr key={sub._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                          <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                            {sub.email}
-                          </td>
-                          <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                            {new Date(sub.subscribedAt || sub.createdAt).toLocaleDateString()} {new Date(sub.subscribedAt || sub.createdAt).toLocaleTimeString()}
-                          </td>
-                          <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                            <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium">
-                              {sub.source ? sub.source.replace('_', ' ') : 'Website'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                              sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                  sub.status === 'revoked' ? 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' :
-                                    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                              }`}>
-                              {sub.status ? sub.status.toUpperCase() : (sub.isActive ? 'ACTIVE (LEGACY)' : 'OD')}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              {sub.status === 'pending' && (
-                                <>
-                                  <button
-                                    onClick={() => openApproveModal(sub)}
-                                    className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
-                                    title="Approve"
-                                  >
-                                    <CheckCircle className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => openRejectModal(sub)}
-                                    className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
-                                    title="Reject"
-                                  >
-                                    <XCircle className="w-4 h-4" />
-                                  </button>
-                                </>
-                              )}
-                              {sub.status === 'approved' && (
-                                <button
-                                  onClick={() => openRevokeModal(sub)}
-                                  className="p-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
-                                  title="Revoke"
-                                >
-                                  <Ban className="w-4 h-4" />
-                                </button>
-                              )}
-                              {(sub.status === 'rejected' || sub.status === 'revoked' || sub.status === 'opted_out') && (
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                          {new Date(sub.subscribedAt || sub.createdAt).toLocaleDateString()} {new Date(sub.subscribedAt || sub.createdAt).toLocaleTimeString()}
+                        </td>
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                          <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium">
+                            {sub.source ? sub.source.replace('_', ' ') : 'Website'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                            sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                              sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                sub.status === 'revoked' ? 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' :
+                                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                            }`}>
+                            {sub.status ? sub.status.toUpperCase() : (sub.isActive ? 'ACTIVE (LEGACY)' : 'OD')}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            {sub.status === 'pending' && (
+                              <>
                                 <button
                                   onClick={() => openApproveModal(sub)}
-                                  className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
-                                  title="Re-approve"
+                                  className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
+                                  title="Approve"
                                 >
                                   <CheckCircle className="w-4 h-4" />
                                 </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    );
-                  })()}
+                                <button
+                                  onClick={() => openRejectModal(sub)}
+                                  className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                                  title="Reject"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            {sub.status === 'approved' && (
+                              <button
+                                onClick={() => openRevokeModal(sub)}
+                                className="p-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
+                                title="Revoke"
+                              >
+                                <Ban className="w-4 h-4" />
+                              </button>
+                            )}
+                            {(sub.status === 'rejected' || sub.status === 'revoked' || sub.status === 'opted_out') && (
+                              <button
+                                onClick={() => openApproveModal(sub)}
+                                className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
+                                title="Re-approve"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
+
+            {/* Subscriber Pagination */}
+            {totalSubscriberPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/30 dark:bg-gray-700/30">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Showing page <span className="font-semibold text-gray-900 dark:text-white">{currentSubscriberPage}</span> of <span className="font-semibold dark:text-gray-300">{totalSubscriberPages}</span>
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCurrentSubscriberPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentSubscriberPage === 1}
+                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentSubscriberPage(prev => Math.min(totalSubscriberPages, prev + 1))}
+                    disabled={currentSubscriberPage === totalSubscriberPages}
+                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                  >
+                    Next <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
-
       </div>
 
       <BlogEditModal
@@ -1155,6 +1194,13 @@ const AdminBlogs = ({ type }) => {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
