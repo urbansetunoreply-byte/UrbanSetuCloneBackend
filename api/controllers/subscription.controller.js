@@ -208,15 +208,23 @@ export const sendSubscriptionOtp = async (req, res, next) => {
         if (!user) {
             return res.status(400).json({
                 success: false,
-                message: 'This email is not registered with UrbanSetu. Please sign up first to subscribe to our newsletter.'
+                message: 'This email is not registered with UrbanSetu. Please sign up first to subscribe.'
             });
         }
 
         let subscription = await Subscription.findOne({ email });
         const type = source === 'blogs_page' ? 'blog' : 'guide';
 
-        if (subscription && subscription.status === 'approved' && subscription.preferences && subscription.preferences[type]) {
-            return res.status(200).json({ success: false, message: `You are already subscribed to ${type}s!` });
+        if (subscription) {
+            // Check if already approved for this specific type
+            if (subscription.status === 'approved' && subscription.preferences && subscription.preferences[type]) {
+                return res.status(200).json({ success: false, message: `You are already subscribed to ${type}s!` });
+            }
+
+            // Check if already pending for this specific type
+            if (subscription.status === 'pending' && subscription.preferences && subscription.preferences[type]) {
+                return res.status(200).json({ success: false, message: `Your ${type} subscription is already pending approval.` });
+            }
         }
 
         const otp = generateOTP();
@@ -240,6 +248,9 @@ export const sendSubscriptionOtp = async (req, res, next) => {
             subscription.verificationOtp = otp;
             subscription.verificationOtpExpires = otpExpires;
             subscription.source = source;
+            // We don't update preferences here yet, only after verification
+            // But we must ensure the temp state knows what we are verifying for?
+            // Actually, verifySubscriptionOtp uses source to determine which preference to flip.
         }
 
         await subscription.save();
@@ -283,11 +294,22 @@ export const verifySubscriptionOtp = async (req, res, next) => {
         if (!subscription.preferences) subscription.preferences = {};
         subscription.preferences[type] = true;
 
-        if (subscription.status !== 'approved') {
+        let message = 'Email verified! ';
+
+        // If user was already approved (e.g. for the other type), we don't need to go back to pending
+        // We just add the preference and say success
+        if (subscription.status === 'approved') {
+            subscription.source = source; // Update source context
+            message += `You have successfully subscribed to ${type}s!`;
+            // No status change needed, remains approved
+        } else {
+            // Was not approved (pending, verifying, rejected, etc)
             subscription.status = 'pending';
             subscription.rejectionReason = undefined;
+            subscription.source = source || subscription.source;
+            message += 'Your subscription request has been submitted for approval.';
         }
-        subscription.source = source || subscription.source;
+
         subscription.statusUpdatedAt = new Date();
         await subscription.save();
 
@@ -296,7 +318,7 @@ export const verifySubscriptionOtp = async (req, res, next) => {
             await sendSubscriptionReceivedEmail(email, subscription.source);
         }
 
-        res.status(200).json({ success: true, message: 'Email verified! Your subscription request has been submitted for approval.' });
+        res.status(200).json({ success: true, message });
     } catch (error) {
         next(error);
     }
