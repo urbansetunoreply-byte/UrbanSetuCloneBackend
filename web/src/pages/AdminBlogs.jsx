@@ -1008,12 +1008,12 @@ const AdminBlogs = ({ type }) => {
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                            sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                              sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                sub.status === 'revoked' ? 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' :
-                                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                              sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                  (sub.status === 'revoked' || sub.status === 'opted_out') ? 'bg-gray-100 text-gray-700 dark:bg-gray-700/50 dark:text-gray-400' :
+                                    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
                             }`}>
-                            {sub.status ? sub.status.toUpperCase() : (sub.isActive ? 'ACTIVE (LEGACY)' : 'OD')}
+                            {sub.status ? sub.status.toUpperCase().replace('_', ' ') : (sub.isActive ? 'ACTIVE (LEGACY)' : 'OD')}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">

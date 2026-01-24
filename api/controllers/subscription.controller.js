@@ -357,14 +357,18 @@ export const verifySubscriptionOtp = async (req, res, next) => {
 
         let message = 'Email verified! ';
 
-        // If user was already approved, we STILL need to revert to pending to allow admin to approve the NEW preference.
-        // This ensures the admin gets to say "Yes" to the new subscription type.
-        // However, this might temporarily block their existing access?
-        // Let's set status to pending so admin sees it.
-        subscription.status = 'pending';
-        subscription.rejectionReason = undefined;
-        subscription.source = source || subscription.source; // Update source so admin knows where the new request came from
-        message += 'Your subscription request has been submitted for approval.';
+        // If user was already approved, we keep them approved. 
+        // We assume trust propagates. This fixes the issue where an existing 'Blog' subscriber 
+        // gets blocked from Blogs because they asked for 'Guides' and went to 'Pending'.
+        if (subscription.status === 'approved') {
+            subscription.source = source;
+            message += `You have successfully subscribed to ${type}s!`;
+        } else {
+            subscription.status = 'pending';
+            subscription.rejectionReason = undefined;
+            subscription.source = source || subscription.source;
+            message += 'Your subscription request has been submitted for approval.';
+        }
 
         subscription.statusUpdatedAt = new Date();
         await subscription.save();
