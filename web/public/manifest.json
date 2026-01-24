@@ -1,6 +1,6 @@
 {
     "name": "UrbanSetu",
-    "short_name": "US",
+    "short_name": "UrbanSetu",
     "description": "Smart Real Estate Platform for Buying, Selling & Renting Properties",
     "start_url": "/",
     "display": "standalone",
