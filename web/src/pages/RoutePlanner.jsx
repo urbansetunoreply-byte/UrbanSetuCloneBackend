@@ -141,7 +141,7 @@ export default function RoutePlanner() {
         style: mapStyles[mapStyle],
         center: [77.2090, 28.6139], // Delhi coordinates
         zoom: 11,
-        attributionControl: false,
+        attributionControl: true,
         maxZoom: 20,
         minZoom: 1
       });
@@ -1134,10 +1134,16 @@ export default function RoutePlanner() {
             {/* Header Section */}
             <div className="p-4 bg-gradient-to-r from-blue-700 to-purple-700 text-white shadow-md flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold flex items-center gap-2">
-                  <FaRoute className="text-yellow-300" />
-                  <span>Route Planner</span>
-                </h1>
+                <div className="flex flex-col">
+                  <h1 className="text-xl font-bold flex items-center gap-2">
+                    <FaRoute className="text-yellow-300" />
+                    <span>Route Planner</span>
+                  </h1>
+                  <span className="text-[10px] font-medium text-blue-200 mt-0.5 uppercase tracking-widest flex items-center gap-1">
+                    <div className="w-1 h-1 bg-yellow-400 rounded-full animate-pulse"></div>
+                    Powered by Sentinel v2.0
+                  </span>
+                </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -1431,6 +1437,25 @@ export default function RoutePlanner() {
           {MAPBOX_ACCESS_TOKEN ? (
             <div className="w-full h-full relative">
               <div ref={mapRef} className="w-full h-full" />
+
+              {/* Advanced Co-Branding Map Overlay */}
+              <div className="absolute bottom-4 right-1 z-10 hidden sm:block">
+                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md px-4 py-2 rounded-l-2xl border-y border-l border-gray-200 dark:border-gray-700 shadow-xl flex items-center gap-3 transform translate-x-1 hover:translate-x-0 transition-all duration-500 ease-out group">
+                  <div className="flex flex-col items-end">
+                    <span className="text-[7px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-[0.2em] leading-none mb-1">Intelligence Layer</span>
+                    <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest whitespace-nowrap">
+                      Sentinel v2.0 Neural Layer
+                    </span>
+                  </div>
+                  <div className="w-px h-7 bg-gray-200 dark:bg-gray-700"></div>
+                  <div className="flex flex-col items-start opacity-70 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[7px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-[0.2em] leading-none mb-1">Spatial Engine</span>
+                    <span className="text-[9px] text-gray-600 dark:text-gray-300 font-semibold tracking-wide">
+                      Powered by Mapbox
+                    </span>
+                  </div>
+                </div>
+              </div>
 
               {/* Floating Map Controls */}
               <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
