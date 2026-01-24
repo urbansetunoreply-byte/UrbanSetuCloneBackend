@@ -66,6 +66,11 @@ const AdminBlogs = ({ type }) => {
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [statusReason, setStatusReason] = useState('');
 
+  // Subscriber Filters
+  const [subscriberSearchTerm, setSubscriberSearchTerm] = useState('');
+  const [subscriberFilterStatus, setSubscriberFilterStatus] = useState('all'); // all, pending, approved, rejected, revoked, opted_out
+  const [subscriberFilterSource, setSubscriberFilterSource] = useState('all'); // all, blogs_page, guides_page
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
   // Separate useEffect for initial load and static data
@@ -421,15 +426,27 @@ const AdminBlogs = ({ type }) => {
             </p>
           </div>
 
-          <button
-            onClick={handleCreate}
-            className="group bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-400 px-6 py-3 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:bg-blue-50 dark:hover:bg-gray-700 transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 border border-transparent dark:border-gray-700"
-          >
-            <div className="bg-blue-100 dark:bg-blue-900/40 p-1 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/60 transition-colors">
-              <Plus className="w-5 h-5 text-blue-700 dark:text-blue-400" />
-            </div>
-            Create New {contentLabel}
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Navigation Button */}
+            <button
+              onClick={() => navigate(isGuide ? '/admin/blogs' : '/admin/guides')}
+              className="bg-purple-600 dark:bg-purple-700 text-white px-5 py-3 rounded-xl font-bold text-base shadow-lg hover:shadow-xl hover:bg-purple-700 dark:hover:bg-purple-600 transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
+            >
+              <LayoutTemplate className="w-5 h-5" />
+              Go to {isGuide ? 'Blogs' : 'Guides'}
+            </button>
+
+            {/* Create Button */}
+            <button
+              onClick={handleCreate}
+              className="group bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-400 px-6 py-3 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:bg-blue-50 dark:hover:bg-gray-700 transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 border border-transparent dark:border-gray-700"
+            >
+              <div className="bg-blue-100 dark:bg-blue-900/40 p-1 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/60 transition-colors">
+                <Plus className="w-5 h-5 text-blue-700 dark:text-blue-400" />
+              </div>
+              Create New {contentLabel}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -844,6 +861,60 @@ const AdminBlogs = ({ type }) => {
               </button>
             </div>
 
+            {/* Subscriber Filters */}
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-700/30">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Search */}
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search by email..."
+                    value={subscriberSearchTerm}
+                    onChange={(e) => setSubscriberSearchTerm(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/50 focus:border-purple-400 dark:focus:border-purple-500 transition-all text-sm font-medium"
+                  />
+                </div>
+
+                {/* Status Filter */}
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Filter className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                  </div>
+                  <select
+                    value={subscriberFilterStatus}
+                    onChange={(e) => setSubscriberFilterStatus(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/50 focus:border-purple-400 dark:focus:border-purple-500 transition-all appearance-none cursor-pointer text-sm font-medium"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="revoked">Revoked</option>
+                    <option value="opted_out">Opted Out</option>
+                  </select>
+                </div>
+
+                {/* Source Filter */}
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Globe className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                  </div>
+                  <select
+                    value={subscriberFilterSource}
+                    onChange={(e) => setSubscriberFilterSource(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/50 focus:border-purple-400 dark:focus:border-purple-500 transition-all appearance-none cursor-pointer text-sm font-medium"
+                  >
+                    <option value="all">All Sources</option>
+                    <option value="blogs_page">Blogs Page</option>
+                    <option value="guides_page">Guides Page</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50/80 dark:bg-gray-700/80 text-gray-500 dark:text-gray-400 text-xs uppercase font-bold tracking-wider">
@@ -856,79 +927,100 @@ const AdminBlogs = ({ type }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {subscribers.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                        No subscribers found yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    subscribers.map((sub) => (
-                      <tr key={sub._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                          {sub.email}
+                  {(() => {
+                    // Apply filters to subscribers
+                    const filteredSubscribers = subscribers.filter(sub => {
+                      // Search filter
+                      if (subscriberSearchTerm && !sub.email.toLowerCase().includes(subscriberSearchTerm.toLowerCase())) {
+                        return false;
+                      }
+                      // Status filter
+                      if (subscriberFilterStatus !== 'all' && sub.status !== subscriberFilterStatus) {
+                        return false;
+                      }
+                      // Source filter
+                      if (subscriberFilterSource !== 'all' && sub.source !== subscriberFilterSource) {
+                        return false;
+                      }
+                      return true;
+                    });
+
+                    return filteredSubscribers.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                          {subscriberSearchTerm || subscriberFilterStatus !== 'all' || subscriberFilterSource !== 'all'
+                            ? 'No subscribers match your filters.'
+                            : 'No subscribers found yet.'}
                         </td>
-                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                          {new Date(sub.subscribedAt || sub.createdAt).toLocaleDateString()} {new Date(sub.subscribedAt || sub.createdAt).toLocaleTimeString()}
-                        </td>
-                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                          <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium">
-                            {sub.source ? sub.source.replace('_', ' ') : 'Website'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                            sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                              sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                sub.status === 'revoked' ? 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' :
-                                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                            }`}>
-                            {sub.status ? sub.status.toUpperCase() : (sub.isActive ? 'ACTIVE (LEGACY)' : 'OD')}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            {sub.status === 'pending' && (
-                              <>
+                      </tr>
+                    ) : (
+                      filteredSubscribers.map((sub) => (
+                        <tr key={sub._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                          <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                            {sub.email}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                            {new Date(sub.subscribedAt || sub.createdAt).toLocaleDateString()} {new Date(sub.subscribedAt || sub.createdAt).toLocaleTimeString()}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                            <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium">
+                              {sub.source ? sub.source.replace('_', ' ') : 'Website'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                              sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                  sub.status === 'revoked' ? 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' :
+                                    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                              }`}>
+                              {sub.status ? sub.status.toUpperCase() : (sub.isActive ? 'ACTIVE (LEGACY)' : 'OD')}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              {sub.status === 'pending' && (
+                                <>
+                                  <button
+                                    onClick={() => openApproveModal(sub)}
+                                    className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
+                                    title="Approve"
+                                  >
+                                    <CheckCircle className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => openRejectModal(sub)}
+                                    className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                                    title="Reject"
+                                  >
+                                    <XCircle className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
+                              {sub.status === 'approved' && (
+                                <button
+                                  onClick={() => openRevokeModal(sub)}
+                                  className="p-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
+                                  title="Revoke"
+                                >
+                                  <Ban className="w-4 h-4" />
+                                </button>
+                              )}
+                              {(sub.status === 'rejected' || sub.status === 'revoked' || sub.status === 'opted_out') && (
                                 <button
                                   onClick={() => openApproveModal(sub)}
-                                  className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
-                                  title="Approve"
+                                  className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
+                                  title="Re-approve"
                                 >
                                   <CheckCircle className="w-4 h-4" />
                                 </button>
-                                <button
-                                  onClick={() => openRejectModal(sub)}
-                                  className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
-                                  title="Reject"
-                                >
-                                  <XCircle className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                            {sub.status === 'approved' && (
-                              <button
-                                onClick={() => openRevokeModal(sub)}
-                                className="p-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
-                                title="Revoke"
-                              >
-                                <Ban className="w-4 h-4" />
-                              </button>
-                            )}
-                            {(sub.status === 'rejected' || sub.status === 'revoked' || sub.status === 'opted_out') && (
-                              <button
-                                onClick={() => openApproveModal(sub)}
-                                className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
-                                title="Re-approve"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    );
+                  })()}
                 </tbody>
               </table>
             </div>
