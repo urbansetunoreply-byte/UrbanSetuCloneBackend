@@ -32,22 +32,9 @@ const Footer = () => {
           console.error('Failed to fetch daily stats', e);
         }
 
-        // 2. Fetch Total Count (If not found yet)
-        // 2. Fetch Total Count (If not found yet)
-        if (total === 0) {
-          // Only attempt fetch if user acts as admin, as we know the public 'count' endpoints don't exist
-          if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
-            try {
-              const statsRes = await authenticatedFetch(`${API_BASE_URL}/api/visitors/stats?days=36500`);
-              if (statsRes.ok) {
-                const statsData = await statsRes.json();
-                if (statsData.success && statsData.stats) total = statsData.stats.totalVisitors;
-              }
-            } catch (e) {
-              // Silent fail
-            }
-          }
-        }
+        // 2. Fetch Total Count (If not found yet) - REMOVED
+        // The /daily endpoint now returns 'total' as well, so no need for fallbacks.
+        // This ensures public users see All Time count without 403 errors.
 
         setVisitorStats({ todayCount: today, totalVisitors: total });
       } catch (error) {

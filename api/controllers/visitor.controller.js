@@ -244,13 +244,17 @@ export const trackVisitor = async (req, res, next) => {
 export const getDailyVisitorCount = async (req, res, next) => {
   try {
     const today = getStartOfDay();
-    const count = await VisitorLog.countDocuments({
-      visitDate: today
-    });
+
+    // Run both counts in parallel for performance
+    const [count, total] = await Promise.all([
+      VisitorLog.countDocuments({ visitDate: today }),
+      VisitorLog.countDocuments({})
+    ]);
 
     res.status(200).json({
       success: true,
       count,
+      total,
       date: today.toISOString().split('T')[0]
     });
   } catch (error) {
