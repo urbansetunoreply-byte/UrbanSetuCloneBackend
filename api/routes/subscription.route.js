@@ -1,6 +1,6 @@
 import express from 'express';
 import { subscribeToNewsletter, getAllSubscribers } from '../controllers/subscription.controller.js';
-import { verifyToken } from '../middleware/verifyToken.js';
+import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
 

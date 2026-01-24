@@ -2397,11 +2397,11 @@ export default function Profile() {
                   <span className="font-medium text-xs sm:text-sm">Manage Blogs</span>
                 </Link>
                 <Link
-                  to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/guides" : "/user/guides"}
+                  to="/admin/guides"
                   className={`bg-cyan-600 text-white p-3 rounded-lg hover:bg-cyan-700 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-cyan-600 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-450`}
                 >
                   <FaMapSigns className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
-                  <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Manage Guides' : 'Guides'}</span>
+                  <span className="font-medium text-xs sm:text-sm">Manage Guides</span>
                 </Link>
                 <Link
                   to="/admin/faqs"
@@ -2487,6 +2487,13 @@ export default function Profile() {
                 >
                   <FaBookOpen className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:${animationClasses.bounce}`} />
                   <span className="font-medium text-xs sm:text-sm">Blogs</span>
+                </Link>
+                <Link
+                  to="/user/guides"
+                  className={`bg-cyan-600 text-white p-3 rounded-lg hover:bg-cyan-700 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-cyan-600 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-1250`}
+                >
+                  <FaMapSigns className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
+                  <span className="font-medium text-xs sm:text-sm">Guides</span>
                 </Link>
                 <Link
                   to="/user/faqs"
