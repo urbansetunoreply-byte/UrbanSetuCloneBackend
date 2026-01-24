@@ -15833,15 +15833,23 @@ export const sendPreBookingMessageNotification = async (email, recipientName, se
 };
 
 // Send New Blog Notification Email
+// Send New Blog/Guide Notification Email
 export const sendNewBlogNotification = async (email, username, blog) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   // Use slug if available, otherwise fallback to ID
   const blogLink = `${clientBaseUrl}/blog/${blog.slug || blog._id}`;
 
+  // Determine text based on type (default to 'Blog Post' if undefined)
+  const isGuide = blog.type === 'guide';
+  const typeLabel = isGuide ? 'Guide' : 'Blog Post';
+  const typeHeader = isGuide ? 'New Guide Arrived' : 'New Blog Post';
+  const buttonText = isGuide ? 'Read Full Guide' : 'Read Full Article';
+  const fallbackCategory = isGuide ? 'Guide' : 'Blog';
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: `New Blog Post: ${blog.title} - UrbanSetu`,
+    subject: `New ${typeLabel}: ${blog.title} - UrbanSetu`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
         
@@ -15851,8 +15859,8 @@ export const sendNewBlogNotification = async (email, username, blog) => {
           <img src="${blog.thumbnail}" alt="${blog.title}" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         ` : `
-        <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px;">New Update from UrbanSetu</h1>
+        <div style="background: linear-gradient(135deg, ${isGuide ? '#7c3aed 0%, #4c1d95 100%' : '#2563eb 0%, #1e40af 100%'}); padding: 40px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">${typeHeader} from UrbanSetu</h1>
         </div>
         `}
 
@@ -15864,18 +15872,18 @@ export const sendNewBlogNotification = async (email, username, blog) => {
           </h2>
 
           <div style="margin-bottom: 24px;">
-            <span style="background-color: #eff6ff; color: #2563eb; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-              ${blog.category || 'Blog'}
+            <span style="background-color: ${isGuide ? '#f5f3ff' : '#eff6ff'}; color: ${isGuide ? '#7c3aed' : '#2563eb'}; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+              ${blog.category || fallbackCategory}
             </span>
           </div>
 
           <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
-            ${blog.excerpt || 'We have just published a new article that might interest you. Click the button below to read the full story.'}
+            ${blog.excerpt || `We have just published a new ${typeLabel.toLowerCase()} that might interest you. Click the button below to read fully.`}
           </p>
 
           <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${blogLink}" style="display: inline-block; background-color: #2563eb; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: background-color 0.2s;">
-              Read Full Article
+            <a href="${blogLink}" style="display: inline-block; background-color: ${isGuide ? '#7c3aed' : '#2563eb'}; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: background-color 0.2s;">
+              ${buttonText}
             </a>
           </div>
 
