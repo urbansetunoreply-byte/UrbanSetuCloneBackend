@@ -316,10 +316,27 @@ export default function AdminListings() {
   const fetchStats = async () => {
     setStatsLoading(true);
     try {
-      // Fetch a larger set of listings for stats
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=2000`);
-      if (!res.ok) throw new Error("Failed to fetch data");
-      const data = await res.json();
+      // Fetch listings and users in parallel to resolve owner details
+      const [listingsRes, usersRes] = await Promise.all([
+        authenticatedFetch(`${API_BASE_URL}/api/listing/get?limit=2000`),
+        authenticatedFetch(`${API_BASE_URL}/api/admin/management/users`)
+      ]);
+
+      if (!listingsRes.ok) throw new Error("Failed to fetch data");
+      const data = await listingsRes.json();
+
+      let usersMap = {};
+      if (usersRes.ok) {
+        try {
+          const usersData = await usersRes.json();
+          const userList = Array.isArray(usersData) ? usersData : (usersData.users || []);
+          userList.forEach(u => {
+            if (u._id) usersMap[u._id] = u;
+          });
+        } catch (e) {
+          console.error("Failed to parse users data", e);
+        }
+      }
 
       // Aggregate Data
       const total = data.length;
@@ -331,10 +348,13 @@ export default function AdminListings() {
       const ownerMap = {};
       data.forEach(l => {
         const ownerId = (l.userRef && (l.userRef._id || l.userRef)) || 'Unknown';
-        // Try to get name from userRef if populated
-        const username = (l.userRef && l.userRef.username) || '';
-        const name = (l.userRef && l.userRef.name) || ''; // Assuming 'name' field exists or combining firstName/lastName if available
-        const email = (l.userRef && l.userRef.email) || '';
+
+        // Try to get details from User Map first (source of truth), then Listing ref
+        const userFromMap = usersMap[ownerId];
+
+        const username = userFromMap?.username || (l.userRef && l.userRef.username) || '';
+        const name = userFromMap?.name || (l.userRef && l.userRef.name) || ''; // Assuming 'name' field exists or combining firstName/lastName if available
+        const email = userFromMap?.email || (l.userRef && l.userRef.email) || '';
 
         let displayName = 'Unknown Owner';
         if (username) displayName = username;
@@ -351,7 +371,7 @@ export default function AdminListings() {
         }
 
         ownerMap[ownerId].count++;
-        // Update with better Details if initially unknown but found later (though rare in single pass)
+        // Update with better Details if initially unknown but found later
         if (displayName !== 'Unknown Owner' && ownerMap[ownerId].name === 'Unknown Owner') {
           ownerMap[ownerId].name = displayName;
           ownerMap[ownerId].email = email;
