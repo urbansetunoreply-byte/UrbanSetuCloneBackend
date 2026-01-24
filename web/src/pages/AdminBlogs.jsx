@@ -69,7 +69,7 @@ const AdminBlogs = ({ type }) => {
   // Subscriber Filters
   const [subscriberSearchTerm, setSubscriberSearchTerm] = useState('');
   const [subscriberFilterStatus, setSubscriberFilterStatus] = useState('all'); // all, pending, approved, rejected, revoked, opted_out
-  const [subscriberFilterType, setSubscriberFilterType] = useState('all'); // all, blog, guide
+  const [subscriberFilterType, setSubscriberFilterType] = useState('blog'); // Default to 'blog' or match page type initially
 
   // Subscriber Pagination
   const [currentSubscriberPage, setCurrentSubscriberPage] = useState(1);
@@ -137,17 +137,18 @@ const AdminBlogs = ({ type }) => {
     fetchBlogs();
   }, [pagination.current]);
 
-  // Scroll lock effect for modal
+  // Immediate filter effects
   useEffect(() => {
-    if (showModal) {
-      document.body.style.overflow = 'hidden';
+    // When page type changes (e.g. from blog to guide), Force the subscriber filter to match
+    // This ensures Admin Blogs shows only Blog subscribers by default, and Admin Guides shows Guide subscribers.
+    setSubscriberFilterType(filterPostType === 'guide' ? 'guide' : 'blog');
+
+    if (pagination.current === 1) {
+      fetchBlogs(false);
     } else {
-      document.body.style.overflow = 'unset';
+      setPagination(prev => ({ ...prev, current: 1 }));
     }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showModal]);
+  }, [filterPropertyScope, filterPostType, filterCategory, filterStatus]);
 
   const fetchBlogs = async (showLoading = true) => {
     try {
@@ -220,12 +221,11 @@ const AdminBlogs = ({ type }) => {
   const handleUpdateSubscription = async (id, status, reason = null) => {
     try {
       const BASE_URL = import.meta.env.VITE_API_BASE_URL || API_BASE_URL;
-      // Determine type based on source if available in the selected sub
-      // This is a minimal inference; ideally the UI modal would let you select WHAT to revoke if multiple exist, 
-      // but usually the action is triggered on the row which implies the context.
-      // However, since rows are merged, we might need to know which one we are clicking.
-      // For now, let's pass the mapped type from the source of the subscription object being processed.
-      const type = subToProcess?.source === 'blogs_page' ? 'blog' : (subToProcess?.source === 'guides_page' ? 'guide' : 'blog');
+      // Use the CURRENT PAGE CONTEXT (filterPostType) to decide what to revoke/approve.
+      // This solves the issue of "which one am I revoking?"
+      // If I am on Admin Blogs page (filterPostType='blog'), I act on BLOG preference.
+      // If I am on Admin Guides page (filterPostType='guide'), I act on GUIDE preference.
+      const type = filterPostType === 'guide' ? 'guide' : 'blog';
 
       const response = await authenticatedFetch(`${BASE_URL}/api/subscription/status/${id}`, {
         method: 'PUT',
@@ -945,7 +945,6 @@ const AdminBlogs = ({ type }) => {
                     onChange={(e) => setSubscriberFilterType(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/50 focus:border-purple-400 dark:focus:border-purple-500 transition-all appearance-none cursor-pointer text-sm font-medium"
                   >
-                    <option value="all">All Types</option>
                     <option value="blog">Blog</option>
                     <option value="guide">Guide</option>
                   </select>
