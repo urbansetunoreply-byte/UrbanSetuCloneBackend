@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import {
   Search as SearchIcon, Filter, Calendar, User, Eye, Heart, Tag,
   ArrowRight, ChevronLeft, ChevronRight, Mail, Info, Clock,
-  TrendingUp, Lightbulb, Home, CheckCircle, X
+  TrendingUp, Lightbulb, Home, CheckCircle, X, BookOpen
 } from 'lucide-react';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -385,9 +385,20 @@ const PublicBlogs = () => {
           <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
             Real Estate <span className="text-yellow-300">Insights</span>
           </h1>
-          <p className="text-blue-100 mb-8 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+          <p className="text-blue-100 mb-4 text-lg max-w-2xl mx-auto font-light leading-relaxed">
             Stay updated with expert analysis, market trends, and property tips to make informed decisions.
           </p>
+
+          {/* Navigation Button */}
+          <div className="mb-8 flex justify-center">
+            <Link
+              to="/guides"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
+            >
+              <BookOpen className="w-5 h-5" />
+              Explore Guides
+            </Link>
+          </div>
 
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             <span className="px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-medium border border-white/20 flex items-center gap-2">

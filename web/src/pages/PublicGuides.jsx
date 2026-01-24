@@ -351,9 +351,20 @@ const PublicGuides = () => {
                         Property <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Guides</span>
                     </h1>
 
-                    <p className="text-xl text-purple-100 max-w-2xl mx-auto font-light leading-relaxed mb-10 animate-fade-in-up delay-200">
+                    <p className="text-xl text-purple-100 max-w-2xl mx-auto font-light leading-relaxed mb-6 animate-fade-in-up delay-200">
                         Learn everything about buying, renting, selling, and investing in property. Expert advice, simplified for you.
                     </p>
+
+                    {/* Navigation Button */}
+                    <div className="mb-10 flex justify-center animate-fade-in-up delay-250">
+                        <Link
+                            to="/blogs"
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-2"
+                        >
+                            <FileText className="w-5 h-5" />
+                            Read Blogs
+                        </Link>
+                    </div>
 
                     {/* Search Bar */}
                     <div className="max-w-2xl mx-auto relative animate-fade-in-up delay-300">
