@@ -69,7 +69,7 @@ const AdminBlogs = ({ type }) => {
   // Subscriber Filters
   const [subscriberSearchTerm, setSubscriberSearchTerm] = useState('');
   const [subscriberFilterStatus, setSubscriberFilterStatus] = useState('all'); // all, pending, approved, rejected, revoked, opted_out
-  const [subscriberFilterSource, setSubscriberFilterSource] = useState('all'); // all, blogs_page, guides_page
+  const [subscriberFilterType, setSubscriberFilterType] = useState('all'); // all, blog, guide
 
   // Subscriber Pagination
   const [currentSubscriberPage, setCurrentSubscriberPage] = useState(1);
@@ -417,8 +417,9 @@ const AdminBlogs = ({ type }) => {
       if (subscriberFilterStatus !== 'all' && sub.status !== subscriberFilterStatus) {
         return false;
       }
-      if (subscriberFilterSource !== 'all' && sub.source !== subscriberFilterSource) {
-        return false;
+      if (subscriberFilterType !== 'all') { // Filtering by subscription preference
+        if (subscriberFilterType === 'blog' && (!sub.preferences || !sub.preferences.blog)) return false;
+        if (subscriberFilterType === 'guide' && (!sub.preferences || !sub.preferences.guide)) return false;
       }
       return true;
     });
@@ -433,7 +434,7 @@ const AdminBlogs = ({ type }) => {
 
   useEffect(() => {
     setCurrentSubscriberPage(1);
-  }, [subscriberSearchTerm, subscriberFilterStatus, subscriberFilterSource]);
+  }, [subscriberSearchTerm, subscriberFilterStatus, subscriberFilterType]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col font-sans text-slate-800 dark:text-gray-100 transition-colors duration-300">
@@ -927,19 +928,19 @@ const AdminBlogs = ({ type }) => {
                   </select>
                 </div>
 
-                {/* Source Filter */}
+                {/* Subscription Type Filter (Replaces Source) */}
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Globe className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                   </div>
                   <select
-                    value={subscriberFilterSource}
-                    onChange={(e) => setSubscriberFilterSource(e.target.value)}
+                    value={subscriberFilterType}
+                    onChange={(e) => setSubscriberFilterType(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/50 focus:border-purple-400 dark:focus:border-purple-500 transition-all appearance-none cursor-pointer text-sm font-medium"
                   >
-                    <option value="all">All Sources</option>
-                    <option value="blogs_page">Blogs Page</option>
-                    <option value="guides_page">Guides Page</option>
+                    <option value="all">All Types</option>
+                    <option value="blog">Blog</option>
+                    <option value="guide">Guide</option>
                   </select>
                 </div>
               </div>
@@ -951,7 +952,7 @@ const AdminBlogs = ({ type }) => {
                   <tr>
                     <th className="px-6 py-4 text-left">Email</th>
                     <th className="px-6 py-4 text-left">Subscribed Date</th>
-                    <th className="px-6 py-4 text-left">Source</th>
+                    <th className="px-6 py-4 text-left">Subscriptions</th>
                     <th className="px-6 py-4 text-left">Status</th>
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
@@ -960,7 +961,7 @@ const AdminBlogs = ({ type }) => {
                   {paginatedSubscribers.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                        {subscriberSearchTerm || subscriberFilterStatus !== 'all' || subscriberFilterSource !== 'all'
+                        {subscriberSearchTerm || subscriberFilterStatus !== 'all' || subscriberFilterType !== 'all'
                           ? 'No subscribers match your filters.'
                           : 'No subscribers found yet.'}
                       </td>
@@ -979,9 +980,23 @@ const AdminBlogs = ({ type }) => {
                           {new Date(sub.subscribedAt || sub.createdAt).toLocaleDateString()} {new Date(sub.subscribedAt || sub.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                          <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium">
-                            {sub.source ? sub.source.replace('_', ' ') : 'Website'}
-                          </span>
+                          <div className="flex gap-2">
+                            {(!sub.preferences || (!sub.preferences.blog && !sub.preferences.guide)) && (
+                              <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-500">
+                                None
+                              </span>
+                            )}
+                            {sub.preferences?.blog && (
+                              <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800">
+                                Blog
+                              </span>
+                            )}
+                            {sub.preferences?.guide && (
+                              <span className="px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-bold border border-purple-200 dark:border-purple-800">
+                                Guide
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
