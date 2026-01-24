@@ -1,4 +1,5 @@
 import Subscription from '../models/subscription.model.js';
+import User from '../models/user.model.js'; // Import User model to check if email is registered
 import { errorHandler } from '../utils/error.js';
 import {
     sendSubscriptionReceivedEmail,
@@ -172,6 +173,17 @@ export const sendSubscriptionOtp = async (req, res, next) => {
     }
 
     try {
+        // IMPORTANT: Check if email exists in User database
+        // Newsletter subscriptions are ONLY for registered UrbanSetu users
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: 'This email is not registered with UrbanSetu. Please sign up first to subscribe to our newsletter.'
+            });
+        }
+
         let subscription = await Subscription.findOne({ email });
 
         if (subscription && subscription.status === 'approved') {
