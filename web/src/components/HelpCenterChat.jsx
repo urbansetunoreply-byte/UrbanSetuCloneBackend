@@ -275,7 +275,7 @@ const HelpCenterChat = () => {
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder="Ask about UrbanSetu... Ctrl + / to focus"
+                                placeholder="Ask about UrbanSetu... Use Ctrl + / to focus"
                                 className="flex-1 pl-4 pr-10 py-3 bg-gray-100 dark:bg-gray-900/50 border-0 rounded-full focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-sm"
                                 disabled={isLoading}
                             />

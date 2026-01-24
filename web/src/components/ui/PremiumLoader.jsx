@@ -41,7 +41,7 @@ const PremiumLoader = ({ onComplete, mode = 'signin' }) => {
     }, [currentStep, steps.length, onComplete]);
 
     return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-gray-950 transition-colors duration-300">
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white dark:bg-gray-950 transition-colors duration-300">
             <div className="relative mb-8">
                 <div className="w-24 h-24 border-4 border-blue-100 dark:border-blue-900/30 rounded-full animate-spin"></div>
                 <div className="absolute top-0 left-0 w-24 h-24 border-t-4 border-blue-600 rounded-full animate-spin"></div>

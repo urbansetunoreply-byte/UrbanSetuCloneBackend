@@ -19,6 +19,19 @@ const GoogleOneTap = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isNewUser, setIsNewUser] = useState(false);
 
+    const [authData, setAuthData] = useState(null);
+
+    const finalizeAuth = () => {
+        if (!authData) return;
+
+        if (authData.role === "admin" || authData.role === "rootadmin") {
+            navigate("/admin");
+        } else {
+            navigate("/user");
+        }
+        setIsLoading(false);
+    };
+
     // Don't show One Tap on auth pages (avoid conflict with Oauth.jsx and redundant UI)
     const isAuthPage = ['/sign-in', '/sign-up'].includes(location.pathname);
 
@@ -38,7 +51,7 @@ const GoogleOneTap = () => {
                 document.body.removeChild(script);
             }
         };
-    }, [currentUser]);
+    }, [currentUser, isAuthPage]);
 
     // Initialize One Tap
     useEffect(() => {
@@ -97,15 +110,8 @@ const GoogleOneTap = () => {
                 dispatch(signInSuccess(data));
                 reconnectSocket();
 
-                // Small delay to show the loader success state
-                setTimeout(() => {
-                    if (data.role === "admin" || data.role === "rootadmin") {
-                        navigate("/admin");
-                    } else {
-                        navigate("/user");
-                    }
-                    setIsLoading(false);
-                }, 1500);
+                // Store data to trigger the premium loader animation completion phase
+                setAuthData(data);
 
             } catch (error) {
                 console.error('Google One Tap Error:', error);
@@ -137,7 +143,7 @@ const GoogleOneTap = () => {
     }, [scriptLoaded, currentUser, dispatch, navigate, location.search, isLoading, isAuthPage]);
 
     if (isLoading) {
-        return <PremiumLoader mode={isNewUser ? 'signup' : 'signin'} />;
+        return <PremiumLoader mode={isNewUser ? 'signup' : 'signin'} onComplete={finalizeAuth} />;
     }
 
     return null;
