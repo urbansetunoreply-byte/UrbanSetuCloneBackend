@@ -26,8 +26,10 @@ export const sendSupportMessage = async (req, res, next) => {
             ticketId,
             name,
             email,
+            email,
             subject,
-            message
+            message,
+            attachments: req.body.attachments || []
         });
 
         await newContact.save();
@@ -113,7 +115,7 @@ export const markMessageAsReplied = async (req, res, next) => {
 export const getUnreadMessageCount = async (req, res, next) => {
     try {
         const count = await Contact.countDocuments({ status: 'unread' });
-        
+
         res.status(200).json({
             success: true,
             count
@@ -164,7 +166,7 @@ export const sendAdminReply = async (req, res, next) => {
         message.adminRepliedBy = adminId;
         message.status = 'replied';
         message.repliedAt = new Date();
-        
+
         await message.save();
 
         // Send reply email to user
@@ -193,7 +195,7 @@ export const sendAdminReply = async (req, res, next) => {
 export const getUserSupportMessages = async (req, res, next) => {
     try {
         const { email } = req.params;
-        
+
         if (!email) {
             return next(errorHandler(400, "Email is required"));
         }
@@ -213,7 +215,7 @@ export const deleteUserMessage = async (req, res, next) => {
     try {
         const { messageId } = req.params;
         const { email } = req.query; // Get email from query params for verification
-        
+
         if (!messageId) {
             return next(errorHandler(400, "Message ID is required"));
         }
@@ -231,7 +233,7 @@ export const deleteUserMessage = async (req, res, next) => {
 
         // Allow deletion of any message (unread, read, or replied)
         await Contact.findByIdAndDelete(messageId);
-        
+
         res.status(200).json({
             success: true,
             message: "Message deleted successfully"

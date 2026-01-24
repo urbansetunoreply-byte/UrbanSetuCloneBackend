@@ -57,6 +57,7 @@ export default function AdminListings() {
   const [listingStats, setListingStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsOwnerFilter, setStatsOwnerFilter] = useState('all'); // 'all', 'sale', 'rent', 'offer'
+  const [statsSearch, setStatsSearch] = useState('');
 
   // Lock body scroll when deletion modals are open on Admin Listings
   useEffect(() => {
@@ -1065,20 +1066,32 @@ export default function AdminListings() {
                       <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
                         <FaFlag className="text-purple-500" /> Top Listing Owners
                       </h3>
-                      {/* Inner Filters */}
-                      <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg self-start sm:self-auto">
-                        {['all', 'sale', 'rent', 'offer'].map((filter) => (
-                          <button
-                            key={filter}
-                            onClick={() => setStatsOwnerFilter(filter)}
-                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${statsOwnerFilter === filter
-                                ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-300 shadow-sm'
-                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                              }`}
-                          >
-                            {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                          </button>
-                        ))}
+
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        {/* Search Box */}
+                        <input
+                          type="text"
+                          placeholder="Search owner..."
+                          value={statsSearch}
+                          onChange={(e) => setStatsSearch(e.target.value)}
+                          className="px-3 py-1.5 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                        />
+
+                        {/* Inner Filters */}
+                        <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg self-start sm:self-auto">
+                          {['all', 'sale', 'rent', 'offer'].map((filter) => (
+                            <button
+                              key={filter}
+                              onClick={() => setStatsOwnerFilter(filter)}
+                              className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${statsOwnerFilter === filter
+                                  ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-300 shadow-sm'
+                                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                }`}
+                            >
+                              {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
@@ -1098,7 +1111,12 @@ export default function AdminListings() {
                           </thead>
                           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                             {listingStats.topOwners
-                              .filter(o => statsOwnerFilter === 'all' || o[statsOwnerFilter] > 0)
+                              .filter(o => {
+                                const matchesSearch = o.name.toLowerCase().includes(statsSearch.toLowerCase()) ||
+                                  (o.email && o.email.toLowerCase().includes(statsSearch.toLowerCase()));
+                                const matchesFilter = statsOwnerFilter === 'all' || o[statsOwnerFilter] > 0;
+                                return matchesSearch && matchesFilter;
+                              })
                               .sort((a, b) => {
                                 const key = statsOwnerFilter === 'all' ? 'count' : statsOwnerFilter;
                                 return b[key] - a[key];
@@ -1130,13 +1148,18 @@ export default function AdminListings() {
                                   )}
                                 </tr>
                               ))}
-                            {listingStats.topOwners.filter(o => statsOwnerFilter === 'all' || o[statsOwnerFilter] > 0).length === 0 && (
-                              <tr>
-                                <td colSpan="3" className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                                  No owners found matching this filter
-                                </td>
-                              </tr>
-                            )}
+                            {listingStats.topOwners.filter(o => {
+                              const matchesSearch = o.name.toLowerCase().includes(statsSearch.toLowerCase()) ||
+                                (o.email && o.email.toLowerCase().includes(statsSearch.toLowerCase()));
+                              const matchesFilter = statsOwnerFilter === 'all' || o[statsOwnerFilter] > 0;
+                              return matchesSearch && matchesFilter;
+                            }).length === 0 && (
+                                <tr>
+                                  <td colSpan="3" className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                    No owners found matching this filter
+                                  </td>
+                                </tr>
+                              )}
                           </tbody>
                         </table>
                       </div>

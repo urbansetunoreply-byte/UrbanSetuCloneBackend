@@ -58,11 +58,15 @@ const contactSchema = new mongoose.Schema({
     repliedAt: {
         type: Date,
         default: null
+    },
+    attachments: {
+        type: [String],
+        default: []
     }
 }, { timestamps: true });
 
 // Static method to generate unique ticket ID
-contactSchema.statics.generateTicketId = async function() {
+contactSchema.statics.generateTicketId = async function () {
     try {
         // Get the count of total documents
         const count = await this.countDocuments();

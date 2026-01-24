@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { authenticatedFetch } from '../utils/auth';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaHeadset, FaTimes, FaPaperPlane, FaEnvelope, FaUser, FaFileAlt, FaClock, FaTrash } from 'react-icons/fa';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FaHeadset, FaTimes, FaPaperPlane, FaEnvelope, FaUser, FaFileAlt, FaClock, FaTrash, FaImage, FaPaperclip, FaSpinner } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ConfirmationModal from './ConfirmationModal';
@@ -21,8 +23,11 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     subject: '',
     message: '',
     email: '',
+    email: '',
     name: ''
   });
+  const [attachments, setAttachments] = useState([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState('');
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -85,6 +90,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     // Optionally clear on close
     if (!isModalOpen) {
       setFormData({ subject: '', message: '', email: '', name: '' });
+      setAttachments([]);
     }
   }, [isModalOpen, currentUser]);
 
@@ -149,6 +155,44 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, []);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const bodyFormData = new FormData();
+      bodyFormData.append('image', file);
+
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/upload/image`, {
+        method: 'POST',
+        body: bodyFormData
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const data = await response.json();
+      setAttachments(prev => [...prev, data.imageUrl]);
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+      // Reset input
+      e.target.value = null;
+    }
+  };
+
+  const removeAttachment = (index) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
 
   const fetchUserMessages = async () => {
     setLoadingMessages(true);
@@ -286,7 +330,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(formData)
+        credentials: 'include',
+        body: JSON.stringify({ ...formData, attachments })
       });
 
       const data = await response.json();
@@ -294,6 +339,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
       if (data.success) {
         setSubmitStatus('success');
         setFormData({ subject: '', message: '', email: '', name: '' });
+        setAttachments([]);
         toast.success("We've received your message — our team will contact you soon.");
         setTimeout(() => {
           handleModalClose();
@@ -519,6 +565,51 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                   />
                 </div>
 
+                {/* Attachments Section */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                    <FaPaperclip className="w-4 h-4" />
+                    Attach screenshot (optional)
+                  </label>
+
+                  <div className="flex flex-wrap gap-2">
+                    {attachments.map((url, idx) => (
+                      <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 group">
+                        <img src={url} alt="Attachment" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(idx)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remove image"
+                        >
+                          <FaTimes className="w-2 h-2" />
+                        </button>
+                      </div>
+                    ))}
+
+                    <label className={`w-20 h-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${uploadingImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      {uploadingImage ? (
+                        <FaSpinner className="w-5 h-5 text-blue-500 animate-spin" />
+                      ) : (
+                        <>
+                          <FaImage className="w-5 h-5 text-gray-400 mb-1" />
+                          <span className="text-[10px] text-gray-500">Upload</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={uploadingImage}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    You can upload screenshots (JPG, PNG/WebP up to 5MB)
+                  </p>
+                </div>
+
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
                   <button
@@ -609,6 +700,16 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                           <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-sm transition-colors">
                             {message.message}
                           </p>
+                          {/* Attachments Display */}
+                          {message.attachments && message.attachments.length > 0 && (
+                            <div className="mt-3 grid grid-cols-3 gap-2">
+                              {message.attachments.map((url, i) => (
+                                <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block relative aspect-square rounded-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:opacity-90 transition-opacity">
+                                  <img src={url} alt="Attachment" className="w-full h-full object-cover" />
+                                </a>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Admin Reply */}

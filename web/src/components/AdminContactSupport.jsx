@@ -585,6 +585,19 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
                             <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
                               {message.message}
                             </p>
+                            {/* Attachments Display */}
+                            {message.attachments && message.attachments.length > 0 && (
+                              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                                <h6 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Attachments</h6>
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                  {message.attachments.map((url, i) => (
+                                    <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block relative aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-500 hover:opacity-90 transition-opacity bg-gray-50 dark:bg-gray-800">
+                                      <img src={url} alt={`Attachment ${i + 1}`} className="w-full h-full object-cover" />
+                                    </a>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           {/* Admin Reply Section */}
