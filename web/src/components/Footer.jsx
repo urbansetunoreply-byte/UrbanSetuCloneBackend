@@ -368,11 +368,11 @@ const Footer = () => {
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 transition-colors">
                 <FaEye className="text-blue-500 dark:text-blue-400" />
                 <span className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                  <span>Today: <span className="font-semibold text-blue-600 dark:text-blue-400">{visitorStats.todayCount}</span></span>
+                  <span>Today: <span className="font-semibold text-blue-600 dark:text-blue-400"><CountUp end={visitorStats.todayCount} /></span></span>
                   {visitorStats.totalVisitors > 0 && (
                     <>
                       <span className="text-gray-300 dark:text-gray-700">|</span>
-                      <span>All Time: <span className="font-semibold text-purple-600 dark:text-purple-400">{visitorStats.totalVisitors}</span></span>
+                      <span>All Time: <span className="font-semibold text-purple-600 dark:text-purple-400"><CountUp end={visitorStats.totalVisitors} /></span></span>
                     </>
                   )}
                 </span>
@@ -384,6 +384,39 @@ const Footer = () => {
       </div>
     </footer>
   );
+};
+
+// Helper Component for Number Animation
+const CountUp = ({ end, duration = 2000 }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime;
+    let animationFrame;
+
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = timestamp - startTime;
+      const percentage = Math.min(progress / duration, 1);
+
+      // Ease out expo function for smooth deceleration
+      const easeOutExpo = percentage === 1 ? 1 : 1 - Math.pow(2, -10 * percentage);
+
+      setCount(Math.floor(easeOutExpo * end));
+
+      if (progress < duration) {
+        animationFrame = requestAnimationFrame(animate);
+      } else {
+        setCount(end);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [end, duration]);
+
+  return <>{count}</>;
 };
 
 export default Footer;
