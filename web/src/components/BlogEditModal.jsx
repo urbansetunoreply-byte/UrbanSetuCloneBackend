@@ -25,6 +25,8 @@ const BlogEditModal = ({
   const [mediaErrors, setMediaErrors] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
   const [previewVideo, setPreviewVideo] = useState(null);
+  const isGuide = formData.type === 'guide';
+  const contentLabel = isGuide ? 'Guide' : 'Blog';
 
   // --- Handlers for List-based Media Input (Like CreateListing) ---
 
@@ -203,7 +205,7 @@ const BlogEditModal = ({
                 {isEdit ? <FaPencilAlt className="text-blue-600 dark:text-blue-400 text-xl" /> : <FaPlus className="text-blue-600 dark:text-blue-400 text-xl" />}
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
-                {isEdit ? 'Edit Blog' : 'Create New Blog'}
+                {isEdit ? `Edit ${contentLabel}` : `Create New ${contentLabel}`}
               </h2>
             </div>
             <button
@@ -220,7 +222,7 @@ const BlogEditModal = ({
           <form onSubmit={onSubmit} className="space-y-8 pb-10">
             {/* Title Section */}
             <div className="group">
-              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">📝 Blog Title <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">📝 {contentLabel} Title <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={formData.title}
@@ -331,7 +333,7 @@ const BlogEditModal = ({
                 {/* Blog Images */}
                 <div className="space-y-4">
                   <label className="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    📸 Blog Availability Images
+                    📸 {contentLabel} Availability Images
                   </label>
                   <p className="text-gray-500 dark:text-gray-400 text-xs mb-2">
                     Upload images or paste URLs directly.
@@ -399,7 +401,7 @@ const BlogEditModal = ({
                 {/* Blog Videos */}
                 <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <label className="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    🎥 Blog Videos
+                    🎥 {contentLabel} Videos
                   </label>
                   <p className="text-gray-500 dark:text-gray-400 text-xs mb-2">
                     Upload videos or paste URLs directly.
@@ -621,7 +623,7 @@ const BlogEditModal = ({
                   <div className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-sm"></div>
                 </div>
                 <div className="ml-4">
-                  <span className="block text-base font-black text-gray-800 dark:text-white tracking-tight">🚀 Publish Blog Post</span>
+                  <span className="block text-base font-black text-gray-800 dark:text-white tracking-tight">🚀 Publish {contentLabel} Post</span>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Visible to all users immediately</span>
                 </div>
               </label>
@@ -647,7 +649,7 @@ const BlogEditModal = ({
             }}
             className="flex-1 sm:flex-none px-12 py-4 bg-blue-600 dark:bg-blue-500 text-white rounded-2xl font-black hover:bg-blue-700 dark:hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/30 active:scale-95 tracking-widest uppercase text-sm"
           >
-            {isEdit ? 'Update Details' : 'Launch Blog'}
+            {isEdit ? 'Update Details' : `Launch ${contentLabel}`}
           </button>
         </div>
 

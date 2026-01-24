@@ -29,6 +29,10 @@ const AdminBlogs = ({ type }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPropertyScope, setFilterPropertyScope] = useState('all'); // Renamed from filterType
   const [filterPostType, setFilterPostType] = useState(type || 'all'); // New filter for Blog vs Guide
+
+  const isGuide = filterPostType === 'guide';
+  const contentLabel = isGuide ? 'Guide' : 'Blog';
+  const contentLabelPlural = isGuide ? 'Guides' : 'Blogs';
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all'); // all, published, draft
   const [categories, setCategories] = useState([]);
@@ -279,16 +283,16 @@ const AdminBlogs = ({ type }) => {
       });
 
       if (response.ok) {
-        toast.success(editingBlog ? 'Blog updated successfully!' : 'Blog created successfully!');
+        toast.success(editingBlog ? `${contentLabel} updated successfully!` : `${contentLabel} created successfully!`);
         setShowModal(false);
         fetchBlogs();
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || 'Failed to save blog');
+        toast.error(errorData.message || `Failed to save ${contentLabel.toLowerCase()}`);
       }
     } catch (error) {
-      console.error('Error saving blog:', error);
-      toast.error('Failed to save blog. Please try again.');
+      console.error(`Error saving ${contentLabel.toLowerCase()}:`, error);
+      toast.error(`Failed to save ${contentLabel.toLowerCase()}. Please try again.`);
     }
   };
 
@@ -310,11 +314,11 @@ const AdminBlogs = ({ type }) => {
         setShowDeleteModal(false);
         setBlogToDelete(null);
       } else {
-        toast.error('Failed to delete blog');
+        toast.error(`Failed to delete ${contentLabel.toLowerCase()}`);
       }
     } catch (error) {
-      console.error('Error deleting blog:', error);
-      toast.error('Failed to delete blog');
+      console.error(`Error deleting ${contentLabel.toLowerCase()}:`, error);
+      toast.error(`Failed to delete ${contentLabel.toLowerCase()}`);
     }
   };
 
@@ -336,14 +340,14 @@ const AdminBlogs = ({ type }) => {
       });
 
       if (response.ok) {
-        toast.success(`Blog ${!blog.published ? 'published' : 'unpublished'} successfully`);
+        toast.success(`${contentLabel} ${!blog.published ? 'published' : 'unpublished'} successfully`);
         fetchBlogs();
       } else {
-        toast.error('Failed to update blog status');
+        toast.error(`Failed to update ${contentLabel.toLowerCase()} status`);
       }
     } catch (error) {
-      console.error('Error toggling blog status:', error);
-      toast.error('Failed to update blog status');
+      console.error(`Error toggling ${contentLabel.toLowerCase()} status:`, error);
+      toast.error(`Failed to update ${contentLabel.toLowerCase()} status`);
     }
   };
 
@@ -361,10 +365,10 @@ const AdminBlogs = ({ type }) => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center relative z-10 animate-slideInFromTop">
           <div className="mb-6 md:mb-0 text-center md:text-left">
             <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">
-              Blog <span className="text-yellow-300 dark:text-yellow-400">Management</span>
+              {contentLabel} <span className="text-yellow-300 dark:text-yellow-400">Management</span>
             </h1>
             <p className="text-blue-100 dark:text-blue-200 text-lg font-light max-w-xl">
-              Create, edit, and manage insights and property updates for your audience.
+              Create, edit, and manage {contentLabelPlural.toLowerCase()} and property updates for your audience.
             </p>
           </div>
 
@@ -375,7 +379,7 @@ const AdminBlogs = ({ type }) => {
             <div className="bg-blue-100 dark:bg-blue-900/40 p-1 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/60 transition-colors">
               <Plus className="w-5 h-5 text-blue-700 dark:text-blue-400" />
             </div>
-            Create New Blog
+            Create New {contentLabel}
           </button>
         </div>
       </div>
@@ -390,7 +394,7 @@ const AdminBlogs = ({ type }) => {
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
           >
-            Blog Posts
+            {contentLabel} Posts
           </button>
           <button
             onClick={() => setActiveTab('subscribers')}
@@ -420,7 +424,7 @@ const AdminBlogs = ({ type }) => {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search blogs..."
+                    placeholder={`Search ${contentLabelPlural.toLowerCase()}...`}
                     value={searchTerm}
                     onChange={(e) => {
                       setSearchTerm(e.target.value);
@@ -539,7 +543,7 @@ const AdminBlogs = ({ type }) => {
 
               <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-700/50">
                 <h2 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-500 dark:text-blue-400" /> All Blogs
+                  <FileText className="w-5 h-5 text-blue-500 dark:text-blue-400" /> All {contentLabelPlural}
                   <span className="text-xs font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700">{pagination.total}</span>
                 </h2>
                 <button onClick={() => fetchBlogs(true)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all" title="Refresh list">
@@ -554,9 +558,9 @@ const AdminBlogs = ({ type }) => {
                   <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200 dark:border-gray-600">
                     <FileText className="w-10 h-10 text-gray-400 dark:text-gray-500" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-700 dark:text-gray-200 mb-1">No blogs found</h3>
-                  <p className="text-sm">Get started by creating a new blog post for your audience.</p>
-                  <button onClick={handleCreate} className="mt-4 text-blue-600 dark:text-blue-400 font-semibold hover:underline bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-lg transition-colors">Create Blog</button>
+                  <h3 className="text-lg font-bold text-gray-700 dark:text-gray-200 mb-1">No {contentLabelPlural.toLowerCase()} found</h3>
+                  <p className="text-sm">Get started by creating a new {contentLabel.toLowerCase()} post for your audience.</p>
+                  <button onClick={handleCreate} className="mt-4 text-blue-600 dark:text-blue-400 font-semibold hover:underline bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-lg transition-colors">Create {contentLabel}</button>
                 </div>
               ) : (
                 <>
@@ -859,8 +863,8 @@ const AdminBlogs = ({ type }) => {
           setBlogToDelete(null);
         }}
         onConfirm={confirmDelete}
-        title="Delete Blog"
-        message="Are you sure you want to delete this blog? This action cannot be undone."
+        title={`Delete ${contentLabel}`}
+        message={`Are you sure you want to delete this ${contentLabel.toLowerCase()}? This action cannot be undone.`}
         confirmText="Delete"
         isDestructive={true}
       />
