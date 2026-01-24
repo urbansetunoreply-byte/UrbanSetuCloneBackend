@@ -1,11 +1,12 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import PublicBlogsSkeleton from '../components/skeletons/PublicBlogsSkeleton';
 import { toast } from 'react-hot-toast';
 import {
   Search as SearchIcon, Filter, Calendar, User, Eye, Heart, Tag,
   ArrowRight, ChevronLeft, ChevronRight, Mail, Info, Clock,
-  TrendingUp, Lightbulb, Home, CheckCircle
+  TrendingUp, Lightbulb, Home, CheckCircle, X
 } from 'lucide-react';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -28,18 +29,38 @@ const PublicBlogs = () => {
 
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const { currentUser } = useSelector((state) => state.user);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null); // 'pending', 'approved', 'rejected', 'revoked', 'opted_out', 'not_subscribed'
+
+  // Subscription OTP State
+  const [subscribeStep, setSubscribeStep] = useState('INPUT_EMAIL'); // 'INPUT_EMAIL', 'VERIFY_OTP'
+  const [subscribeOtp, setSubscribeOtp] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+
+  // Unsubscribe OTP State
+  const [showOptOutModal, setShowOptOutModal] = useState(false);
+  const [optOutReason, setOptOutReason] = useState('');
+  const [unsubscribeStep, setUnsubscribeStep] = useState('REASON'); // 'REASON', 'VERIFY_OTP'
+  const [unsubscribeOtp, setUnsubscribeOtp] = useState('');
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
+
 
   // Separate useEffect for initial load and categories/tags
   useEffect(() => {
     fetchBlogs();
     fetchCategories();
     fetchTags();
-    const subscribed = localStorage.getItem('newsletter_subscribed');
-    if (subscribed) {
-      setIsSubscribed(true);
+
+    if (currentUser) {
+      fetchSubscriptionStatus();
+    } else {
+      const subscribed = localStorage.getItem('newsletter_subscribed');
+      if (subscribed) {
+        setIsSubscribed(true);
+      }
     }
-  }, []);
+  }, [currentUser]);
 
   // Debounced search effect
   useEffect(() => {
@@ -113,42 +134,140 @@ const PublicBlogs = () => {
     });
   };
 
-  const handleSubscribe = async () => {
-    if (!email || !email.includes('@')) {
+  const fetchSubscriptionStatus = async () => {
+    try {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/my-status`, { autoRedirect: false });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data && data.data.status) {
+          setSubscriptionStatus(data.data.status);
+        } else {
+          setSubscriptionStatus('not_subscribed');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching subscription status:', error);
+    }
+  };
+
+  const handleSendSubscribeOtp = async () => {
+    if ((!email || !email.includes('@')) && !currentUser) {
       toast.error('Please enter a valid email address');
       return;
     }
 
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL || API_BASE_URL;
+    const emailToSubscribe = currentUser ? currentUser.email : email;
+    setOtpLoading(true);
 
-    const subscribePromise = fetch(`${BASE_URL}/api/subscription/subscribe`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    }).then(async (response) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/subscription/send-subscribe-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailToSubscribe, source: 'blogs_page' })
+      });
       const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to subscribe');
-      }
-      return data;
-    });
 
-    await toast.promise(
-      subscribePromise,
-      {
-        loading: 'Subscribing...',
-        success: (data) => {
-          localStorage.setItem('newsletter_subscribed', 'true');
-          setIsSubscribed(true);
-          return data.message || 'Successfully subscribed!';
+      if (data.success) {
+        toast.success(data.message);
+        setSubscribeStep('VERIFY_OTP');
+      } else {
+        toast.error(data.message || 'Failed to send OTP');
+      }
+    } catch (error) {
+      toast.error('Failed to send OTP');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifySubscribeOtp = async () => {
+    if (!subscribeOtp) {
+      toast.error('Please enter OTP');
+      return;
+    }
+
+    const emailToSubscribe = currentUser ? currentUser.email : email;
+    setOtpLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/subscription/verify-subscribe-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailToSubscribe, otp: subscribeOtp, source: 'blogs_page' })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message);
+        localStorage.setItem('newsletter_subscribed', 'true');
+        setIsSubscribed(true);
+        if (currentUser) fetchSubscriptionStatus();
+        setSubscribeStep('INPUT_EMAIL');
+        setSubscribeOtp('');
+        setEmail('');
+      } else {
+        toast.error(data.message || 'Invalid OTP');
+      }
+    } catch (error) {
+      toast.error('Failed to verification');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleUnsubscribeClick = () => {
+    setShowOptOutModal(true);
+    setOptOutReason('');
+    setUnsubscribeStep('REASON');
+    setUnsubscribeOtp('');
+  };
+
+  const handleSendUnsubscribeOtp = async () => {
+    setOtpLoading(true);
+    try {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/send-unsubscribe-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      if (data.success) {
+        toast.success('OTP sent for verification');
+        setUnsubscribeStep('VERIFY_OTP');
+      } else {
+        toast.error(data.message || 'Failed to send OTP');
+      }
+    } catch (error) {
+      toast.error('Failed to send OTP');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyUnsubscribeOtp = async () => {
+    try {
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/verify-unsubscribe-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         },
-        error: (err) => err.message || 'Failed to subscribe'
+        body: JSON.stringify({ reason: optOutReason, otp: unsubscribeOtp })
+      });
+      const data = await response.json();
+      if (data.success) {
+        toast.success('Unsubscribed successfully');
+        setSubscriptionStatus('opted_out');
+        setIsSubscribed(false);
+        localStorage.removeItem('newsletter_subscribed');
+        setShowOptOutModal(false);
+        setOptOutReason('');
+        setUnsubscribeOtp('');
+        setUnsubscribeStep('REASON');
+      } else {
+        toast.error(data.message || 'Failed to unsubscribe');
       }
-    );
-
-    setEmail('');
+    } catch (error) {
+      toast.error('Failed to unsubscribe');
+    }
   };
 
   const fetchBlogs = async (showLoading = true) => {
@@ -568,7 +687,46 @@ const PublicBlogs = () => {
             <p className="text-slate-300 mb-8 max-w-2xl mx-auto text-lg">
               Join our weekly newsletter to get the latest real estate trends, investment tips, and market analysis.
             </p>
-            {isSubscribed ? (
+            {currentUser && subscriptionStatus && subscriptionStatus !== 'not_subscribed' ? (
+              <div className="bg-white/10 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 inline-flex flex-col items-center animate-fade-in-up">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-lg 
+                   ${subscriptionStatus === 'approved' ? 'bg-green-500 shadow-green-500/20' :
+                    subscriptionStatus === 'pending' ? 'bg-orange-500 shadow-orange-500/20' :
+                      subscriptionStatus === 'rejected' ? 'bg-red-500 shadow-red-500/20' :
+                        'bg-gray-500 shadow-gray-500/20'}`}>
+                  {subscriptionStatus === 'approved' ? <CheckCircle className="w-8 h-8 text-white" /> :
+                    subscriptionStatus === 'pending' ? <Clock className="w-8 h-8 text-white" /> :
+                      <Info className="w-8 h-8 text-white" />}
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2 capitalize">
+                  {subscriptionStatus === 'approved' ? 'Subscribed' : subscriptionStatus.replace('_', ' ')}
+                </h3>
+                <p className="text-gray-300 mb-4">
+                  {subscriptionStatus === 'pending' ? 'Your subscription is awaiting approval.' :
+                    subscriptionStatus === 'approved' ? 'You will receive updates for new blogs.' :
+                      subscriptionStatus === 'rejected' ? 'Your subscription was unfortunately rejected.' :
+                        subscriptionStatus === 'revoked' ? 'Your subscription has been revoked.' :
+                          subscriptionStatus === 'opted_out' ? 'You have opted out of emails.' : ''}
+                </p>
+
+                {subscriptionStatus === 'approved' && (
+                  <button
+                    onClick={handleUnsubscribeClick}
+                    className="px-4 py-2 bg-red-500/80 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors border border-red-400/30"
+                  >
+                    Unsubscribe
+                  </button>
+                )}
+                {subscriptionStatus === 'opted_out' && (
+                  <button
+                    onClick={handleSendSubscribeOtp}
+                    className="px-4 py-2 bg-blue-500/80 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors border border-blue-400/30"
+                  >
+                    Resubscribe
+                  </button>
+                )}
+              </div>
+            ) : isSubscribed ? (
               <div className="bg-white/10 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 inline-flex flex-col items-center animate-fade-in-up">
                 <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20">
                   <CheckCircle className="w-8 h-8 text-white" />
@@ -577,25 +735,156 @@ const PublicBlogs = () => {
                 <p className="text-gray-300">Keep an eye on your inbox for our next blog post.</p>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
-                />
-                <button
-                  onClick={handleSubscribe}
-                  className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-blue-900/20 w-full sm:w-auto hover:-translate-y-1"
-                >
-                  Subscribe
-                </button>
-              </div>
+              /* Subscription Box */
+              !isSubscribed && subscriptionStatus !== 'pending' && subscriptionStatus !== 'approved' && (
+                <div className="bg-blue-600 dark:bg-blue-600 rounded-3xl p-8 text-center text-white mb-16 relative overflow-hidden animate-fade-in-up delay-200">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-black opacity-10 rounded-full -ml-24 -mb-24 blur-2xl"></div>
+
+                  <div className="relative z-10 max-w-2xl mx-auto">
+                    <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Mail className="w-8 h-8 text-white" />
+                    </div>
+                    <h2 className="text-3xl font-bold mb-4">Subscribe to Our Newsletter</h2>
+                    <p className="text-blue-100 mb-8 text-lg">
+                      Get the latest real estate insights, market trends, and property tips delivered straight to your inbox.
+                    </p>
+
+                    {subscribeStep === 'INPUT_EMAIL' ? (
+                      <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                        {!currentUser ? (
+                          <input
+                            type="email"
+                            placeholder="Enter your email address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all font-medium"
+                          />
+                        ) : (
+                          <div className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white font-medium text-left flex items-center">
+                            <User className="w-4 h-4 mr-2 opacity-70" />
+                            {currentUser.email}
+                          </div>
+                        )}
+                        <button
+                          onClick={handleSendSubscribeOtp}
+                          disabled={otpLoading}
+                          className="px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
+                        >
+                          {otpLoading ? 'Sending...' : 'Subscribe'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto animate-fade-in">
+                        <input
+                          type="text"
+                          placeholder="Enter OTP"
+                          value={subscribeOtp}
+                          onChange={(e) => setSubscribeOtp(e.target.value)}
+                          maxLength={6}
+                          className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all font-medium text-center tracking-widest text-xl"
+                        />
+                        <button
+                          onClick={handleVerifySubscribeOtp}
+                          disabled={otpLoading}
+                          className="px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
+                        >
+                          {otpLoading ? 'Verifying...' : 'Verify'}
+                        </button>
+                        <button
+                          onClick={() => setSubscribeStep('INPUT_EMAIL')}
+                          className="px-4 py-4 text-white/70 hover:text-white font-medium underline"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                    <p className="mt-4 text-sm text-blue-200">
+                      Join 10,000+ subscribers for weekly updates. No spam, ever.
+                    </p>
+                  </div>
+                </div>
+              )
             )}
           </div>
         </div>
       </main>
+      {/* Opt-Out Modal */}
+      {showOptOutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scale-in">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Unsubscribe</h3>
+                <button onClick={() => setShowOptOutModal(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                {unsubscribeStep === 'REASON'
+                  ? "We're sorry to see you go! Please let us know why you are unsubscribing (optional):"
+                  : `We've sent a verification code to your email. Please enter it below to confirm unsubscription.`}
+              </p>
+
+              {unsubscribeStep === 'REASON' ? (
+                <>
+                  <textarea
+                    value={optOutReason}
+                    onChange={(e) => setOptOutReason(e.target.value)}
+                    placeholder="Reason for unsubscribing..."
+                    className="w-full h-32 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-sm mb-4"
+                  />
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setShowOptOutModal(false)}
+                      className="px-4 py-2 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      disabled={otpLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSendUnsubscribeOtp}
+                      disabled={otpLoading}
+                      className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-70"
+                    >
+                      {otpLoading ? 'Sending OTP...' : 'Next'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <input
+                      type="text"
+                      value={unsubscribeOtp}
+                      onChange={(e) => setUnsubscribeOtp(e.target.value)}
+                      placeholder="Enter 6-digit OTP"
+                      maxLength={6}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-lg tracking-widest text-center"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setUnsubscribeStep('REASON')}
+                      disabled={otpLoading}
+                      className="px-4 py-2 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handleVerifyUnsubscribeOtp}
+                      disabled={otpLoading}
+                      className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-70"
+                    >
+                      {otpLoading ? 'Verifying...' : 'Unsubscribe'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

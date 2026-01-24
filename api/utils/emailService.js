@@ -15834,6 +15834,229 @@ export const sendPreBookingMessageNotification = async (email, recipientName, se
 
 // Send New Blog Notification Email
 // Send New Blog/Guide Notification Email
+// --------------------------------------------------------------------------
+// SUBSCRIPTION SYSTEM EMAILS
+// --------------------------------------------------------------------------
+
+// 1. Subscription Received (Pending Approval)
+export const sendSubscriptionReceivedEmail = async (email, type = 'blog') => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const isGuide = type === 'guide' || type === 'guides_page';
+  const label = isGuide ? 'Guides' : 'Blogs';
+  const link = isGuide ? `${clientBaseUrl}/guides` : `${clientBaseUrl}/blogs`;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Subscription Received: UrbanSetu ${label} - Pending Approval`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+        <div style="background: linear-gradient(135deg, ${isGuide ? '#7c3aed 0%, #4c1d95 100%' : '#2563eb 0%, #1e40af 100%'}); padding: 30px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Subscription Received</h1>
+        </div>
+        
+        <div style="padding: 32px 24px;">
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            Hello,
+          </p>
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            Thank you for subscribing to <strong>UrbanSetu ${label}</strong>. We have received your request.
+          </p>
+          <div style="background-color: #fff7ed; border-left: 4px solid #f97316; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+            <p style="margin: 0; color: #9a3412; font-weight: 500;">
+              Status: <strong>Pending Approval</strong>
+            </p>
+            <p style="margin: 8px 0 0 0; color: #9a3412; font-size: 14px;">
+              An administrator will review your subscription request shortly. You will receive another email once your subscription is approved.
+            </p>
+          </div>
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
+            In the meantime, feel free to browse our latest content:
+          </p>
+          <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${link}" style="display: inline-block; background-color: ${isGuide ? '#7c3aed' : '#2563eb'}; color: white; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+              Browse ${label}
+            </a>
+          </div>
+          <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 0 0 24px 0;">
+          <div style="text-align: center;">
+            <p style="color: #9ca3af; font-size: 13px; margin: 0;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'subscription_received') :
+      createErrorResponse(new Error(result.error), 'subscription_received');
+  } catch (error) {
+    return createErrorResponse(error, 'subscription_received');
+  }
+};
+
+// 2. Subscription Approved
+export const sendSubscriptionApprovedEmail = async (email, type = 'blog') => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const isGuide = type === 'guide' || type === 'guides_page';
+  const label = isGuide ? 'Guides' : 'Blogs';
+  const link = isGuide ? `${clientBaseUrl}/guides` : `${clientBaseUrl}/blogs`;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Subscription Approved: UrbanSetu ${label} - Welcome!`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+        <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 30px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Subscription Approved!</h1>
+        </div>
+        
+        <div style="padding: 32px 24px;">
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            Great news! Your subscription to <strong>UrbanSetu ${label}</strong> has been approved.
+          </p>
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            You will now receive notifications whenever we publish new ${isGuide ? 'comprehensive guides' : 'insightful articles'}.
+          </p>
+          <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${link}" style="display: inline-block; background-color: #059669; color: white; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+              View Latest ${label}
+            </a>
+          </div>
+          <p style="color: #6b7280; font-size: 14px; margin-bottom: 0px;">
+             You can manage your subscription settings directly on our website.
+          </p>
+          <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 24px 0 24px 0;">
+          <div style="text-align: center;">
+            <p style="color: #9ca3af; font-size: 13px; margin: 0;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'subscription_approved') :
+      createErrorResponse(new Error(result.error), 'subscription_approved');
+  } catch (error) {
+    return createErrorResponse(error, 'subscription_approved');
+  }
+};
+
+// 3. Subscription Rejected
+export const sendSubscriptionRejectedEmail = async (email, type = 'blog', reason) => {
+  const isGuide = type === 'guide' || type === 'guides_page';
+  const label = isGuide ? 'Guides' : 'Blogs';
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Subscription Update: UrbanSetu ${label}`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+        <div style="background-color: #ef4444; padding: 30px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Subscription Rejection</h1>
+        </div>
+        
+        <div style="padding: 32px 24px;">
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            We reviewed your request to subscribe to <strong>UrbanSetu ${label}</strong>. Unfortunately, we cannot approve your subscription at this time.
+          </p>
+          
+          <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+             <p style="margin: 0; color: #991b1b; font-weight: 500;">Reason:</p>
+             <p style="margin: 5px 0 0 0; color: #7f1d1d; font-style: italic;">
+               "${reason || 'Does not meet our community guidelines.'}"
+             </p>
+          </div>
+
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            If you believe this is a mistake, please contact our support team.
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 0 0 24px 0;">
+          <div style="text-align: center;">
+            <p style="color: #9ca3af; font-size: 13px; margin: 0;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'subscription_rejected') :
+      createErrorResponse(new Error(result.error), 'subscription_rejected');
+  } catch (error) {
+    return createErrorResponse(error, 'subscription_rejected');
+  }
+};
+
+// 4. Subscription Revoked
+export const sendSubscriptionRevokedEmail = async (email, type = 'blog', reason) => {
+  const isGuide = type === 'guide' || type === 'guides_page';
+  const label = isGuide ? 'Guides' : 'Blogs';
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Subscription Revoked: UrbanSetu ${label}`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+        <div style="background-color: #374151; padding: 30px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Subscription Revoked</h1>
+        </div>
+        
+        <div style="padding: 32px 24px;">
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            Your subscription to <strong>UrbanSetu ${label}</strong> has been revoked by an administrator.
+          </p>
+          
+          <div style="background-color: #f3f4f6; border-left: 4px solid #374151; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+             <p style="margin: 0; color: #1f2937; font-weight: 500;">Reason:</p>
+             <p style="margin: 5px 0 0 0; color: #374151; font-style: italic;">
+               "${reason || 'Violation of terms or policy.'}"
+             </p>
+          </div>
+
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            You will no longer receive updates for this section. If you have questions, please contact support.
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 0 0 24px 0;">
+          <div style="text-align: center;">
+            <p style="color: #9ca3af; font-size: 13px; margin: 0;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'subscription_revoked') :
+      createErrorResponse(new Error(result.error), 'subscription_revoked');
+  } catch (error) {
+    return createErrorResponse(error, 'subscription_revoked');
+  }
+};
+
+// Send New Blog/Guide Notification Email
 export const sendNewBlogNotification = async (email, username, blog) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   // Use slug if available, otherwise fallback to ID
@@ -15865,7 +16088,7 @@ export const sendNewBlogNotification = async (email, username, blog) => {
         `}
 
         <div style="padding: 32px 24px;">
-          <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">Hello ${username},</p>
+          <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">Hello ${username || 'there'},</p>
           
           <h2 style="color: #111827; font-size: 24px; font-weight: 700; margin: 0 0 16px 0; line-height: 1.3;">
             ${blog.title}
@@ -15911,5 +16134,99 @@ export const sendNewBlogNotification = async (email, username, blog) => {
       createErrorResponse(new Error(result.error), 'new_blog_notification');
   } catch (error) {
     return createErrorResponse(error, 'new_blog_notification');
+  }
+};
+
+// --------------------------------------------------------------------------
+// OTP EMAILS FOR SUBSCRIPTION SYSTEM
+// --------------------------------------------------------------------------
+
+// Send Subscription OTP Email
+export const sendSubscriptionOtpEmail = async (email, otp) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Verify Your Subscription - UrbanSetu`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+        <div style="background-color: #2563eb; padding: 30px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Verify Email</h1>
+        </div>
+        
+        <div style="padding: 32px 24px;">
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px; text-align: center;">
+            Please use the following One-Time Password (OTP) to complete your subscription request.
+          </p>
+          
+          <div style="background-color: #eff6ff; border: 2px dashed #bfdbfe; padding: 20px; margin-bottom: 24px; border-radius: 12px; text-align: center;">
+             <span style="font-size: 32px; font-weight: 700; letter-spacing: 4px; color: #1e40af; display: block;">${otp}</span>
+          </div>
+
+          <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px; text-align: center;">
+            This OTP is valid for 10 minutes. If you did not request this, please ignore this email.
+          </p>
+          
+          <div style="text-align: center;">
+            <p style="color: #9ca3af; font-size: 13px; margin: 0;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'subscription_otp') :
+      createErrorResponse(new Error(result.error), 'subscription_otp');
+  } catch (error) {
+    return createErrorResponse(error, 'subscription_otp');
+  }
+};
+
+// Send Opt-Out OTP Email
+export const sendOptOutOtpEmail = async (email, otp) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Confirm Unsubscription - UrbanSetu`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+        <div style="background-color: #ef4444; padding: 30px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Confirm Unsubscription</h1>
+        </div>
+        
+        <div style="padding: 32px 24px;">
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px; text-align: center;">
+            You requested to unsubscribe from our updates. Please verify this action with the OTP below.
+          </p>
+          
+          <div style="background-color: #fef2f2; border: 2px dashed #fecaca; padding: 20px; margin-bottom: 24px; border-radius: 12px; text-align: center;">
+             <span style="font-size: 32px; font-weight: 700; letter-spacing: 4px; color: #991b1b; display: block;">${otp}</span>
+          </div>
+
+          <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px; text-align: center;">
+            This OTP is valid for 10 minutes.
+          </p>
+     
+          <div style="text-align: center;">
+            <p style="color: #9ca3af; font-size: 13px; margin: 0;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'optout_otp') :
+      createErrorResponse(new Error(result.error), 'optout_otp');
+  } catch (error) {
+    return createErrorResponse(error, 'optout_otp');
   }
 };

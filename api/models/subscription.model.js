@@ -9,15 +9,32 @@ const subscriptionSchema = new mongoose.Schema({
         lowercase: true,
         match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
     },
-    isActive: {
-        type: Boolean,
-        default: true
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected', 'revoked', 'opted_out'],
+        default: 'pending'
+    },
+    rejectionReason: {
+        type: String,
+        default: null
+    },
+    verificationOtp: {
+        type: String,
+        select: false
+    },
+    verificationOtpExpires: {
+        type: Date,
+        select: false
     },
     source: {
         type: String,
         default: 'guides_page'
     },
     subscribedAt: {
+        type: Date,
+        default: Date.now
+    },
+    statusUpdatedAt: {
         type: Date,
         default: Date.now
     }

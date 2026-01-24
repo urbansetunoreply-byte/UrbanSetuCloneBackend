@@ -3,6 +3,7 @@ import Listing from '../models/listing.model.js';
 import User from '../models/user.model.js';
 import BlogLike from '../models/blogLike.model.js';
 import BlogView from '../models/blogView.model.js';
+import Subscription from '../models/subscription.model.js';
 import crypto from 'crypto';
 import { sendCommentEditedEmail, sendCommentDeletedEmail, sendNewBlogNotification } from '../utils/emailService.js';
 
@@ -391,20 +392,25 @@ export const createBlog = async (req, res, next) => {
             // Run asynchronously to not block the response
             (async () => {
                 try {
-                    const users = await User.find({ status: 'active' }).select('email username');
-                    console.log(`Starting blog notification for "${blog.title}" to ${users.length} users...`);
+                    const source = blog.type === 'guide' ? 'guides_page' : 'blogs_page';
+                    const subscribers = await Subscription.find({
+                        status: 'approved',
+                        source: source
+                    }).select('email');
+
+                    console.log(`Starting blog notification for "${blog.title}" to ${subscribers.length} subscribers (${source})...`);
 
                     // Send in chunks or sequentially to respect rate limits
-                    for (const user of users) {
+                    for (const sub of subscribers) {
                         try {
-                            await sendNewBlogNotification(user.email, user.username, blog);
+                            await sendNewBlogNotification(sub.email, 'Subscriber', blog);
                         } catch (err) {
-                            console.error(`Failed to send blog notification to ${user.email}`, err);
+                            console.error(`Failed to send blog notification to ${sub.email}`, err);
                         }
                     }
                     console.log('Blog notifications completed.');
                 } catch (error) {
-                    console.error('Error fetching users for blog notification:', error);
+                    console.error('Error fetching subscribers for blog notification:', error);
                 }
             })();
         }
@@ -493,19 +499,24 @@ export const updateBlog = async (req, res, next) => {
             // Run asynchronously to not block the response
             (async () => {
                 try {
-                    const users = await User.find({ status: 'active' }).select('email username');
-                    console.log(`Starting blog notification for "${blog.title}" to ${users.length} users...`);
+                    const source = blog.type === 'guide' ? 'guides_page' : 'blogs_page';
+                    const subscribers = await Subscription.find({
+                        status: 'approved',
+                        source: source
+                    }).select('email');
 
-                    for (const user of users) {
+                    console.log(`Starting blog notification for "${blog.title}" to ${subscribers.length} subscribers (${source})...`);
+
+                    for (const sub of subscribers) {
                         try {
-                            await sendNewBlogNotification(user.email, user.username, blog);
+                            await sendNewBlogNotification(sub.email, 'Subscriber', blog);
                         } catch (err) {
-                            console.error(`Failed to send blog notification to ${user.email}`, err);
+                            console.error(`Failed to send blog notification to ${sub.email}`, err);
                         }
                     }
                     console.log('Blog notifications completed.');
                 } catch (error) {
-                    console.error('Error fetching users for blog notification:', error);
+                    console.error('Error fetching subscribers for blog notification:', error);
                 }
             })();
         }

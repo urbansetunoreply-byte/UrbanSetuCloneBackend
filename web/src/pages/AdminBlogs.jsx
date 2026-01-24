@@ -6,7 +6,7 @@ import AdminBlogsSkeleton from '../components/skeletons/AdminBlogsSkeleton';
 import {
   Plus, Edit, Trash, Search, Filter, Globe, Home, Eye, EyeOff,
   ExternalLink, ChevronLeft, ChevronRight, FileText, LayoutTemplate,
-  CheckCircle, RefreshCw
+  CheckCircle, RefreshCw, XCircle, Ban, UserX
 } from 'lucide-react';
 import BlogEditModal from '../components/BlogEditModal';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -59,6 +59,11 @@ const AdminBlogs = ({ type }) => {
   });
 
   const [propertySearch, setPropertySearch] = useState('');
+
+  const [subToProcess, setSubToProcess] = useState(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showRevokeModal, setShowRevokeModal] = useState(false);
+  const [statusReason, setStatusReason] = useState('');
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
@@ -198,6 +203,42 @@ const AdminBlogs = ({ type }) => {
     } catch (error) {
       console.error('Error fetching blog suggestions:', error);
     }
+  };
+
+  const handleUpdateSubscription = async (id, status, reason = null) => {
+    try {
+      const BASE_URL = import.meta.env.VITE_API_BASE_URL || API_BASE_URL;
+      const response = await authenticatedFetch(`${BASE_URL}/api/subscription/status/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, reason })
+      });
+      const data = await response.json();
+      if (data.success) {
+        toast.success(data.message);
+        fetchSubscribers();
+        setShowRejectModal(false);
+        setShowRevokeModal(false);
+        setSubToProcess(null);
+        setStatusReason('');
+      } else {
+        toast.error(data.message || 'Failed to update status');
+      }
+    } catch (error) {
+      toast.error('Error updating status');
+    }
+  };
+
+  const openRejectModal = (sub) => {
+    setSubToProcess(sub);
+    setStatusReason('');
+    setShowRejectModal(true);
+  };
+
+  const openRevokeModal = (sub) => {
+    setSubToProcess(sub);
+    setStatusReason('');
+    setShowRevokeModal(true);
   };
 
   const fetchProperties = async () => {
@@ -803,12 +844,13 @@ const AdminBlogs = ({ type }) => {
                     <th className="px-6 py-4 text-left">Subscribed Date</th>
                     <th className="px-6 py-4 text-left">Source</th>
                     <th className="px-6 py-4 text-left">Status</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {subscribers.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                      <td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                         No subscribers found yet.
                       </td>
                     </tr>
@@ -822,15 +864,59 @@ const AdminBlogs = ({ type }) => {
                           {new Date(sub.subscribedAt || sub.createdAt).toLocaleDateString()} {new Date(sub.subscribedAt || sub.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                          {sub.source || 'Website'}
+                          <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium">
+                            {sub.source ? sub.source.replace('_', ' ') : 'Website'}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.isActive
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                              sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                  sub.status === 'revoked' ? 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' :
+                                    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
                             }`}>
-                            {sub.isActive ? 'Active' : 'Unsubscribed'}
+                            {sub.status ? sub.status.toUpperCase() : (sub.isActive ? 'ACTIVE (LEGACY)' : 'OD')}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            {sub.status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => handleUpdateSubscription(sub._id, 'approved')}
+                                  className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
+                                  title="Approve"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => openRejectModal(sub)}
+                                  className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                                  title="Reject"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            {sub.status === 'approved' && (
+                              <button
+                                onClick={() => openRevokeModal(sub)}
+                                className="p-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
+                                title="Revoke"
+                              >
+                                <Ban className="w-4 h-4" />
+                              </button>
+                            )}
+                            {(sub.status === 'rejected' || sub.status === 'revoked' || sub.status === 'opted_out') && (
+                              <button
+                                onClick={() => handleUpdateSubscription(sub._id, 'approved')}
+                                className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
+                                title="Re-approve"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -868,6 +954,76 @@ const AdminBlogs = ({ type }) => {
         confirmText="Delete"
         isDestructive={true}
       />
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Reject Subscription</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Please provide a reason for rejecting this subscription. This will be sent to the user.
+              </p>
+              <textarea
+                value={statusReason}
+                onChange={(e) => setStatusReason(e.target.value)}
+                placeholder="Reason for rejection..."
+                className="w-full h-32 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-sm mb-4"
+              />
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowRejectModal(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpdateSubscription(subToProcess._id, 'rejected', statusReason)}
+                  disabled={!statusReason.trim()}
+                  className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Reject Subscription
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Revoke Modal */}
+      {showRevokeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Revoke Subscription</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Please provide a reason for revoking this subscription. This will be sent to the user.
+              </p>
+              <textarea
+                value={statusReason}
+                onChange={(e) => setStatusReason(e.target.value)}
+                placeholder="Reason for revocation..."
+                className="w-full h-32 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-sm mb-4"
+              />
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowRevokeModal(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpdateSubscription(subToProcess._id, 'revoked', statusReason)}
+                  disabled={!statusReason.trim()}
+                  className="px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Revoke Subscription
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,29 +1,60 @@
 import Subscription from '../models/subscription.model.js';
 import { errorHandler } from '../utils/error.js';
+import {
+    sendSubscriptionReceivedEmail,
+    sendSubscriptionApprovedEmail,
+    sendSubscriptionRejectedEmail,
+    sendSubscriptionRevokedEmail,
+    sendSubscriptionOtpEmail,
+    sendOptOutOtpEmail
+} from '../utils/emailService.js';
+import crypto from 'crypto';
 
 export const subscribeToNewsletter = async (req, res, next) => {
-    const { email } = req.body;
+    const { email, source = 'guides_page' } = req.body;
 
     if (!email) {
         return next(errorHandler(400, 'Email is required'));
     }
 
     try {
-        const existingSubscription = await Subscription.findOne({ email });
+        let subscription = await Subscription.findOne({ email });
 
-        if (existingSubscription) {
-            if (!existingSubscription.isActive) {
-                existingSubscription.isActive = true;
-                await existingSubscription.save();
-                return res.status(200).json({ success: true, message: 'Welcome back! You have successfully resubscribed.' });
+        if (subscription) {
+            // Already subscribed
+            if (subscription.status === 'approved') {
+                return res.status(200).json({ success: true, message: 'You are already subscribed!' });
             }
-            return res.status(200).json({ success: true, message: 'You are already subscribed!' });
+            if (subscription.status === 'pending') {
+                return res.status(200).json({ success: true, message: 'Your subscription is already pending approval.' });
+            }
+            if (subscription.status === 'rejected' || subscription.status === 'opted_out' || subscription.status === 'revoked') {
+                // Re-subscribe attempt
+                subscription.status = 'pending';
+                subscription.source = source;
+                subscription.rejectionReason = null; // Clear reason
+                subscription.statusUpdatedAt = new Date();
+                await subscription.save();
+
+                // Send "Received" email
+                await sendSubscriptionReceivedEmail(email, source);
+
+                return res.status(200).json({ success: true, message: 'Welcome back! Your subscription request has been received and is pending approval.' });
+            }
+        } else {
+            // New subscription
+            subscription = new Subscription({
+                email,
+                source,
+                status: 'pending'
+            });
+            await subscription.save();
+
+            // Send "Received" email
+            await sendSubscriptionReceivedEmail(email, source);
+
+            res.status(201).json({ success: true, message: 'Subscription request received! Please check your email.' });
         }
-
-        const newSubscription = new Subscription({ email });
-        await newSubscription.save();
-
-        res.status(201).json({ success: true, message: 'Successfully subscribed to Real Estate Insights!' });
     } catch (error) {
         next(error);
     }
@@ -37,6 +68,241 @@ export const getAllSubscribers = async (req, res, next) => {
     try {
         const subscribers = await Subscription.find().sort({ subscribedAt: -1 });
         res.status(200).json({ success: true, data: subscribers });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getMySubscriptionStatus = async (req, res, next) => {
+    // Assuming authenticated user
+    try {
+        const email = req.user.email;
+        const subscription = await Subscription.findOne({ email });
+
+        if (!subscription) {
+            return res.status(200).json({ success: true, data: { status: 'not_subscribed' } });
+        }
+
+        res.status(200).json({ success: true, data: subscription });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const unsubscribeUser = async (req, res, next) => {
+    try {
+        const email = req.user.email;
+        const subscription = await Subscription.findOne({ email });
+
+        if (!subscription) {
+            return next(errorHandler(404, 'Subscription not found'));
+        }
+
+        const { reason } = req.body;
+
+        subscription.status = 'opted_out';
+        subscription.statusUpdatedAt = new Date();
+        if (reason) {
+            subscription.rejectionReason = reason; // reusing this field or could add optOutReason
+        }
+        await subscription.save();
+
+        res.status(200).json({ success: true, message: 'You have successfully unsubscribed.' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateSubscriptionStatus = async (req, res, next) => {
+    if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+        return next(errorHandler(403, 'Forbidden'));
+    }
+
+    const { id } = req.params;
+    const { status, reason } = req.body;
+
+    if (!['approved', 'rejected', 'revoked'].includes(status)) {
+        return next(errorHandler(400, 'Invalid status update'));
+    }
+
+    try {
+        const subscription = await Subscription.findById(id);
+        if (!subscription) {
+            return next(errorHandler(404, 'Subscription not found'));
+        }
+
+        const oldStatus = subscription.status;
+        subscription.status = status;
+        subscription.statusUpdatedAt = new Date();
+
+        if (reason) {
+            subscription.rejectionReason = reason;
+        }
+
+        await subscription.save();
+
+        // Send emails based on status change
+        if (status === 'approved' && oldStatus !== 'approved') {
+            await sendSubscriptionApprovedEmail(subscription.email, subscription.source);
+        } else if (status === 'rejected') {
+            await sendSubscriptionRejectedEmail(subscription.email, subscription.source, reason);
+        } else if (status === 'revoked') {
+            await sendSubscriptionRevokedEmail(subscription.email, subscription.source, reason);
+        }
+
+        res.status(200).json({ success: true, data: subscription, message: `Subscription ${status}` });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// --------------------------------------------------------------------------
+// OTP CONTROLLERS
+// --------------------------------------------------------------------------
+
+const generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+export const sendSubscriptionOtp = async (req, res, next) => {
+    const { email, source = 'website' } = req.body;
+
+    if (!email) {
+        return next(errorHandler(400, 'Email is required'));
+    }
+
+    try {
+        let subscription = await Subscription.findOne({ email });
+
+        if (subscription && subscription.status === 'approved') {
+            return res.status(200).json({ success: false, message: 'You are already subscribed!' });
+        }
+
+        const otp = generateOTP();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+        if (!subscription) {
+            subscription = new Subscription({
+                email,
+                source,
+                status: 'pending' // Will trigger "Received" only after verify? No, wait.
+                // If we create here, user enters OTP.
+            });
+        }
+
+        // Update OTP fields
+        subscription.verificationOtp = otp;
+        subscription.verificationOtpExpires = otpExpires;
+        subscription.source = source;
+        await subscription.save();
+
+        await sendSubscriptionOtpEmail(email, otp);
+
+        res.status(200).json({ success: true, message: 'OTP sent to your email. Please verify to complete subscription.' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const verifySubscriptionOtp = async (req, res, next) => {
+    const { email, otp, source } = req.body;
+
+    if (!email || !otp) {
+        return next(errorHandler(400, 'Email and OTP are required'));
+    }
+
+    try {
+        const subscription = await Subscription.findOne({ email }).select('+verificationOtp +verificationOtpExpires');
+
+        if (!subscription) {
+            return next(errorHandler(404, 'Subscription request not found.'));
+        }
+
+        if (subscription.verificationOtp !== otp) {
+            return next(errorHandler(400, 'Invalid OTP'));
+        }
+
+        if (subscription.verificationOtpExpires < Date.now()) {
+            return next(errorHandler(400, 'OTP has expired. Please request a new one.'));
+        }
+
+        // OTP Valid
+        subscription.verificationOtp = undefined;
+        subscription.verificationOtpExpires = undefined;
+        // Only set status to pending if it wasn't already approved (re-subscribe case handling)
+        // Actually, if they are verifying OTP, they are confirming intent.
+        if (subscription.status !== 'approved') {
+            subscription.status = 'pending';
+            subscription.rejectionReason = undefined;
+        }
+        subscription.source = source || subscription.source;
+        subscription.statusUpdatedAt = new Date();
+        await subscription.save();
+
+        // Send 'Received' email only now
+        await sendSubscriptionReceivedEmail(email, subscription.source);
+
+        res.status(200).json({ success: true, message: 'Email verified! Your subscription request has been submitted for approval.' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const sendUnsubscribeOtp = async (req, res, next) => {
+    const email = req.user.email; // Authenticated user
+
+    try {
+        const subscription = await Subscription.findOne({ email });
+
+        if (!subscription) {
+            return next(errorHandler(404, 'Subscription not found'));
+        }
+
+        const otp = generateOTP();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+        subscription.verificationOtp = otp;
+        subscription.verificationOtpExpires = otpExpires;
+        await subscription.save();
+
+        await sendOptOutOtpEmail(email, otp);
+
+        res.status(200).json({ success: true, message: 'OTP sent for unsubscription verification.' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const verifyUnsubscribeOtp = async (req, res, next) => {
+    const { otp, reason } = req.body;
+    const email = req.user.email;
+
+    try {
+        const subscription = await Subscription.findOne({ email }).select('+verificationOtp +verificationOtpExpires');
+
+        if (!subscription) {
+            return next(errorHandler(404, 'Subscription not found'));
+        }
+
+        if (subscription.verificationOtp !== otp) {
+            return next(errorHandler(400, 'Invalid OTP'));
+        }
+
+        if (subscription.verificationOtpExpires < Date.now()) {
+            return next(errorHandler(400, 'OTP has expired'));
+        }
+
+        // Verify & Opt-out
+        subscription.verificationOtp = undefined;
+        subscription.verificationOtpExpires = undefined;
+        subscription.status = 'opted_out';
+        subscription.statusUpdatedAt = new Date();
+        if (reason) {
+            subscription.rejectionReason = reason;
+        }
+        await subscription.save();
+
+        res.status(200).json({ success: true, message: 'You have been successfully unsubscribed.' });
     } catch (error) {
         next(error);
     }
