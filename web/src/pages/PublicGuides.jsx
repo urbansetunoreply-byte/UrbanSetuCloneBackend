@@ -73,8 +73,7 @@ const PublicGuides = () => {
         }
 
         // Simulating API call for newsletter subscription
-        // In a real app, you would make a POST request to your newsletter endpoint
-        toast.promise(
+        await toast.promise(
             new Promise((resolve) => setTimeout(resolve, 1000)),
             {
                 loading: 'Subscribing...',
