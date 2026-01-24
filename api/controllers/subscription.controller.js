@@ -302,7 +302,10 @@ export const sendSubscriptionOtp = async (req, res, next) => {
             }
 
             // Check if already pending for this specific type
-            if (subscription.status === 'pending' && subscription.preferences && subscription.preferences[type]) {
+            // New Logic: Check pendingPreferences OR (Legacy: status pending + preference true)
+            const isPending = (subscription.pendingPreferences && subscription.pendingPreferences[type]) || (subscription.status === 'pending' && subscription.preferences && subscription.preferences[type]);
+
+            if (isPending) {
                 return res.status(200).json({ success: false, message: `Your ${type} subscription is already pending approval.` });
             }
         }
