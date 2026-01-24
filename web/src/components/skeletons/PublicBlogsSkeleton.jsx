@@ -7,7 +7,12 @@ export default function PublicBlogsSkeleton() {
             <div className="bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-900 dark:to-gray-800 pb-24 pt-12 px-4 shadow-lg mb-8 relative overflow-hidden animate-pulse transition-colors duration-300">
                 <div className="max-w-7xl mx-auto text-center relative z-20">
                     <div className="h-12 w-64 bg-gray-400 dark:bg-gray-700 rounded-lg mx-auto mb-4 opacity-50 transition-colors duration-300"></div>
-                    <div className="h-6 w-96 bg-gray-400 dark:bg-gray-700 rounded mx-auto mb-8 opacity-50 transition-colors duration-300"></div>
+                    <div className="h-6 w-96 bg-gray-400 dark:bg-gray-700 rounded mx-auto mb-4 opacity-50 transition-colors duration-300"></div>
+
+                    {/* Navigation Button Skeleton */}
+                    <div className="mb-8 flex justify-center">
+                        <div className="h-12 w-40 bg-gray-400 dark:bg-gray-700 rounded-xl opacity-50 transition-colors duration-300"></div>
+                    </div>
 
                     <div className="flex flex-wrap justify-center gap-3 mb-8">
                         <div className="h-8 w-24 bg-gray-400 dark:bg-gray-700 rounded-full opacity-50 transition-colors duration-300"></div>
