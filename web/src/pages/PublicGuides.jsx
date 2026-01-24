@@ -139,7 +139,12 @@ const PublicGuides = () => {
             if (response.ok) {
                 const data = await response.json();
                 if (data.data && data.data.status) {
-                    setSubscriptionStatus(data.data.status);
+                    // If approved but not subscribed to GUIDE, treat as not subscribed
+                    if (data.data.status === 'approved' && (!data.data.preferences || !data.data.preferences.guide)) {
+                        setSubscriptionStatus('not_subscribed');
+                    } else {
+                        setSubscriptionStatus(data.data.status);
+                    }
                 } else {
                     setSubscriptionStatus('not_subscribed');
                 }

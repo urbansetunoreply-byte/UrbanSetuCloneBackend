@@ -392,13 +392,15 @@ export const createBlog = async (req, res, next) => {
             // Run asynchronously to not block the response
             (async () => {
                 try {
-                    const source = blog.type === 'guide' ? 'guides_page' : 'blogs_page';
+                    const isGuide = blog.type === 'guide';
+                    const preferenceQuery = isGuide ? { 'preferences.guide': true } : { 'preferences.blog': true };
+
                     const subscribers = await Subscription.find({
                         status: 'approved',
-                        source: source
+                        ...preferenceQuery
                     }).select('email');
 
-                    console.log(`Starting blog notification for "${blog.title}" to ${subscribers.length} subscribers (${source})...`);
+                    console.log(`Starting ${blog.type} notification for "${blog.title}" to ${subscribers.length} subscribers...`);
 
                     // Send in chunks or sequentially to respect rate limits
                     for (const sub of subscribers) {
@@ -499,13 +501,15 @@ export const updateBlog = async (req, res, next) => {
             // Run asynchronously to not block the response
             (async () => {
                 try {
-                    const source = blog.type === 'guide' ? 'guides_page' : 'blogs_page';
+                    const isGuide = blog.type === 'guide';
+                    const preferenceQuery = isGuide ? { 'preferences.guide': true } : { 'preferences.blog': true };
+
                     const subscribers = await Subscription.find({
                         status: 'approved',
-                        source: source
+                        ...preferenceQuery
                     }).select('email');
 
-                    console.log(`Starting blog notification for "${blog.title}" to ${subscribers.length} subscribers (${source})...`);
+                    console.log(`Starting ${blog.type} notification for "${blog.title}" to ${subscribers.length} subscribers...`);
 
                     for (const sub of subscribers) {
                         try {

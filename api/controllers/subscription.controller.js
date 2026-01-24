@@ -20,19 +20,38 @@ export const subscribeToNewsletter = async (req, res, next) => {
 
     try {
         let subscription = await Subscription.findOne({ email });
+        const type = source === 'blogs_page' ? 'blog' : 'guide';
 
         if (subscription) {
-            // Already subscribed
+            // Already subscribed logic refactored for granular preferences
             if (subscription.status === 'approved') {
-                return res.status(200).json({ success: true, message: 'You are already subscribed!' });
+                if (subscription.preferences && subscription.preferences[type]) {
+                    return res.status(200).json({ success: true, message: `You are already subscribed to our ${type}s!` });
+                } else {
+                    // Approved generally, but adding new preference
+                    subscription.preferences[type] = true;
+                    subscription.source = source; // Update last source
+                    await subscription.save();
+                    return res.status(200).json({ success: true, message: `Successfully subscribed to ${type}s!` });
+                }
             }
+
+            // If pending, allow updating preference
             if (subscription.status === 'pending') {
+                if (!subscription.preferences[type]) {
+                    subscription.preferences[type] = true;
+                    subscription.source = source;
+                    await subscription.save();
+                }
                 return res.status(200).json({ success: true, message: 'Your subscription is already pending approval.' });
             }
+
             if (subscription.status === 'rejected' || subscription.status === 'opted_out' || subscription.status === 'revoked') {
                 // Re-subscribe attempt
                 subscription.status = 'pending';
                 subscription.source = source;
+                subscription.preferences = subscription.preferences || { blog: false, guide: false };
+                subscription.preferences[type] = true;
                 subscription.rejectionReason = null; // Clear reason
                 subscription.statusUpdatedAt = new Date();
                 await subscription.save();
@@ -47,7 +66,11 @@ export const subscribeToNewsletter = async (req, res, next) => {
             subscription = new Subscription({
                 email,
                 source,
-                status: 'pending'
+                status: 'pending',
+                preferences: {
+                    blog: type === 'blog',
+                    guide: type === 'guide'
+                }
             });
             await subscription.save();
 
@@ -99,12 +122,18 @@ export const unsubscribeUser = async (req, res, next) => {
             return next(errorHandler(404, 'Subscription not found'));
         }
 
+        // Optional: granular unsubscribe could be supported via body params,
+        // but for now, "Unsubscribe" usually means "Stop all emails".
+        // Use 'opted_out' status which overrides preferences.
         const { reason } = req.body;
 
         subscription.status = 'opted_out';
         subscription.statusUpdatedAt = new Date();
+        // Clear preferences on full opt-out
+        subscription.preferences = { blog: false, guide: false };
+
         if (reason) {
-            subscription.rejectionReason = reason; // reusing this field or could add optOutReason
+            subscription.rejectionReason = reason;
         }
         await subscription.save();
 
@@ -174,7 +203,6 @@ export const sendSubscriptionOtp = async (req, res, next) => {
 
     try {
         // IMPORTANT: Check if email exists in User database
-        // Newsletter subscriptions are ONLY for registered UrbanSetu users
         const user = await User.findOne({ email });
 
         if (!user) {
@@ -185,26 +213,30 @@ export const sendSubscriptionOtp = async (req, res, next) => {
         }
 
         let subscription = await Subscription.findOne({ email });
+        const type = source === 'blogs_page' ? 'blog' : 'guide';
 
-        if (subscription && subscription.status === 'approved') {
-            return res.status(200).json({ success: false, message: 'You are already subscribed!' });
+        if (subscription && subscription.status === 'approved' && subscription.preferences && subscription.preferences[type]) {
+            return res.status(200).json({ success: false, message: `You are already subscribed to ${type}s!` });
         }
 
         const otp = generateOTP();
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
         if (!subscription) {
-            // Create a temporary record with status 'verifying' to store OTP
-            // This won't show up in admin panel as we'll filter by status 'pending', 'approved', etc.
+            // Create a temporary record
             subscription = new Subscription({
                 email,
                 source,
-                status: 'verifying', // Temporary status during OTP verification
+                status: 'verifying',
                 verificationOtp: otp,
-                verificationOtpExpires: otpExpires
+                verificationOtpExpires: otpExpires,
+                preferences: {
+                    blog: type === 'blog',
+                    guide: type === 'guide'
+                }
             });
         } else {
-            // Update existing subscription with OTP (for re-subscribe cases)
+            // Update existing subscription
             subscription.verificationOtp = otp;
             subscription.verificationOtpExpires = otpExpires;
             subscription.source = source;
@@ -241,11 +273,16 @@ export const verifySubscriptionOtp = async (req, res, next) => {
             return next(errorHandler(400, 'OTP has expired. Please request a new one.'));
         }
 
+        const type = source === 'blogs_page' ? 'blog' : 'guide';
+
         // OTP Valid
         subscription.verificationOtp = undefined;
         subscription.verificationOtpExpires = undefined;
-        // Only set status to pending if it wasn't already approved (re-subscribe case handling)
-        // Actually, if they are verifying OTP, they are confirming intent.
+
+        // Ensure preference is set
+        if (!subscription.preferences) subscription.preferences = {};
+        subscription.preferences[type] = true;
+
         if (subscription.status !== 'approved') {
             subscription.status = 'pending';
             subscription.rejectionReason = undefined;
@@ -254,8 +291,10 @@ export const verifySubscriptionOtp = async (req, res, next) => {
         subscription.statusUpdatedAt = new Date();
         await subscription.save();
 
-        // Send 'Received' email only now
-        await sendSubscriptionReceivedEmail(email, subscription.source);
+        // Send 'Received' email ONLY if status changed to pending (meaning it wasn't approved already)
+        if (subscription.status === 'pending') {
+            await sendSubscriptionReceivedEmail(email, subscription.source);
+        }
 
         res.status(200).json({ success: true, message: 'Email verified! Your subscription request has been submitted for approval.' });
     } catch (error) {

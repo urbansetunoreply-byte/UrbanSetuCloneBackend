@@ -165,7 +165,12 @@ const PublicBlogs = () => {
       if (response.ok) {
         const data = await response.json();
         if (data.data && data.data.status) {
-          setSubscriptionStatus(data.data.status);
+          // If approved but not subscribed to BLOG, treat as not subscribed
+          if (data.data.status === 'approved' && (!data.data.preferences || !data.data.preferences.blog)) {
+            setSubscriptionStatus('not_subscribed');
+          } else {
+            setSubscriptionStatus(data.data.status);
+          }
         } else {
           setSubscriptionStatus('not_subscribed');
         }

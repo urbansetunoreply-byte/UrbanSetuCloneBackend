@@ -14,6 +14,10 @@ const subscriptionSchema = new mongoose.Schema({
         enum: ['verifying', 'pending', 'approved', 'rejected', 'revoked', 'opted_out'],
         default: 'pending'
     },
+    preferences: {
+        blog: { type: Boolean, default: false },
+        guide: { type: Boolean, default: false }
+    },
     rejectionReason: {
         type: String,
         default: null
