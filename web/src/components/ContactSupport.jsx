@@ -524,7 +524,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -542,7 +543,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -560,7 +562,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Brief description of your issue"
                   />
                 </div>
@@ -577,8 +580,9 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     value={formData.message}
                     onChange={handleChange}
                     required
+                    disabled={isSubmitting}
                     rows={5}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Please describe your issue or question in detail..."
                   />
                 </div>
@@ -595,15 +599,15 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                       type="text"
                       value={imageLinkInput}
                       onChange={(e) => setImageLinkInput(e.target.value)}
-                      disabled={attachments.length >= 3}
-                      placeholder={attachments.length >= 3 ? "Limit reached (Max 3)" : "Paste image URL..."}
+                      disabled={attachments.length >= 3 || isSubmitting}
+                      placeholder={attachments.length >= 3 ? "Limit reached (Max 3)" : (isSubmitting ? "Sending message..." : "Paste image URL...")}
                       className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLink())}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), !isSubmitting && handleAddLink())}
                     />
                     <button
                       type="button"
                       onClick={handleAddLink}
-                      disabled={attachments.length >= 3}
+                      disabled={attachments.length >= 3 || isSubmitting}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                       Add
@@ -622,7 +626,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                         <button
                           type="button"
                           onClick={() => removeAttachment(idx)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          disabled={isSubmitting}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
                           title="Remove image"
                         >
                           <FaTimes className="w-2 h-2" />
@@ -631,20 +636,20 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     ))}
 
                     {attachments.length < 3 && (
-                      <label className={`w-20 h-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${uploadingImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <label className={`w-20 h-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg transition-colors ${uploadingImage || isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
                         {uploadingImage ? (
                           <FaSpinner className="w-5 h-5 text-blue-500 animate-spin" />
                         ) : (
                           <>
                             <FaImage className="w-5 h-5 text-gray-400 mb-1" />
-                            <span className="text-[10px] text-gray-500">Upload</span>
+                            <span className="text-[10px] text-gray-500">{isSubmitting ? 'Wait' : 'Upload'}</span>
                           </>
                         )}
                         <input
                           type="file"
                           accept="image/*"
                           onChange={handleImageUpload}
-                          disabled={uploadingImage}
+                          disabled={uploadingImage || isSubmitting}
                           className="hidden"
                         />
                       </label>
@@ -660,7 +665,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="flex-1 px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 font-medium contact-support-action-btn"
+                    disabled={isSubmitting}
+                    className="flex-1 px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 font-medium contact-support-action-btn disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
