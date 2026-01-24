@@ -2129,9 +2129,16 @@ export default function Listing() {
                 {/* 2. Viewer for Verified Listings */}
                 {listing.isVerified && listing.virtualTourImages && listing.virtualTourImages.length > 0 && (
                   <div className="border rounded-lg p-3 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm">
-                    <h4 className="font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-                      <FaCompass className="text-indigo-600 dark:text-indigo-400" /> 360° Virtual Tour ({listing.virtualTourImages.length})
-                    </h4>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                      <h4 className="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                        <FaCompass className="text-indigo-600 dark:text-indigo-400" /> 360° Virtual Tour ({listing.virtualTourImages.length})
+                      </h4>
+                      <div className="flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/40 rounded-full h-fit w-fit">
+                        <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                          <FaRobot className="animate-pulse text-xs" /> Powered by Sentinel v2.0
+                        </span>
+                      </div>
+                    </div>
                     {/* Main Active Viewer */}
                     <div className="relative w-full h-[500px] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-md group mb-4">
                       {/* 360 Viewer with conditional blur if not logged in */}

@@ -166,11 +166,19 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
             <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-6 text-white">
-                <div className="flex items-center gap-3 mb-2">
-                    <Sparkles className="w-6 h-6 text-yellow-300 animate-pulse" />
-                    <h3 className="text-xl font-bold">AI Virtual Staging</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                    <div className="flex items-center gap-3">
+                        <Sparkles className="w-6 h-6 text-yellow-300 animate-pulse" />
+                        <h3 className="text-xl font-bold">AI Virtual Staging</h3>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                        <span className="text-[9px] font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(250,204,21,0.8)]"></div>
+                            Powered by Sentinel v2.0
+                        </span>
+                    </div>
                 </div>
-                <p className="text-indigo-100 opacity-90 text-sm">
+                <p className="text-indigo-100 opacity-90 text-sm leading-relaxed">
                     Visualize this empty space with premium furniture styles in seconds.
                 </p>
             </div>
