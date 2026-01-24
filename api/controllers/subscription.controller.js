@@ -122,16 +122,32 @@ export const unsubscribeUser = async (req, res, next) => {
             return next(errorHandler(404, 'Subscription not found'));
         }
 
-        // Optional: granular unsubscribe could be supported via body params,
-        // but for now, "Unsubscribe" usually means "Stop all emails".
-        // Use 'opted_out' status which overrides preferences.
-        const { reason } = req.body;
+        const { reason, source } = req.body;
+        // Determine type based on source
+        const type = source === 'blogs_page' ? 'blog' : (source === 'guides_page' ? 'guide' : null);
 
-        subscription.status = 'opted_out';
+        if (type && subscription.preferences) {
+            // Granular unsubscribe
+            subscription.preferences[type] = false;
+
+            // Check if any active subscriptions remain
+            const hasActive = Object.values(subscription.preferences).some(v => v === true);
+
+            if (!hasActive) {
+                // If no active subscriptions left, fully opt-out
+                subscription.status = 'opted_out';
+                subscription.preferences = { blog: false, guide: false };
+            } else {
+                // If others remain, keep status as is
+                // Just this one preference is gone.
+            }
+        } else {
+            // Generic unsubscribe (full opt-out)
+            subscription.status = 'opted_out';
+            subscription.preferences = { blog: false, guide: false };
+        }
+
         subscription.statusUpdatedAt = new Date();
-        // Clear preferences on full opt-out
-        subscription.preferences = { blog: false, guide: false };
-
         if (reason) {
             subscription.rejectionReason = reason;
         }
