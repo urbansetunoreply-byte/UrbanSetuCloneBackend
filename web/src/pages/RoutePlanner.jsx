@@ -58,6 +58,15 @@ export default function RoutePlanner() {
   const [isRouteSaved, setIsRouteSaved] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(null);
   const [hasRestoredFromUrl, setHasRestoredFromUrl] = useState(false);
+  const [brandExpanded, setBrandExpanded] = useState(true);
+
+  // Auto-hide branding layer after 10 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBrandExpanded(false);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState({
@@ -1439,21 +1448,31 @@ export default function RoutePlanner() {
               <div ref={mapRef} className="w-full h-full" />
 
               {/* Advanced Co-Branding Map Overlay */}
-              <div className="absolute bottom-4 right-1 z-10 hidden sm:block">
-                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md px-4 py-2 rounded-l-2xl border-y border-l border-gray-200 dark:border-gray-700 shadow-xl flex items-center gap-3 transform translate-x-1 hover:translate-x-0 transition-all duration-500 ease-out group">
-                  <div className="flex flex-col items-end">
+              <div className="absolute bottom-4 right-0 z-20 hidden sm:block">
+                <div
+                  onClick={() => setBrandExpanded(!brandExpanded)}
+                  className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-md px-4 py-2 border-y border-l border-gray-200 dark:border-gray-700 shadow-2xl flex items-center gap-3 transition-all duration-700 ease-in-out cursor-pointer group ${brandExpanded ? 'rounded-l-2xl translate-x-0' : 'rounded-l-xl translate-x-[calc(100%-12px)] hover:translate-x-[calc(100%-24px)]'}`}
+                >
+                  <div className={`flex flex-col items-end transition-all duration-500 ${brandExpanded ? 'opacity-100' : 'opacity-0 w-0 pointer-events-none'}`}>
                     <span className="text-[7px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-[0.2em] leading-none mb-1">Intelligence Layer</span>
                     <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest whitespace-nowrap">
                       Sentinel v2.0 Neural Layer
                     </span>
                   </div>
-                  <div className="w-px h-7 bg-gray-200 dark:bg-gray-700"></div>
-                  <div className="flex flex-col items-start opacity-70 group-hover:opacity-100 transition-opacity">
+                  <div className={`w-px h-7 bg-gray-200 dark:bg-gray-700 transition-all duration-500 ${brandExpanded ? 'opacity-100' : 'opacity-0 w-0 pointer-events-none'}`}></div>
+                  <div className={`flex flex-col items-start transition-all duration-500 ${brandExpanded ? 'opacity-70 group-hover:opacity-100' : 'opacity-0 w-0 pointer-events-none'}`}>
                     <span className="text-[7px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-[0.2em] leading-none mb-1">Spatial Engine</span>
-                    <span className="text-[9px] text-gray-600 dark:text-gray-300 font-semibold tracking-wide">
+                    <span className="text-[9px] text-gray-600 dark:text-gray-300 font-semibold tracking-wide whitespace-nowrap">
                       Powered by Mapbox
                     </span>
                   </div>
+
+                  {/* Expand Indicator (Only when collapsed) */}
+                  {!brandExpanded && (
+                    <div className="flex items-center justify-center w-1 h-8 ml-[-12px]">
+                      <div className="w-1.5 h-6 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full animate-pulse shadow-[0_0_12px_rgba(59,130,246,0.6)]"></div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1475,36 +1494,9 @@ export default function RoutePlanner() {
                 >
                   <FaLayerGroup size={18} />
                 </button>
-
-                <AnimatePresence>
-                  {showMapStyles && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
-                    >
-                      {Object.entries(mapStyles).map(([key, value]) => (
-                        <button
-                          key={key}
-                          onClick={() => {
-                            changeMapStyle(key);
-                            setShowMapStyles(false);
-                          }}
-                          className={`p-2 px-3 text-xs font-medium text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${mapStyle === key ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-l-2 border-blue-600' : 'text-gray-600 dark:text-gray-300'}`}
-                          title={key}
-                        >
-                          {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
-                        </button>
-                      ))}
-                      <button onClick={toggleTraffic} className={`p-2 px-3 text-xs font-medium text-left border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${showTraffic ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : 'text-gray-600 dark:text-gray-300'}`}>
-                        Traffic {showTraffic ? 'On' : 'Off'}
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
 
+              {/* Fullscreen control */}
               <div className="absolute top-4 right-14 z-10">
                 <button
                   onClick={() => {
@@ -1539,83 +1531,113 @@ export default function RoutePlanner() {
               </div>
             </div>
           )}
-        </div>
 
-        {/* Saved Routes Modal */}
-        <AnimatePresence>
-          {showSettings && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }}
-            >
+          {/* Map Styles List */}
+          <AnimatePresence>
+            {showMapStyles && (
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                className="absolute top-16 left-4 z-20 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col min-w-[150px]"
               >
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
-                  <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <FaBookmark className="text-blue-600" /> Saved Routes & History
-                  </h2>
-                  <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-500 dark:text-gray-400">
-                    ✕
+                {Object.entries(mapStyles).map(([key, value]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      changeMapStyle(key);
+                      setShowMapStyles(false);
+                    }}
+                    className={`p-2 px-3 text-xs font-medium text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${mapStyle === key ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-l-2 border-blue-600' : 'text-gray-600 dark:text-gray-300'}`}
+                    title={key}
+                  >
+                    {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
                   </button>
-                </div>
+                ))}
+                <button onClick={toggleTraffic} className={`p-2 px-3 text-xs font-medium text-left border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${showTraffic ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : 'text-gray-600 dark:text-gray-300'}`}>
+                  Traffic {showTraffic ? 'On' : 'Off'}
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
 
-                <div className="flex-1 overflow-y-auto p-5 space-y-8">
-                  {/* Saved Section */}
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><div className="w-2 h-6 bg-blue-500 rounded-full"></div> Saved Routes</h3>
-                      {savedRoutes.length > 0 && <button onClick={deleteAllSavedRoutes} className="text-xs text-red-600 hover:underline">Clear All</button>}
-                    </div>
-                    {savedRoutes.length > 0 ? (
-                      <div className="grid gap-3">
-                        {savedRoutes.map((route) => (
-                          <div key={route._id || route.id} className="bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-xl p-4 hover:shadow-md transition-shadow flex justify-between items-center group">
-                            <div>
-                              <div className="font-semibold text-gray-800 dark:text-white">{route.name}</div>
-                              <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">{new Date(route.timestamp).toLocaleDateString()} • {route.travelMode}</div>
-                            </div>
-                            <div className="flex gap-2">
-                              <button onClick={() => { loadRoute(route); setShowSettings(false); }} className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors">Load</button>
-                              <button onClick={() => deleteSavedRoute(route._id || route.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"><FaTrash /></button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400">No saved routes used yet.</div>
-                    )}
+      {/* Saved Routes Modal */}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+            >
+              <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                  <FaBookmark className="text-blue-600" /> Saved Routes & History
+                </h2>
+                <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-500 dark:text-gray-400">
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 space-y-8">
+                {/* Saved Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><div className="w-2 h-6 bg-blue-500 rounded-full"></div> Saved Routes</h3>
+                    {savedRoutes.length > 0 && <button onClick={deleteAllSavedRoutes} className="text-xs text-red-600 hover:underline">Clear All</button>}
                   </div>
-
-                  {/* History Section */}
-                  <div>
-                    <h3 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-4"><div className="w-2 h-6 bg-orange-500 rounded-full"></div> Recent History</h3>
-                    <div className="space-y-2">
-                      {routeHistory.slice(0, 5).map((route) => (
-                        <div key={route.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-gray-600" onClick={() => { loadRoute(route); setShowSettings(false); }}>
-                          <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg text-orange-600 dark:text-orange-400"><FaHistory /></div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{route.stops.map(s => s.address.split(',')[0]).join(' → ')}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">{route.timestamp.toLocaleString()}</div>
+                  {savedRoutes.length > 0 ? (
+                    <div className="grid gap-3">
+                      {savedRoutes.map((route) => (
+                        <div key={route._id || route.id} className="bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-xl p-4 hover:shadow-md transition-shadow flex justify-between items-center group">
+                          <div>
+                            <div className="font-semibold text-gray-800 dark:text-white">{route.name}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">{new Date(route.timestamp).toLocaleDateString()} • {route.travelMode}</div>
                           </div>
-                          <FaDirections className="text-gray-300 dark:text-gray-500" />
+                          <div className="flex gap-2">
+                            <button onClick={() => { loadRoute(route); setShowSettings(false); }} className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors">Load</button>
+                            <button onClick={() => deleteSavedRoute(route._id || route.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"><FaTrash /></button>
+                          </div>
                         </div>
                       ))}
-                      {routeHistory.length === 0 && <div className="text-sm text-gray-400 italic">No recent history available.</div>}
                     </div>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400">No saved routes used yet.</div>
+                  )}
+                </div>
+
+                {/* History Section */}
+                <div>
+                  <h3 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-4"><div className="w-2 h-6 bg-orange-500 rounded-full"></div> Recent History</h3>
+                  <div className="space-y-2">
+                    {routeHistory.slice(0, 5).map((route) => (
+                      <div key={route.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-gray-600" onClick={() => { loadRoute(route); setShowSettings(false); }}>
+                        <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg text-orange-600 dark:text-orange-400"><FaHistory /></div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{route.stops.map(s => s.address.split(',')[0]).join(' → ')}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{route.timestamp.toLocaleString()}</div>
+                        </div>
+                        <FaDirections className="text-gray-300 dark:text-gray-500" />
+                      </div>
+                    ))}
+                    {routeHistory.length === 0 && <div className="text-sm text-gray-400 italic">No recent history available.</div>}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <ConfirmationModal
         isOpen={confirmModal.isOpen}
         onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
