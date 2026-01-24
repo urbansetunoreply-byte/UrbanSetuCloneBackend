@@ -38,10 +38,15 @@ const PublicGuides = () => {
     ];
 
     const [email, setEmail] = useState('');
+    const [isSubscribed, setIsSubscribed] = useState(false);
 
     useEffect(() => {
         fetchFeaturedGuides();
         fetchGuides();
+        const subscribed = localStorage.getItem('newsletter_subscribed');
+        if (subscribed) {
+            setIsSubscribed(true);
+        }
     }, []);
 
     // Immediate filter effects
@@ -72,15 +77,35 @@ const PublicGuides = () => {
             return;
         }
 
-        // Simulating API call for newsletter subscription
+        const BASE_URL = import.meta.env.VITE_API_BASE_URL || API_BASE_URL;
+
+        const subscribePromise = fetch(`${BASE_URL}/api/subscription/subscribe`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }),
+        }).then(async (response) => {
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to subscribe');
+            }
+            return data;
+        });
+
         await toast.promise(
-            new Promise((resolve) => setTimeout(resolve, 1000)),
+            subscribePromise,
             {
                 loading: 'Subscribing...',
-                success: 'Successfully subscribed to Real Estate Insights!',
-                error: 'Failed to subscribe'
+                success: (data) => {
+                    localStorage.setItem('newsletter_subscribed', 'true');
+                    setIsSubscribed(true);
+                    return data.message || 'Successfully subscribed!';
+                },
+                error: (err) => err.message || 'Failed to subscribe'
             }
         );
+
         setEmail('');
     };
 
@@ -351,21 +376,32 @@ const PublicGuides = () => {
                         <Lightbulb className="w-12 h-12 text-yellow-400 mx-auto mb-6" />
                         <h2 className="text-3xl md:text-4xl font-black mb-4">Master Real Estate Investment</h2>
                         <p className="text-gray-400 mb-8 text-lg">Join 10,000+ subscribers getting our weekly deep-dive guides and market analysis.</p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <input
-                                type="email"
-                                placeholder="Enter your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-auto"
-                            />
-                            <button
-                                onClick={handleSubscribe}
-                                className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-purple-900/20 w-full sm:w-auto"
-                            >
-                                Subscribe
-                            </button>
-                        </div>
+
+                        {isSubscribed ? (
+                            <div className="bg-white/10 backdrop-blur-md border border-green-500/30 rounded-2xl p-6 inline-flex flex-col items-center animate-fade-in-up">
+                                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-500/20">
+                                    <CheckCircle className="w-8 h-8 text-white" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">You're Subscribed!</h3>
+                                <p className="text-gray-300">Keep an eye on your inbox for our next guide.</p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <input
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-auto"
+                                />
+                                <button
+                                    onClick={handleSubscribe}
+                                    className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-purple-900/20 w-full sm:w-auto"
+                                >
+                                    Subscribe
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

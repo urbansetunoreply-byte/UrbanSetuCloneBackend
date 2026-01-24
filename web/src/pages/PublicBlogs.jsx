@@ -1,10 +1,11 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PublicBlogsSkeleton from '../components/skeletons/PublicBlogsSkeleton';
+import { toast } from 'react-hot-toast';
 import {
   Search as SearchIcon, Filter, Calendar, User, Eye, Heart, Tag,
   ArrowRight, ChevronLeft, ChevronRight, Mail, Info, Clock,
-  TrendingUp, Lightbulb, Home
+  TrendingUp, Lightbulb, Home, CheckCircle
 } from 'lucide-react';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -25,6 +26,8 @@ const PublicBlogs = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const [email, setEmail] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
   // Separate useEffect for initial load and categories/tags
@@ -32,6 +35,10 @@ const PublicBlogs = () => {
     fetchBlogs();
     fetchCategories();
     fetchTags();
+    const subscribed = localStorage.getItem('newsletter_subscribed');
+    if (subscribed) {
+      setIsSubscribed(true);
+    }
   }, []);
 
   // Debounced search effect
@@ -104,6 +111,44 @@ const PublicBlogs = () => {
         return [...prev, tag];
       }
     });
+  };
+
+  const handleSubscribe = async () => {
+    if (!email || !email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL || API_BASE_URL;
+
+    const subscribePromise = fetch(`${BASE_URL}/api/subscription/subscribe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    }).then(async (response) => {
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to subscribe');
+      }
+      return data;
+    });
+
+    await toast.promise(
+      subscribePromise,
+      {
+        loading: 'Subscribing...',
+        success: (data) => {
+          localStorage.setItem('newsletter_subscribed', 'true');
+          setIsSubscribed(true);
+          return data.message || 'Successfully subscribed!';
+        },
+        error: (err) => err.message || 'Failed to subscribe'
+      }
+    );
+
+    setEmail('');
   };
 
   const fetchBlogs = async (showLoading = true) => {
@@ -523,20 +568,31 @@ const PublicBlogs = () => {
             <p className="text-slate-300 mb-8 max-w-2xl mx-auto text-lg">
               Join our weekly newsletter to get the latest real estate trends, investment tips, and market analysis.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/contact"
-                className="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-500 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 hover:-translate-y-1"
-              >
-                Subscribe Now
-              </Link>
-              <Link
-                to="/about"
-                className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/20 transition-all duration-300 hover:-translate-y-1"
-              >
-                Learn More
-              </Link>
-            </div>
+            {isSubscribed ? (
+              <div className="bg-white/10 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 inline-flex flex-col items-center animate-fade-in-up">
+                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">You're Subscribed!</h3>
+                <p className="text-gray-300">Keep an eye on your inbox for our next blog post.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+                />
+                <button
+                  onClick={handleSubscribe}
+                  className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-blue-900/20 w-full sm:w-auto hover:-translate-y-1"
+                >
+                  Subscribe
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>
