@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PublicBlogsSkeleton from '../components/skeletons/PublicBlogsSkeleton';
+import { toast } from 'react-hot-toast';
 import {
     Search as SearchIcon, Filter, BookOpen, Clock, Lightbulb,
     ArrowRight, ChevronLeft, ChevronRight, Mail, Star, MapPin,
@@ -36,16 +37,21 @@ const PublicGuides = () => {
         { name: 'City Guide', icon: MapPin },
     ];
 
+    const [email, setEmail] = useState('');
+
     useEffect(() => {
         fetchFeaturedGuides();
         fetchGuides();
     }, []);
 
-    // Effect for filter change
+    // Immediate filter effects
     useEffect(() => {
-        setPagination(prev => ({ ...prev, current: 1 }));
-        fetchGuides();
-    }, [selectedCategory, searchTerm]); // Trigger search on category/search change
+        if (pagination.current === 1) {
+            fetchGuides(false); // Don't show full loading for filter changes
+        } else {
+            setPagination(prev => ({ ...prev, current: 1 }));
+        }
+    }, [selectedCategory, searchTerm]);
 
     // Pagination effect
     useEffect(() => {
@@ -58,6 +64,25 @@ const PublicGuides = () => {
         } else {
             setSelectedCategory(categoryName);
         }
+    };
+
+    const handleSubscribe = async () => {
+        if (!email || !email.includes('@')) {
+            toast.error('Please enter a valid email address');
+            return;
+        }
+
+        // Simulating API call for newsletter subscription
+        // In a real app, you would make a POST request to your newsletter endpoint
+        toast.promise(
+            new Promise((resolve) => setTimeout(resolve, 1000)),
+            {
+                loading: 'Subscribing...',
+                success: 'Successfully subscribed to Real Estate Insights!',
+                error: 'Failed to subscribe'
+            }
+        );
+        setEmail('');
     };
 
     const fetchFeaturedGuides = async () => {
@@ -177,8 +202,8 @@ const PublicGuides = () => {
                             key={cat.name}
                             onClick={() => toggleCategory(cat.name)}
                             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all duration-300 ${selectedCategory === cat.name
-                                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
-                                    : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400'
+                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
+                                : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400'
                                 }`}
                         >
                             <cat.icon className="w-4 h-4" />
@@ -328,8 +353,19 @@ const PublicGuides = () => {
                         <h2 className="text-3xl md:text-4xl font-black mb-4">Master Real Estate Investment</h2>
                         <p className="text-gray-400 mb-8 text-lg">Join 10,000+ subscribers getting our weekly deep-dive guides and market analysis.</p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <input type="email" placeholder="Enter your email" className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-auto" />
-                            <button className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-purple-900/20 w-full sm:w-auto">Subscribe</button>
+                            <input
+                                type="email"
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-auto"
+                            />
+                            <button
+                                onClick={handleSubscribe}
+                                className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors shadow-lg shadow-purple-900/20 w-full sm:w-auto"
+                            >
+                                Subscribe
+                            </button>
                         </div>
                     </div>
                 </div>
