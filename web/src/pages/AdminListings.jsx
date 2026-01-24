@@ -56,6 +56,7 @@ export default function AdminListings() {
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [listingStats, setListingStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [statsOwnerFilter, setStatsOwnerFilter] = useState('all'); // 'all', 'sale', 'rent', 'offer'
 
   // Lock body scroll when deletion modals are open on Admin Listings
   useEffect(() => {
@@ -366,11 +367,18 @@ export default function AdminListings() {
             id: ownerId,
             name: displayName,
             email: email,
-            count: 0
+            count: 0,
+            sale: 0,
+            rent: 0,
+            offer: 0
           };
         }
 
         ownerMap[ownerId].count++;
+        if (l.type === 'sale') ownerMap[ownerId].sale++;
+        if (l.type === 'rent') ownerMap[ownerId].rent++;
+        if (l.offer) ownerMap[ownerId].offer++;
+
         // Update with better Details if initially unknown but found later
         if (displayName !== 'Unknown Owner' && ownerMap[ownerId].name === 'Unknown Owner') {
           ownerMap[ownerId].name = displayName;
@@ -379,8 +387,10 @@ export default function AdminListings() {
       });
 
       const topOwners = Object.values(ownerMap)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
+        // Helper to sort dynamically would be done in render, but here we can send full list
+        .sort((a, b) => b.count - a.count); // Default sort by total
+      // We'll slice in render to allow re-sorting
+
 
       setListingStats({ total, sale, rent, offer, topOwners });
     } catch (error) {
@@ -1008,7 +1018,7 @@ export default function AdminListings() {
       {/* Stats Modal */}
       {showStatsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col transition-colors duration-300 transform scale-100 animate-scaleIn">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col transition-colors duration-300 transform scale-100 animate-scaleIn">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                 <FaChartBar className="text-purple-600" />
@@ -1021,7 +1031,7 @@ export default function AdminListings() {
                 <FaTimes />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto max-h-[70vh]">
+            <div className="p-6 overflow-y-auto max-h-[75vh]">
               {statsLoading ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
@@ -1031,68 +1041,110 @@ export default function AdminListings() {
                 <div className="space-y-8">
                   {/* Overview Cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-center">
-                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total</p>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{listingStats.total}</p>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-center border border-blue-100 dark:border-blue-800">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Total Listings</p>
+                      <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-1">{listingStats.total}</p>
                     </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl text-center">
-                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">For Sale</p>
-                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">{listingStats.sale}</p>
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl text-center border border-green-100 dark:border-green-800">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">For Sale</p>
+                      <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-1">{listingStats.sale}</p>
                     </div>
-                    <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl text-center">
-                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">For Rent</p>
-                      <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{listingStats.rent}</p>
+                    <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl text-center border border-orange-100 dark:border-orange-800">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">For Rent</p>
+                      <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-1">{listingStats.rent}</p>
                     </div>
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-xl text-center">
-                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">Offers</p>
-                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{listingStats.offer}</p>
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-xl text-center border border-yellow-100 dark:border-yellow-800">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Active Offers</p>
+                      <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">{listingStats.offer}</p>
                     </div>
                   </div>
 
-                  {/* Top Owners Table */}
+                  {/* Top Owners Section */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                      <FaFlag className="text-purple-500" /> Top Listing Owners
-                    </h3>
-                    <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-                      <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                          <tr>
-                            <th className="px-4 py-3 font-semibold">Owner Name</th>
-                            <th className="px-4 py-3 font-semibold text-right">Listings Count</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                          {listingStats.topOwners.map((owner, idx) => (
-                            <tr key={idx} className="hover:bg-white dark:hover:bg-gray-800 transition-colors">
-                              <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
-                                <div className="flex items-center gap-3">
-                                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${idx < 3 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : 'bg-gray-400'}`}>
-                                    {idx + 1}
-                                  </span>
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-sm">{owner.name}</span>
-                                    {owner.email && <span className="text-xs text-gray-500 dark:text-gray-400">{owner.email}</span>}
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 text-right font-medium text-purple-600 dark:text-purple-400">
-                                {owner.count}
-                              </td>
-                            </tr>
-                          ))}
-                          {listingStats.topOwners.length === 0 && (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                        <FaFlag className="text-purple-500" /> Top Listing Owners
+                      </h3>
+                      {/* Inner Filters */}
+                      <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg self-start sm:self-auto">
+                        {['all', 'sale', 'rent', 'offer'].map((filter) => (
+                          <button
+                            key={filter}
+                            onClick={() => setStatsOwnerFilter(filter)}
+                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${statsOwnerFilter === filter
+                                ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-300 shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                              }`}
+                          >
+                            {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
                             <tr>
-                              <td colSpan="2" className="px-4 py-8 text-center text-gray-500">No owner data available</td>
+                              <th className="px-6 py-4 font-semibold">Owner Name & Email</th>
+                              <th className="px-6 py-4 font-semibold text-right">
+                                {statsOwnerFilter === 'all' ? 'Total Listings' :
+                                  statsOwnerFilter === 'sale' ? 'For Sale' :
+                                    statsOwnerFilter === 'rent' ? 'For Rent' : 'With Offers'}
+                              </th>
+                              {statsOwnerFilter === 'all' && <th className="px-6 py-4 font-semibold text-right hidden sm:table-cell">Breakdown</th>}
                             </tr>
-                          )}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                            {listingStats.topOwners
+                              .filter(o => statsOwnerFilter === 'all' || o[statsOwnerFilter] > 0)
+                              .sort((a, b) => {
+                                const key = statsOwnerFilter === 'all' ? 'count' : statsOwnerFilter;
+                                return b[key] - a[key];
+                              })
+                              .slice(0, 10)
+                              .map((owner, idx) => (
+                                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                  <td className="px-6 py-4 text-gray-800 dark:text-gray-200">
+                                    <div className="flex items-center gap-3">
+                                      <span className={`w-6 h-6 flex-shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white ${idx < 3 ? 'bg-gradient-to-r from-yellow-400 to-orange-500 shadow-sm' : 'bg-gray-400'}`}>
+                                        {idx + 1}
+                                      </span>
+                                      <div className="flex flex-col min-w-0">
+                                        <span className="font-medium text-sm truncate" title={owner.name}>{owner.name}</span>
+                                        {owner.email && <span className="text-xs text-gray-500 dark:text-gray-400 truncate" title={owner.email}>{owner.email}</span>}
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 text-right font-bold text-purple-600 dark:text-purple-400">
+                                    {statsOwnerFilter === 'all' ? owner.count : owner[statsOwnerFilter]}
+                                  </td>
+                                  {statsOwnerFilter === 'all' && (
+                                    <td className="px-6 py-4 text-right hidden sm:table-cell">
+                                      <div className="flex items-center justify-end gap-2 text-xs">
+                                        <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded" title="For Sale">{owner.sale} S</span>
+                                        <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-2 py-0.5 rounded" title="For Rent">{owner.rent} R</span>
+                                      </div>
+                                    </td>
+                                  )}
+                                </tr>
+                              ))}
+                            {listingStats.topOwners.filter(o => statsOwnerFilter === 'all' || o[statsOwnerFilter] > 0).length === 0 && (
+                              <tr>
+                                <td colSpan="3" className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                  No owners found matching this filter
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-red-500">Failed to load statistics.</div>
+                <div className="text-center text-red-500 py-10">Failed to load statistics.</div>
               )}
             </div>
           </div>
