@@ -587,7 +587,7 @@ export default function AdminListings() {
               <input type="number" min="0" value={filters.maxPrice} onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Max Price" />
               <input type="text" value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="City" />
               <input type="text" value={filters.state} onChange={(e) => setFilters({ ...filters, state: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="State" />
-              <input type="text" value={filters.ownerSearch} onChange={(e) => setFilters({ ...filters, ownerSearch: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Owner Search" />
+              <input type="text" value={filters.ownerSearch} onChange={(e) => setFilters({ ...filters, ownerSearch: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Filter Properties by Owner..." />
             </div>
 
             {listings.length === 0 ? (
@@ -1075,7 +1075,7 @@ export default function AdminListings() {
                         {/* Search Box */}
                         <input
                           type="text"
-                          placeholder="Filter Properties by Owner..."
+                          placeholder="Search By Owner Name..."
                           value={statsSearch}
                           onChange={(e) => setStatsSearch(e.target.value)}
                           className="px-3 py-1.5 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none"
