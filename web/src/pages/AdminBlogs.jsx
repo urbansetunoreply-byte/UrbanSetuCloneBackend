@@ -63,6 +63,7 @@ const AdminBlogs = ({ type }) => {
   const [subToProcess, setSubToProcess] = useState(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showRevokeModal, setShowRevokeModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
   const [statusReason, setStatusReason] = useState('');
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
@@ -176,7 +177,9 @@ const AdminBlogs = ({ type }) => {
       const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/all`);
       if (response.ok) {
         const data = await response.json();
-        setSubscribers(data.data || []);
+        // Filter out subscriptions that are still in OTP verification (status: 'verifying')
+        const validSubscribers = (data.data || []).filter(sub => sub.status !== 'verifying');
+        setSubscribers(validSubscribers);
       }
     } catch (error) {
       console.error('Error fetching subscribers:', error);
@@ -227,6 +230,11 @@ const AdminBlogs = ({ type }) => {
     } catch (error) {
       toast.error('Error updating status');
     }
+  };
+
+  const openApproveModal = (sub) => {
+    setSubToProcess(sub);
+    setShowApproveModal(true);
   };
 
   const openRejectModal = (sub) => {
@@ -870,10 +878,10 @@ const AdminBlogs = ({ type }) => {
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                              sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                  sub.status === 'revoked' ? 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' :
-                                    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                            sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                              sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                sub.status === 'revoked' ? 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' :
+                                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
                             }`}>
                             {sub.status ? sub.status.toUpperCase() : (sub.isActive ? 'ACTIVE (LEGACY)' : 'OD')}
                           </span>
@@ -883,7 +891,7 @@ const AdminBlogs = ({ type }) => {
                             {sub.status === 'pending' && (
                               <>
                                 <button
-                                  onClick={() => handleUpdateSubscription(sub._id, 'approved')}
+                                  onClick={() => openApproveModal(sub)}
                                   className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
                                   title="Approve"
                                 >
@@ -909,7 +917,7 @@ const AdminBlogs = ({ type }) => {
                             )}
                             {(sub.status === 'rejected' || sub.status === 'revoked' || sub.status === 'opted_out') && (
                               <button
-                                onClick={() => handleUpdateSubscription(sub._id, 'approved')}
+                                onClick={() => openApproveModal(sub)}
                                 className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
                                 title="Re-approve"
                               >
@@ -983,6 +991,37 @@ const AdminBlogs = ({ type }) => {
                   className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Reject Subscription
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approve Confirmation Modal */}
+      {showApproveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Approve Subscription</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Are you sure you want to approve this subscription for <span className="font-bold text-gray-900 dark:text-white">{subToProcess?.email}</span>?
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowApproveModal(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    handleUpdateSubscription(subToProcess._id, 'approved');
+                    setShowApproveModal(false);
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Approve Subscription
                 </button>
               </div>
             </div>

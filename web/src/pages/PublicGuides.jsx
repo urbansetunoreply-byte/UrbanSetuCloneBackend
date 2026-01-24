@@ -64,6 +64,7 @@ const PublicGuides = () => {
         fetchGuides();
         if (currentUser) {
             fetchSubscriptionStatus();
+            setEmail(currentUser.email); // Default to current user's email but allow editing
         } else {
             const subscribed = localStorage.getItem('newsletter_subscribed');
             if (subscribed) {
@@ -610,19 +611,13 @@ const PublicGuides = () => {
                             <>
                                 {subscribeStep === 'INPUT_EMAIL' ? (
                                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                        {!currentUser ? (
-                                            <input
-                                                type="email"
-                                                placeholder="Enter your email"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-auto"
-                                            />
-                                        ) : (
-                                            <div className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white font-medium text-left flex items-center min-w-[200px] justify-center">
-                                                {currentUser.email}
-                                            </div>
-                                        )}
+                                        <input
+                                            type="email"
+                                            placeholder="Enter your email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-auto"
+                                        />
                                         <button
                                             onClick={handleSendSubscribeOtp}
                                             disabled={otpLoading}

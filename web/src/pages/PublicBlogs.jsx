@@ -54,6 +54,7 @@ const PublicBlogs = () => {
 
     if (currentUser) {
       fetchSubscriptionStatus();
+      setEmail(currentUser.email); // Default to current user's email but allow editing
     } else {
       const subscribed = localStorage.getItem('newsletter_subscribed');
       if (subscribed) {
@@ -752,20 +753,13 @@ const PublicBlogs = () => {
 
                     {subscribeStep === 'INPUT_EMAIL' ? (
                       <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                        {!currentUser ? (
-                          <input
-                            type="email"
-                            placeholder="Enter your email address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all font-medium"
-                          />
-                        ) : (
-                          <div className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white font-medium text-left flex items-center">
-                            <User className="w-4 h-4 mr-2 opacity-70" />
-                            {currentUser.email}
-                          </div>
-                        )}
+                        <input
+                          type="email"
+                          placeholder="Enter your email address"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all font-medium"
+                        />
                         <button
                           onClick={handleSendSubscribeOtp}
                           disabled={otpLoading}

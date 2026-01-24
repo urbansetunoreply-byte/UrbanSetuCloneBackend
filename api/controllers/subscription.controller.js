@@ -182,20 +182,23 @@ export const sendSubscriptionOtp = async (req, res, next) => {
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
         if (!subscription) {
+            // Create a temporary record with status 'verifying' to store OTP
+            // This won't show up in admin panel as we'll filter by status 'pending', 'approved', etc.
             subscription = new Subscription({
                 email,
                 source,
-                status: 'pending' // Will trigger "Received" only after verify? No, wait.
-                // If we create here, user enters OTP.
+                status: 'verifying', // Temporary status during OTP verification
+                verificationOtp: otp,
+                verificationOtpExpires: otpExpires
             });
+        } else {
+            // Update existing subscription with OTP (for re-subscribe cases)
+            subscription.verificationOtp = otp;
+            subscription.verificationOtpExpires = otpExpires;
+            subscription.source = source;
         }
 
-        // Update OTP fields
-        subscription.verificationOtp = otp;
-        subscription.verificationOtpExpires = otpExpires;
-        subscription.source = source;
         await subscription.save();
-
         await sendSubscriptionOtpEmail(email, otp);
 
         res.status(200).json({ success: true, message: 'OTP sent to your email. Please verify to complete subscription.' });
