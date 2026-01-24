@@ -35,9 +35,8 @@ const Footer = () => {
         // 2. Fetch Total Count (If not found yet)
         if (total === 0) {
           try {
-            // Attempt to fetch from stats endpoint (Likely Admin only, but worth a try if logged in)
-            // Or try a public 'total' endpoint pattern first
-            const totalRes = await authenticatedFetch(`${API_BASE_URL}/api/visitors/count/total`);
+            // Attempt to fetch from generic count endpoint
+            const totalRes = await authenticatedFetch(`${API_BASE_URL}/api/visitors/count`);
             if (totalRes.ok) {
               const totalData = await totalRes.json();
               if (totalData.success) total = totalData.count;
@@ -52,7 +51,7 @@ const Footer = () => {
               }
             }
           } catch (e) {
-            // Silent fail for total count on public view if endpoint doesn't exist
+            // Silent fail
           }
         }
 
@@ -389,8 +388,12 @@ const Footer = () => {
                 <FaEye className="text-blue-500 dark:text-blue-400" />
                 <span className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
                   <span>Today: <span className="font-semibold text-blue-600 dark:text-blue-400">{visitorStats.todayCount}</span></span>
-                  <span className="text-gray-300 dark:text-gray-700">|</span>
-                  <span>All Time: <span className="font-semibold text-purple-600 dark:text-purple-400">{visitorStats.totalVisitors}</span></span>
+                  {visitorStats.totalVisitors > 0 && (
+                    <>
+                      <span className="text-gray-300 dark:text-gray-700">|</span>
+                      <span>All Time: <span className="font-semibold text-purple-600 dark:text-purple-400">{visitorStats.totalVisitors}</span></span>
+                    </>
+                  )}
                 </span>
               </div>
               <span>Made with ❤️ for real estate</span>
