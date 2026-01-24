@@ -20,7 +20,7 @@ import AdsterraBanner from "../components/AdsterraBanner";
 import AdHighperformanceBanner from "../components/AdHighperformanceBanner";
 import SeasonalEffects from "../components/SeasonalEffects";
 import DailyQuote from "../components/DailyQuote";
-import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme.jsx";
 import ThemeDetailModal from "../components/ThemeDetailModal";
 
 import { authenticatedFetch } from '../utils/auth';

@@ -15,7 +15,7 @@ import { authenticatedFetch } from '../utils/auth';
 import SearchSuggestions from './SearchSuggestions';
 import ThemeToggle from "./ThemeToggle.jsx";
 import SeasonalEffects from './SeasonalEffects';
-import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme.jsx";
 import ThemeDetailModal from "./ThemeDetailModal";
 
 const THEME_DECORATIONS = {

@@ -34,7 +34,7 @@ import avataaarsSchema from '../data/dicebear-avataaars-schema.json';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSignout } from '../hooks/useSignout';
-import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme.jsx";
 import ThemeDetailModal from "../components/ThemeDetailModal";
 
 const THEME_DECORATIONS = {

@@ -15,7 +15,7 @@ import { LogIn } from "lucide-react";
 import { UserPlus, LogOut } from "lucide-react";
 import ThemeToggle from "./ThemeToggle.jsx";
 import SeasonalEffects from './SeasonalEffects';
-import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme.jsx";
 
 export default function Header() {
   const theme = useSeasonalTheme();

@@ -30,7 +30,7 @@ import axios from 'axios';
 import { usePageTitle } from '../hooks/usePageTitle';
 import DailyQuote from "../components/DailyQuote";
 import SeasonalEffects from "../components/SeasonalEffects";
-import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme.jsx";
 import ThemeDetailModal from "../components/ThemeDetailModal";
 import { API_BASE_URL } from '../config/api';
 import { authenticatedFetch } from '../utils/auth';

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSeasonalTheme } from '../hooks/useSeasonalTheme';
+import { useSeasonalTheme } from '../hooks/useSeasonalTheme.jsx';
 
 const SeasonalEffects = ({ className }) => {
     const theme = useSeasonalTheme();
