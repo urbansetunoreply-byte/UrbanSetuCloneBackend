@@ -45,6 +45,8 @@ const PublicBlogs = () => {
   const [otpError, setOtpError] = useState(''); // Error message for OTP verification
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
 
   // Timer effect for resend OTP
   useEffect(() => {
@@ -174,15 +176,16 @@ const PublicBlogs = () => {
   };
 
   const handleSendSubscribeOtp = async () => {
+    setOtpError('');
     // Always validate the email field, regardless of login status
     if (!email || !email.includes('@')) {
-      toast.error('Please enter a valid email address');
+      setOtpError('Please enter a valid email address');
       return;
     }
 
     // Always use the email field value, not currentUser.email
     // This allows logged-in users to subscribe with a different email
-    setOtpLoading(true);
+    setSendingOtp(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/subscription/send-subscribe-otp`, {
@@ -192,29 +195,32 @@ const PublicBlogs = () => {
       });
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok && data.success) {
         toast.success(data.message);
         setSubscribeStep('VERIFY_OTP');
         setResendTimer(30);
         setCanResend(false);
       } else {
+        setOtpError(data.message || 'Failed to send OTP');
         toast.error(data.message || 'Failed to send OTP');
       }
     } catch (error) {
+      setOtpError('Failed to send OTP. Please try again.');
       toast.error('Failed to send OTP');
     } finally {
-      setOtpLoading(false);
+      setSendingOtp(false);
     }
   };
 
   const handleVerifySubscribeOtp = async () => {
+    setOtpError('');
     if (!subscribeOtp) {
-      toast.error('Please enter OTP');
+      setOtpError('Please enter OTP');
       return;
     }
 
     // Use the email field value, not currentUser.email
-    setOtpLoading(true);
+    setVerifyingOtp(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/subscription/verify-subscribe-otp`, {
@@ -224,7 +230,7 @@ const PublicBlogs = () => {
       });
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok && data.success) {
         toast.success(data.message);
         localStorage.setItem('newsletter_subscribed', 'true');
         setIsSubscribed(true);
@@ -233,12 +239,14 @@ const PublicBlogs = () => {
         setSubscribeOtp('');
         setEmail('');
       } else {
+        setOtpError(data.message || 'Invalid OTP');
         toast.error(data.message || 'Invalid OTP');
       }
     } catch (error) {
+      setOtpError('Failed to verify OTP. Please try again.');
       toast.error('Failed to verify OTP');
     } finally {
-      setOtpLoading(false);
+      setVerifyingOtp(false);
     }
   };
 
@@ -250,30 +258,34 @@ const PublicBlogs = () => {
   };
 
   const handleSendUnsubscribeOtp = async () => {
-    setOtpLoading(true);
+    setOtpError('');
+    setSendingOtp(true);
     try {
       const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/send-unsubscribe-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
       const data = await response.json();
-      if (data.success) {
+      if (response.ok && data.success) {
         toast.success('OTP sent for verification');
         setUnsubscribeStep('VERIFY_OTP');
         setResendTimer(30);
         setCanResend(false);
       } else {
+        setOtpError(data.message || 'Failed to send OTP');
         toast.error(data.message || 'Failed to send OTP');
       }
     } catch (error) {
+      setOtpError('Failed to send OTP');
       toast.error('Failed to send OTP');
     } finally {
-      setOtpLoading(false);
+      setSendingOtp(false);
     }
   };
 
   const handleVerifyUnsubscribeOtp = async () => {
     setOtpError(''); // Clear any previous errors
+    setVerifyingOtp(true);
     try {
       const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/verify-unsubscribe-otp`, {
         method: 'POST',
@@ -283,7 +295,7 @@ const PublicBlogs = () => {
         body: JSON.stringify({ reason: optOutReason, otp: unsubscribeOtp })
       });
       const data = await response.json();
-      if (data.success) {
+      if (response.ok && data.success) {
         toast.success('Unsubscribed successfully');
         setSubscriptionStatus('opted_out');
         setIsSubscribed(false);
@@ -302,6 +314,8 @@ const PublicBlogs = () => {
       const errorMsg = 'Failed to verify OTP. Please try again.';
       setOtpError(errorMsg);
       toast.error(errorMsg);
+    } finally {
+      setVerifyingOtp(false);
     }
   };
 
@@ -804,22 +818,28 @@ const PublicBlogs = () => {
                     </p>
 
                     {subscribeStep === 'INPUT_EMAIL' ? (
-                      <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                        <input
-                          type="email"
-                          placeholder="Enter your email address"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all font-medium"
-                        />
-                        <button
-                          onClick={handleSendSubscribeOtp}
-                          disabled={otpLoading}
-                          className="px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
-                        >
-                          {otpLoading ? 'Sending...' : 'Subscribe'}
-                        </button>
-                      </div>
+                      <>
+                        <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                          <input
+                            type="email"
+                            placeholder="Enter your email address"
+                            value={email}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              setOtpError('');
+                            }}
+                            className={`flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border ${otpError ? 'border-red-400' : 'border-white/20'} text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all font-medium`}
+                          />
+                          <button
+                            onClick={handleSendSubscribeOtp}
+                            disabled={sendingOtp}
+                            className="px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
+                          >
+                            {sendingOtp ? 'Sending...' : 'Subscribe'}
+                          </button>
+                        </div>
+                        {otpError && <p className="text-red-300 text-sm mt-2 text-center font-medium animate-pulse">{otpError}</p>}
+                      </>
                     ) : (
                       <>
                         <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto animate-fade-in">
@@ -827,18 +847,23 @@ const PublicBlogs = () => {
                             type="text"
                             placeholder="Enter OTP"
                             value={subscribeOtp}
-                            onChange={(e) => setSubscribeOtp(e.target.value)}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              setSubscribeOtp(value);
+                              setOtpError('');
+                            }}
                             maxLength={6}
-                            className="flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all font-medium text-center tracking-widest text-xl"
+                            className={`flex-1 px-6 py-4 rounded-xl bg-white/10 backdrop-blur border ${otpError ? 'border-red-400' : 'border-white/20'} text-white placeholder-blue-200 focus:outline-none focus:bg-white/20 focus:border-white/40 transition-all font-medium text-center tracking-widest text-xl`}
                           />
                           <button
                             onClick={handleVerifySubscribeOtp}
-                            disabled={otpLoading}
+                            disabled={verifyingOtp || sendingOtp}
                             className="px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
                           >
-                            {otpLoading ? 'Verifying...' : 'Verify'}
+                            {verifyingOtp ? 'Verifying...' : 'Verify'}
                           </button>
                         </div>
+                        {otpError && <p className="text-red-300 text-sm mt-2 text-center font-medium animate-pulse">{otpError}</p>}
                         <div className="flex items-center justify-between mt-4 max-w-md mx-auto">
                           <div className="flex items-center gap-2">
                             {resendTimer > 0 ? (
@@ -849,10 +874,10 @@ const PublicBlogs = () => {
                               <button
                                 type="button"
                                 onClick={handleSendSubscribeOtp}
-                                disabled={otpLoading || !canResend}
+                                disabled={sendingOtp || verifyingOtp || !canResend}
                                 className="text-sm text-white hover:text-blue-100 font-bold underline transition-colors disabled:opacity-50 flex items-center gap-1.5"
                               >
-                                <RotateCcw className="w-4 h-4" /> Resend OTP
+                                <RotateCcw className={`w-4 h-4 ${sendingOtp ? 'animate-spin' : ''}`} /> {sendingOtp ? 'Sending...' : 'Resend OTP'}
                               </button>
                             )}
                           </div>
@@ -878,117 +903,121 @@ const PublicBlogs = () => {
             )}
           </div>
         </div>
-      </main>
+      </main >
       {/* Opt-Out Modal */}
-      {showOptOutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scale-in">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Unsubscribe</h3>
-                <button onClick={() => setShowOptOutModal(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {unsubscribeStep === 'REASON'
-                  ? "We're sorry to see you go! Please let us know why you are unsubscribing (optional):"
-                  : `We've sent a verification code to your email. Please enter it below to confirm unsubscription.`}
-              </p>
+      {
+        showOptOutModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scale-in">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Unsubscribe</h3>
+                  <button onClick={() => setShowOptOutModal(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  {unsubscribeStep === 'REASON'
+                    ? "We're sorry to see you go! Please let us know why you are unsubscribing (optional):"
+                    : `We've sent a verification code to your email. Please enter it below to confirm unsubscription.`}
+                </p>
 
-              {unsubscribeStep === 'REASON' ? (
-                <>
-                  <textarea
-                    value={optOutReason}
-                    onChange={(e) => setOptOutReason(e.target.value)}
-                    placeholder="Reason for unsubscribing..."
-                    className="w-full h-32 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-sm mb-4"
-                  />
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={() => setShowOptOutModal(false)}
-                      className="px-4 py-2 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      disabled={otpLoading}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSendUnsubscribeOtp}
-                      disabled={otpLoading}
-                      className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-70"
-                    >
-                      {otpLoading ? 'Sending OTP...' : 'Next'}
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="mb-4">
-                    <input
-                      type="text"
-                      value={unsubscribeOtp}
-                      onChange={(e) => {
-                        setUnsubscribeOtp(e.target.value);
-                        setOtpError(''); // Clear error when user types
-                      }}
-                      placeholder="Enter 6-digit OTP"
-                      maxLength={6}
-                      className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border ${otpError ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'} focus:outline-none focus:ring-2 ${otpError ? 'focus:ring-red-500' : 'focus:ring-blue-500'} text-gray-900 dark:text-white text-lg tracking-widest text-center`}
+                {unsubscribeStep === 'REASON' ? (
+                  <>
+                    <textarea
+                      value={optOutReason}
+                      onChange={(e) => setOptOutReason(e.target.value)}
+                      placeholder="Reason for unsubscribing..."
+                      className="w-full h-32 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-sm mb-4"
                     />
-                    {otpError && (
-                      <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-                        <X className="w-4 h-4" />
-                        {otpError}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-4">
-                    <button
-                      onClick={handleVerifyUnsubscribeOtp}
-                      disabled={otpLoading || !unsubscribeOtp || unsubscribeOtp.length !== 6}
-                      className="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                      {otpLoading ? 'Verifying...' : 'Confirm Unsubscribe'}
-                    </button>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {resendTimer > 0 ? (
-                          <span className="text-xs text-gray-500 dark:text-gray-400 italic">
-                            Resend in {resendTimer}s
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={handleSendUnsubscribeOtp}
-                            disabled={otpLoading || !canResend}
-                            className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-bold underline transition-colors disabled:opacity-50 flex items-center gap-1"
-                          >
-                            <RotateCcw className="w-3 h-3" /> Resend
-                          </button>
-                        )}
-                      </div>
-
+                    <div className="flex justify-end gap-3">
                       <button
-                        onClick={() => {
-                          setUnsubscribeStep('REASON');
-                          setResendTimer(0);
-                          setCanResend(true);
-                        }}
+                        onClick={() => setShowOptOutModal(false)}
+                        className="px-4 py-2 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                         disabled={otpLoading}
-                        className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium underline transition-colors"
                       >
-                        Back
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSendUnsubscribeOtp}
+                        disabled={otpLoading}
+                        className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-70"
+                      >
+                        {otpLoading ? 'Sending OTP...' : 'Next'}
                       </button>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        value={unsubscribeOtp}
+                        onChange={(e) => {
+                          // Only allow numeric input
+                          const value = e.target.value.replace(/\D/g, '');
+                          setUnsubscribeOtp(value);
+                          setOtpError(''); // Clear error when user types
+                        }}
+                        placeholder="Enter 6-digit OTP"
+                        maxLength={6}
+                        className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border ${otpError ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'} focus:outline-none focus:ring-2 ${otpError ? 'focus:ring-red-500' : 'focus:ring-blue-500'} text-gray-900 dark:text-white text-lg tracking-widest text-center`}
+                      />
+                      {otpError && (
+                        <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                          <X className="w-4 h-4" />
+                          {otpError}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <button
+                        onClick={handleVerifyUnsubscribeOtp}
+                        disabled={verifyingOtp || !unsubscribeOtp || unsubscribeOtp.length !== 6}
+                        className="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        {verifyingOtp ? 'Verifying...' : 'Confirm Unsubscribe'}
+                      </button>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {resendTimer > 0 ? (
+                            <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+                              Resend in {resendTimer}s
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleSendUnsubscribeOtp}
+                              disabled={sendingOtp || verifyingOtp || !canResend}
+                              className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-bold underline transition-colors disabled:opacity-50 flex items-center gap-1"
+                            >
+                              <RotateCcw className={`w-3 h-3 ${sendingOtp ? 'animate-spin' : ''}`} /> {sendingOtp ? 'Sending...' : 'Resend'}
+                            </button>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setUnsubscribeStep('REASON');
+                            setResendTimer(0);
+                            setCanResend(true);
+                          }}
+                          disabled={otpLoading}
+                          className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium underline transition-colors"
+                        >
+                          Back
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 
