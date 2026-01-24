@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPaperPlane, FaRobot, FaUser, FaExclamationTriangle, FaArrowRight } from 'react-icons/fa';
+import { FaPaperPlane, FaRobot, FaUser, FaExclamationTriangle, FaArrowRight, FaInfoCircle } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { authenticatedFetch } from '../utils/auth';
 
 const HelpCenterChat = () => {
@@ -16,9 +17,21 @@ const HelpCenterChat = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [sessionId, setSessionId] = useState(null);
     const [showEscalation, setShowEscalation] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
     const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
 
+    const { currentUser } = useSelector((state) => state.user);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+    // Determine AI Link
+    const getAiLink = () => {
+        if (!currentUser) return '/ai';
+        if (currentUser.role === 'admin' || currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin) {
+            return '/admin/ai';
+        }
+        return '/user/ai';
+    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -51,6 +64,18 @@ const HelpCenterChat = () => {
             }
         };
         fetchArticles();
+    }, []);
+
+    // Ctrl + / Shortcut
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.ctrlKey && e.key === '/') {
+                e.preventDefault();
+                inputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
     const handleSend = async (e) => {
@@ -153,10 +178,10 @@ const HelpCenterChat = () => {
                                 <FaRobot className="text-white text-xl" />
                             </div>
                             <div>
-                                <h3 className="text-white font-bold text-base leading-tight">UrbanSetu Help</h3>
+                                <h3 className="text-white font-bold text-base leading-tight">Setu HelpCenter</h3>
                                 <p className="text-blue-100 text-xs opacity-90 flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                                    AI Assistant Online
+                                    Online • AI Assistant Powered by Sentinel v2.0
                                 </p>
                             </div>
                         </div>
@@ -246,10 +271,11 @@ const HelpCenterChat = () => {
                     <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex-shrink-0">
                         <form onSubmit={handleSend} className="relative flex items-center gap-2">
                             <input
+                                ref={inputRef}
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder="Ask about UrbanSetu..."
+                                placeholder="Ask about UrbanSetu... (Ctrl+/)"
                                 className="flex-1 pl-4 pr-10 py-3 bg-gray-100 dark:bg-gray-900/50 border-0 rounded-full focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-sm"
                                 disabled={isLoading}
                             />
@@ -261,10 +287,35 @@ const HelpCenterChat = () => {
                                 <FaPaperPlane className={`text-xs ml-0.5 ${isLoading ? 'animate-pulse' : ''}`} />
                             </button>
                         </form>
-                        <div className="text-center mt-2">
-                            <p className="text-[9px] text-gray-400 dark:text-gray-500">
-                                AI responses may vary. Check important info.
+                        <div className="text-center mt-2 relative">
+                            <p className="text-[9px] text-gray-400 dark:text-gray-500 flex items-center justify-center gap-1">
+                                AI responses may vary.
+                                <button
+                                    type="button"
+                                    onClick={() => setShowInfo(!showInfo)}
+                                    className="hover:text-blue-500 transition-colors flex items-center gap-0.5"
+                                    title="Click for more info"
+                                >
+                                    Check important info <FaInfoCircle size={8} />
+                                </button>
                             </p>
+
+                            {showInfo && (
+                                <div className="absolute bottom-full left-0 right-0 mb-2 p-3 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl shadow-2xl animate-fade-in-up z-[60] mx-2 transition-all">
+                                    <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                                        These chat details are saved in Setu AI for improved assistance.
+                                        You can view your full history at {' '}
+                                        <Link
+                                            to={getAiLink()}
+                                            className="text-blue-600 dark:text-blue-400 font-bold hover:underline"
+                                            onClick={() => setShowInfo(false)}
+                                        >
+                                            Setu AI Chatbot
+                                        </Link>.
+                                    </p>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-gray-700 rotate-45 border-r border-b border-gray-100 dark:border-gray-600 mt-[-4px]"></div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
