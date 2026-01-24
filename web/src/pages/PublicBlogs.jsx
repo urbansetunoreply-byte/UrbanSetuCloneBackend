@@ -168,7 +168,12 @@ const PublicBlogs = () => {
           // If approved but not subscribed to BLOG, treat as not subscribed
           if (data.data.status === 'approved' && (!data.data.preferences || !data.data.preferences.blog)) {
             setSubscriptionStatus('not_subscribed');
-          } else {
+          }
+          // If pending, but the pending request is NOT for blog (e.g. they asked for Guide), treat as not subscribed here
+          else if (data.data.status === 'pending' && (!data.data.preferences || !data.data.preferences.blog)) {
+            setSubscriptionStatus('not_subscribed');
+          }
+          else {
             setSubscriptionStatus(data.data.status);
           }
         } else {

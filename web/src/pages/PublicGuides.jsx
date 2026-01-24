@@ -142,7 +142,12 @@ const PublicGuides = () => {
                     // If approved but not subscribed to GUIDE, treat as not subscribed
                     if (data.data.status === 'approved' && (!data.data.preferences || !data.data.preferences.guide)) {
                         setSubscriptionStatus('not_subscribed');
-                    } else {
+                    }
+                    // If pending, but the pending request is NOT for guide (e.g. they asked for Blog), treat as not subscribed here
+                    else if (data.data.status === 'pending' && (!data.data.preferences || !data.data.preferences.guide)) {
+                        setSubscriptionStatus('not_subscribed');
+                    }
+                    else {
                         setSubscriptionStatus(data.data.status);
                     }
                 } else {
