@@ -893,6 +893,28 @@ export const getListings = async (req, res, next) => {
     if (bedrooms) query.bedrooms = bedrooms;
     if (bathrooms) query.bathrooms = bathrooms;
 
+    // Owner Search Filter
+    const ownerSearch = req.query.ownerSearch;
+    if (ownerSearch && ownerSearch.trim()) {
+      const users = await User.find({
+        $or: [
+          { username: { $regex: ownerSearch, $options: 'i' } },
+          { name: { $regex: ownerSearch, $options: 'i' } },
+          { email: { $regex: ownerSearch, $options: 'i' } }
+        ]
+      }).select('_id');
+      const userIds = users.map(u => u._id);
+
+      // If we already have a userRef or sellerId filter, we need to respect it AND interview the search results
+      // But typically search implies refining.
+      // If we found NO users, and searching by owner, then we return empty
+      if (userIds.length === 0) {
+        query.userRef = null; // Force empty result
+      } else {
+        query.userRef = { $in: userIds };
+      }
+    }
+
     // Published/Verified Filter (User Request: "published and notpublished" check)
     // "Published" generally maps to Verified in this system context for filtering purpose
     const published = req.query.published;

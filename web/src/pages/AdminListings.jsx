@@ -111,7 +111,8 @@ export default function AdminListings() {
     maxPrice: '',
     city: '',
     state: '',
-    published: 'all'
+    published: 'all',
+    ownerSearch: ''
   });
 
   const buildParams = (startIndex, limit) => {
@@ -127,7 +128,9 @@ export default function AdminListings() {
     if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
     if (filters.city) params.set('city', filters.city);
     if (filters.state) params.set('state', filters.state);
+    if (filters.state) params.set('state', filters.state);
     if (filters.published !== 'all') params.set('published', filters.published);
+    if (filters.ownerSearch) params.set('ownerSearch', filters.ownerSearch);
     return params;
   };
 
@@ -584,6 +587,7 @@ export default function AdminListings() {
               <input type="number" min="0" value={filters.maxPrice} onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Max Price" />
               <input type="text" value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="City" />
               <input type="text" value={filters.state} onChange={(e) => setFilters({ ...filters, state: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="State" />
+              <input type="text" value={filters.ownerSearch} onChange={(e) => setFilters({ ...filters, ownerSearch: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Owner Search" />
             </div>
 
             {listings.length === 0 ? (
@@ -1084,8 +1088,8 @@ export default function AdminListings() {
                               key={filter}
                               onClick={() => setStatsOwnerFilter(filter)}
                               className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${statsOwnerFilter === filter
-                                  ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-300 shadow-sm'
-                                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-300 shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                 }`}
                             >
                               {filter.charAt(0).toUpperCase() + filter.slice(1)}

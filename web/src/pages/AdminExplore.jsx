@@ -37,7 +37,9 @@ export default function AdminExplore() {
     state: "",
     bedrooms: "",
     bathrooms: "",
+    bathrooms: "",
     published: "all",
+    ownerSearch: "",
   });
 
   const [listings, setListings] = useState([]);
@@ -73,6 +75,8 @@ export default function AdminExplore() {
       bedrooms: urlParams.get("bedrooms") || "",
       bathrooms: urlParams.get("bathrooms") || "",
       published: urlParams.get("published") || "all",
+      published: urlParams.get("published") || "all",
+      ownerSearch: urlParams.get("ownerSearch") || "",
     };
     setFormData(searchObj);
     setLocationFilter({
@@ -134,7 +138,8 @@ export default function AdminExplore() {
       searchTerm: "", type: "all", parking: false, furnished: false, offer: false,
       sort: "createdAt", order: "desc", minPrice: "", maxPrice: "",
       city: "", state: "", bedrooms: "", bathrooms: "",
-      published: "all"
+      published: "all",
+      ownerSearch: ""
     };
     setFormData(reset);
     setLocationFilter({ state: "", district: "", city: "" });
@@ -331,6 +336,21 @@ export default function AdminExplore() {
                       onSuggestionClick={handleSuggestionClick}
                       onClose={() => setShowSuggestions(false)}
                       isVisible={showSuggestions}
+                    />
+                  </div>
+                </div>
+
+                {/* Owner Search */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Owner Name</label>
+                  <div className="relative group">
+                    <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                    <input
+                      name="ownerSearch"
+                      value={formData.ownerSearch}
+                      onChange={handleChanges}
+                      placeholder="Search Owner..."
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50/50 dark:bg-gray-900/50 border-2 border-transparent dark:border-gray-700 rounded-2xl focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 transition-all font-bold text-gray-800 dark:text-white"
                     />
                   </div>
                 </div>
