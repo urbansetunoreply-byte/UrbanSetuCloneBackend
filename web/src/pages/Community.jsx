@@ -1307,7 +1307,7 @@ export default function Community() {
                                                         title="Dislike"
                                                     >
                                                         <FaThumbsDown className={`text-base transform group-hover:scale-110 transition-transform ${currentUser && post.dislikes?.includes(currentUser._id) ? 'fill-current' : ''}`} />
-                                                        <span className="font-semibold text-xs">{post.dislikes?.length || 0}</span>
+
                                                     </button>
                                                 </div>
 
@@ -1447,7 +1447,7 @@ export default function Community() {
                                                                                     onClick={() => currentUser ? handleCommentReaction(post._id, comment._id, 'dislike') : toast.info('Please sign in to dislike')}
                                                                                     className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.dislikes?.includes(currentUser._id) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400'}`}
                                                                                 >
-                                                                                    <FaThumbsDown size={10} /> {comment.dislikes?.length || 0}
+                                                                                    <FaThumbsDown size={10} />
                                                                                 </button>
                                                                             </div>
                                                                             {comment.replies && comment.replies.length > 0 && (
@@ -1698,7 +1698,7 @@ export default function Community() {
                                                                                                                     onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
                                                                                                                     className={`flex items-center gap-1 text-xs font-bold ${currentUser && reply.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                                                                                                                 >
-                                                                                                                    <FaThumbsDown size={10} /> {reply.dislikes?.length || 0}
+                                                                                                                    <FaThumbsDown size={10} />
                                                                                                                 </button>
                                                                                                                 <button
                                                                                                                     onClick={() => {
