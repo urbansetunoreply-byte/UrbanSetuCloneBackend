@@ -275,7 +275,7 @@ const HelpCenterChat = () => {
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder="Ask about UrbanSetu... (Ctrl+/)"
+                                placeholder="Ask about UrbanSetu... Ctrl + / to focus"
                                 className="flex-1 pl-4 pr-10 py-3 bg-gray-100 dark:bg-gray-900/50 border-0 rounded-full focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white text-sm"
                                 disabled={isLoading}
                             />
@@ -303,15 +303,24 @@ const HelpCenterChat = () => {
                             {showInfo && (
                                 <div className="absolute bottom-full left-0 right-0 mb-2 p-3 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl shadow-2xl animate-fade-in-up z-[60] mx-2 transition-all">
                                     <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-relaxed">
-                                        These chat details are saved in Setu AI for improved assistance.
-                                        You can view your full history at {' '}
-                                        <Link
-                                            to={getAiLink()}
-                                            className="text-blue-600 dark:text-blue-400 font-bold hover:underline"
-                                            onClick={() => setShowInfo(false)}
-                                        >
-                                            Setu AI Chatbot
-                                        </Link>.
+                                        {currentUser ? (
+                                            <>
+                                                These chat details are saved in Setu AI for improved assistance.
+                                                You can view your full history at {' '}
+                                                <Link
+                                                    to={getAiLink()}
+                                                    className="text-blue-600 dark:text-blue-400 font-bold hover:underline"
+                                                    onClick={() => setShowInfo(false)}
+                                                >
+                                                    Setu AI Chatbot
+                                                </Link>.
+                                            </>
+                                        ) : (
+                                            <>
+                                                These chat details are not saved in Setu AI for guest sessions.
+                                                <Link to="/sign-in" className="text-blue-600 dark:text-blue-400 font-bold hover:underline ml-1">Sign in</Link> to keep track of your full history.
+                                            </>
+                                        )}
                                     </p>
                                     <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-gray-700 rotate-45 border-r border-b border-gray-100 dark:border-gray-600 mt-[-4px]"></div>
                                 </div>

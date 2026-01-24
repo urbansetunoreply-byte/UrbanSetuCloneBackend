@@ -70,6 +70,14 @@ const PremiumLoader = ({ onComplete, mode = 'signin' }) => {
                 </span>
             </div>
 
+            {/* Neural Engine Branding */}
+            <div className="mt-4 flex items-center gap-2 opacity-60">
+                <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.3em] flex items-center gap-2">
+                    <div className="w-1 h-1 bg-blue-600 rounded-full animate-ping"></div>
+                    Powered by Sentinel v2.0 Neural Engine
+                </span>
+            </div>
+
             {/* Skip Button */}
             <button
                 onClick={onComplete}
