@@ -56,6 +56,7 @@ const PublicGuides = () => {
     const [selectedTags, setSelectedTags] = useState([]);
     const [unsubscribeStep, setUnsubscribeStep] = useState('REASON'); // 'REASON', 'VERIFY_OTP'
     const [unsubscribeOtp, setUnsubscribeOtp] = useState('');
+    const [otpError, setOtpError] = useState(''); // Error message for OTP verification
 
 
     useEffect(() => {
@@ -221,6 +222,7 @@ const PublicGuides = () => {
     };
 
     const handleVerifyUnsubscribeOtp = async () => {
+        setOtpError(''); // Clear any previous errors
         try {
             const response = await authenticatedFetch(`${API_BASE_URL}/api/subscription/verify-unsubscribe-otp`, {
                 method: 'POST',
@@ -239,11 +241,16 @@ const PublicGuides = () => {
                 setOptOutReason('');
                 setUnsubscribeOtp('');
                 setUnsubscribeStep('REASON');
+                setOtpError('');
             } else {
-                toast.error(data.message || 'Failed to unsubscribe');
+                const errorMsg = data.message || 'Invalid OTP. Please try again.';
+                setOtpError(errorMsg);
+                toast.error(errorMsg);
             }
         } catch (error) {
-            toast.error('Failed to unsubscribe');
+            const errorMsg = 'Failed to verify OTP. Please try again.';
+            setOtpError(errorMsg);
+            toast.error(errorMsg);
         }
     };
 
@@ -605,7 +612,14 @@ const PublicGuides = () => {
                                 )}
                                 {subscriptionStatus === 'opted_out' && (
                                     <button
-                                        onClick={handleSendSubscribeOtp}
+                                        onClick={() => {
+                                            // Reset states to show subscription flow properly
+                                            setSubscriptionStatus(null);
+                                            setSubscribeStep('INPUT_EMAIL');
+                                            setEmail(currentUser?.email || '');
+                                            // Send OTP after resetting states
+                                            setTimeout(() => handleSendSubscribeOtp(), 100);
+                                        }}
                                         className="px-4 py-2 bg-purple-500/80 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-colors border border-purple-400/30"
                                     >
                                         Resubscribe
@@ -717,11 +731,20 @@ const PublicGuides = () => {
                                         <input
                                             type="text"
                                             value={unsubscribeOtp}
-                                            onChange={(e) => setUnsubscribeOtp(e.target.value)}
+                                            onChange={(e) => {
+                                                setUnsubscribeOtp(e.target.value);
+                                                setOtpError(''); // Clear error when user types
+                                            }}
                                             placeholder="Enter 6-digit OTP"
                                             maxLength={6}
-                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white text-lg tracking-widest text-center"
+                                            className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border ${otpError ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'} focus:outline-none focus:ring-2 ${otpError ? 'focus:ring-red-500' : 'focus:ring-purple-500'} text-gray-900 dark:text-white text-lg tracking-widest text-center`}
                                         />
+                                        {otpError && (
+                                            <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                <X className="w-4 h-4" />
+                                                {otpError}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="flex justify-end gap-3">
                                         <button
