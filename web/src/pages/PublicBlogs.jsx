@@ -772,11 +772,19 @@ const PublicBlogs = () => {
                   {subscriptionStatus === 'approved' ? 'Subscribed' : subscriptionStatus.replace('_', ' ')}
                 </h3>
                 <p className="text-gray-300 mb-4">
-                  {subscriptionStatus === 'pending' ? 'Your subscription is awaiting approval.' :
-                    subscriptionStatus === 'approved' ? 'You will receive updates for new blogs.' :
-                      subscriptionStatus === 'rejected' ? 'Your subscription was unfortunately rejected.' :
-                        subscriptionStatus === 'revoked' ? 'Your subscription has been revoked.' :
-                          subscriptionStatus === 'opted_out' ? 'You have opted out of emails.' : ''}
+                  {/* Derived Status Message */}
+                  {(() => {
+                    // Check granular status first
+                    const isPendingBlog = subscriptionStatus === 'pending' || (subscriptionStatus === 'approved' && (!currentUser.preferences?.blog && currentUser.pendingPreferences?.blog));
+                    const isApprovedBlog = subscriptionStatus === 'approved' && currentUser.preferences?.blog;
+
+                    if (isPendingBlog) return 'Your subscription is awaiting approval.';
+                    if (isApprovedBlog) return 'You will receive updates for new blogs.';
+                    if (subscriptionStatus === 'rejected') return 'Your subscription was unfortunately rejected.';
+                    if (subscriptionStatus === 'revoked') return 'Your subscription has been revoked.';
+                    if (subscriptionStatus === 'opted_out') return 'You have opted out of emails.';
+                    return '';
+                  })()}
                 </p>
 
                 {subscriptionStatus === 'approved' && (

@@ -644,11 +644,19 @@ const PublicGuides = () => {
                                     {subscriptionStatus === 'approved' ? 'Subscribed' : subscriptionStatus.replace('_', ' ')}
                                 </h3>
                                 <p className="text-gray-300 mb-4">
-                                    {subscriptionStatus === 'pending' ? 'Your subscription is awaiting approval.' :
-                                        subscriptionStatus === 'approved' ? 'You will receive updates for new guides.' :
-                                            subscriptionStatus === 'rejected' ? 'Your subscription was unfortunately rejected.' :
-                                                subscriptionStatus === 'revoked' ? 'Your subscription has been revoked.' :
-                                                    subscriptionStatus === 'opted_out' ? 'You have opted out of emails.' : ''}
+                                    {/* Derived Status Message */}
+                                    {(() => {
+                                        // Check granular status first
+                                        const isPendingGuide = subscriptionStatus === 'pending' || (subscriptionStatus === 'approved' && (!currentUser.preferences?.guide && currentUser.pendingPreferences?.guide));
+                                        const isApprovedGuide = subscriptionStatus === 'approved' && currentUser.preferences?.guide;
+
+                                        if (isPendingGuide) return 'Your subscription is awaiting approval.';
+                                        if (isApprovedGuide) return 'You will receive updates for new guides.';
+                                        if (subscriptionStatus === 'rejected') return 'Your subscription was unfortunately rejected.';
+                                        if (subscriptionStatus === 'revoked') return 'Your subscription has been revoked.';
+                                        if (subscriptionStatus === 'opted_out') return 'You have opted out of emails.';
+                                        return '';
+                                    })()}
                                 </p>
 
                                 {subscriptionStatus === 'approved' && (

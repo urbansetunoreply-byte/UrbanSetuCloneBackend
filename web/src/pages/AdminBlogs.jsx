@@ -1001,22 +1001,43 @@ const AdminBlogs = ({ type }) => {
                         </td>
                         <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
                           <div className="flex gap-2">
-                            {(!sub.preferences || (!sub.preferences.blog && !sub.preferences.guide)) && (
-                              <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-500">
-                                None
-                              </span>
+                            {/* Show derived badges based on context */}
+                            {(subscriberFilterType === 'all' || subscriberFilterType === 'blog') && (
+                              <>
+                                {sub.preferences?.blog && (
+                                  <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800">
+                                    Blog
+                                  </span>
+                                )}
+                                {sub.pendingPreferences?.blog && !sub.preferences?.blog && (
+                                  <span className="px-2 py-1 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-bold border border-orange-200 dark:border-orange-800">
+                                    Pending Blog
+                                  </span>
+                                )}
+                              </>
                             )}
-                            {/* Show Blog badge only if context is 'blog' or 'all' */}
-                            {(subscriberFilterType === 'all' || subscriberFilterType === 'blog') && sub.preferences?.blog && (
-                              <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800">
-                                Blog
-                              </span>
+
+                            {(subscriberFilterType === 'all' || subscriberFilterType === 'guide') && (
+                              <>
+                                {sub.preferences?.guide && (
+                                  <span className="px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-bold border border-purple-200 dark:border-purple-800">
+                                    Guide
+                                  </span>
+                                )}
+                                {sub.pendingPreferences?.guide && !sub.preferences?.guide && (
+                                  <span className="px-2 py-1 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-bold border border-orange-200 dark:border-orange-800">
+                                    Pending Guide
+                                  </span>
+                                )}
+                              </>
                             )}
-                            {/* Show Guide badge only if context is 'guide' or 'all' */}
-                            {(subscriberFilterType === 'all' || subscriberFilterType === 'guide') && sub.preferences?.guide && (
-                              <span className="px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-bold border border-purple-200 dark:border-purple-800">
-                                Guide
-                              </span>
+
+                            {/* Fallback None if truly nothing for this context */}
+                            {subscriberFilterType === 'blog' && !sub.preferences?.blog && !sub.pendingPreferences?.blog && (
+                              <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-500">None</span>
+                            )}
+                            {subscriberFilterType === 'guide' && !sub.preferences?.guide && !sub.pendingPreferences?.guide && (
+                              <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-500">None</span>
                             )}
                           </div>
                         </td>
