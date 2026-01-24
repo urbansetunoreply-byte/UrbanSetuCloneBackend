@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import PublicFAQsSkeleton from '../components/skeletons/PublicFAQsSkeleton';
 import {
   Search, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown,
@@ -234,16 +235,16 @@ const PublicFAQs = () => {
         setIsLoggedIn(true); // User is authenticated if reaction worked
       } else {
         if (response.status === 401) {
-          alert('Please log in to rate this FAQ');
+          toast.info('Please log in to rate this FAQ');
           setIsLoggedIn(false);
         } else {
           const errorData = await response.json();
-          alert(errorData.message || 'Error rating FAQ');
+          toast.error(errorData.message || 'Error rating FAQ');
         }
       }
     } catch (error) {
       console.error('Error rating FAQ:', error);
-      alert('Error rating FAQ');
+      toast.error('Error rating FAQ');
     } finally {
       setReactionLoading(prev => ({ ...prev, [faqId]: false }));
     }

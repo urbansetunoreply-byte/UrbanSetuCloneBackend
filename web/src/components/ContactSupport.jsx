@@ -279,13 +279,13 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     setSubmitStatus('');
 
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/contact/support`, {
+      const response = await fetch(`${API_BASE_URL}/api/contact/support`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
-        autoRedirect: false
+        credentials: 'include',
+        body: JSON.stringify(formData)
       });
 
       const data = await response.json();
