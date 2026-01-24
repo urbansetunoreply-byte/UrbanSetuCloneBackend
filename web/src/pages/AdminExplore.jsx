@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FaTrash, FaLock, FaSearch, FaFilter, FaMapMarkerAlt, FaHome, FaBed, FaBath, FaTag, FaCheckCircle, FaChevronDown, FaTimes } from "react-icons/fa";
+import { FaTrash, FaLock, FaSearch, FaFilter, FaMapMarkerAlt, FaHome, FaBed, FaBath, FaTag, FaCheckCircle, FaChevronDown, FaTimes, FaUser } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
 import ListingItem from "../components/ListingItem";

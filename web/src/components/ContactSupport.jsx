@@ -337,7 +337,6 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        credentials: 'include',
         body: JSON.stringify({ ...formData, attachments })
       });
 
@@ -345,13 +344,15 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
 
       if (data.success) {
         setSubmitStatus('success');
-        setFormData({ subject: '', message: '', email: '', name: '' });
+        setFormData({ subject: '', message: '', email: currentUser?.email || '', name: currentUser?.username || '' });
         setAttachments([]);
+        setImageLinkInput('');
         toast.success("We've received your message — our team will contact you soon.");
+
+        // Clear status after 5 seconds so they see it, but don't close modal
         setTimeout(() => {
-          handleModalClose();
           setSubmitStatus('');
-        }, 3000);
+        }, 5000);
       } else {
         setSubmitStatus('error');
         toast.error('Failed to send message. Please try again or contact us directly.');
