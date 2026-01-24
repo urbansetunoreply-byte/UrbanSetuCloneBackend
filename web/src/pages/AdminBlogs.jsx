@@ -220,10 +220,17 @@ const AdminBlogs = ({ type }) => {
   const handleUpdateSubscription = async (id, status, reason = null) => {
     try {
       const BASE_URL = import.meta.env.VITE_API_BASE_URL || API_BASE_URL;
+      // Determine type based on source if available in the selected sub
+      // This is a minimal inference; ideally the UI modal would let you select WHAT to revoke if multiple exist, 
+      // but usually the action is triggered on the row which implies the context.
+      // However, since rows are merged, we might need to know which one we are clicking.
+      // For now, let's pass the mapped type from the source of the subscription object being processed.
+      const type = subToProcess?.source === 'blogs_page' ? 'blog' : (subToProcess?.source === 'guides_page' ? 'guide' : 'blog');
+
       const response = await authenticatedFetch(`${BASE_URL}/api/subscription/status/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, reason })
+        body: JSON.stringify({ status, reason, type })
       });
       const data = await response.json();
       if (data.success) {

@@ -149,7 +149,7 @@ export const updateSubscriptionStatus = async (req, res, next) => {
     }
 
     const { id } = req.params;
-    const { status, reason } = req.body;
+    const { status, reason, type } = req.body; // Added 'type' to know what we are acting on (blog/guide)
 
     if (!['approved', 'rejected', 'revoked'].includes(status)) {
         return next(errorHandler(400, 'Invalid status update'));
@@ -162,25 +162,70 @@ export const updateSubscriptionStatus = async (req, res, next) => {
         }
 
         const oldStatus = subscription.status;
-        subscription.status = status;
-        subscription.statusUpdatedAt = new Date();
 
-        if (reason) {
-            subscription.rejectionReason = reason;
+        // Determine the context based on provided type or fallback to current source
+        // Ideally frontend should send 'blog' or 'guide' as type
+        const targetType = type || (subscription.source === 'blogs_page' ? 'blog' : 'guide');
+
+        if (status === 'revoked') {
+            // Unset the specific preference
+            if (subscription.preferences) {
+                subscription.preferences[targetType] = false;
+            }
+
+            // Check if any other subscription is still active/approved
+            const hasOtherActive = Object.values(subscription.preferences || {}).some(val => val === true);
+
+            if (!hasOtherActive) {
+                // If nothing else is active, then we globally revoke
+                subscription.status = 'revoked';
+                if (reason) subscription.rejectionReason = reason;
+            } else {
+                // If others are active, we stay approved, just removed one permission
+                // We don't change global status to revoked
+                subscription.status = 'approved';
+            }
+        }
+        else if (status === 'rejected') {
+            // Similar logic for rejection: remove preference
+            if (subscription.preferences) {
+                subscription.preferences[targetType] = false;
+            }
+            const hasOtherActive = Object.values(subscription.preferences || {}).some(val => val === true);
+
+            if (!hasOtherActive) {
+                subscription.status = 'rejected';
+                if (reason) subscription.rejectionReason = reason;
+            } else {
+                // Revert to approved if they had other active subscriptions
+                subscription.status = 'approved';
+            }
+        }
+        else {
+            // Approved or other statuses apply globally or as standard flow
+            subscription.status = status;
+            if (reason) subscription.rejectionReason = reason;
         }
 
+        subscription.statusUpdatedAt = new Date();
         await subscription.save();
 
         // Send emails based on status change
+        // We need to be careful with emails now. 
+        // If we "revoked" just one, we should probably send a specific "You've been unsubscribed from X" email?
+        // For now, retaining original logic but ensuring it matches the action.
+
         if (status === 'approved' && oldStatus !== 'approved') {
             await sendSubscriptionApprovedEmail(subscription.email, subscription.source);
-        } else if (status === 'rejected') {
+        } else if (status === 'rejected' && subscription.status === 'rejected') {
+            // Only send rejection email if globally rejected
             await sendSubscriptionRejectedEmail(subscription.email, subscription.source, reason);
-        } else if (status === 'revoked') {
+        } else if (status === 'revoked' && subscription.status === 'revoked') {
+            // Only send revoked email if globally revoked
             await sendSubscriptionRevokedEmail(subscription.email, subscription.source, reason);
         }
 
-        res.status(200).json({ success: true, data: subscription, message: `Subscription ${status}` });
+        res.status(200).json({ success: true, data: subscription, message: `Subscription updated` });
     } catch (error) {
         next(error);
     }
