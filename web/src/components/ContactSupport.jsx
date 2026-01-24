@@ -25,6 +25,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     name: ''
   });
   const [attachments, setAttachments] = useState([]);
+  const [imageLinkInput, setImageLinkInput] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -191,6 +192,13 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
 
   const removeAttachment = (index) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddLink = () => {
+    if (imageLinkInput.trim()) {
+      setAttachments(prev => [...prev, imageLinkInput.trim()]);
+      setImageLinkInput('');
+    }
   };
 
   const fetchUserMessages = async () => {
@@ -570,6 +578,24 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     <FaPaperclip className="w-4 h-4" />
                     Attach screenshot (optional)
                   </label>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={imageLinkInput}
+                      onChange={(e) => setImageLinkInput(e.target.value)}
+                      placeholder="Paste image URL..."
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLink())}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddLink}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-colors"
+                    >
+                      Add
+                    </button>
+                  </div>
 
                   <div className="flex flex-wrap gap-2">
                     {attachments.map((url, idx) => (

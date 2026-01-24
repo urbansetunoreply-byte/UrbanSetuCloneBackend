@@ -220,7 +220,7 @@ const BlogEditModal = ({
           <form onSubmit={onSubmit} className="space-y-8 pb-10">
             {/* Title Section */}
             <div className="group">
-              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">ðŸ“ Blog Title <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">📝 Blog Title <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={formData.title}
@@ -233,7 +233,7 @@ const BlogEditModal = ({
 
             {/* Excerpt Section */}
             <div>
-              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">ðŸ“„ Short Excerpt</label>
+              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">📄 Short Excerpt</label>
               <textarea
                 value={formData.excerpt}
                 onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
@@ -245,7 +245,7 @@ const BlogEditModal = ({
 
             {/* Content Section */}
             <div>
-              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">ðŸ“– Full Content <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">📖 Full Content <span className="text-red-500">*</span></label>
               <textarea
                 value={formData.content}
                 onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
@@ -261,7 +261,7 @@ const BlogEditModal = ({
 
               {/* Thumbnail */}
               <div className="space-y-4">
-                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">ðŸ–¼ï¸ Main Thumbnail</label>
+                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">🖼️ Main Thumbnail</label>
                 <div className="flex flex-col gap-4">
                   {/* Input Row */}
                   <div className="flex gap-2 items-center">
@@ -283,7 +283,7 @@ const BlogEditModal = ({
                       htmlFor="thumbnail-upload"
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl cursor-pointer transition-colors shadow-sm flex items-center gap-2"
                     >
-                      {uploading ? <span className="animate-spin">â³</span> : <FaCloudUploadAlt />}
+                      {uploading ? <span className="animate-spin">⏳</span> : <FaCloudUploadAlt />}
                       <span className="hidden sm:inline text-xs font-bold uppercase">Upload</span>
                     </label>
                     {formData.thumbnail && (
@@ -331,7 +331,7 @@ const BlogEditModal = ({
                 {/* Blog Images */}
                 <div className="space-y-4">
                   <label className="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    ðŸ“¸ Blog Availability Images
+                    📸 Blog Availability Images
                   </label>
                   <p className="text-gray-500 dark:text-gray-400 text-xs mb-2">
                     Upload images or paste URLs directly.
@@ -349,7 +349,7 @@ const BlogEditModal = ({
                             className={`flex-1 px-4 py-3 border dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-colors text-sm font-medium ${mediaErrors[`img-${index}`] ? 'border-red-500' : 'border-gray-200'}`}
                           />
                           <label className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl cursor-pointer transition-colors shadow-sm flex items-center gap-2">
-                            {uploadingMedia[`img-${index}`] ? <span className="animate-spin">â³</span> : <FaCloudUploadAlt />}
+                            {uploadingMedia[`img-${index}`] ? <span className="animate-spin">⏳</span> : <FaCloudUploadAlt />}
                             <span className="hidden sm:inline text-xs font-bold uppercase">Upload</span>
                             <input
                               type="file"
@@ -399,7 +399,7 @@ const BlogEditModal = ({
                 {/* Blog Videos */}
                 <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <label className="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    ðŸŽ¥ Blog Videos
+                    🎥 Blog Videos
                   </label>
                   <p className="text-gray-500 dark:text-gray-400 text-xs mb-2">
                     Upload videos or paste URLs directly.
@@ -417,7 +417,7 @@ const BlogEditModal = ({
                             className={`flex-1 px-4 py-3 border dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 transition-colors text-sm font-medium ${mediaErrors[`vid-${index}`] ? 'border-red-500' : 'border-gray-200'}`}
                           />
                           <label className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-xl cursor-pointer transition-colors shadow-sm flex items-center gap-2">
-                            {uploadingMedia[`vid-${index}`] ? <span className="animate-spin">â³</span> : <FaCloudUploadAlt />}
+                            {uploadingMedia[`vid-${index}`] ? <span className="animate-spin">⏳</span> : <FaCloudUploadAlt />}
                             <span className="hidden sm:inline text-xs font-bold uppercase">Upload</span>
                             <input
                               type="file"
@@ -470,7 +470,7 @@ const BlogEditModal = ({
             {/* Categorization Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div>
-                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">ðŸ·ï¸ Category</label>
+                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">🏷️ Category</label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
@@ -482,7 +482,7 @@ const BlogEditModal = ({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">ðŸ  Link to Property</label>
+                <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">🏠 Link to Property</label>
                 <div className="space-y-3">
                   <input
                     type="text"
@@ -515,7 +515,7 @@ const BlogEditModal = ({
 
             {/* Tags Section */}
             <div>
-              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">ðŸ·ï¸ Tags & Keywords</label>
+              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">🏷️ Tags & Keywords</label>
               <div className="flex flex-wrap gap-2 mb-4 min-h-[44px] p-3 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-600">
                 {formData.tags?.length === 0 && <span className="text-gray-400 dark:text-gray-500 text-sm py-1">Add keywords to reach more people...</span>}
                 {formData.tags?.map((tag, index) => (
@@ -567,7 +567,7 @@ const BlogEditModal = ({
                   <div className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-sm"></div>
                 </div>
                 <div className="ml-4">
-                  <span className="block text-base font-black text-gray-800 dark:text-white tracking-tight">ðŸš€ Publish Blog Post</span>
+                  <span className="block text-base font-black text-gray-800 dark:text-white tracking-tight">🚀 Publish Blog Post</span>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Visible to all users immediately</span>
                 </div>
               </label>
