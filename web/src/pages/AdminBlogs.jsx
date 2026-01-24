@@ -424,9 +424,23 @@ const AdminBlogs = ({ type }) => {
       if (subscriberFilterStatus !== 'all' && sub.status !== subscriberFilterStatus) {
         return false;
       }
-      if (subscriberFilterType !== 'all') { // Filtering by subscription preference
-        if (subscriberFilterType === 'blog' && (!sub.preferences || !sub.preferences.blog)) return false;
-        if (subscriberFilterType === 'guide' && (!sub.preferences || !sub.preferences.guide)) return false;
+      // Filter by context/type (Blog vs Guide)
+      // Show user if:
+      // 1. They have the Active Preference for this type
+      // 2. They have a Pending Preference for this type (waiting approval)
+      // 3. Their original Source matches this type (helpful for Revoked/Opted-out users where prefs are cleared)
+      if (subscriberFilterType !== 'all') {
+        const isBlog = subscriberFilterType === 'blog';
+        const isGuide = subscriberFilterType === 'guide';
+
+        const hasActive = isBlog ? sub.preferences?.blog : sub.preferences?.guide;
+        const hasPending = isBlog ? sub.pendingPreferences?.blog : sub.pendingPreferences?.guide;
+
+        // Check source as fallback for users with no active flags (e.g. wiped by revocation)
+        const matchesSource = isBlog ? sub.source === 'blogs_page' : sub.source === 'guides_page';
+
+        // Strict: Must have SOME link to this type to show up
+        if (!hasActive && !hasPending && !matchesSource) return false;
       }
       return true;
     });
@@ -1008,10 +1022,10 @@ const AdminBlogs = ({ type }) => {
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 rounded-full text-xs font-bold ${sub.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                              sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                  (sub.status === 'revoked' || sub.status === 'opted_out') ? 'bg-gray-100 text-gray-700 dark:bg-gray-700/50 dark:text-gray-400' :
-                                    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                            sub.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                              sub.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                (sub.status === 'revoked' || sub.status === 'opted_out') ? 'bg-gray-100 text-gray-700 dark:bg-gray-700/50 dark:text-gray-400' :
+                                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
                             }`}>
                             {sub.status ? sub.status.toUpperCase().replace('_', ' ') : (sub.isActive ? 'ACTIVE (LEGACY)' : 'OD')}
                           </span>

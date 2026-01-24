@@ -379,7 +379,7 @@ export const verifySubscriptionOtp = async (req, res, next) => {
             if (subscription.pendingPreferences) subscription.pendingPreferences[type] = false; // Clear pending if any
 
             subscription.source = source;
-            message += `You have successfully subscribed to ${type}s!`;
+            message = `You have successfully subscribed to ${type}s!`;
         } else {
             // If Pending/New: Mark as PENDING request.
             // Do NOT set preference=true yet. Admin must approve.
