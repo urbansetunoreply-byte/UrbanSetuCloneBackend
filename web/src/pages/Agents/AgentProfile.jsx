@@ -407,7 +407,7 @@ const AgentProfile = () => {
                             {!isOwner && currentUser && (
                                 <div className="space-y-3">
                                     <button className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold shadow-md transition-all hover:scale-105">
-                                        <FaCalendarCheck /> Book Appointment
+                                        <FaCalendarCheck /> Book Appointment Coming Soon... Use Chat to Contact
                                     </button>
                                 </div>
                             )}
