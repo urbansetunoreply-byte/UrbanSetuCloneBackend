@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { FaHeadset, FaTimes, FaCheck, FaReply, FaEnvelope, FaClock, FaUser, FaEye, FaTrash, FaPaperPlane } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import ConfirmationModal from './ConfirmationModal';
+import ImagePreview from './ImagePreview';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -33,6 +34,8 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [previewImages, setPreviewImages] = useState(null);
+  const [previewIndex, setPreviewIndex] = useState(0);
 
   // Handle force modal opening
   useEffect(() => {
@@ -591,9 +594,16 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
                                 <h6 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Attachments</h6>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                                   {message.attachments.map((url, i) => (
-                                    <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block relative aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-500 hover:opacity-90 transition-opacity bg-gray-50 dark:bg-gray-800">
+                                    <div
+                                      key={i}
+                                      className="block relative aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-500 hover:opacity-90 transition-opacity bg-gray-50 dark:bg-gray-800 cursor-pointer"
+                                      onClick={() => {
+                                        setPreviewImages(message.attachments);
+                                        setPreviewIndex(i);
+                                      }}
+                                    >
                                       <img src={url} alt={`Attachment ${i + 1}`} className="w-full h-full object-cover" />
-                                    </a>
+                                    </div>
                                   ))}
                                 </div>
                               </div>
@@ -811,6 +821,19 @@ export default function AdminContactSupport({ forceModalOpen = false, onModalClo
         isDestructive={true}
         isLoading={isDeletingAll}
       />
+
+      {/* Image Preview Modal */}
+      {previewImages && (
+        <ImagePreview
+          isOpen={!!previewImages}
+          onClose={() => {
+            setPreviewImages(null);
+            setPreviewIndex(0);
+          }}
+          images={previewImages}
+          initialIndex={previewIndex}
+        />
+      )}
     </>
   );
 }

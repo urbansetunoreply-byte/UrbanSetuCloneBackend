@@ -5,6 +5,7 @@ import { FaHeadset, FaTimes, FaPaperPlane, FaEnvelope, FaUser, FaFileAlt, FaCloc
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ConfirmationModal from './ConfirmationModal';
+import ImagePreview from './ImagePreview';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -21,11 +22,11 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     subject: '',
     message: '',
     email: '',
-    email: '',
     name: ''
   });
   const [attachments, setAttachments] = useState([]);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState('');
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -573,7 +574,12 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                   <div className="flex flex-wrap gap-2">
                     {attachments.map((url, idx) => (
                       <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 group">
-                        <img src={url} alt="Attachment" className="w-full h-full object-cover" />
+                        <img
+                          src={url}
+                          alt="Attachment"
+                          className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => setPreviewImage(url)}
+                        />
                         <button
                           type="button"
                           onClick={() => removeAttachment(idx)}
@@ -702,9 +708,9 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                           {message.attachments && message.attachments.length > 0 && (
                             <div className="mt-3 grid grid-cols-3 gap-2">
                               {message.attachments.map((url, i) => (
-                                <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block relative aspect-square rounded-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:opacity-90 transition-opacity">
+                                <div key={i} className="block relative aspect-square rounded-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:opacity-90 transition-opacity cursor-pointer" onClick={() => setPreviewImage(url)}>
                                   <img src={url} alt="Attachment" className="w-full h-full object-cover" />
-                                </a>
+                                </div>
                               ))}
                             </div>
                           )}
@@ -838,6 +844,15 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
         isDestructive={true}
         isLoading={isDeleting}
       />
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <ImagePreview
+          isOpen={!!previewImage}
+          onClose={() => setPreviewImage(null)}
+          images={[previewImage]}
+        />
+      )}
 
 
     </>
