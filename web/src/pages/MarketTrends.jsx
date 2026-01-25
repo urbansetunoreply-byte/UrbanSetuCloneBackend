@@ -722,6 +722,28 @@ const calculateCityStats = (listings, cityName) => {
     });
     const propertyTypes = Object.keys(typeMap).map(key => ({ name: key, value: typeMap[key] }));
 
+    // Generate Price Distribution Buckets
+    const prices = listings.map(l => (l.offer ? l.discountPrice : l.regularPrice) || 0).filter(p => p > 0);
+    const distributions = { "Below 50L": 0, "50L - 1Cr": 0, "1Cr - 3Cr": 0, "Above 3Cr": 0 };
+    prices.forEach(p => {
+        if (p < 5000000) distributions["Below 50L"]++;
+        else if (p < 10000000) distributions["50L - 1Cr"]++;
+        else if (p < 30000000) distributions["1Cr - 3Cr"]++;
+        else distributions["Above 3Cr"]++;
+    });
+    const priceDistribution = Object.keys(distributions).map(key => ({ name: key, value: distributions[key] }));
+
+    // Get Recent Hot Listings (First 3)
+    const recentListings = listings.slice(0, 3).map(l => ({
+        id: l._id,
+        name: l.name,
+        image: l.imageUrls?.[0] || "https://via.placeholder.com/300",
+        price: l.offer ? l.discountPrice : l.regularPrice,
+        address: l.address,
+        beds: l.bedrooms,
+        baths: l.bathrooms
+    }));
+
     return {
         summary: {
             avgPrice,
@@ -729,7 +751,9 @@ const calculateCityStats = (listings, cityName) => {
             totalListings: listings.length
         },
         areas,
-        propertyTypes
+        propertyTypes,
+        priceDistribution,
+        recentListings
     };
 };
 // ----------------------------------------
