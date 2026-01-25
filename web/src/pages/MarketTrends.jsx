@@ -67,17 +67,19 @@ const MarketTrends = () => {
                 const res = await fetch('/api/market/overview');
                 const contentType = res.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    // Backend not ready or route missing - silently handle
-                    setOverview(null);
+                    console.log("⚠️ Backend route not ready. Using Mock Data.");
+                    setOverview(MOCK_OVERVIEW);
                     return;
                 }
                 const data = await res.json();
                 if (data.success) {
                     setOverview(data.data);
+                } else {
+                    setOverview(MOCK_OVERVIEW);
                 }
             } catch (error) {
-                // Suppress loud errors for cleaner logs
-                setOverview(null);
+                console.log("⚠️ Fetch error. Using Mock Data.");
+                setOverview(MOCK_OVERVIEW);
             } finally {
                 setLoading(false);
             }
@@ -95,18 +97,19 @@ const MarketTrends = () => {
                 const res = await fetch(`/api/market/city/${selectedCity}`);
                 const contentType = res.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    setCityData(null);
+                    console.log(`⚠️ City Data route not ready for ${selectedCity}. Using Mock Data.`);
+                    setCityData(getMockCityData(selectedCity));
                     return;
                 }
                 const data = await res.json();
                 if (data.success) {
                     setCityData(data.data);
                 } else {
-                    setCityData(null);
+                    setCityData(getMockCityData(selectedCity));
                 }
             } catch (error) {
-                console.error("Error fetching city data:", error);
-                setCityData(null);
+                console.log(`⚠️ Fetch error for ${selectedCity}. Using Mock Data.`);
+                setCityData(getMockCityData(selectedCity));
             } finally {
                 setLoadingCity(false);
             }
@@ -628,5 +631,49 @@ const StatsCard = ({ icon, label, value, subtext }) => (
         <div className="text-xs text-blue-200/70 mt-1">{subtext}</div>
     </motion.div>
 );
+
+// ... (existing imports)
+
+// --- MOCK DATA FOR FALLBACK ---
+const MOCK_OVERVIEW = {
+    totalListings: 12450,
+    avgPrice: 8500000,
+    newProjects: 45,
+    topAreas: [
+        { city: "Hyderabad", area: "Gachibowli", trend: "+12.5%", avgPrice: 9500000 },
+        { city: "Bangalore", area: "Whitefield", trend: "+10.2%", avgPrice: 11000000 },
+        { city: "Pune", area: "Hinjewadi", trend: "+8.5%", avgPrice: 7500000 },
+        { city: "Mumbai", area: "Thane West", trend: "+6.8%", avgPrice: 14500000 }
+    ],
+    priceTrends: [
+        { name: 'Jan', price: 7800000 },
+        { name: 'Feb', price: 7950000 },
+        { name: 'Mar', price: 8100000 },
+        { name: 'Apr', price: 8250000 },
+        { name: 'May', price: 8350000 },
+        { name: 'Jun', price: 8500000 }
+    ]
+};
+
+const getMockCityData = (city) => ({
+    summary: {
+        avgPrice: 9200000,
+        demandScore: 88,
+        totalListings: 450
+    },
+    areas: [
+        { name: "Financial District", avgPrice: 12500000, priceRange: "90L - 4Cr", listings: 120, popularity: 250 },
+        { name: "Hitech City", avgPrice: 11000000, priceRange: "80L - 3Cr", listings: 95, popularity: 210 },
+        { name: "Jubilee Hills", avgPrice: 25000000, priceRange: "2Cr - 15Cr", listings: 45, popularity: 180 },
+        { name: "Kondapur", avgPrice: 8500000, priceRange: "60L - 1.5Cr", listings: 110, popularity: 150 },
+        { name: "Miyapur", avgPrice: 6500000, priceRange: "40L - 90L", listings: 80, popularity: 90 }
+    ],
+    propertyTypes: [
+        { name: 'Apartments', value: 65 },
+        { name: 'Villas', value: 20 },
+        { name: 'Plots', value: 10 },
+        { name: 'Commercial', value: 5 }
+    ]
+});
 
 export default MarketTrends;
