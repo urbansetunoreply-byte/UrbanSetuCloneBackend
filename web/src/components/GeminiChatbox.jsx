@@ -3050,12 +3050,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             sharePath = (currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/ai' : '/user/ai';
         }
 
-        // Use API_BASE_URL if it exists as an absolute URL, otherwise fallback to current origin
-        const baseUrl = (API_BASE_URL && API_BASE_URL.startsWith('http'))
-            ? API_BASE_URL.replace(/\/$/, '')
-            : window.location.origin;
-
-        const shareUrl = `${baseUrl}${sharePath}`;
+        const shareUrl = `${window.location.origin}${sharePath}`;
 
         setSocialShareConfig({
             url: shareUrl,
