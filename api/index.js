@@ -283,7 +283,6 @@ app.set('io', io);
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
-console.log("✅ Registering Market Routes...");
 app.use('/api/market', marketRouter);
 app.use('/api/bookings', bookingRouter);
 app.use('/api/about', aboutRouter);

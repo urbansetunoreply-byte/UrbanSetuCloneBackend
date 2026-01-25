@@ -67,14 +67,16 @@ const MarketTrends = () => {
                 const res = await fetch('/api/market/overview');
                 const contentType = res.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Invalid API response: Server returned HTML instead of JSON");
+                    // Backend not ready or route missing - silently handle
+                    setOverview(null);
+                    return;
                 }
                 const data = await res.json();
                 if (data.success) {
                     setOverview(data.data);
                 }
             } catch (error) {
-                console.error("Error fetching market data:", error);
+                // Suppress loud errors for cleaner logs
                 setOverview(null);
             } finally {
                 setLoading(false);
@@ -93,7 +95,6 @@ const MarketTrends = () => {
                 const res = await fetch(`/api/market/city/${selectedCity}`);
                 const contentType = res.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    console.error("Received HTML response instead of JSON for city data");
                     setCityData(null);
                     return;
                 }
