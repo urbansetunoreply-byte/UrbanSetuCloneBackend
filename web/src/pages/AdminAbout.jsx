@@ -525,7 +525,7 @@ export default function AdminAbout() {
                       <span className="font-medium">+1 (555) 987-6543</span>
                     </button>
                   </div>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-3">ðŸ“± Mobile: Tap to call | ðŸ’» Desktop: Click to copy</p>
+                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-3">📱 Mobile: Tap to call | 💻 Desktop: Click to copy</p>
                 </div>
 
                 {/* Email Support */}
@@ -543,7 +543,7 @@ export default function AdminAbout() {
                       <span className="font-medium">info@urbansetu.com</span>
                     </a>
                   </div>
-                  <p className="text-sm text-green-600 dark:text-green-400 mt-3">ðŸ“§ 24/7 email support available</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-3">📧 24/7 email support available</p>
                 </div>
               </div>
             </div>

@@ -6,7 +6,7 @@ const fetch = require('node-fetch');
 async function fixRefundIndex() {
   try {
     console.log('Fixing refundId index...');
-    
+
     // You'll need to replace this with actual admin credentials
     const response = await fetch('https://urbansetu-pvt4.onrender.com/api/payments/fix-refund-index', {
       method: 'POST',
@@ -18,15 +18,15 @@ async function fixRefundIndex() {
     });
 
     const result = await response.json();
-    
+
     if (response.ok) {
-      console.log('âœ… Index fixed successfully:', result.message);
+      console.log('✅ Index fixed successfully:', result.message);
       console.log('Details:', result.details);
     } else {
-      console.error('âŒ Error fixing index:', result.message);
+      console.error('❌ Error fixing index:', result.message);
     }
   } catch (error) {
-    console.error('âŒ Error calling migration endpoint:', error.message);
+    console.error('❌ Error calling migration endpoint:', error.message);
   }
 }
 

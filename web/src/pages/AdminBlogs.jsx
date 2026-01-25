@@ -819,7 +819,7 @@ const AdminBlogs = ({ type }) => {
                               <h3 className="font-black text-gray-800 dark:text-white line-clamp-1">{blog.title}</h3>
                               <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mt-1 font-bold">
                                 <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">{new Date(blog.createdAt).toLocaleDateString()}</span>
-                                <span>â€¢</span>
+                                <span>•</span>
                                 <span className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">{blog.views || 0} views</span>
                               </div>
                             </div>

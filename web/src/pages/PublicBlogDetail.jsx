@@ -549,7 +549,7 @@ const PublicBlogDetail = () => {
                                 {isAdmin ? 'UrbanSetu Team' : comment.user?.username || 'Anonymous'}
                               </span>
                               {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
-                              <span className="text-xs text-gray-400 dark:text-gray-500">â€¢ {new Date(comment.createdAt).toLocaleDateString()}</span>
+                              <span className="text-xs text-gray-400 dark:text-gray-500">• {new Date(comment.createdAt).toLocaleDateString()}</span>
                             </div>
 
                             {isOwner && editingCommentId !== comment._id && (
