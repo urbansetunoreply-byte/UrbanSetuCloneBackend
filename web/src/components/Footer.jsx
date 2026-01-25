@@ -385,13 +385,11 @@ const Footer = () => {
                 </span>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
-                {currentUser && (
-                  <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/20 rounded-full">
-                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-2">
-                      <FaRobot className="text-blue-500 animate-pulse text-xs" /> Powered by Sentinel v2.0 Neural Engine
-                    </span>
-                  </div>
-                )}
+                <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/20 rounded-full">
+                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                    <FaRobot className="text-blue-500 animate-pulse text-xs" /> Powered by Sentinel v2.0 Neural Engine
+                  </span>
+                </div>
                 <span>Made with ❤️ for real estate</span>
               </div>
             </div>

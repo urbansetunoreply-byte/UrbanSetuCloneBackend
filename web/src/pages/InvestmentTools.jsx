@@ -474,17 +474,26 @@ const InvestmentTools = () => {
         </div>
 
         {/* Action Buttons */}
+        {/* Action Buttons */}
         <div className="flex flex-wrap justify-center gap-4 mb-8">
           <button
             onClick={exportResults}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            disabled={savedCalculations.length === 0}
+            className={`px-6 py-3 rounded-lg transition-colors flex items-center gap-2 ${savedCalculations.length === 0
+              ? 'bg-blue-400 text-white/50 cursor-not-allowed opacity-50'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
           >
             <FaDownload className="text-sm" />
             Export Results
           </button>
           <button
             onClick={() => setShowClearHistoryModal(true)}
-            className="px-6 py-3 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
+            disabled={savedCalculations.length === 0}
+            className={`px-6 py-3 rounded-lg transition-colors flex items-center gap-2 ${savedCalculations.length === 0
+              ? 'bg-gray-400 dark:bg-gray-800 text-white/50 cursor-not-allowed opacity-50'
+              : 'bg-gray-600 dark:bg-gray-700 text-white hover:bg-gray-700 dark:hover:bg-gray-600'
+              }`}
           >
             <FaHistory className="text-sm" />
             Clear History
