@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  FaFacebook, FaTwitter, FaLinkedin, FaWhatsapp,
+  FaFacebook, FaLinkedin, FaWhatsapp,
   FaTelegram, FaCopy, FaCheck, FaTimes, FaShareAlt
 } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 import { toast } from 'react-toastify';
 
 const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", description = "Discover the future of real estate with UrbanSetu." }) => {
@@ -46,8 +47,8 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
     },
     {
-      name: 'Twitter',
-      icon: <FaTwitter />,
+      name: 'X',
+      icon: <FaXTwitter />,
       color: 'bg-[#000000]',
       hover: 'hover:bg-[#333333]',
       link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${title}\n${description}`)}`
