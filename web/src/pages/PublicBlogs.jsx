@@ -9,12 +9,13 @@ import {
   TrendingUp, Lightbulb, Home, CheckCircle, X, BookOpen, RotateCcw
 } from 'lucide-react';
 
-import { usePageTitle } from '../hooks/usePageTitle';
+import SEO from '../components/SEO';
 import { authenticatedFetch } from '../utils/auth';
 
 const PublicBlogs = () => {
-  // Set page title
-  usePageTitle("Blogs - Real Estate Blog Portal");
+  // SEO Dynamic Tags
+  const seoTitle = "Real Estate Blogs & Insights";
+  const seoDescription = "Stay updated with the latest real estate trends, market analysis, and property buying tips on UrbanSetu's expert blog portal.";
 
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -428,6 +429,11 @@ const PublicBlogs = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col font-sans text-slate-800 dark:text-gray-100 transition-colors duration-300">
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        keywords="real estate blog, Hyderabad property trends, house buying tips, investment insights"
+      />
       {/* Search Header / Hero */}
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 pb-24 pt-12 px-4 shadow-lg mb-8 relative overflow-hidden">
         {/* Abstract shapes for visual interest */}

@@ -8,13 +8,17 @@ import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import GlobalErrorBoundary from './components/GlobalErrorBoundary';
 
+import { HelmetProvider } from 'react-helmet-async';
+
 createRoot(document.getElementById('root')).render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
       {bootstrapped => (
-        <GlobalErrorBoundary>
-          <App bootstrapped={bootstrapped} />
-        </GlobalErrorBoundary>
+        <HelmetProvider>
+          <GlobalErrorBoundary>
+            <App bootstrapped={bootstrapped} />
+          </GlobalErrorBoundary>
+        </HelmetProvider>
       )}
     </PersistGate>
   </Provider>,

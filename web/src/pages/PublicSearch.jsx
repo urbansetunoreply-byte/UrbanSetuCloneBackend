@@ -7,6 +7,7 @@ import duckImg from "../assets/duck-go-final.gif";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import SearchSuggestions from '../components/SearchSuggestions';
 import FilterChips from "../components/search/FilterChips";
+import SEO from '../components/SEO';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Search, Filter, MapPin, Home, DollarSign, GripVertical, ChevronDown, RefreshCw } from "lucide-react";
 import ListingSkeletonGrid from "../components/skeletons/ListingSkeletonGrid";
@@ -16,8 +17,6 @@ import { authenticatedFetch } from '../utils/auth';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PublicSearch() {
-    // Set page title
-    usePageTitle("Search Properties - Find Your Dream Home");
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -36,6 +35,13 @@ export default function PublicSearch() {
         bedrooms: "",
         bathrooms: "",
     });
+
+    // SEO Meta Tags
+    const seoTitle = formData.searchTerm
+        ? `Properties in ${formData.searchTerm} - Search Results`
+        : "Search Verified Properties - Hyderabad Real Estate";
+
+    const seoDescription = `Browse the latest ${formData.type !== 'all' ? formData.type + ' ' : ''}properties ${formData.searchTerm ? 'in ' + formData.searchTerm : ''} on UrbanSetu. Filter by price, bedrooms, and more.`;
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showMoreListing, setShowMoreListing] = useState(false);
@@ -178,6 +184,11 @@ export default function PublicSearch() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col font-sans text-slate-800 dark:text-gray-100 transition-colors duration-300">
+            <SEO
+                title={seoTitle}
+                description={seoDescription}
+                keywords={`search properties, ${formData.searchTerm}, real estate search, find flats, ${formData.type} listings`}
+            />
 
             {/* Search Header / Hero */}
             <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 dark:from-blue-900 dark:via-indigo-950 dark:to-purple-950 pb-16 pt-10 px-4 shadow-lg mb-8 relative transition-colors duration-300">

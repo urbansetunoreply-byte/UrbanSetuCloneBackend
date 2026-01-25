@@ -11,7 +11,7 @@ import axios from 'axios';
 import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || 'https://urbansetu.vercel.app';
+const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://urbansetu.vercel.app');
 
 const buildPayMonthlyRentUrl = (contractId) => {
   const runtimeOrigin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : PUBLIC_APP_URL;

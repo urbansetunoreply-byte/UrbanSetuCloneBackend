@@ -1,0 +1,47 @@
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+
+const SEO = ({ title, description, keywords, image, url, type = 'website', schema }) => {
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://urbansetu.vercel.app';
+    const siteTitle = "UrbanSetu · Verified Real Estate Ecosystem";
+    const fullTitle = title ? `${title} · UrbanSetu` : siteTitle;
+    const defaultDescription = "UrbanSetu is India's No.1 verified real estate platform. Buy, sell, and rent properties with confidence using our Rent Lock and trust-verified listings.";
+    const metaDescription = description || defaultDescription;
+    const metaImage = image || `${currentOrigin}/og-image.png`;
+    const metaUrl = url || (typeof window !== 'undefined' ? window.location.href : currentOrigin);
+    const metaKeywords = keywords || "real estate, buy property, rent property, Hyderabad real estate, verified property search, rent lock platform";
+
+    return (
+        <Helmet>
+            {/* Standard metadata tags */}
+            <title>{fullTitle}</title>
+            <meta name='description' content={metaDescription} />
+            <meta name='keywords' content={metaKeywords} />
+
+            {/* Open Graph / Facebook tags */}
+            <meta property="og:type" content={type} />
+            <meta property="og:title" content={fullTitle} />
+            <meta property="og:description" content={metaDescription} />
+            <meta property="og:image" content={metaImage} />
+            <meta property="og:url" content={metaUrl} />
+
+            {/* Twitter tags */}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content={fullTitle} />
+            <meta name="twitter:description" content={metaDescription} />
+            <meta name="twitter:image" content={metaImage} />
+
+            {/* Canonical link */}
+            <link rel="canonical" href={metaUrl} />
+
+            {/* JSON-LD Structured Data */}
+            {schema && (
+                <script type="application/ld+json">
+                    {JSON.stringify(schema)}
+                </script>
+            )}
+        </Helmet>
+    );
+};
+
+export default SEO;

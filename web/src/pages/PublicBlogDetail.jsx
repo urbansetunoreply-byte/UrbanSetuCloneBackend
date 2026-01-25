@@ -16,12 +16,28 @@ import BlogDetailSkeleton from '../components/skeletons/BlogDetailSkeleton';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SocialSharePanel from '../components/SocialSharePanel';
 
-import { usePageTitle } from '../hooks/usePageTitle';
+import SEO from '../components/SEO';
 import { authenticatedFetch } from '../utils/auth';
 
 const PublicBlogDetail = () => {
-  // Set page title
-  usePageTitle("Blog Detail - Real Estate Insights");
+  // SEO Dynamic Tags
+  const seoTitle = blog ? `${blog.title} | UrbanSetu Insights` : "Blog Detail";
+  const seoDescription = blog ? (blog.excerpt || blog.content?.replace(/<[^>]*>/g, '').substring(0, 160)) : "Read real estate insights on UrbanSetu.";
+  const seoImage = blog?.thumbnail || (blog?.imageUrls && blog.imageUrls[0]) || `${window.location.origin}/og-image.png`;
+
+  const blogSchema = blog ? {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": blog.title,
+    "image": [seoImage],
+    "datePublished": blog.publishedAt || blog.createdAt,
+    "dateModified": blog.updatedAt || blog.createdAt,
+    "author": [{
+      "@type": "Person",
+      "name": blog.author?.username || "UrbanSetu Team",
+      "url": `${window.location.origin}/about`
+    }]
+  } : null;
 
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -314,6 +330,14 @@ const PublicBlogDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans text-slate-800 dark:text-gray-100 pb-20 transition-colors duration-300">
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        image={seoImage}
+        type="article"
+        keywords={`${blog?.category}, ${blog?.tags?.join(', ')}, real estate insights`}
+        schema={blogSchema}
+      />
       {/* Hero Header */}
       <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white relative overflow-hidden">
         {/* Abstract Background Shapes */}

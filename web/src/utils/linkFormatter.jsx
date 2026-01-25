@@ -105,7 +105,7 @@ const processTextSegment = (text, isSentMessage, searchQuery) => {
       }
 
       // Determine if internal or external
-      const isInternal = finalUrl.startsWith('/') || finalUrl.includes('urbansetu.vercel.app');
+      const isInternal = finalUrl.startsWith('/') || finalUrl.includes('urbansetu.vercel.app') || finalUrl.includes('urbansetuglobal.onrender.com');
 
       const linkClasses = isSentMessage
         ? "text-white hover:text-blue-200 underline cursor-pointer font-medium"

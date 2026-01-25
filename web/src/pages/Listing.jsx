@@ -24,7 +24,7 @@ import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../uti
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
 
-import { usePageTitle } from '../hooks/usePageTitle';
+import SEO from '../components/SEO';
 import RatingDisplay from '../components/ratings/RatingDisplay';
 import RentPredictionDisplay from '../components/rental/RentPredictionDisplay';
 import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
@@ -58,6 +58,30 @@ const LOCK_REASON_MESSAGES = {
 };
 
 export default function Listing() {
+  const listingSchema = (listing) => {
+    if (!listing) return null;
+    return {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": listing.name,
+      "image": listing.imageUrls || [],
+      "description": listing.description,
+      "sku": listing._id,
+      "mpn": listing._id,
+      "brand": {
+        "@type": "Brand",
+        "name": "UrbanSetu"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": window.location.href,
+        "priceCurrency": "INR",
+        "price": listing.offer ? listing.discountPrice : listing.regularPrice,
+        "availability": listing.status === "available" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        "itemCondition": "https://schema.org/NewCondition"
+      }
+    };
+  };
   const params = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -65,8 +89,11 @@ export default function Listing() {
   const { currentUser } = useSelector((state) => state.user);
   const [listing, setListing] = useState(null);
 
-  // Set page title
-  usePageTitle(listing ? `${listing.name} - UrbanSetu` : "Property Details - UrbanSetu");
+  // SEO Meta Tags
+  const seoTitle = listing ? `${listing.name} in ${listing.city} - For ${listing.type === 'rent' ? 'Rent' : 'Sale'}` : "Property Details";
+  const seoDescription = listing ? `${listing.description?.substring(0, 150)}... Buy or rent verified properties on UrbanSetu.` : "View verified property details on UrbanSetu.";
+  const seoUrl = listing ? `${window.location.origin}/listing/${listing._id}` : window.location.href;
+  const seoImage = listing?.imageUrls?.[0] || `${window.location.origin}/og-image.png`;
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -1394,6 +1421,14 @@ export default function Listing() {
 
   return (
     <>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        url={seoUrl}
+        image={seoImage}
+        type="article"
+        schema={listingSchema(listing)}
+      />
       <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-950 dark:to-gray-900 min-h-screen py-10 px-2 md:px-8 transition-colors duration-300">
         <SeasonalEffects />
         <div className="max-w-4xl w-full mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-blue-900/10 p-3 sm:p-6 relative overflow-x-hidden border border-transparent dark:border-gray-800 transition-colors duration-300">

@@ -8,12 +8,13 @@ import { toast } from 'react-toastify';
 import { downloadAndroidApp, getDownloadButtonText } from '../utils/androidDownload';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
-import { usePageTitle } from '../hooks/usePageTitle';
+import SEO from '../components/SEO';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
 export default function PublicAbout() {
-  // Set page title
-  usePageTitle("About Us - Learn About UrbanSetu");
+  // SEO Meta Tags
+  const seoTitle = "About UrbanSetu - Our Mission & Vision";
+  const seoDescription = "Learn about UrbanSetu, India's most verified real estate platform. Discover our journey, meet our founder Bhavith Tungena, and understand how we ensure property trust.";
 
   const [aboutData, setAboutData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,6 +66,11 @@ export default function PublicAbout() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        keywords="about urbansetu, real estate platform india, bhavith tungena, property verification mission"
+      />
       {/* Background Animations */}
       <style>
         {`

@@ -6,12 +6,13 @@ import {
   Filter, HelpCircle, MessageCircle, Phone, Mail,
   Info, ArrowRight, MessageSquare
 } from 'lucide-react';
-import { usePageTitle } from '../hooks/usePageTitle';
+import SEO from '../components/SEO';
 import { authenticatedFetch } from '../utils/auth';
 
 const PublicFAQs = () => {
-  // Set page title
-  usePageTitle("FAQs - Real Estate FAQ Portal");
+  // SEO Dynamic Tags
+  const seoTitle = "Frequently Asked Questions - Help Center";
+  const seoDescription = "Find answers to commonly asked questions about buying, renting, and selling properties on UrbanSetu. Learn about verification, payments, and smart search features.";
 
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -262,6 +263,11 @@ const PublicFAQs = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans text-slate-800 dark:text-gray-100 pb-20 transition-colors duration-300">
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        keywords="real estate faqs, property help, UrbanSetu guide, verification help, rent lock info"
+      />
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white relative overflow-hidden">
         {/* Abstract Background Shapes */}

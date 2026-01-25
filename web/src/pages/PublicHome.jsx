@@ -9,7 +9,7 @@ import "swiper/css/pagination";
 import ListingItem from "../components/ListingItem";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import GeminiAIWrapper from '../components/GeminiAIWrapper';
-import { usePageTitle } from '../hooks/usePageTitle';
+import SEO from '../components/SEO';
 import {
   FaHome, FaSearch, FaHeart, FaStar, FaMapMarkerAlt, FaPhone, FaEnvelope,
   FaShieldAlt, FaAward, FaUsers, FaChartLine, FaLightbulb, FaRocket, FaGem,
@@ -29,9 +29,6 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function PublicHome() {
   const theme = useSeasonalTheme();
-  // Set page title
-  usePageTitle("Find Your Dream Home - Smart Real Estate Platform");
-
   const [offerListings, setOfferListings] = useState([]);
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);
@@ -43,6 +40,24 @@ export default function PublicHome() {
   const [showThemeInfo, setShowThemeInfo] = useState(false);
 
   const [loading, setLoading] = useState(true);
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "UrbanSetu",
+    "url": window.location.origin + "/",
+    "logo": window.location.origin + "/logo.png",
+    "sameAs": [
+      "https://facebook.com/urbansetu",
+      "https://instagram.com/urbansetu",
+      "https://youtube.com/@urbansetu"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-XXXXXXXXXX",
+      "contactType": "customer service"
+    }
+  };
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -137,8 +152,17 @@ export default function PublicHome() {
     }))
   ) : [];
 
+  const description = "Verified properties for sale and rent in Hyderabad. Use UrbanSetu's smart real estate platform with AI recommendations, real-time chats, and 3D virtual tours.";
+  const keywords = "real estate, properties in Hyderabad, buy flat Hyderabad, rent house Hyderabad, UrbanSetu, smart real estate";
+
   return (
     <div className="bg-gray-50 dark:bg-gray-950 min-h-screen relative overflow-hidden font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      <SEO
+        title="Find Your Dream Home - Smart Real Estate Platform"
+        description={description}
+        keywords={keywords}
+        schema={organizationSchema}
+      />
       <SeasonalEffects />
       <DailyQuote />
       {/* Background Animations */}
