@@ -5,15 +5,20 @@ import {
 } from 'recharts';
 import { FaCity, FaChartLine, FaBuilding, FaSearchDollar, FaArrowUp, FaArrowDown, FaMapMarkerAlt, FaFire } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
+import LocationSelector from '../components/LocationSelector';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 const MarketTrends = () => {
     usePageTitle('Market Trends - Real Estate Insights | UrbanSetu');
+    const { currentUser } = useSelector((state) => state.user);
 
     const [loading, setLoading] = useState(true);
     const [overview, setOverview] = useState(null);
-    const [cities, setCities] = useState([]);
+    // Removed cities state as LocationSelector manages options
+    const [locationFilter, setLocationFilter] = useState({ state: "", city: "" });
     const [selectedCity, setSelectedCity] = useState('');
     const [cityData, setCityData] = useState(null);
     const [loadingCity, setLoadingCity] = useState(false);
@@ -27,15 +32,7 @@ const MarketTrends = () => {
                 if (data.success) {
                     setOverview(data.data);
                 }
-
-                const cityRes = await fetch('/api/market/cities');
-                const cityData = await cityRes.json();
-                if (cityData.success) {
-                    setCities(cityData.data);
-                    if (cityData.data.length > 0) {
-                        setSelectedCity(cityData.data[0]); // Default to first city
-                    }
-                }
+                // No longer fetching cities list here
             } catch (error) {
                 console.error("Error fetching market data:", error);
             } finally {
@@ -131,24 +128,24 @@ const MarketTrends = () => {
 
             {/* City Analysis Section */}
             <div className="max-w-7xl mx-auto px-4 py-12">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <h2 className="text-3xl font-bold flex items-center gap-3">
                         <FaCity className="text-blue-600" />
                         City Market Overview
                     </h2>
 
-                    {/* City Selector */}
-                    <div className="mt-4 md:mt-0 relative">
-                        <label className="mr-3 font-medium text-gray-600 dark:text-gray-400">Select City:</label>
-                        <select
-                            value={selectedCity}
-                            onChange={(e) => setSelectedCity(e.target.value)}
-                            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                        >
-                            {cities.map(city => (
-                                <option key={city} value={city}>{city}</option>
-                            ))}
-                        </select>
+                    {/* Location Selector */}
+                    <div className="w-full md:w-auto min-w-[300px]">
+                        <LocationSelector
+                            value={locationFilter}
+                            onChange={(loc) => {
+                                setLocationFilter(loc);
+                                // Automatically select the city if available
+                                if (loc.city) {
+                                    setSelectedCity(loc.city);
+                                }
+                            }}
+                        />
                     </div>
                 </div>
 
@@ -365,12 +362,24 @@ const MarketTrends = () => {
                         Use our data to find the perfect property that matches your investment goals.
                     </p>
                     <div className="flex gap-4">
-                        <a href="/search" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <Link
+                            to={currentUser
+                                ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/explore' : '/user/search')
+                                : '/search'
+                            }
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        >
                             Explore Properties
-                        </a>
-                        <a href="/agents" className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 font-semibold py-3 px-8 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                        </Link>
+                        <Link
+                            to={currentUser
+                                ? ((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/agents" : "/user/agents")
+                                : "/agents"
+                            }
+                            className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 font-semibold py-3 px-8 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                        >
                             Find an Agent
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </section>
