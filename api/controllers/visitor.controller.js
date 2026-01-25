@@ -173,41 +173,9 @@ export const trackVisitor = async (req, res, next) => {
             existingVisitor.cookiePreferences = cookiePreferences;
           }
 
-          // Handle Metrics Update (Scroll/Load Time)
-          if (req.body.metrics && existingVisitor.pageViews.length > 0) {
-            const metrics = req.body.metrics;
-            const lastPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
-
-            // Only update metrics if current page matches the last recorded page
-            if (lastPage && lastPage.path === page) {
-              if (metrics.scrollPercentage && metrics.scrollPercentage > (lastPage.scrollPercentage || 0)) {
-                lastPage.scrollPercentage = metrics.scrollPercentage;
-              }
-              if (metrics.loadTime && metrics.loadTime > 0) {
-                // Keep the longest load time if reported multiple times, or initial
-                lastPage.loadTime = metrics.loadTime;
-              }
-
-              // Append interactions and errors
-              if (metrics.interactions && Array.isArray(metrics.interactions)) {
-                if (!lastPage.interactions) lastPage.interactions = [];
-                metrics.interactions.forEach(i => lastPage.interactions.push(i));
-              }
-              if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
-                if (!lastPage.errorLogs) lastPage.errorLogs = [];
-                metrics.errors.forEach(e => lastPage.errorLogs.push(e));
-
-                // --- TRIGGER ADMIN NOTIFICATIONS FOR ERRORS ---
-                await notifyAdminsOfErrors(metrics.errors, existingVisitor, page, userInfo, req);
-                // ----------------------------------------------
-              }
-            }
-          }
-
-          // Handle Page View Logic
+          // Handle Page View Logic first if it's a pageview request
           if (type === 'pageview' && page && type !== 'heartbeat') {
             const lastPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
-            // Only add if path is different from last path
             if (!lastPage || lastPage.path !== page) {
               existingVisitor.pageViews.push({
                 path: page,
@@ -217,6 +185,45 @@ export const trackVisitor = async (req, res, next) => {
                 loadTime: req.body.metrics?.loadTime || 0
               });
               existingVisitor.page = page;
+            }
+          }
+
+          // Handle Metrics Update (Scroll/Load Time/Interactions/Errors)
+          if (req.body.metrics) {
+            const metrics = req.body.metrics;
+            // Find the most relevant page to attach metrics to
+            // Try to find exact match in recent history, otherwise use last page
+            let targetPage = existingVisitor.pageViews.slice().reverse().find(pv => pv.path === page);
+            if (!targetPage) targetPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
+
+            if (targetPage) {
+              // Update scroll depth only if it's deeper
+              if (metrics.scrollPercentage && metrics.scrollPercentage > (targetPage.scrollPercentage || 0)) {
+                targetPage.scrollPercentage = metrics.scrollPercentage;
+              }
+
+              // Set load time if not already set or if provided
+              if (metrics.loadTime && metrics.loadTime > 0) {
+                targetPage.loadTime = metrics.loadTime;
+              }
+
+              // Append interactions
+              if (metrics.interactions && Array.isArray(metrics.interactions)) {
+                if (!targetPage.interactions) targetPage.interactions = [];
+                metrics.interactions.forEach(i => targetPage.interactions.push(i));
+              }
+
+              // Append and Notify Errors
+              if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
+                if (!targetPage.errorLogs) targetPage.errorLogs = [];
+                metrics.errors.forEach(e => targetPage.errorLogs.push(e));
+
+                // --- TRIGGER ADMIN NOTIFICATIONS ---
+                await notifyAdminsOfErrors(metrics.errors, existingVisitor, page, userInfo, req);
+              }
+            } else if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
+              // Fallback: Notify even if no page view was found (shouldn't happen but safe)
+              await notifyAdminsOfErrors(metrics.errors, existingVisitor, page, userInfo, req);
             }
           }
 

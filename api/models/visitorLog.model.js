@@ -87,7 +87,9 @@ const visitorLogSchema = new mongoose.Schema({
     }],
     errorLogs: [{
       message: String,
-      timestamp: Date
+      stack: String,
+      source: String,
+      timestamp: { type: Date, default: Date.now }
     }],
     deviceWait: { type: Boolean, default: false } // Placeholder for resize/orientation events if needed, but simple resize count is enough
   }],
