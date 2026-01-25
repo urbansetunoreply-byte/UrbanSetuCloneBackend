@@ -36,7 +36,9 @@ const MarketTrends = () => {
     const [loadingCity, setLoadingCity] = useState(false);
     const [dailyInsights, setDailyInsights] = useState([]);
 
-    // Rotate insights daily
+    const [showReportModal, setShowReportModal] = useState(false);
+
+    // Rotate insights daily and Sync City
     useEffect(() => {
         // Sync selectedCity with locationFilter for consistent state
         if (locationFilter.city !== selectedCity) {
@@ -56,7 +58,7 @@ const MarketTrends = () => {
             selected.push(MARKET_INSIGHTS[index]);
         }
         setDailyInsights(selected);
-    }, []);
+    }, [locationFilter.city]);
 
     // Fetch Initial Overview Data
     useEffect(() => {
@@ -374,7 +376,10 @@ const MarketTrends = () => {
                                         <div><strong className="text-white">Compare Areas:</strong> Data-driven decisions over guesswork.</div>
                                     </li>
                                 </ul>
-                                <button className="mt-8 bg-white text-gray-900 py-3 px-6 rounded-full font-bold hover:bg-gray-100 transition-colors w-fit relative z-10">
+                                <button
+                                    onClick={() => setShowReportModal(true)}
+                                    className="mt-8 bg-white text-gray-900 py-3 px-6 rounded-full font-bold hover:bg-gray-100 transition-colors w-fit relative z-10"
+                                >
                                     Read Full Market Report
                                 </button>
                             </div>
@@ -383,146 +388,6 @@ const MarketTrends = () => {
                 )}
             </div>
 
-            {loadingCity ? (
-                <div className="h-64 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600"></div>
-                </div>
-            ) : cityData ? (
-                <div className="space-y-12">
-
-                    {/* City Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Avg. Price in {selectedCity}</h3>
-                            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">₹{cityData.summary.avgPrice.toLocaleString()}</p>
-                            <span className="text-green-500 text-sm font-medium flex items-center mt-2 gap-1">
-                                <FaArrowUp /> Trending Stable
-                            </span>
-                        </div>
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Demand Score</h3>
-                            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{cityData.summary.demandScore} <span className="text-sm font-normal text-gray-500">/ 100</span></p>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
-                                <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${Math.min(cityData.summary.demandScore, 100)}%` }}></div>
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Total Listings</h3>
-                            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{cityData.summary.totalListings}</p>
-                            <p className="text-gray-500 text-sm mt-2">Active properties on market</p>
-                        </div>
-                    </div>
-
-                    {/* Charts Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                        {/* Demand vs Price by Area */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
-                        >
-                            <h3 className="text-xl font-bold mb-6">Price vs Listings by Area</h3>
-                            <div className="h-80">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={cityData.areas.slice(0, 8)}>
-                                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                                        <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} />
-                                        <YAxis yAxisId="left" orientation="left" stroke="#8884d8" fontSize={12} tick={{ fill: '#6b7280' }} />
-                                        <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" fontSize={12} tick={{ fill: '#6b7280' }} />
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
-                                        />
-                                        <Legend />
-                                        <Bar yAxisId="right" dataKey="listings" name="Active Listings" fill="#82ca9d" radius={[4, 4, 0, 0]} />
-                                        <Bar yAxisId="left" dataKey="avgPrice" name="Avg Price (₹)" fill="#8884d8" radius={[4, 4, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </motion.div>
-
-                        {/* Property Type Distribution */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
-                        >
-                            <h3 className="text-xl font-bold mb-6">Property Type Distribution</h3>
-                            <div className="h-80">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={cityData.propertyTypes}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={100}
-                                            fill="#8884d8"
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                        >
-                                            {cityData.propertyTypes.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                        <Legend verticalAlign="bottom" height={36} />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* Top Areas List */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
-                    >
-                        <h3 className="text-xl font-bold mb-6">🔥 Hot Markets in {selectedCity}</h3>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead>
-                                    <tr className="border-b dark:border-gray-700 text-gray-500 dark:text-gray-400 text-sm uppercase">
-                                        <th className="py-3 px-4">Area Name</th>
-                                        <th className="py-3 px-4">Price / Unit (Avg)</th>
-                                        <th className="py-3 px-4">Price Range</th>
-                                        <th className="py-3 px-4">Active Listings</th>
-                                        <th className="py-3 px-4">Demand</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {cityData.areas.map((area, idx) => (
-                                        <tr key={idx} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                            <td className="py-4 px-4 font-semibold text-blue-600 dark:text-blue-400">{area.name}</td>
-                                            <td className="py-4 px-4 font-medium">₹{area.avgPrice.toLocaleString()}</td>
-                                            <td className="py-4 px-4 text-gray-500 dark:text-gray-400 text-sm">{area.priceRange}</td>
-                                            <td className="py-4 px-4">{area.listings}</td>
-                                            <td className="py-4 px-4">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold
-                                                        ${area.popularity > 200 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}
-                                                    `}>
-                                                    {area.popularity > 200 ? <FaFire /> : null}
-                                                    {area.popularity > 200 ? 'High' : 'Moderate'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </motion.div>
-
-                </div>
-            ) : (
-                <div className="text-center py-20 text-gray-500">
-                    Select a city to view detailed trends.
-                </div>
-            )}
 
             {/* Global Price Trends Chart */}
             {
@@ -663,6 +528,76 @@ const MarketTrends = () => {
                     </div>
                 )}
             </section>
+
+            {/* Report Modal */}
+            {showReportModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+                    >
+                        <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-800 z-10">
+                            <h3 className="text-2xl font-bold flex items-center gap-2">
+                                <FaChartLine className="text-blue-600" /> Market Intelligence Report
+                            </h3>
+                            <button
+                                onClick={() => setShowReportModal(false)}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                                <h4 className="font-bold text-blue-800 dark:text-blue-300 mb-2">Executive Summary</h4>
+                                <p className="text-sm text-gray-700 dark:text-gray-300">
+                                    The real estate market is witnessing a strong recovery in Tier-2 cities, driven by infrastructure growth and remote work flexibility. Rental yields in metro areas have stabilized at 3.5%, while capital appreciation in suburban zones has outpaced city centers by 4% YoY.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h4 className="font-bold text-lg mb-3">Key Trends Detected</h4>
+                                <ul className="list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-400">
+                                    <li><strong>Demand Shift:</strong> High demand for 3BHK units in gated communities (up 25% YoY).</li>
+                                    <li><strong>Price Sensitivity:</strong> Properties priced between ₹40L - ₹80L are seeing the fastest turnover.</li>
+                                    <li><strong>Digital First:</strong> 70% of initial inquiries are now coming from listings with video tours.</li>
+                                    <li><strong>Sustainability:</strong> Green homes are fetching a 10-15% premium in resale markets.</li>
+                                </ul>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+                                    <div className="text-gray-500 text-xs uppercase font-semibold">Top Performing City</div>
+                                    <div className="font-bold text-lg text-gray-900 dark:text-white mt-1">
+                                        {overview?.topAreas?.[0]?.city || "Loading..."}
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+                                    <div className="text-gray-500 text-xs uppercase font-semibold">Highest Demand Area</div>
+                                    <div className="font-bold text-lg text-gray-900 dark:text-white mt-1">
+                                        {overview?.topAreas?.[0]?.area || "Loading..."}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex justify-end gap-3 rounded-b-2xl">
+                            <button
+                                onClick={() => setShowReportModal(false)}
+                                className="px-5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-semibold"
+                            >
+                                Close
+                            </button>
+                            <Link
+                                to="/search"
+                                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 transition-all font-semibold"
+                            >
+                                Explore Listings
+                            </Link>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
 
         </div>
     );
