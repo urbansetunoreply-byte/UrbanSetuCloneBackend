@@ -63,6 +63,7 @@ const AdminBlogDetail = () => {
   const [properties, setProperties] = useState([]);
   const [categories, setCategories] = useState([]);
   const [propertySearch, setPropertySearch] = useState('');
+  const [commentLoading, setCommentLoading] = useState(false);
   const textareaRef = useRef(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
@@ -182,6 +183,7 @@ const AdminBlogDetail = () => {
     e.preventDefault();
     if (!comment.trim()) return;
 
+    setCommentLoading(true);
     try {
       const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment`, {
         method: 'POST',
@@ -208,6 +210,8 @@ const AdminBlogDetail = () => {
       }
     } catch (error) {
       console.error('Error adding comment:', error);
+    } finally {
+      setCommentLoading(false);
     }
   };
 
@@ -641,10 +645,14 @@ const AdminBlogDetail = () => {
                   />
                   <button
                     type="submit"
-                    disabled={!comment.trim()}
-                    className="absolute right-3 bottom-3 p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
+                    disabled={!comment.trim() || commentLoading}
+                    className="absolute right-3 bottom-3 p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors flex items-center justify-center min-w-[36px] min-h-[36px]"
                   >
-                    <Send className="w-4 h-4" />
+                    {commentLoading ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
                   </button>
                 </form>
 

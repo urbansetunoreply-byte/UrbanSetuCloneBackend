@@ -38,6 +38,7 @@ const PublicBlogDetail = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showVideoPreview, setShowVideoPreview] = useState(false);
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
+  const [commentLoading, setCommentLoading] = useState(false);
   const textareaRef = useRef(null);
 
   const { currentUser } = useSelector((state) => state.user);
@@ -191,6 +192,7 @@ const PublicBlogDetail = () => {
     e.preventDefault();
     if (!comment.trim()) return;
 
+    setCommentLoading(true);
     try {
       const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment`, {
         method: 'POST',
@@ -217,6 +219,8 @@ const PublicBlogDetail = () => {
       }
     } catch (error) {
       console.error('Error adding comment:', error);
+    } finally {
+      setCommentLoading(false);
     }
   };
 
@@ -519,10 +523,14 @@ const PublicBlogDetail = () => {
                 />
                 <button
                   type="submit"
-                  disabled={!comment.trim()}
-                  className="absolute right-3 bottom-3 p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
+                  disabled={!comment.trim() || commentLoading}
+                  className="absolute right-3 bottom-3 p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors flex items-center justify-center min-w-[36px] min-h-[36px]"
                 >
-                  <Send className="w-4 h-4" />
+                  {commentLoading ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                 </button>
               </form>
 
