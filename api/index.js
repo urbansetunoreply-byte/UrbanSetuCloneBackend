@@ -283,6 +283,8 @@ app.set('io', io);
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
+console.log("✅ Registering Market Routes...");
+app.use('/api/market', marketRouter);
 app.use('/api/bookings', bookingRouter);
 app.use('/api/about', aboutRouter);
 app.use('/api/admin', adminRouter);
@@ -335,7 +337,6 @@ app.use("/api/year-in-review", yearInReviewRouter);
 app.use("/api/help-center", helpCenterRouter);
 app.use("/api/agent", agentRouter);
 app.use("/api/subscription", subscriptionRouter);
-app.use("/api/market", marketRouter);
 let onlineUsers = new Set();
 let lastSeenTimes = new Map(); // Track last seen times for users
 app.set('onlineUsers', onlineUsers);
