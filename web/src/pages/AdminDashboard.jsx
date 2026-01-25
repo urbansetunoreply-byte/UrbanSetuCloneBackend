@@ -22,7 +22,8 @@ import {
   FaShieldAlt,
   FaCoins,
   FaGem,
-  FaTrophy
+  FaTrophy,
+  FaRocket
 } from "react-icons/fa";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import { toast } from 'react-toastify';
