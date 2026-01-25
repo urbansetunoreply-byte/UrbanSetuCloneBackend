@@ -61,6 +61,7 @@ import yearInReviewRouter from "./routes/yearInReview.route.js";
 import helpCenterRouter from "./routes/helpCenter.route.js";
 import agentRouter from "./routes/agent.route.js";
 import subscriptionRouter from "./routes/subscription.route.js";
+import marketRouter from "./routes/market.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -248,7 +249,7 @@ app.get('/api/health', (req, res) => {
 app.get('/', (req, res) => {
   res.status(200).json({
     message: 'UrbanSetu API is running',
-    version: '1.0.0',
+    version: '2.0.0',
     endpoints: {
       health: '/api/health',
       auth: '/api/auth',
@@ -260,7 +261,8 @@ app.get('/', (req, res) => {
       wishlist: '/api/wishlist',
       about: '/api/about',
       agent: '/api/agent',
-      subscription: '/api/subscription'
+      subscription: '/api/subscription',
+      market: '/api/market'
     }
   });
 });
@@ -277,7 +279,63 @@ const io = new SocketIOServer(server, {
 
 app.set('io', io);
 
-// Make onlineUsers available to routes for checking recipient online status
+// Routes
+app.use('/api/user', userRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/listing', listingRouter);
+app.use('/api/bookings', bookingRouter);
+app.use('/api/about', aboutRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/contact', contactRouter);
+app.use('/api/wishlist', wishlistRouter);
+app.use('/api/favorites', imageFavoriteRouter);
+app.use('/api/notifications', notificationRouter);
+app.use('/api/requests', requestRouter);
+app.use('/api/reviews', reviewRouter);
+app.use('/api/ai', aiRouter);
+app.use('/api/gemini', geminiRouter);
+app.use('/api/shared-chat', sharedChatRouter);
+app.use('/api/chat-history', chatHistoryRouter);
+app.use('/api/upload', uploadRouter); // Regular Cloudinary upload
+app.use('/api/deployment', deploymentRouter); // Smart Deployment Route (S3/Cloudinary) - handles /api/deployment/upload
+app.use('/api/speech-to-text', speechToTextRouter);
+app.use('/api/payments', paymentRouter);
+app.use('/api/session', sessionRouter);
+app.use('/api/session-management', sessionManagementRouter);
+app.use('/api/fraud', fraudRouter);
+app.use('/api/email-monitor', emailMonitorRouter);
+app.use('/api/account-revocation', accountRevocationRouter);
+app.use('/api/property-search', propertySearchRouter);
+app.use('/api/data-sync', dataSyncRouter);
+app.use('/api/appointment-reminder', appointmentReminderRouter);
+app.use('/api/faqs', faqRouter);
+app.use('/api/blogs', blogRouter);
+app.use('/api/price-drop-alerts', priceDropAlertRouter);
+app.use('/api/statistics', statisticsRouter);
+app.use('/api/config', configRouter);
+app.use("/api/analytics", analyticsRouter);
+app.use("/api/calculation-history", calculationHistoryRouter);
+app.use("/api/route-planner", routePlannerRouter);
+app.use("/api/properties", propertiesRouter);
+app.use("/api/search", searchRouter);
+app.use("/api/property-restoration", propertyRestorationRouter);
+app.use("/api/advanced-ai", advancedAIRecommendationRouter);
+app.use("/api/esg-analytics", esgAnalyticsRouter);
+app.use("/api/esg-recommendations", esgAIRecommendationRouter);
+app.use("/api/visitors", visitorRouter);
+app.use("/api/forum", forumRouter);
+app.use("/api/report-message", reportMessageRouter);
+app.use("/api/calls", callRouter);
+app.use("/api/rental", rentalRouter);
+app.use("/api/coins", coinRouter);
+app.use("/api/turn", turnRouter);
+app.use("/api/chat", preBookingChatRouter);
+app.use("/api/platform-update", platformUpdateRouter);
+app.use("/api/year-in-review", yearInReviewRouter);
+app.use("/api/help-center", helpCenterRouter);
+app.use("/api/agent", agentRouter);
+app.use("/api/subscription", subscriptionRouter);
+app.use("/api/market", marketRouter);
 let onlineUsers = new Set();
 let lastSeenTimes = new Map(); // Track last seen times for users
 app.set('onlineUsers', onlineUsers);

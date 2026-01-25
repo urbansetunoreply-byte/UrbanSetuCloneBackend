@@ -153,6 +153,7 @@ const BecomeAgent = lazy(() => import('./pages/Agents/BecomeAgent'));
 const AgentProfile = lazy(() => import('./pages/Agents/AgentProfile'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AgentDashboard = lazy(() => import('./pages/Agents/AgentDashboard'));
+const MarketTrends = lazy(() => import('./pages/MarketTrends'));
 
 
 // Helper for Help Center Redirects
@@ -255,7 +256,7 @@ function normalizeRoute(path, role) {
   }
 
   // List of base routes that have public-facing versions
-  const publicBases = ["about", "blogs", "guides", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community", "help-center", "agents"];
+  const publicBases = ["about", "blogs", "guides", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community", "help-center", "agents", "market-trends"];
 
   // List of base routes that exist for both user and admin but are NOT public
   const parallelBases = [
@@ -868,6 +869,8 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/agents" element={<FindAgent />} />
             <Route path="/agents/:id" element={<AgentProfile />} />
 
+            <Route path="/market-trends" element={currentUser ? <Navigate to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? "/admin/market-trends" : "/user/market-trends"} /> : <MarketTrends />} />
+
             {/* User Routes (Protected) */}
             <Route element={<Private bootstrapped={bootstrapped} />}>
               <Route path="/user" element={<Home />} />
@@ -926,6 +929,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/help-center/article/:slug" element={<ArticleView />} />
               <Route path="/user/agents" element={<FindAgent />} />
               <Route path="/user/agents/:id" element={<AgentProfile />} />
+              <Route path="/user/market-trends" element={<MarketTrends />} />
               <Route path="/agent/dashboard" element={<AgentDashboard />} />
               <Route path="/user/become-an-agent" element={<BecomeAgent />} />
 
@@ -1003,6 +1007,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/ai" element={<Navigate to="/admin/ai" />} />
               <Route path="/user/ai" element={<Navigate to="/admin/ai" />} />
               <Route path="/admin/help-center" element={<AdminHelpCenter />} />
+              <Route path="/admin/market-trends" element={<MarketTrends />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
