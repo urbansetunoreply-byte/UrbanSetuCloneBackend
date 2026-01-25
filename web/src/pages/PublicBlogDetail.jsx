@@ -20,24 +20,6 @@ import SEO from '../components/SEO';
 import { authenticatedFetch } from '../utils/auth';
 
 const PublicBlogDetail = () => {
-  // SEO Dynamic Tags
-  const seoTitle = blog ? `${blog.title} | UrbanSetu Insights` : "Blog Detail";
-  const seoDescription = blog ? (blog.excerpt || blog.content?.replace(/<[^>]*>/g, '').substring(0, 160)) : "Read real estate insights on UrbanSetu.";
-  const seoImage = blog?.thumbnail || (blog?.imageUrls && blog.imageUrls[0]) || `${window.location.origin}/og-image.png`;
-
-  const blogSchema = blog ? {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": blog.title,
-    "image": [seoImage],
-    "datePublished": blog.publishedAt || blog.createdAt,
-    "dateModified": blog.updatedAt || blog.createdAt,
-    "author": [{
-      "@type": "Person",
-      "name": blog.author?.username || "UrbanSetu Team",
-      "url": `${window.location.origin}/about`
-    }]
-  } : null;
 
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -60,6 +42,25 @@ const PublicBlogDetail = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editContent, setEditContent] = useState('');
+
+  // SEO Dynamic Tags
+  const seoTitle = blog ? `${blog.title} | UrbanSetu Insights` : "Blog Detail";
+  const seoDescription = blog ? (blog.excerpt || blog.content?.replace(/<[^>]*>/g, '').substring(0, 160)) : "Read real estate insights on UrbanSetu.";
+  const seoImage = blog?.thumbnail || (blog?.imageUrls && blog.imageUrls[0]) || `${window.location.origin}/og-image.png`;
+
+  const blogSchema = blog ? {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": blog.title,
+    "image": [seoImage],
+    "datePublished": blog.publishedAt || blog.createdAt,
+    "dateModified": blog.updatedAt || blog.createdAt,
+    "author": [{
+      "@type": "Person",
+      "name": blog.author?.username || "UrbanSetu Team",
+      "url": `${window.location.origin}/about`
+    }]
+  } : null;
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
