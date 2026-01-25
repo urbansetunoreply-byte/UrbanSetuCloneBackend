@@ -65,13 +65,17 @@ const MarketTrends = () => {
         const fetchOverview = async () => {
             try {
                 const res = await fetch('/api/market/overview');
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("Invalid API response: Server returned HTML instead of JSON");
+                }
                 const data = await res.json();
                 if (data.success) {
                     setOverview(data.data);
                 }
-                // No longer fetching cities list here
             } catch (error) {
                 console.error("Error fetching market data:", error);
+                setOverview(null);
             } finally {
                 setLoading(false);
             }
@@ -87,12 +91,21 @@ const MarketTrends = () => {
             setLoadingCity(true);
             try {
                 const res = await fetch(`/api/market/city/${selectedCity}`);
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    console.error("Received HTML response instead of JSON for city data");
+                    setCityData(null);
+                    return;
+                }
                 const data = await res.json();
                 if (data.success) {
                     setCityData(data.data);
+                } else {
+                    setCityData(null);
                 }
             } catch (error) {
                 console.error("Error fetching city data:", error);
+                setCityData(null);
             } finally {
                 setLoadingCity(false);
             }
@@ -570,13 +583,13 @@ const MarketTrends = () => {
                                 <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
                                     <div className="text-gray-500 text-xs uppercase font-semibold">Top Performing City</div>
                                     <div className="font-bold text-lg text-gray-900 dark:text-white mt-1">
-                                        {overview?.topAreas?.[0]?.city || "Loading..."}
+                                        {overview?.topAreas?.[0]?.city || "N/A"}
                                     </div>
                                 </div>
                                 <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
                                     <div className="text-gray-500 text-xs uppercase font-semibold">Highest Demand Area</div>
                                     <div className="font-bold text-lg text-gray-900 dark:text-white mt-1">
-                                        {overview?.topAreas?.[0]?.area || "Loading..."}
+                                        {overview?.topAreas?.[0]?.area || "N/A"}
                                     </div>
                                 </div>
                             </div>

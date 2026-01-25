@@ -5,6 +5,7 @@ import { errorHandler } from "../utils/error.js";
 // @route   GET /api/market/overview
 // @access  Public
 export const getMarketOverview = async (req, res, next) => {
+    console.log("📈 API Hit: getMarketOverview");
     try {
         // 1. Total Active Listings
         const totalListings = await Listing.countDocuments({ availabilityStatus: 'available' });
@@ -100,6 +101,7 @@ export const getMarketOverview = async (req, res, next) => {
 // @access  Public
 export const getCityTrends = async (req, res, next) => {
     const { city } = req.params;
+    console.log(`📈 API Hit: getCityTrends for city: ${city}`);
     try {
         // Normalize city name for case-insensitive match
         const cityRegex = new RegExp(city, 'i');
