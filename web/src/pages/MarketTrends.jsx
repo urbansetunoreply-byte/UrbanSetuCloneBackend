@@ -8,6 +8,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import LocationSelector from '../components/LocationSelector';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -65,7 +66,7 @@ const MarketTrends = () => {
         const fetchOverview = async () => {
             try {
                 // Fetch raw listings (Limit 500)
-                const res = await fetch('/api/listing/get?limit=500');
+                const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=500`);
                 const contentType = res.headers.get("content-type");
 
                 if (!contentType || !contentType.includes("application/json")) {
@@ -99,7 +100,7 @@ const MarketTrends = () => {
             setLoadingCity(true);
             try {
                 // Fetch raw listings for city
-                const res = await fetch(`/api/listing/get?city=${encodeURIComponent(selectedCity)}&limit=500`);
+                const res = await fetch(`${API_BASE_URL}/api/listing/get?city=${encodeURIComponent(selectedCity)}&limit=500`);
                 const contentType = res.headers.get("content-type");
 
                 if (!contentType || !contentType.includes("application/json")) {
