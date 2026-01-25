@@ -3,7 +3,8 @@ import {
     FaGlobe, FaChartPie, FaChartLine, FaUsers,
     FaExternalLinkAlt, FaSync, FaArrowUp, FaArrowDown,
     FaBullhorn, FaMousePointer, FaClock, FaFilter,
-    FaCalendarAlt, FaChevronRight, FaTrophy, FaRocket
+    FaCalendarAlt, FaChevronRight, FaTrophy, FaRocket,
+    FaArrowLeft, FaArrowRight
 } from 'react-icons/fa';
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
@@ -25,6 +26,8 @@ const AdminSponsorIntelligence = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [days, setDays] = useState(30);
     const [stats, setStats] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const fetchMarketingStats = async (isManual = false) => {
         if (isManual) setRefreshing(true);
@@ -75,6 +78,14 @@ const AdminSponsorIntelligence = () => {
             value: m.count
         }));
     }, [stats]);
+
+    const paginatedReferrers = useMemo(() => {
+        if (!stats?.referrers) return [];
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return stats.referrers.slice(startIndex, startIndex + itemsPerPage);
+    }, [stats, currentPage]);
+
+    const totalPages = Math.ceil((stats?.referrers?.length || 0) / itemsPerPage) || 1;
 
     if (loading) return <AdminDashboardSkeleton />;
 
@@ -181,7 +192,14 @@ const AdminSponsorIntelligence = () => {
                                         ))}
                                     </Pie>
                                     <Tooltip
-                                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                        contentStyle={{
+                                            backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                                            borderRadius: '12px',
+                                            border: 'none',
+                                            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                                            color: '#111827'
+                                        }}
+                                        itemStyle={{ color: '#3B82F6', fontWeight: 'bold' }}
                                     />
                                     <Legend />
                                 </PieChart>
@@ -201,8 +219,17 @@ const AdminSponsorIntelligence = () => {
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                                     <Tooltip
-                                        cursor={{ fill: '#F3F4F6' }}
-                                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                        cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+                                        contentStyle={{
+                                            backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                                            borderRadius: '12px',
+                                            border: 'none',
+                                            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                                            color: '#111827',
+                                            padding: '12px'
+                                        }}
+                                        labelStyle={{ color: '#111827', fontWeight: 'bold', marginBottom: '4px' }}
+                                        itemStyle={{ color: '#3B82F6' }}
                                     />
                                     <Bar dataKey="avgPages" name="Pages/Session" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                                 </BarChart>
@@ -263,8 +290,12 @@ const AdminSponsorIntelligence = () => {
                             <FaFilter className="text-gray-300" />
                         </div>
                         <div className="space-y-4">
-                            {(stats?.referrers || []).map((r, i) => (
-                                <div key={i} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/40 rounded-2xl hover:translate-x-1 transition-transform border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900">
+                            {paginatedReferrers.map((r, i) => (
+                                <div
+                                    key={i}
+                                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/40 rounded-2xl hover:translate-x-1 transition-transform border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 staggered-item"
+                                    style={{ animation: `fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s forwards` }}
+                                >
                                     <div className="flex items-center gap-4 truncate mr-2">
                                         <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
                                             <FaGlobe className="text-indigo-600 dark:text-indigo-400" />
@@ -281,16 +312,42 @@ const AdminSponsorIntelligence = () => {
                                 <div className="py-12 text-center text-gray-400">No direct referring domains detected</div>
                             )}
                         </div>
+
+                        {/* Pagination Section */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                        className="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-500 hover:text-indigo-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                    >
+                                        <FaArrowLeft />
+                                    </button>
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-500 hover:text-indigo-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                    >
+                                        <FaArrowRight />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
             <style>{`
                 @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(20px); }
+                    from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
                 .animate-fade-in { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                .staggered-item { opacity: 0; }
             `}</style>
         </div>
     );
