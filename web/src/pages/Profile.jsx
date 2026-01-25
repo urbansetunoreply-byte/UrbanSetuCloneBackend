@@ -2352,6 +2352,14 @@ export default function Profile() {
               <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Reviews' : 'My Reviews'}</span>
             </Link>
 
+            <Link
+              to={(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/market-trends" : "/user/market-trends"}
+              className={`bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-950`}
+            >
+              <FaChartLine className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:scale-110`} />
+              <span className="font-medium text-xs sm:text-sm">Market Trends</span>
+            </Link>
+
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? (
               <>
                 <Link
