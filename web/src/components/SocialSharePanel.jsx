@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   FaFacebook, FaLinkedin, FaWhatsapp,
-  FaTelegram, FaCopy, FaCheck, FaTimes, FaShareAlt
+  FaTelegram, FaCopy, FaCheck, FaTimes, FaShareAlt,
+  FaReddit, FaPinterest, FaTumblr, FaVk, FaOdnoklassniki,
+  FaEnvelope
 } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
+import { SiKakaotalk, SiMix } from 'react-icons/si';
 import { toast } from 'react-toastify';
 
 const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", description = "Discover the future of real estate with UrbanSetu." }) => {
@@ -54,6 +57,27 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${title}\n${description}`)}`
     },
     {
+      name: 'Email',
+      icon: <FaEnvelope />,
+      color: 'bg-gray-500',
+      hover: 'hover:bg-gray-600',
+      link: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${description}\n\n${url}`)}`
+    },
+    {
+      name: 'Reddit',
+      icon: <FaReddit />,
+      color: 'bg-[#FF4500]',
+      hover: 'hover:bg-[#ff5722]',
+      link: `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`
+    },
+    {
+      name: 'Pinterest',
+      icon: <FaPinterest />,
+      color: 'bg-[#E60023]',
+      hover: 'hover:bg-[#bd081c]',
+      link: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(description)}`
+    },
+    {
       name: 'LinkedIn',
       icon: <FaLinkedin />,
       color: 'bg-[#0077B5]',
@@ -66,6 +90,41 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       color: 'bg-[#0088cc]',
       hover: 'hover:bg-[#006699]',
       link: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${title}\n${description}`)}`
+    },
+    {
+      name: 'VK',
+      icon: <FaVk />,
+      color: 'bg-[#4C75A3]',
+      hover: 'hover:bg-[#3f5d81]',
+      link: `https://vk.com/share.php?url=${encodeURIComponent(url)}`
+    },
+    {
+      name: 'OK',
+      icon: <FaOdnoklassniki />,
+      color: 'bg-[#EE8208]',
+      hover: 'hover:bg-[#d37307]',
+      link: `https://connect.ok.ru/offer?url=${encodeURIComponent(url)}`
+    },
+    {
+      name: 'Tumblr',
+      icon: <FaTumblr />,
+      color: 'bg-[#35465c]',
+      hover: 'hover:bg-[#2c3a4d]',
+      link: `https://www.tumblr.com/widgets/share/tool?canonicalUrl=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&caption=${encodeURIComponent(description)}`
+    },
+    {
+      name: 'KakaoTalk',
+      icon: <SiKakaotalk />,
+      color: 'bg-[#FEE500] !text-black',
+      hover: 'hover:bg-[#fdd100]',
+      link: `https://sharer.kakao.com/talk/friends/picker/link?url=${encodeURIComponent(url)}`
+    },
+    {
+      name: 'Mix',
+      icon: <SiMix />,
+      color: 'bg-[#ff8226]',
+      hover: 'hover:bg-[#f37215]',
+      link: `https://mix.com/add?url=${encodeURIComponent(url)}`
     }
   ];
 
