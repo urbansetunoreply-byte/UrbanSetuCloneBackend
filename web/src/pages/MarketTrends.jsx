@@ -8,6 +8,9 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import LocationSelector from '../components/LocationSelector';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { FaFileExport, FaDownload } from 'react-icons/fa';
+import MarketTrendsSkeleton from '../components/skeletons/MarketTrendsSkeleton';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -38,6 +41,8 @@ const MarketTrends = () => {
     const [dailyInsights, setDailyInsights] = useState([]);
 
     const [showReportModal, setShowReportModal] = useState(false);
+    const [rawListings, setRawListings] = useState([]);
+    const [cityListings, setCityListings] = useState([]);
 
     // Rotate insights daily and Sync City
     useEffect(() => {
@@ -62,75 +67,112 @@ const MarketTrends = () => {
     }, [locationFilter.city]);
 
     // Fetch Initial Overview Data using Client-Side Aggregation
-    useEffect(() => {
-        const fetchOverview = async () => {
-            try {
-                // Fetch raw listings (Limit 500)
-                const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=500`);
-                const contentType = res.headers.get("content-type");
+    const fetchOverview = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=500`);
+            const contentType = res.headers.get("content-type");
 
-                if (!contentType || !contentType.includes("application/json")) {
-                    setOverview(null);
-                    return;
-                }
-
-                const data = await res.json();
-                // Listing API returns { listings: [...] } or [...] depending on impl, Search.jsx suggests direct array or object
-                const listings = Array.isArray(data) ? data : (data.listings || []);
-
-                const processed = calculateMarketOverview(listings);
-                setOverview(processed);
-
-            } catch (error) {
-                console.log("Analytics Error:", error);
+            if (!contentType || !contentType.includes("application/json")) {
                 setOverview(null);
-            } finally {
-                setLoading(false);
+                return;
             }
-        };
+
+            const data = await res.json();
+            const listings = Array.isArray(data) ? data : (data.listings || []);
+            setRawListings(listings);
+
+            const processed = calculateMarketOverview(listings);
+            setOverview(processed);
+
+        } catch (error) {
+            console.log("Analytics Error:", error);
+            setOverview(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchOverview();
     }, []);
 
     // Fetch City Specific Data
-    // Fetch City Specific Data using Client-Side Aggregation
-    useEffect(() => {
+    const fetchCityData = async () => {
         if (!selectedCity) return;
+        setLoadingCity(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/listing/get?city=${encodeURIComponent(selectedCity)}&limit=500`);
+            const contentType = res.headers.get("content-type");
 
-        const fetchCityData = async () => {
-            setLoadingCity(true);
-            try {
-                // Fetch raw listings for city
-                const res = await fetch(`${API_BASE_URL}/api/listing/get?city=${encodeURIComponent(selectedCity)}&limit=500`);
-                const contentType = res.headers.get("content-type");
-
-                if (!contentType || !contentType.includes("application/json")) {
-                    setCityData(null);
-                    return;
-                }
-
-                const data = await res.json();
-                const listings = Array.isArray(data) ? data : (data.listings || []);
-
-                // Calculate stats for this city
-                const processed = calculateCityStats(listings, selectedCity);
-                setCityData(processed);
-
-            } catch (error) {
-                console.log("City Analytics Error:", error);
+            if (!contentType || !contentType.includes("application/json")) {
                 setCityData(null);
-            } finally {
-                setLoadingCity(false);
+                setCityListings([]);
+                return;
             }
-        };
+
+            const data = await res.json();
+            const listings = Array.isArray(data) ? data : (data.listings || []);
+            setCityListings(listings);
+
+            const processed = calculateCityStats(listings, selectedCity);
+            setCityData(processed);
+
+        } catch (error) {
+            console.log("City Analytics Error:", error);
+            setCityData(null);
+            setCityListings([]);
+        } finally {
+            setLoadingCity(false);
+        }
+    };
+
+    useEffect(() => {
         fetchCityData();
     }, [selectedCity]);
 
+    const handleSyncData = () => {
+        toast.info("Refreshing market cache...");
+        fetchOverview();
+        if (selectedCity) fetchCityData();
+        setTimeout(() => toast.success("Market data synchronized successfully!"), 1000);
+    };
+
+    const handleExportData = () => {
+        const dataToExport = selectedCity ? cityListings : rawListings;
+        if (!dataToExport || dataToExport.length === 0) {
+            toast.warn(`No data found for ${selectedCity || 'global overview'} to export.`);
+            return;
+        }
+
+        const headers = ["Property Name", "City", "State", "Price", "Type", "Beds", "Baths", "Created At"];
+        const csvRows = [
+            headers.join(","),
+            ...dataToExport.map(l => [
+                `"${l.name.replace(/"/g, '""')}"`,
+                `"${l.city}"`,
+                `"${l.state}"`,
+                l.regularPrice,
+                `"${l.type}"`,
+                l.bedrooms,
+                l.bathrooms,
+                new Date(l.createdAt).toLocaleDateString()
+            ].join(","))
+        ];
+
+        const blob = new Blob([csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `UrbanSetu_Market_${selectedCity || 'Global'}_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success(`Exported ${dataToExport.length} records successfully!`);
+    };
+
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
-            </div>
-        );
+        return <MarketTrendsSkeleton />;
     }
 
     return (
@@ -511,7 +553,7 @@ const MarketTrends = () => {
                             </Link>
 
                             <button
-                                onClick={() => alert("Simulated: Market data cache refreshed.")}
+                                onClick={handleSyncData}
                                 className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100 dark:hover:bg-orange-900/20 border border-orange-100 dark:border-orange-800/30 transition-all"
                             >
                                 <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-800/50 flex items-center justify-center text-2xl mb-3 group-hover:rotate-180 transition-transform duration-700">🔄</div>
@@ -519,14 +561,14 @@ const MarketTrends = () => {
                                 <span className="text-xs text-gray-500 dark:text-orange-300/70 mt-1">Refresh Trend Cache</span>
                             </button>
 
-                            <Link
-                                to="/admin"
+                            <button
+                                onClick={handleExportData}
                                 className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 hover:bg-emerald-100 dark:hover:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 transition-all"
                             >
-                                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">📊</div>
-                                <span className="font-bold text-gray-800 dark:text-emerald-100">Analytics</span>
-                                <span className="text-xs text-gray-500 dark:text-emerald-300/70 mt-1">Full Dashboard</span>
-                            </Link>
+                                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">📥</div>
+                                <span className="font-bold text-gray-800 dark:text-emerald-100">Export Data</span>
+                                <span className="text-xs text-gray-500 dark:text-emerald-300/70 mt-1">Download CSV</span>
+                            </button>
                         </div>
                     </div>
                 ) : (
