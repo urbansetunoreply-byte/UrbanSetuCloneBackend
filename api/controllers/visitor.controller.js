@@ -671,3 +671,78 @@ export const getVisitorById = async (req, res, next) => {
     next(error);
   }
 };
+
+// Get marketing and referral statistics (Sponsor Intelligence)
+export const getMarketingStats = async (req, res, next) => {
+  try {
+    const { days = 30 } = req.query;
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - parseInt(days));
+    cutoffDate.setHours(0, 0, 0, 0);
+
+    // Filter for logs with UTM data or non-direct referrers
+    const matchStage = {
+      visitDate: { $gte: cutoffDate }
+    };
+
+    const marketingStats = await VisitorLog.aggregate([
+      { $match: matchStage },
+      {
+        $facet: {
+          // Breakdown by Source
+          sources: [
+            {
+              $group: {
+                _id: { $ifNull: ["$utm.source", "Direct/Static"] },
+                count: { $sum: 1 },
+                avgPageViews: { $avg: { $size: "$pageViews" } },
+                avgDuration: { $avg: { $subtract: ["$lastActive", "$sessionStart"] } }
+              }
+            },
+            { $sort: { count: -1 } }
+          ],
+          // Breakdown by Medium
+          mediums: [
+            {
+              $group: {
+                _id: { $ifNull: ["$utm.medium", "None"] },
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } }
+          ],
+          // Breakdown by Campaign
+          campaigns: [
+            {
+              $group: {
+                _id: { $ifNull: ["$utm.campaign", "None"] },
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } }
+          ],
+          // Top Referring Domains (from referrer string)
+          referrers: [
+            { $match: { referrer: { $exists: true, $ne: 'Direct' } } },
+            {
+              $group: {
+                _id: "$referrer",
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 10 }
+          ]
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      stats: marketingStats[0]
+    });
+  } catch (error) {
+    console.error('Error getting marketing stats:', error);
+    next(error);
+  }
+};

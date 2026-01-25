@@ -154,6 +154,7 @@ const AgentProfile = lazy(() => import('./pages/Agents/AgentProfile'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AgentDashboard = lazy(() => import('./pages/Agents/AgentDashboard'));
 const MarketTrends = lazy(() => import('./pages/MarketTrends'));
+const AdminSponsorIntelligence = lazy(() => import('./pages/AdminSponsorIntelligence'));
 
 
 // Helper for Help Center Redirects
@@ -982,6 +983,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/device-management" element={<DeviceManagement />} />
               <Route path="/admin/session-management" element={<SessionManagement />} />
               <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
+              <Route path="/admin/marketing-intelligence" element={<AdminSponsorIntelligence />} />
               <Route path="/admin/support" element={<AdminSupport />} />
               <Route path="/admin/ai" element={<AdminAI />} />
               <Route path="/admin/ai/share/:shareToken" element={<SharedChatView />} />

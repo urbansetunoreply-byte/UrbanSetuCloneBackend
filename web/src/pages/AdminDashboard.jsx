@@ -1209,12 +1209,20 @@ export default function AdminDashboard() {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Public Visitor Tracking</h3>
               </div>
-              <Link
-                to="/admin/session-audit-logs"
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-              >
-                View All Visitors →
-              </Link>
+              <div className="flex items-center gap-4">
+                <Link
+                  to="/admin/marketing-intelligence"
+                  className="text-sm text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors"
+                >
+                  <FaRocket className="text-xs" /> Sponsor Intelligence
+                </Link>
+                <Link
+                  to="/admin/session-audit-logs"
+                  className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                >
+                  View All Visitors →
+                </Link>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

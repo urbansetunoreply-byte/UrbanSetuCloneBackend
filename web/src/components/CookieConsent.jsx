@@ -16,6 +16,24 @@ const CookieConsent = () => {
     functional: false
   });
 
+  // Helper to parse UTM parameters from URL
+  const getUtmParams = () => {
+    if (typeof window === 'undefined') return {};
+    const urlParams = new URLSearchParams(window.location.search);
+    const utm = {};
+    const params = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+
+    params.forEach(param => {
+      const value = urlParams.get(param);
+      if (value) {
+        // Standardize keys (remove utm_ prefix for database storage)
+        utm[param.replace('utm_', '')] = value;
+      }
+    });
+
+    return utm;
+  };
+
   useEffect(() => {
     // Check if user has already made a choice
     const cookieConsent = localStorage.getItem('cookieConsent');
@@ -46,7 +64,8 @@ const CookieConsent = () => {
             cookiePreferences: { necessary: true, analytics: false, marketing: false, functional: false },
             referrer: document.referrer || 'Direct',
             page: window.location.pathname,
-            source: window.location.hostname
+            source: window.location.hostname,
+            utm: getUtmParams()
           })
         });
         localStorage.setItem(todayKey, '1');
@@ -101,7 +120,8 @@ const CookieConsent = () => {
           cookiePreferences: preferences,
           referrer: document.referrer || 'Direct',
           page: window.location.pathname,
-          source: window.location.hostname
+          source: window.location.hostname,
+          utm: getUtmParams()
         })
       });
 
