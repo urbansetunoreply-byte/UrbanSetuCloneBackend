@@ -37,7 +37,6 @@ export default function AdminExplore() {
     state: "",
     bedrooms: "",
     bathrooms: "",
-    bathrooms: "",
     published: "all",
     ownerSearch: "",
   });
@@ -74,7 +73,6 @@ export default function AdminExplore() {
       state: urlParams.get("state") || "",
       bedrooms: urlParams.get("bedrooms") || "",
       bathrooms: urlParams.get("bathrooms") || "",
-      published: urlParams.get("published") || "all",
       published: urlParams.get("published") || "all",
       ownerSearch: urlParams.get("ownerSearch") || "",
     };
