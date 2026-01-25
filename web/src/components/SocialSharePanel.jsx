@@ -13,7 +13,8 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
     if (isOpen) {
       setIsVisible(true);
     } else {
-      setTimeout(() => setIsVisible(false), 300);
+      const timer = setTimeout(() => setIsVisible(false), 300);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
@@ -38,10 +39,17 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       link: `https://wa.me/?text=${encodeURIComponent(`${title}\n${description}\n${url}`)}`
     },
     {
+      name: 'Facebook',
+      icon: <FaFacebook />,
+      color: 'bg-[#1877F2]',
+      hover: 'hover:bg-[#0d65d9]',
+      link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
+    },
+    {
       name: 'Twitter',
       icon: <FaTwitter />,
-      color: 'bg-[#1DA1F2]',
-      hover: 'hover:bg-[#0c85d0]',
+      color: 'bg-[#000000]',
+      hover: 'hover:bg-[#333333]',
       link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${title}\n${description}`)}`
     },
     {
@@ -57,13 +65,6 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       color: 'bg-[#0088cc]',
       hover: 'hover:bg-[#006699]',
       link: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${title}\n${description}`)}`
-    },
-    {
-      name: 'Facebook',
-      icon: <FaFacebook />,
-      color: 'bg-[#1877F2]',
-      hover: 'hover:bg-[#0d65d9]',
-      link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
     }
   ];
 
@@ -73,76 +74,72 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
     <div className={`fixed inset-0 z-[10000] flex items-center justify-center p-4 transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+        className="absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300"
         onClick={onClose}
       />
 
       {/* Panel */}
-      <div className={`relative bg-white dark:bg-gray-900 rounded-[24px] md:rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transition-all duration-500 transform flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-800 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
-        {/* Header with Gradient */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 md:p-8 text-white relative shrink-0">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl"></div>
+      <div className={`relative bg-white dark:bg-[#1f1f1f] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transition-all duration-300 transform flex flex-col border border-gray-200 dark:border-gray-800 ${isOpen ? 'scale-100 translate-y-0 opacity-100' : 'scale-95 translate-y-4 opacity-0'}`}>
 
+        {/* Compact Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Share</h3>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 md:top-6 md:right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white z-50 cursor-pointer"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-500 dark:text-gray-400"
           >
-            <FaTimes size={16} />
+            <FaTimes size={18} />
           </button>
-
-          <div className="relative z-10 flex flex-col items-center text-center">
-            <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-3 md:mb-4 border border-white/30 shadow-inner">
-              <FaShareAlt size={24} className="text-white drop-shadow-md md:text-3xl" />
-            </div>
-            <h3 className="text-xl md:text-2xl font-black tracking-tight">{title}</h3>
-            <p className="text-indigo-100 text-xs md:text-sm mt-1 font-medium px-4">{description}</p>
-          </div>
         </div>
 
-        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar bg-white dark:bg-gray-900">
-          {/* Link Copy Section */}
-          <div className="mb-6 md:mb-8">
-            <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 md:mb-3 block">
-              {url.includes('ref=') ? 'Your Referral Link' : 'Direct Link'}
-            </label>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 bg-slate-50 dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl group transition-all hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-white dark:hover:bg-gray-800/80 hover:shadow-lg hover:shadow-indigo-500/5">
-              <div className="flex-1 px-3 py-2 overflow-hidden bg-white dark:bg-gray-900 sm:bg-transparent rounded-xl sm:rounded-none border sm:border-none border-slate-100 dark:border-gray-700 mb-1 sm:mb-0">
-                <p className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{url}</p>
-              </div>
+        <div className="p-4 overflow-hidden">
+          {/* Social Icons Row - YouTube Style */}
+          <style>{`
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+          `}</style>
+          <div className="flex items-center gap-6 overflow-x-auto pb-4 pt-2 mb-2 no-scrollbar justify-start sm:justify-center">
+            {shareOptions.map((opt) => (
               <button
-                onClick={copyToClipboard}
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 w-full sm:w-auto ${copied
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-200 dark:shadow-green-900/30'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 dark:shadow-indigo-900/30'
-                  }`}
+                key={opt.name}
+                onClick={() => window.open(opt.link, '_blank')}
+                className="flex flex-col items-center gap-2 group shrink-0"
               >
-                {copied ? <FaCheck /> : <FaCopy />}
-                <span>{copied ? 'Copied' : 'Copy'}</span>
+                <div className={`w-14 h-14 ${opt.color} rounded-full flex items-center justify-center text-white text-2xl transition-transform duration-200 transform group-hover:scale-110 shadow-md`}>
+                  {opt.icon}
+                </div>
+                <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 truncate w-14 text-center">
+                  {opt.name}
+                </span>
               </button>
-            </div>
+            ))}
           </div>
 
-          {/* Social Grid */}
-          <div className="space-y-4">
-            <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 md:mb-3 block">Share with friends</label>
-            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
-              {shareOptions.map((opt) => (
-                <button
-                  key={opt.name}
-                  onClick={() => window.open(opt.link, '_blank')}
-                  className={`flex items-center gap-3 p-3 md:p-4 ${opt.color} ${opt.hover} text-white rounded-xl md:rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl group justify-center sm:justify-start`}
-                >
-                  <div className="text-lg md:text-xl group-hover:scale-110 transition-transform">{opt.icon}</div>
-                  <span className="font-bold text-sm tracking-tight">{opt.name}</span>
-                </button>
-              ))}
+          {/* Link Copy Section - More compact */}
+          <div className="mt-4 p-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 rounded-xl flex items-center gap-3">
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate select-all">{url}</p>
             </div>
+            <button
+              onClick={copyToClipboard}
+              className={`px-4 py-2 rounded-full font-bold text-sm transition-all duration-300 shrink-0 ${copied
+                ? 'bg-green-600 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md'
+                }`}
+            >
+              {copied ? (
+                <span className="flex items-center gap-1.5"><FaCheck size={12} /> Copied</span>
+              ) : (
+                'Copy'
+              )}
+            </button>
           </div>
 
           {url.includes('ref=') && (
-            <div className="mt-6 md:mt-8 text-center bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-800">
-              <p className="text-xs text-indigo-700 dark:text-indigo-300 font-bold">Earn <span className="text-indigo-900 dark:text-indigo-200 font-black">100 coins</span> per successful referral. New users get <span className="text-indigo-900 dark:text-indigo-200 font-black">50 coins</span>! 🚀</p>
+            <div className="mt-4 text-center bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-900/30">
+              <p className="text-[11px] text-blue-700 dark:text-blue-300 font-medium">
+                Earn <span className="font-bold">100 coins</span> per successful referral.
+              </p>
             </div>
           )}
         </div>

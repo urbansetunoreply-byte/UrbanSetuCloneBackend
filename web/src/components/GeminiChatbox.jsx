@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaUser, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH, FaEllipsisV, FaShareAlt, FaBan } from 'react-icons/fa';
 import EqualizerButton from './EqualizerButton';
 import ShareChatModal from './ShareChatModal';
+import SocialSharePanel from './SocialSharePanel';
 import VideoPreview from './VideoPreview';
 import { FaPlay } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { authenticatedFetch } from "../utils/auth";
+import { API_BASE_URL } from '../config/api';
 // import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { isMobileDevice } from '../utils/mobileUtils';
 import { useSelector } from 'react-redux';
@@ -200,6 +202,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [renameTargetSessionId, setRenameTargetSessionId] = useState(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [shareTargetSessionId, setShareTargetSessionId] = useState(null);
+    const [showSocialShare, setShowSocialShare] = useState(false);
+    const [socialShareConfig, setSocialShareConfig] = useState({ url: '', title: '', description: '' });
     const [renameInput, setRenameInput] = useState('');
     const [refreshingBookmarks, setRefreshingBookmarks] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
@@ -1130,7 +1134,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Fetch rate limit status from backend
     const fetchRateLimitStatus = async () => {
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
             const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/rate-limit-status`, {
                 method: 'GET',
@@ -1210,7 +1213,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!currentUser || !currentSessionId) return;
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -1241,7 +1243,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!currentUser || !sessionId) return null;
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -1300,7 +1301,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 return;
             }
 
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
                 method: 'GET',
                 headers: {
@@ -1360,7 +1360,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             // Show suggestions even for empty query (to show all properties)
             const searchQuery = query ? query.trim() : '';
 
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const url = `${API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(searchQuery)}&limit=5`;
 
             const response = await authenticatedFetch(url, {
@@ -1395,7 +1394,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             // Avoid duplicates
             if (selectedProperties.some(p => (p.id || p._id) === listingId)) return;
 
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const url = `${API_BASE_URL}/api/property-search/${listingId}`;
             const response = await authenticatedFetch(url);
             if (!response.ok) return;
@@ -1596,7 +1594,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 return;
             }
 
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
             const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}/clear`, {
                 method: 'DELETE',
@@ -2307,7 +2304,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             tone: currentUser ? tone : 'neutral'
         });
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
             console.log('Sending message to AI:', userMessage, 'Session:', currentSessionId);
 
@@ -2720,7 +2716,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setMessages(prev => prev.filter((_, index) => index !== messageIndex));
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
 
             // Support cancelling with AbortController
@@ -2830,7 +2825,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const isBookmarked = bookmarkedMessages.some(bm => bm.key === bookmarkKey);
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
             if (isBookmarked) {
                 // Remove bookmark
@@ -2916,7 +2910,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!prompt) prompt = "Unknown prompt"; // Fallback
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
 
             const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/rate`, {
@@ -2986,7 +2979,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         setIsReporting(true);
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const msgId = reportingMessage._id || `session_${getOrCreateSessionId()}_${reportingMessage.index}_${new Date(reportingMessage.timestamp).getTime()}`;
 
             const response = await authenticatedFetch(`${API_BASE_URL}/api/report-message/create`, {
@@ -3053,22 +3045,24 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     };
 
     const shareMessage = async (message) => {
-        const shareData = {
-            title: 'SetuAI Response',
-            text: message.content,
-            url: window.location.href
-        };
-
-        if (navigator.share) {
-            try {
-                await navigator.share(shareData);
-                toast.success('Message shared!');
-            } catch (err) {
-                copyToClipboard(message.content);
-            }
-        } else {
-            copyToClipboard(message.content);
+        let sharePath = '/ai';
+        if (currentUser) {
+            sharePath = (currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/ai' : '/user/ai';
         }
+
+        // Use API_BASE_URL if it exists as an absolute URL, otherwise fallback to current origin
+        const baseUrl = (API_BASE_URL && API_BASE_URL.startsWith('http'))
+            ? API_BASE_URL.replace(/\/$/, '')
+            : window.location.origin;
+
+        const shareUrl = `${baseUrl}${sharePath}`;
+
+        setSocialShareConfig({
+            url: shareUrl,
+            title: 'SetuAI Response 🤖',
+            description: message.content.substring(0, 200) + (message.content.length > 200 ? '...' : '')
+        });
+        setShowSocialShare(true);
     };
 
     // Edit message functions
@@ -3128,7 +3122,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setIsLoading(true);
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
             console.log('Sending edited message to SetuAI:', messageContent, 'Session:', currentSessionId);
 
@@ -3451,7 +3444,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!currentUser || !sessionId || !name) return;
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -3474,7 +3466,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!currentUser) return [];
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/sessions`);
 
             if (response.ok) {
@@ -3494,7 +3485,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const loadSessionHistory = async (sessionId) => {
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`);
 
             if (response.ok) {
@@ -3535,7 +3525,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!currentUser || !sessionId) return;
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/ratings/${sessionId}`);
 
             if (response.ok) {
@@ -3555,7 +3544,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (!currentUser || !sessionId) return;
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/bookmarks/${sessionId}`, {
                 method: 'GET',
                 headers: {
@@ -3589,7 +3577,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
             // Always save the current session to history before creating new one
             const currentSessionId = getOrCreateSessionId();
@@ -3661,7 +3648,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await authenticatedFetch(`${API_BASE_URL}/api/gemini/sessions/${sessionId}`, {
                 method: 'DELETE',
             });
@@ -4889,7 +4875,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
 
             if (!currentSessionId) {
@@ -5161,7 +5146,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
                                                                 try {
                                                                     setAllRatingsLoading(true);
-                                                                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                                                                     const resp = await authenticatedFetch(`${API_BASE_URL}/api/gemini/ratings-all?limit=500&days=90`);
                                                                     if (resp.ok) {
                                                                         const data = await resp.json();
@@ -6805,7 +6789,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                                         return;
                                                                                     }
                                                                                     try {
-                                                                                        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                                                                                         const resp = await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`);
                                                                                         const data = await resp.json();
                                                                                         if (!resp.ok || !data?.data?.messages) throw new Error('load');
@@ -6899,7 +6882,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <button onClick={() => setShowDeleteAllModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
                                         <button onClick={async () => {
                                             try {
-                                                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                                                 await authenticatedFetch(`${API_BASE_URL}/api/gemini/sessions`, { method: 'DELETE' });
                                                 await createNewSession();
                                                 await loadChatSessions();
@@ -6986,7 +6968,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <button onClick={async () => {
                                             try {
                                                 const name = renameInput.trim();
-                                                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                                                 await authenticatedFetch(`${API_BASE_URL}/api/chat-history/session/${renameTargetSessionId}`, {
                                                     method: 'PUT',
                                                     headers: { 'Content-Type': 'application/json' },
@@ -7886,7 +7867,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
                                                 try {
                                                     setAllRatingsLoading(true);
-                                                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                                                     const resp = await authenticatedFetch(`${API_BASE_URL}/api/gemini/ratings-all?limit=500&days=90`);
                                                     if (resp.ok) {
                                                         const data = await resp.json();
@@ -9569,6 +9549,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 onClose={() => setPreviewVideo(null)}
                 videos={previewVideo ? [previewVideo] : []}
             />
+            {showSocialShare && (
+                <SocialSharePanel
+                    isOpen={showSocialShare}
+                    onClose={() => setShowSocialShare(false)}
+                    url={socialShareConfig.url}
+                    title={socialShareConfig.title}
+                    description={socialShareConfig.description}
+                />
+            )}
         </div>
     );
 };
