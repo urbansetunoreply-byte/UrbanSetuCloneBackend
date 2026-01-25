@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import data from "../data/countries+states+cities.json";
 import Fuse from "fuse.js";
 
-export default function LocationSelector({ value, onChange, mode = "form" }) {
+export default function LocationSelector({ value, onChange, mode = "form", disableCity = false }) {
   // Find India in the dataset
   const india = data.find((country) => country.name === "India");
   const states = india ? india.states : [];
@@ -76,19 +76,21 @@ export default function LocationSelector({ value, onChange, mode = "form" }) {
         <label className="block mb-1 font-semibold text-gray-700 dark:text-gray-300 transition-colors">City</label>
         <input
           type="text"
-          placeholder="Search City..."
+          placeholder={disableCity ? "Sign in to select city" : "Search City..."}
           value={citySearch}
           onChange={(e) => setCitySearch(e.target.value)}
-          className="w-full mb-2 p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-950"
-          disabled={!value.state}
+          className="w-full mb-2 p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-950 disabled:cursor-not-allowed"
+          disabled={!value.state || disableCity}
+          title={disableCity ? "Please sign in to filter by city" : ""}
         />
         <select
-          className="w-full p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-950"
+          className="w-full p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-950 disabled:cursor-not-allowed"
           value={value.city || ""}
           onChange={handleCityChange}
-          disabled={!value.state}
+          disabled={!value.state || disableCity}
+          title={disableCity ? "Please sign in to filter by city" : ""}
         >
-          <option value="">Select City</option>
+          <option value="">{disableCity ? "Login Required" : "Select City"}</option>
           {filteredCities.map((c) => (
             <option key={c.id} value={c.name}>
               {c.name}

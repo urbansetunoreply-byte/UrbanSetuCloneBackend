@@ -175,6 +175,7 @@ const MarketTrends = () => {
                                     setSelectedCity(loc.city);
                                 }
                             }}
+                            disableCity={!currentUser}
                         />
                     </div>
                 </div>
