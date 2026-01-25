@@ -38,6 +38,11 @@ const MarketTrends = () => {
 
     // Rotate insights daily
     useEffect(() => {
+        // Sync selectedCity with locationFilter for consistent state
+        if (locationFilter.city !== selectedCity) {
+            setSelectedCity(locationFilter.city);
+        }
+
         const today = new Date();
         const start = new Date(today.getFullYear(), 0, 0);
         const diff = today - start;
@@ -168,86 +173,75 @@ const MarketTrends = () => {
                     <div className="w-full md:w-auto min-w-[300px]">
                         <LocationSelector
                             value={locationFilter}
-                            onChange={(loc) => {
-                                setLocationFilter(loc);
-                                // Automatically select the city if available
-                                if (loc.city) {
-                                    setSelectedCity(loc.city);
-                                }
-                            }}
+                            onChange={(loc) => setLocationFilter(loc)}
                             disableCity={!currentUser}
                         />
                     </div>
                 </div>
 
                 {loadingCity ? (
-                    <div className="h-64 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600"></div>
+                    <div className="flex justify-center items-center py-32">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600"></div>
                     </div>
                 ) : cityData ? (
-                    <div className="space-y-12">
-
-                        {/* City Summary Cards */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-8"
+                    >
+                        {/* Summary Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                                <h3 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Avg. Price in {selectedCity}</h3>
-                                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">₹{cityData.summary.avgPrice.toLocaleString()}</p>
-                                <span className="text-green-500 text-sm font-medium flex items-center mt-2 gap-1">
-                                    <FaArrowUp /> Trending Stable
-                                </span>
-                            </div>
-                            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                                <h3 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Demand Score</h3>
-                                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{cityData.summary.demandScore} <span className="text-sm font-normal text-gray-500">/ 100</span></p>
-                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
-                                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${Math.min(cityData.summary.demandScore, 100)}%` }}></div>
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 className="text-gray-500 text-sm font-semibold uppercase mb-2">Average Price</h3>
+                                <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                                    ₹{(cityData.summary.avgPrice / 100000).toFixed(2)} L
+                                </div>
+                                <div className="text-green-500 text-sm mt-1 flex items-center">
+                                    <FaArrowUp className="mr-1" /> Market Benchmark
                                 </div>
                             </div>
-                            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                                <h3 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Total Listings</h3>
-                                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{cityData.summary.totalListings}</p>
-                                <p className="text-gray-500 text-sm mt-2">Active properties on market</p>
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 className="text-gray-500 text-sm font-semibold uppercase mb-2">Demand Score</h3>
+                                <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                                    {cityData.summary.demandScore} <span className="text-lg text-gray-400 font-normal">/ 100</span>
+                                </div>
+                                <div className="text-blue-500 text-sm mt-1">Based on search volume</div>
+                            </div>
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 className="text-gray-500 text-sm font-semibold uppercase mb-2">Active Listings</h3>
+                                <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                                    {cityData.summary.totalListings}
+                                </div>
+                                <div className="text-gray-400 text-sm mt-1">Properties available</div>
                             </div>
                         </div>
 
-                        {/* Charts Section */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                            {/* Demand vs Price by Area */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
-                            >
-                                <h3 className="text-xl font-bold mb-6">Price vs Listings by Area</h3>
+                        {/* Charts Area */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Area Price Comparison */}
+                            <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 className="text-xl font-bold mb-6">Top Areas by Price</h3>
                                 <div className="h-80">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={cityData.areas.slice(0, 8)}>
-                                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                                            <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} />
-                                            <YAxis yAxisId="left" orientation="left" stroke="#8884d8" fontSize={12} tick={{ fill: '#6b7280' }} />
-                                            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" fontSize={12} tick={{ fill: '#6b7280' }} />
+                                        <BarChart data={cityData.areas.slice(0, 5)} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1} />
+                                            <XAxis type="number" tickFormatter={(val) => `₹${val / 100000}L`} stroke="#9ca3af" />
+                                            <YAxis dataKey="name" type="category" width={100} stroke="#9ca3af" fontSize={12} />
                                             <Tooltip
-                                                contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                                                cursor={{ fill: 'transparent' }}
+                                                contentStyle={{ backgroundColor: 'rgb(31 41 55)', color: '#fff', borderRadius: '8px', border: 'none' }}
+                                                formatter={(value) => [`₹${(value / 100000).toFixed(2)} Lakhs`, 'Avg Price']}
                                             />
-                                            <Legend />
-                                            <Bar yAxisId="right" dataKey="listings" name="Active Listings" fill="#82ca9d" radius={[4, 4, 0, 0]} />
-                                            <Bar yAxisId="left" dataKey="avgPrice" name="Avg Price (₹)" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                                            <Bar dataKey="avgPrice" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
-                            </motion.div>
+                            </div>
 
                             {/* Property Type Distribution */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
-                            >
-                                <h3 className="text-xl font-bold mb-6">Property Type Distribution</h3>
-                                <div className="h-80">
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 className="text-xl font-bold mb-6">Asset Distribution</h3>
+                                <div className="h-64">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
@@ -255,11 +249,9 @@ const MarketTrends = () => {
                                                 cx="50%"
                                                 cy="50%"
                                                 innerRadius={60}
-                                                outerRadius={100}
-                                                fill="#8884d8"
+                                                outerRadius={80}
                                                 paddingAngle={5}
                                                 dataKey="value"
-                                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                                             >
                                                 {cityData.propertyTypes.map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -270,90 +262,302 @@ const MarketTrends = () => {
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
-                            </motion.div>
+                            </div>
                         </div>
 
-                        {/* Top Areas List */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
-                        >
-                            <h3 className="text-xl font-bold mb-6">🔥 Hot Markets in {selectedCity}</h3>
+                        {/* Area Table */}
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+                                <h3 className="text-xl font-bold">Area Breakdown</h3>
+                            </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead>
-                                        <tr className="border-b dark:border-gray-700 text-gray-500 dark:text-gray-400 text-sm uppercase">
-                                            <th className="py-3 px-4">Area Name</th>
-                                            <th className="py-3 px-4">Price / Unit (Avg)</th>
-                                            <th className="py-3 px-4">Price Range</th>
-                                            <th className="py-3 px-4">Active Listings</th>
-                                            <th className="py-3 px-4">Demand</th>
+                                    <thead className="bg-gray-50 dark:bg-gray-900/50 text-gray-500 uppercase text-xs">
+                                        <tr>
+                                            <th className="px-6 py-4 font-semibold">Area Name</th>
+                                            <th className="px-6 py-4 font-semibold">Avg Price</th>
+                                            <th className="px-6 py-4 font-semibold">Price Range</th>
+                                            <th className="px-6 py-4 font-semibold">Demand</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                         {cityData.areas.map((area, idx) => (
-                                            <tr key={idx} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                                <td className="py-4 px-4 font-semibold text-blue-600 dark:text-blue-400">{area.name}</td>
-                                                <td className="py-4 px-4 font-medium">₹{area.avgPrice.toLocaleString()}</td>
-                                                <td className="py-4 px-4 text-gray-500 dark:text-gray-400 text-sm">{area.priceRange}</td>
-                                                <td className="py-4 px-4">{area.listings}</td>
-                                                <td className="py-4 px-4">
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold
-                                                        ${area.popularity > 200 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}
-                                                    `}>
-                                                        {area.popularity > 200 ? <FaFire /> : null}
-                                                        {area.popularity > 200 ? 'High' : 'Moderate'}
-                                                    </span>
+                                            <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors">
+                                                <td className="px-6 py-4 font-medium">{area.name}</td>
+                                                <td className="px-6 py-4 text-blue-600 font-semibold">₹{(area.avgPrice / 100000).toFixed(1)} L</td>
+                                                <td className="px-6 py-4 text-gray-500">{area.priceRange}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-green-500" style={{ width: `${Math.min(area.popularity / 10, 100)}%` }}></div>
+                                                        </div>
+                                                        <span className="text-xs text-gray-400">{area.popularity} views</span>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
-                        </motion.div>
-
+                        </div>
+                    </motion.div>
+                ) : !loadingCity && selectedCity && !cityData ? (
+                    <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                        <div className="text-gray-400 mb-4 text-6xl flex justify-center"><FaSearchDollar /></div>
+                        <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300">No Market Data Found for "{selectedCity}"</h3>
+                        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mt-2">
+                            We don't have enough listings in this area to generate a valid market trend analysis yet.
+                        </p>
+                        <button
+                            onClick={() => {
+                                setLocationFilter({ state: '', city: '' });
+                                setSelectedCity('');
+                            }}
+                            className="mt-6 text-blue-600 hover:text-blue-700 font-semibold"
+                        >
+                            Back to Overview
+                        </button>
                     </div>
                 ) : (
-                    <div className="text-center py-20 text-gray-500">
-                        Select a city to view detailed trends.
+                    // Default View: Top Cities Comparison (Show this when no city is selected)
+                    <div className="space-y-8">
+                        <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                            <div>
+                                <h3 className="font-bold text-blue-800 dark:text-blue-200">🔍 Real-Time Insights</h3>
+                                <p className="text-sm text-blue-600 dark:text-blue-300">
+                                    {locationFilter.state ? `Select a city in ${locationFilter.state} to view specific trends.` : "Select a State and City above to deep dive into local market data."}
+                                    Showing top performing areas below.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Top Areas List */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                                <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                                    <FaFire className="text-orange-500" /> Hot Investment Zones
+                                </h3>
+                                <div className="space-y-5">
+                                    {overview && overview.topAreas && overview.topAreas.map((area, idx) => (
+                                        <div key={idx} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-700/30 hover:bg-white dark:hover:bg-gray-700 transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-600 shadow-sm hover:shadow-md">
+                                            <div className="flex items-center gap-4">
+                                                <div className="text-gray-400 font-bold text-xl w-6">#{idx + 1}</div>
+                                                <div>
+                                                    <h4 className="font-bold text-lg">{area.area}</h4>
+                                                    <p className="text-xs text-gray-500 uppercase tracking-wide">{area.city}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-bold text-blue-600">₹{(area.avgPrice / 100000).toFixed(1)} L</div>
+                                                <div className="text-xs text-green-500 font-medium">{area.trend}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-8 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-center">
+                                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')] opacity-10 bg-cover bg-center"></div>
+                                <h3 className="text-3xl font-bold mb-4 relative z-10">Why Track Trends?</h3>
+                                <ul className="space-y-4 relative z-10 text-gray-300">
+                                    <li className="flex gap-3">
+                                        <div className="bg-blue-500/20 p-1.5 rounded-lg h-fit mt-1"><FaArrowUp size={12} className="text-blue-400" /></div>
+                                        <div><strong className="text-white">Time Your Buy:</strong> Identify price dips and market corrections.</div>
+                                    </li>
+                                    <li className="flex gap-3">
+                                        <div className="bg-green-500/20 p-1.5 rounded-lg h-fit mt-1"><FaSearchDollar size={12} className="text-green-400" /></div>
+                                        <div><strong className="text-white">Maximize ROI:</strong> Find high-growth zones before they peak.</div>
+                                    </li>
+                                    <li className="flex gap-3">
+                                        <div className="bg-purple-500/20 p-1.5 rounded-lg h-fit mt-1"><FaCity size={12} className="text-purple-400" /></div>
+                                        <div><strong className="text-white">Compare Areas:</strong> Data-driven decisions over guesswork.</div>
+                                    </li>
+                                </ul>
+                                <button className="mt-8 bg-white text-gray-900 py-3 px-6 rounded-full font-bold hover:bg-gray-100 transition-colors w-fit relative z-10">
+                                    Read Full Market Report
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
 
-            {/* Global Price Trends Chart */}
-            {overview && overview.priceTrends && overview.priceTrends.length > 0 && (
-                <section className="bg-white dark:bg-gray-800 py-16">
-                    <div className="max-w-7xl mx-auto px-4">
-                        <div className="text-center mb-10">
-                            <h2 className="text-3xl font-bold mb-2">Platform-Wide Price Index</h2>
-                            <p className="text-gray-500 dark:text-gray-400">Average property price trends over the last 6 months across UrbanSetu</p>
-                        </div>
+            {loadingCity ? (
+                <div className="h-64 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600"></div>
+                </div>
+            ) : cityData ? (
+                <div className="space-y-12">
 
-                        <div className="h-96 w-full max-w-5xl mx-auto">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={overview.priceTrends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <XAxis dataKey="name" />
-                                    <YAxis tickFormatter={(val) => `₹${val / 1000}k`} />
-                                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
-                                        formatter={(value) => `₹${value.toLocaleString()}`}
-                                    />
-                                    <Area type="monotone" dataKey="price" stroke="#3b82f6" fillOpacity={1} fill="url(#colorPrice)" strokeWidth={3} />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                    {/* City Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                            <h3 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Avg. Price in {selectedCity}</h3>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">₹{cityData.summary.avgPrice.toLocaleString()}</p>
+                            <span className="text-green-500 text-sm font-medium flex items-center mt-2 gap-1">
+                                <FaArrowUp /> Trending Stable
+                            </span>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                            <h3 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Demand Score</h3>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{cityData.summary.demandScore} <span className="text-sm font-normal text-gray-500">/ 100</span></p>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
+                                <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${Math.min(cityData.summary.demandScore, 100)}%` }}></div>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                            <h3 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Total Listings</h3>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{cityData.summary.totalListings}</p>
+                            <p className="text-gray-500 text-sm mt-2">Active properties on market</p>
                         </div>
                     </div>
-                </section>
+
+                    {/* Charts Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                        {/* Demand vs Price by Area */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
+                        >
+                            <h3 className="text-xl font-bold mb-6">Price vs Listings by Area</h3>
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={cityData.areas.slice(0, 8)}>
+                                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                                        <XAxis dataKey="name" fontSize={12} tick={{ fill: '#6b7280' }} />
+                                        <YAxis yAxisId="left" orientation="left" stroke="#8884d8" fontSize={12} tick={{ fill: '#6b7280' }} />
+                                        <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" fontSize={12} tick={{ fill: '#6b7280' }} />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                                        />
+                                        <Legend />
+                                        <Bar yAxisId="right" dataKey="listings" name="Active Listings" fill="#82ca9d" radius={[4, 4, 0, 0]} />
+                                        <Bar yAxisId="left" dataKey="avgPrice" name="Avg Price (₹)" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </motion.div>
+
+                        {/* Property Type Distribution */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
+                        >
+                            <h3 className="text-xl font-bold mb-6">Property Type Distribution</h3>
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={cityData.propertyTypes}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={100}
+                                            fill="#8884d8"
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                        >
+                                            {cityData.propertyTypes.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip />
+                                        <Legend verticalAlign="bottom" height={36} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </motion.div>
+                    </div>
+
+                    {/* Top Areas List */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
+                    >
+                        <h3 className="text-xl font-bold mb-6">🔥 Hot Markets in {selectedCity}</h3>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead>
+                                    <tr className="border-b dark:border-gray-700 text-gray-500 dark:text-gray-400 text-sm uppercase">
+                                        <th className="py-3 px-4">Area Name</th>
+                                        <th className="py-3 px-4">Price / Unit (Avg)</th>
+                                        <th className="py-3 px-4">Price Range</th>
+                                        <th className="py-3 px-4">Active Listings</th>
+                                        <th className="py-3 px-4">Demand</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {cityData.areas.map((area, idx) => (
+                                        <tr key={idx} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                            <td className="py-4 px-4 font-semibold text-blue-600 dark:text-blue-400">{area.name}</td>
+                                            <td className="py-4 px-4 font-medium">₹{area.avgPrice.toLocaleString()}</td>
+                                            <td className="py-4 px-4 text-gray-500 dark:text-gray-400 text-sm">{area.priceRange}</td>
+                                            <td className="py-4 px-4">{area.listings}</td>
+                                            <td className="py-4 px-4">
+                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold
+                                                        ${area.popularity > 200 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}
+                                                    `}>
+                                                    {area.popularity > 200 ? <FaFire /> : null}
+                                                    {area.popularity > 200 ? 'High' : 'Moderate'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </motion.div>
+
+                </div>
+            ) : (
+                <div className="text-center py-20 text-gray-500">
+                    Select a city to view detailed trends.
+                </div>
             )}
+
+            {/* Global Price Trends Chart */}
+            {
+                overview && overview.priceTrends && overview.priceTrends.length > 0 && (
+                    <section className="bg-white dark:bg-gray-800 py-16">
+                        <div className="max-w-7xl mx-auto px-4">
+                            <div className="text-center mb-10">
+                                <h2 className="text-3xl font-bold mb-2">Platform-Wide Price Index</h2>
+                                <p className="text-gray-500 dark:text-gray-400">Average property price trends over the last 6 months across UrbanSetu</p>
+                            </div>
+
+                            <div className="h-96 w-full max-w-5xl mx-auto">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={overview.priceTrends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <XAxis dataKey="name" />
+                                        <YAxis tickFormatter={(val) => `₹${val / 1000}k`} />
+                                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                                            formatter={(value) => `₹${value.toLocaleString()}`}
+                                        />
+                                        <Area type="monotone" dataKey="price" stroke="#3b82f6" fillOpacity={1} fill="url(#colorPrice)" strokeWidth={3} />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </section>
+                )
+            }
 
             {/* Insights & Actions Section */}
             <section className="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-2 gap-8">
