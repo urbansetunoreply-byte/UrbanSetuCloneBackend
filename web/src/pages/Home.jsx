@@ -21,7 +21,7 @@ import {
 import AdsterraBanner from "../components/AdsterraBanner";
 import SeasonalEffects from "../components/SeasonalEffects";
 import DailyQuote from "../components/DailyQuote";
-import { useSeasonalTheme } from "../hooks/useSeasonalTheme.jsx";
+import { useSeasonalTheme } from "../hooks/useSeasonalTheme";
 import ThemeDetailModal from "../components/ThemeDetailModal";
 import { authenticatedFetch } from "../utils/auth";
 

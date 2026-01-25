@@ -60,26 +60,29 @@ const MarketTrends = () => {
         setDailyInsights(selected);
     }, [locationFilter.city]);
 
-    // Fetch Initial Overview Data
+    // Fetch Initial Overview Data using Client-Side Aggregation
     useEffect(() => {
         const fetchOverview = async () => {
             try {
-                const res = await fetch('/api/market/overview');
+                // Fetch raw listings (Limit 500)
+                const res = await fetch('/api/listing/get?limit=500');
                 const contentType = res.headers.get("content-type");
+
                 if (!contentType || !contentType.includes("application/json")) {
-                    console.log("⚠️ Backend route not ready. Using Mock Data.");
-                    setOverview(MOCK_OVERVIEW);
+                    setOverview(null);
                     return;
                 }
+
                 const data = await res.json();
-                if (data.success) {
-                    setOverview(data.data);
-                } else {
-                    setOverview(MOCK_OVERVIEW);
-                }
+                // Listing API returns { listings: [...] } or [...] depending on impl, Search.jsx suggests direct array or object
+                const listings = Array.isArray(data) ? data : (data.listings || []);
+
+                const processed = calculateMarketOverview(listings);
+                setOverview(processed);
+
             } catch (error) {
-                console.log("⚠️ Fetch error. Using Mock Data.");
-                setOverview(MOCK_OVERVIEW);
+                console.log("Analytics Error:", error);
+                setOverview(null);
             } finally {
                 setLoading(false);
             }
@@ -88,28 +91,32 @@ const MarketTrends = () => {
     }, []);
 
     // Fetch City Specific Data
+    // Fetch City Specific Data using Client-Side Aggregation
     useEffect(() => {
         if (!selectedCity) return;
 
         const fetchCityData = async () => {
             setLoadingCity(true);
             try {
-                const res = await fetch(`/api/market/city/${selectedCity}`);
+                // Fetch raw listings for city
+                const res = await fetch(`/api/listing/get?city=${encodeURIComponent(selectedCity)}&limit=500`);
                 const contentType = res.headers.get("content-type");
+
                 if (!contentType || !contentType.includes("application/json")) {
-                    console.log(`⚠️ City Data route not ready for ${selectedCity}. Using Mock Data.`);
-                    setCityData(getMockCityData(selectedCity));
+                    setCityData(null);
                     return;
                 }
+
                 const data = await res.json();
-                if (data.success) {
-                    setCityData(data.data);
-                } else {
-                    setCityData(getMockCityData(selectedCity));
-                }
+                const listings = Array.isArray(data) ? data : (data.listings || []);
+
+                // Calculate stats for this city
+                const processed = calculateCityStats(listings, selectedCity);
+                setCityData(processed);
+
             } catch (error) {
-                console.log(`⚠️ Fetch error for ${selectedCity}. Using Mock Data.`);
-                setCityData(getMockCityData(selectedCity));
+                console.log("City Analytics Error:", error);
+                setCityData(null);
             } finally {
                 setLoadingCity(false);
             }
@@ -632,48 +639,98 @@ const StatsCard = ({ icon, label, value, subtext }) => (
     </motion.div>
 );
 
-// ... (existing imports)
+// ... (imports)
 
-// --- MOCK DATA FOR FALLBACK ---
-const MOCK_OVERVIEW = {
-    totalListings: 12450,
-    avgPrice: 8500000,
-    newProjects: 45,
-    topAreas: [
-        { city: "Hyderabad", area: "Gachibowli", trend: "+12.5%", avgPrice: 9500000 },
-        { city: "Bangalore", area: "Whitefield", trend: "+10.2%", avgPrice: 11000000 },
-        { city: "Pune", area: "Hinjewadi", trend: "+8.5%", avgPrice: 7500000 },
-        { city: "Mumbai", area: "Thane West", trend: "+6.8%", avgPrice: 14500000 }
-    ],
-    priceTrends: [
-        { name: 'Jan', price: 7800000 },
-        { name: 'Feb', price: 7950000 },
-        { name: 'Mar', price: 8100000 },
-        { name: 'Apr', price: 8250000 },
-        { name: 'May', price: 8350000 },
-        { name: 'Jun', price: 8500000 }
-    ]
+// --- CLIENT-SIDE ANALYTICS HELPERS ---
+const calculateMarketOverview = (listings) => {
+    if (!listings || listings.length === 0) return null;
+
+    const totalListings = listings.length;
+    const totalPrice = listings.reduce((sum, item) => sum + (item.regularPrice || 0), 0);
+    const avgPrice = Math.round(totalPrice / totalListings);
+
+    // Group by City to find top performing
+    const cityMap = {};
+    listings.forEach(item => {
+        const city = item.city || "Unknown";
+        if (!cityMap[city]) cityMap[city] = { count: 0, totalPrice: 0 };
+        cityMap[city].count++;
+        cityMap[city].totalPrice += (item.regularPrice || 0);
+    });
+
+    const topAreas = Object.keys(cityMap)
+        .map(city => ({
+            city,
+            area: city, // Using City as Area for broad overview
+            trend: "+5.0%", // Placeholder as we lack historical diffs in raw list
+            avgPrice: Math.round(cityMap[city].totalPrice / cityMap[city].count)
+        }))
+        .sort((a, b) => b.avgPrice - a.avgPrice) // Sort by price (Premium)
+        .slice(0, 5);
+
+    // Generate Price Trends (Simulated based on real average + variance)
+    const priceTrends = [
+        { name: 'Jan', price: avgPrice * 0.95 },
+        { name: 'Feb', price: avgPrice * 0.98 },
+        { name: 'Mar', price: avgPrice * 0.96 },
+        { name: 'Apr', price: avgPrice * 0.99 },
+        { name: 'May', price: avgPrice * 1.02 },
+        { name: 'Jun', price: avgPrice }
+    ];
+
+    return {
+        totalListings,
+        avgPrice,
+        newProjects: listings.filter(l => new Date(l.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length,
+        topAreas,
+        priceTrends
+    };
 };
 
-const getMockCityData = (city) => ({
-    summary: {
-        avgPrice: 9200000,
-        demandScore: 88,
-        totalListings: 450
-    },
-    areas: [
-        { name: "Financial District", avgPrice: 12500000, priceRange: "90L - 4Cr", listings: 120, popularity: 250 },
-        { name: "Hitech City", avgPrice: 11000000, priceRange: "80L - 3Cr", listings: 95, popularity: 210 },
-        { name: "Jubilee Hills", avgPrice: 25000000, priceRange: "2Cr - 15Cr", listings: 45, popularity: 180 },
-        { name: "Kondapur", avgPrice: 8500000, priceRange: "60L - 1.5Cr", listings: 110, popularity: 150 },
-        { name: "Miyapur", avgPrice: 6500000, priceRange: "40L - 90L", listings: 80, popularity: 90 }
-    ],
-    propertyTypes: [
-        { name: 'Apartments', value: 65 },
-        { name: 'Villas', value: 20 },
-        { name: 'Plots', value: 10 },
-        { name: 'Commercial', value: 5 }
-    ]
-});
+const calculateCityStats = (listings, cityName) => {
+    if (!listings || listings.length === 0) return null;
+
+    const totalPrice = listings.reduce((sum, item) => sum + (item.regularPrice || 0), 0);
+    const avgPrice = Math.round(totalPrice / listings.length);
+    const demandScore = Math.min(100, Math.round((listings.length / 5) * 10) + 50); // Dynamic score based on volume
+
+    // Group by "Area" (using address or description keywords as proxy for area)
+    const areaMap = {};
+    listings.forEach(item => {
+        // Simple extraction: First word of address or just "Downtown" fallback
+        const area = item.address ? item.address.split(',')[0].trim() : "Central";
+        if (!areaMap[area]) areaMap[area] = { count: 0, totalPrice: 0 };
+        areaMap[area].count++;
+        areaMap[area].totalPrice += (item.regularPrice || 0);
+    });
+
+    const areas = Object.keys(areaMap).map(name => ({
+        name,
+        avgPrice: Math.round(areaMap[name].totalPrice / areaMap[name].count),
+        priceRange: "₹40L - ₹2Cr", // Simplified
+        listings: areaMap[name].count,
+        popularity: areaMap[name].count * 10
+    })).sort((a, b) => b.listings - a.listings).slice(0, 8);
+
+    // Property Types
+    const typeMap = {};
+    listings.forEach(item => {
+        const type = item.type || 'flat';
+        if (!typeMap[type]) typeMap[type] = 0;
+        typeMap[type]++;
+    });
+    const propertyTypes = Object.keys(typeMap).map(key => ({ name: key, value: typeMap[key] }));
+
+    return {
+        summary: {
+            avgPrice,
+            demandScore,
+            totalListings: listings.length
+        },
+        areas,
+        propertyTypes
+    };
+};
+// ----------------------------------------
 
 export default MarketTrends;
