@@ -354,87 +354,94 @@ const MarketTrends = () => {
                 </section>
             )}
 
-            {/* Insights Section */}
+            {/* Insights & Actions Section */}
             <section className="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden transition-all duration-300 hover:shadow-2xl">
-                    <div className="absolute top-0 right-0 p-10 opacity-10 animate-pulse">
-                        <FaBuilding className="text-9xl" />
+                {/* Dynamic Insights */}
+                <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden transition-all duration-300 hover:shadow-2xl flex flex-col">
+                    <div className="absolute top-0 right-0 p-10 opacity-5 animate-pulse">
+                        <FaBuilding className="text-9xl transform rotate-12" />
                     </div>
-                    <div className="flex justify-between items-center mb-6 relative z-10">
-                        <h3 className="text-2xl font-bold flex items-center gap-2">
-                            <FaChartLine className="text-yellow-400" /> Daily Market Insights
+                    <div className="flex justify-between items-center mb-8 relative z-10 border-b border-white/10 pb-4">
+                        <h3 className="text-2xl font-bold flex items-center gap-3">
+                            <div className="p-2 bg-yellow-500/20 rounded-lg"><FaChartLine className="text-yellow-400" /></div>
+                            Daily Market Insights
                         </h3>
-                        <span className="text-xs bg-white/20 px-2 py-1 rounded-full text-indigo-100">Updated {new Date().toLocaleDateString()}</span>
+                        <span className="text-xs bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-gray-300 border border-white/10">
+                            {new Date().toLocaleDateString()}
+                        </span>
                     </div>
 
-                    <ul className="space-y-6 relative z-10 transition-all">
+                    <ul className="space-y-4 relative z-10 flex-grow">
                         {dailyInsights.map((insight, idx) => (
-                            <li key={idx} className="flex items-start gap-4 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-default">
-                                <div className="bg-indigo-500/30 p-2.5 rounded-lg mt-1 shrink-0">
+                            <li key={idx} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5 hover:border-white/10">
+                                <div className="bg-indigo-500/20 p-3 rounded-lg mt-0.5 text-indigo-300">
                                     {insight.icon}
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-lg text-indigo-50 mb-1">{insight.title}</h4>
-                                    <p className="text-indigo-200 text-sm leading-relaxed">{insight.desc}</p>
+                                    <h4 className="font-semibold text-lg text-white mb-1 leading-tight">{insight.title}</h4>
+                                    <p className="text-gray-400 text-sm leading-relaxed">{insight.desc}</p>
                                 </div>
                             </li>
                         ))}
                     </ul>
                 </div>
 
-                {/* Conditional Section: Admin Actions vs User CTA */}
+                {/* Role Based Action Panel */}
                 {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) ? (
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-500/10 transition-all duration-500"></div>
-
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col relative overflow-hidden">
                         <div className="mb-6 relative z-10">
                             <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                🛡️ Admin Market Controls
+                                <span className="text-3xl">🛡️</span> Admin Controls
                             </h3>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Manage listing data, generate reports, and analyze market performance.</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Restricted access for market data management.</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 flex-grow relative z-10">
-                            <button
-                                onClick={() => alert("Market Report (CSV) generation started...")}
-                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800/50 transition-all group/btn"
+                            <Link
+                                to="/admin/create-listing"
+                                className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 transition-all"
                             >
-                                <span className="text-2xl mb-2 group-hover/btn:scale-110 transition-transform">📊</span>
-                                <span className="font-semibold text-sm">Export Report</span>
-                            </button>
+                                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">➕</div>
+                                <span className="font-bold text-gray-800 dark:text-blue-100">Add Data</span>
+                                <span className="text-xs text-gray-500 dark:text-blue-300/70 mt-1">Create Listing</span>
+                            </Link>
 
                             <Link
-                                to="/admin/listings"
-                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-purple-200 dark:border-purple-800/50 transition-all group/btn"
+                                to="/admin?tab=listings"
+                                className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-purple-50 dark:bg-purple-900/10 hover:bg-purple-100 dark:hover:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30 transition-all"
                             >
-                                <span className="text-2xl mb-2 group-hover/btn:scale-110 transition-transform">🏘️</span>
-                                <span className="font-semibold text-sm">Manage Listings</span>
+                                <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-800/50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">📝</div>
+                                <span className="font-bold text-gray-800 dark:text-purple-100">Manage</span>
+                                <span className="text-xs text-gray-500 dark:text-purple-300/70 mt-1">Edit Listings</span>
                             </Link>
 
                             <button
-                                onClick={() => alert("Cache cleared! Real-time data will be fetched on next reload.")}
-                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40 border border-orange-200 dark:border-orange-800/50 transition-all group/btn"
+                                onClick={() => alert("Simulated: Market data cache refreshed.")}
+                                className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100 dark:hover:bg-orange-900/20 border border-orange-100 dark:border-orange-800/30 transition-all"
                             >
-                                <span className="text-2xl mb-2 group-hover/btn:scale-110 transition-transform group-hover/btn:rotate-180 duration-500">🔄</span>
-                                <span className="font-semibold text-sm">Refresh Cache</span>
+                                <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-800/50 flex items-center justify-center text-2xl mb-3 group-hover:rotate-180 transition-transform duration-700">🔄</div>
+                                <span className="font-bold text-gray-800 dark:text-orange-100">Sync Data</span>
+                                <span className="text-xs text-gray-500 dark:text-orange-300/70 mt-1">Refresh Trend Cache</span>
                             </button>
 
                             <Link
-                                to="/admin/dashboard?tab=analytics"
-                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 transition-all group/btn"
+                                to="/admin"
+                                className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 hover:bg-emerald-100 dark:hover:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 transition-all"
                             >
-                                <span className="text-2xl mb-2 group-hover/btn:scale-110 transition-transform">📈</span>
-                                <span className="font-semibold text-sm">Detailed Analytics</span>
+                                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">📊</div>
+                                <span className="font-bold text-gray-800 dark:text-emerald-100">Analytics</span>
+                                <span className="text-xs text-gray-500 dark:text-emerald-300/70 mt-1">Full Dashboard</span>
                             </Link>
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-yellow-50 dark:bg-yellow-900/10 rounded-3xl p-8 border border-yellow-200 dark:border-yellow-800/30 flex flex-col justify-center items-center text-center">
-                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Ready to Invest?</h3>
-                        <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md">
+                    <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/10 dark:to-orange-900/10 rounded-3xl p-8 border border-yellow-200 dark:border-yellow-800/30 flex flex-col justify-center items-center text-center relative overflow-hidden">
+                        <div className="absolute top-[-20%] left-[-10%] w-40 h-40 bg-yellow-400/10 rounded-full blur-3xl"></div>
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 relative z-10">Ready to Invest?</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md relative z-10">
                             Use our data to find the perfect property that matches your investment goals.
                         </p>
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 relative z-10 flex-wrap justify-center">
                             <Link
                                 to={currentUser ? ((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/explore' : '/user/search') : '/search'}
                                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
