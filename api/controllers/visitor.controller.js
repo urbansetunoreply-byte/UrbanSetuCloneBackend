@@ -695,8 +695,8 @@ export const getMarketingStats = async (req, res, next) => {
               $group: {
                 _id: { $ifNull: ["$utm.source", "Direct/Static"] },
                 count: { $sum: 1 },
-                avgPageViews: { $avg: { $size: "$pageViews" } },
-                avgDuration: { $avg: { $subtract: ["$lastActive", "$sessionStart"] } }
+                avgPageViews: { $avg: { $size: { $ifNull: ["$pageViews", []] } } },
+                avgDuration: { $avg: { $subtract: [{ $ifNull: ["$lastActive", "$sessionStart"] }, "$sessionStart"] } }
               }
             },
             { $sort: { count: -1 } }
