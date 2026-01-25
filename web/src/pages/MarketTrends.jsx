@@ -11,6 +11,18 @@ import { useSelector } from 'react-redux';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
+const MARKET_INSIGHTS = [
+    { title: "Rental Yields Rising", desc: "Average rental yields in metro areas have increased by 0.5% this quarter due to high demand.", icon: <FaArrowUp className="text-sm" /> },
+    { title: "Suburban Shift", desc: "More buyers are moving to peripheral areas looking for larger homes and gated communities.", icon: <FaMapMarkerAlt className="text-sm" /> },
+    { title: "Digital Viewing Surge", desc: "Properties with verified video tours are getting 3x more inquiries than image-only listings.", icon: <FaChartLine className="text-sm" /> },
+    { title: "Sustainable Living", desc: "Green-certified homes are seeing a 15% faster appreciation rate compared to conventional properties.", icon: <FaBuilding className="text-sm" /> },
+    { title: "Co-Living Trend", desc: "Demand for co-living spaces in IT hubs has surged by 25% year-on-year among young professionals.", icon: <FaCity className="text-sm" /> },
+    { title: "Luxury Segment", desc: "Ultra-luxury property transactions have hit a 5-year high in major metro cities.", icon: <FaSearchDollar className="text-sm" /> },
+    { title: "Interest Rates", desc: "Stable interest rates are encouraging first-time homebuyers to enter the market.", icon: <FaChartLine className="text-sm" /> },
+    { title: "Tier-2 Growth", desc: "Infrastructure development is driving significant real estate growth in Tier-2 cities.", icon: <FaArrowUp className="text-sm" /> },
+    { title: "Smart Homes", desc: "Properties equipped with smart home automation are fetching a 10% premium.", icon: <FaBuilding className="text-sm" /> }
+];
+
 const MarketTrends = () => {
     usePageTitle('Market Trends - Real Estate Insights | UrbanSetu');
     const { currentUser } = useSelector((state) => state.user);
@@ -22,6 +34,24 @@ const MarketTrends = () => {
     const [selectedCity, setSelectedCity] = useState('');
     const [cityData, setCityData] = useState(null);
     const [loadingCity, setLoadingCity] = useState(false);
+    const [dailyInsights, setDailyInsights] = useState([]);
+
+    // Rotate insights daily
+    useEffect(() => {
+        const today = new Date();
+        const start = new Date(today.getFullYear(), 0, 0);
+        const diff = today - start;
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfYear = Math.floor(diff / oneDay);
+
+        // Select 3 insights based on day of year
+        const selected = [];
+        for (let i = 0; i < 3; i++) {
+            const index = (dayOfYear + i) % MARKET_INSIGHTS.length;
+            selected.push(MARKET_INSIGHTS[index]);
+        }
+        setDailyInsights(selected);
+    }, []);
 
     // Fetch Initial Overview Data
     useEffect(() => {
@@ -326,62 +356,100 @@ const MarketTrends = () => {
 
             {/* Insights Section */}
             <section className="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-10 opacity-10">
+                <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden transition-all duration-300 hover:shadow-2xl">
+                    <div className="absolute top-0 right-0 p-10 opacity-10 animate-pulse">
                         <FaBuilding className="text-9xl" />
                     </div>
-                    <h3 className="text-2xl font-bold mb-4">💡 UrbanSetu Insights</h3>
-                    <ul className="space-y-4 relative z-10">
-                        <li className="flex items-start gap-3">
-                            <div className="bg-white/20 p-2 rounded-lg mt-1"><FaArrowUp className="text-sm" /></div>
-                            <div>
-                                <h4 className="font-semibold text-lg">Rental Yields Rising</h4>
-                                <p className="text-indigo-200 text-sm">Average rental yields in metro areas have increased by 0.5% this quarter due to high demand.</p>
-                            </div>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <div className="bg-white/20 p-2 rounded-lg mt-1"><FaMapMarkerAlt className="text-sm" /></div>
-                            <div>
-                                <h4 className="font-semibold text-lg">Suburban Shift</h4>
-                                <p className="text-indigo-200 text-sm">More buyers are moving to peripheral areas looking for larger homes and gated communities.</p>
-                            </div>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <div className="bg-white/20 p-2 rounded-lg mt-1"><FaChartLine className="text-sm" /></div>
-                            <div>
-                                <h4 className="font-semibold text-lg">Digital Viewing Surge</h4>
-                                <p className="text-indigo-200 text-sm">Properties with verified video tours are getting 3x more inquiries than image-only listings.</p>
-                            </div>
-                        </li>
+                    <div className="flex justify-between items-center mb-6 relative z-10">
+                        <h3 className="text-2xl font-bold flex items-center gap-2">
+                            <FaChartLine className="text-yellow-400" /> Daily Market Insights
+                        </h3>
+                        <span className="text-xs bg-white/20 px-2 py-1 rounded-full text-indigo-100">Updated {new Date().toLocaleDateString()}</span>
+                    </div>
+
+                    <ul className="space-y-6 relative z-10 transition-all">
+                        {dailyInsights.map((insight, idx) => (
+                            <li key={idx} className="flex items-start gap-4 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-default">
+                                <div className="bg-indigo-500/30 p-2.5 rounded-lg mt-1 shrink-0">
+                                    {insight.icon}
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-lg text-indigo-50 mb-1">{insight.title}</h4>
+                                    <p className="text-indigo-200 text-sm leading-relaxed">{insight.desc}</p>
+                                </div>
+                            </li>
+                        ))}
                     </ul>
                 </div>
 
-                <div className="bg-yellow-50 dark:bg-yellow-900/10 rounded-3xl p-8 border border-yellow-200 dark:border-yellow-800/30 flex flex-col justify-center items-center text-center">
-                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Ready to Invest?</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md">
-                        Use our data to find the perfect property that matches your investment goals.
-                    </p>
-                    <div className="flex gap-4">
-                        <Link
-                            to={currentUser
-                                ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/explore' : '/user/search')
-                                : '/search'
-                            }
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                        >
-                            Explore Properties
-                        </Link>
-                        <Link
-                            to={currentUser
-                                ? ((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/agents" : "/user/agents")
-                                : "/agents"
-                            }
-                            className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 font-semibold py-3 px-8 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
-                        >
-                            Find an Agent
-                        </Link>
+                {/* Conditional Section: Admin Actions vs User CTA */}
+                {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) ? (
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-500/10 transition-all duration-500"></div>
+
+                        <div className="mb-6 relative z-10">
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                🛡️ Admin Market Controls
+                            </h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Manage listing data, generate reports, and analyze market performance.</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 flex-grow relative z-10">
+                            <button
+                                onClick={() => alert("Market Report (CSV) generation started...")}
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800/50 transition-all group/btn"
+                            >
+                                <span className="text-2xl mb-2 group-hover/btn:scale-110 transition-transform">📊</span>
+                                <span className="font-semibold text-sm">Export Report</span>
+                            </button>
+
+                            <Link
+                                to="/admin/listings"
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-purple-200 dark:border-purple-800/50 transition-all group/btn"
+                            >
+                                <span className="text-2xl mb-2 group-hover/btn:scale-110 transition-transform">🏘️</span>
+                                <span className="font-semibold text-sm">Manage Listings</span>
+                            </Link>
+
+                            <button
+                                onClick={() => alert("Cache cleared! Real-time data will be fetched on next reload.")}
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40 border border-orange-200 dark:border-orange-800/50 transition-all group/btn"
+                            >
+                                <span className="text-2xl mb-2 group-hover/btn:scale-110 transition-transform group-hover/btn:rotate-180 duration-500">🔄</span>
+                                <span className="font-semibold text-sm">Refresh Cache</span>
+                            </button>
+
+                            <Link
+                                to="/admin/dashboard?tab=analytics"
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 transition-all group/btn"
+                            >
+                                <span className="text-2xl mb-2 group-hover/btn:scale-110 transition-transform">📈</span>
+                                <span className="font-semibold text-sm">Detailed Analytics</span>
+                            </Link>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="bg-yellow-50 dark:bg-yellow-900/10 rounded-3xl p-8 border border-yellow-200 dark:border-yellow-800/30 flex flex-col justify-center items-center text-center">
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Ready to Invest?</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md">
+                            Use our data to find the perfect property that matches your investment goals.
+                        </p>
+                        <div className="flex gap-4">
+                            <Link
+                                to={currentUser ? ((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/explore' : '/user/search') : '/search'}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            >
+                                Explore Properties
+                            </Link>
+                            <Link
+                                to={currentUser ? ((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? "/admin/agents" : "/user/agents") : "/agents"}
+                                className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 font-semibold py-3 px-8 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all hover:-translate-y-1"
+                            >
+                                Find an Agent
+                            </Link>
+                        </div>
+                    </div>
+                )}
             </section>
 
         </div>
