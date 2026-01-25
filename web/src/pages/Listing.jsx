@@ -1921,7 +1921,7 @@ export default function Listing() {
           {/* Details Card */}
           <div className="p-3 sm:p-6 bg-gray-50 dark:bg-gray-800 shadow-md rounded-lg mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-              <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-white break-words flex items-center gap-2">
+              <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-white break-words flex items-center gap-2">
                 {listing.name}
                 {listing.isVerified && (
                   <button
@@ -2000,7 +2000,7 @@ export default function Listing() {
                     )}
                   </button>
                 )}
-              </h2>
+              </h1>
               {/* Offer Badge */}
               {listing.offer && getDiscountPercentage() > 0 && (
                 <span

@@ -136,7 +136,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
             <div className="aspect-[16/10] w-full overflow-hidden">
               <img
                 src={listing.imageUrls[0]}
-                alt="home"
+                alt={listing.name || "Real Estate Property"}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 onError={(e) => {
                   e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
