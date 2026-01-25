@@ -47,7 +47,7 @@ export default function ThemeDetailModal({ theme, isOpen, onClose }) {
                     </div>
 
                     <div className="p-6 text-center">
-                        <h3 className={`text-2xl font-bold bg-clip-text text-transparent ${theme.textGradient || 'bg-gradient-to-r from-blue-600 to-purple-600'} mb-2`}>
+                        <h3 className={`text-2xl font-bold bg-clip-text text-transparent ${theme.textGradient || 'bg-gradient-to-r from-blue-600 to-purple-600'} mb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>
                             {theme.name}
                         </h3>
 
