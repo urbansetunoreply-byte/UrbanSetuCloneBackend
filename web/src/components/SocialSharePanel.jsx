@@ -3,7 +3,7 @@ import {
   FaFacebook, FaLinkedin, FaWhatsapp,
   FaTelegram, FaCopy, FaCheck, FaTimes, FaShareAlt,
   FaReddit, FaPinterest, FaTumblr, FaVk, FaOdnoklassniki,
-  FaEnvelope
+  FaEnvelope, FaChevronLeft, FaChevronRight
 } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import { SiKakaotalk, SiMix } from 'react-icons/si';
@@ -12,6 +12,9 @@ import { toast } from 'react-toastify';
 const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", description = "Discover the future of real estate with UrbanSetu." }) => {
   const [copied, setCopied] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const scrollRef = React.useRef(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -31,6 +34,30 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
     } catch (err) {
       console.error('Failed to copy: ', err);
       toast.error('Failed to copy link');
+    }
+  };
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(checkScroll, 100);
+    }
+  }, [isOpen]);
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const scrollAmount = 240;
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -152,27 +179,54 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
           </button>
         </div>
 
-        <div className="p-4 overflow-hidden">
+        <div className="p-4 overflow-hidden relative group/share">
           {/* Social Icons Row - YouTube Style */}
           <style>{`
             .no-scrollbar::-webkit-scrollbar { display: none; }
             .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           `}</style>
-          <div className="flex items-center gap-6 overflow-x-auto pb-4 pt-2 mb-2 no-scrollbar justify-start sm:justify-center">
-            {shareOptions.map((opt) => (
+
+          <div className="relative">
+            {/* Left Arrow */}
+            {canScrollLeft && (
               <button
-                key={opt.name}
-                onClick={() => window.open(opt.link, '_blank')}
-                className="flex flex-col items-center gap-2 group shrink-0"
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 w-8 h-8 bg-white dark:bg-[#2a2a2a] rounded-full shadow-lg border border-gray-100 dark:border-gray-700 hidden sm:flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#333] transition-all"
               >
-                <div className={`w-14 h-14 ${opt.color} rounded-full flex items-center justify-center text-white text-2xl transition-transform duration-200 transform group-hover:scale-110 shadow-md`}>
-                  {opt.icon}
-                </div>
-                <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 truncate w-14 text-center">
-                  {opt.name}
-                </span>
+                <FaChevronLeft size={12} />
               </button>
-            ))}
+            )}
+
+            <div
+              ref={scrollRef}
+              onScroll={checkScroll}
+              className="flex items-center gap-6 overflow-x-auto pb-4 pt-2 mb-2 no-scrollbar justify-start"
+            >
+              {shareOptions.map((opt) => (
+                <button
+                  key={opt.name}
+                  onClick={() => window.open(opt.link, '_blank')}
+                  className="flex flex-col items-center gap-2 group shrink-0"
+                >
+                  <div className={`w-14 h-14 ${opt.color} rounded-full flex items-center justify-center text-white text-2xl transition-transform duration-200 transform group-hover:scale-110 shadow-md`}>
+                    {opt.icon}
+                  </div>
+                  <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 truncate w-14 text-center">
+                    {opt.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Right Arrow */}
+            {canScrollRight && (
+              <button
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 w-8 h-8 bg-white dark:bg-[#2a2a2a] rounded-full shadow-lg border border-gray-100 dark:border-gray-700 hidden sm:flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#333] transition-all"
+              >
+                <FaChevronRight size={12} />
+              </button>
+            )}
           </div>
 
           {/* Link Copy Section - More compact */}
