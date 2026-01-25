@@ -249,8 +249,9 @@ const MarketTrends = () => {
                 </div>
 
                 {loadingCity ? (
-                    <div className="flex justify-center items-center py-32">
+                    <div className="flex flex-col justify-center items-center py-32 gap-4">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600"></div>
+                        <p className="text-gray-500 animate-pulse font-medium">Analyzing {selectedCity} Market Data...</p>
                     </div>
                 ) : cityData ? (
                     <motion.div
