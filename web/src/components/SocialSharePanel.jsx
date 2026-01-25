@@ -54,7 +54,7 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       icon: <FaXTwitter />,
       color: 'bg-[#000000]',
       hover: 'hover:bg-[#333333]',
-      link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${title}\n${description}`)}`
+      link: `https://x.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${title}\n${description}`)}`
     },
     {
       name: 'Email',
