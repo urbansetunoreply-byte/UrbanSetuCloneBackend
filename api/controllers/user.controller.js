@@ -468,6 +468,10 @@ export const getUserListings = async (req, res, next) => {
 export const getUserSummary = async (req, res, next) => {
     try {
         const userId = req.params.id;
+        const targetUser = await User.findById(userId);
+        if (!targetUser) {
+            return next(errorHandler(404, 'User not found'));
+        }
 
         // Check if user is admin or rootadmin or requesting their own summary
         const requestUser = await User.findById(req.user.id);
@@ -476,6 +480,8 @@ export const getUserSummary = async (req, res, next) => {
         if (!isAdmin && req.user.id !== userId) {
             return next(errorHandler(401, 'Unauthorized'));
         }
+
+        const isTargetAdmin = targetUser.role === 'admin' || targetUser.role === 'rootadmin';
 
         // Execute counts in parallel for performance
         const [
@@ -495,15 +501,15 @@ export const getUserSummary = async (req, res, next) => {
             routesCount,
             calculationsCount
         ] = await Promise.all([
-            Listing.countDocuments({ userRef: userId }),
-            Booking.countDocuments({ $or: [{ buyerId: userId }, { sellerId: userId }] }),
+            isTargetAdmin ? Listing.countDocuments({}) : Listing.countDocuments({ userRef: userId }),
+            isTargetAdmin ? Booking.countDocuments({}) : Booking.countDocuments({ $or: [{ buyerId: userId }, { sellerId: userId }] }),
             Wishlist.countDocuments({ userId }),
             PropertyWatchlist.countDocuments({ userId }),
-            Review.countDocuments({ userId }), // Reviews written by user
-            Listing.find({ userRef: userId }).then(async (userListings) => {
+            isTargetAdmin ? Review.countDocuments({}) : Review.countDocuments({ userId }), // Global reviews for admin, personal for user
+            isTargetAdmin ? Review.countDocuments({}) : Listing.find({ userRef: userId }).then(async (userListings) => {
                 const listingIds = userListings.map(l => l._id);
                 return Review.countDocuments({ listingId: { $in: listingIds } });
-            }).catch(() => 0), // Reviews received on user's listings
+            }).catch(() => 0),
             User.countDocuments({ "gamification.referredBy": userId }),
             Payment.countDocuments({ userId }).catch(() => 0),
             RentLockContract.countDocuments({ $or: [{ tenantId: userId }, { landlordId: userId }] }).catch(() => 0),

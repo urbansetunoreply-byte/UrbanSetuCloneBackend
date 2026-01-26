@@ -2193,7 +2193,10 @@ export default function Profile() {
               )}
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-              {statsAnimated ? <AnimatedCounter end={userStats.listings} delay={500} /> : userStats.listings}
+              {isAdmin
+                ? (statsAnimated ? <AnimatedCounter end={userStats.receivedReviews} delay={500} /> : userStats.receivedReviews)
+                : (statsAnimated ? <AnimatedCounter end={userStats.listings} delay={500} /> : userStats.listings)
+              }
             </h3>
             <p className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-500 transition-colors duration-300">
               {isAdmin ? 'Reviews' : 'My Listings'}
