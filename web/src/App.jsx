@@ -840,6 +840,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/blogs" element={currentUser ? <Navigate to="/user/blogs" /> : <PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/blog/:slug" element={currentUser ? <BlogRedirect /> : <PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/guides" element={currentUser ? <Navigate to="/user/guides" /> : <PublicGuides bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/guide/:slug" element={currentUser ? <BlogRedirect /> : <PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/faqs" element={currentUser ? <Navigate to="/user/faqs" /> : <PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/search" element={currentUser ? <Navigate to="/user/search" /> : <PublicSearch bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
             <Route path="/listing/:listingId" element={currentUser ? <NotFound /> : <Listing />} />
@@ -880,6 +881,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/blogs" element={<PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
               <Route path="/user/blog/:slug" element={<PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
               <Route path="/user/guides" element={<PublicGuides bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+              <Route path="/user/guide/:slug" element={<PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
               <Route path="/user/faqs" element={<PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
               <Route path="/user/search" element={<Search />} />
               <Route path="/user/profile" element={<Profile />} />
@@ -950,6 +952,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/blogs" element={<AdminBlogs type="blog" />} />
               <Route path="/admin/guides" element={<AdminBlogs type="guide" />} />
               <Route path="/admin/blog/:slug" element={<AdminBlogDetail />} />
+              <Route path="/admin/guide/:slug" element={<AdminBlogDetail />} />
               <Route path="/admin/faqs" element={<AdminFAQs />} />
               <Route path="/admin/explore" element={<AdminExplore />} />
               <Route path="/admin/create-listing" element={<AdminCreateListing />} />

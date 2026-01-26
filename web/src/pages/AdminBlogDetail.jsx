@@ -418,11 +418,11 @@ const AdminBlogDetail = () => {
 
         <div className="max-w-7xl mx-auto px-4 pt-10 pb-24 relative z-10">
           <button
-            onClick={() => navigate('/admin/blogs')}
+            onClick={() => navigate(blog.type === 'guide' ? '/admin/guides' : '/admin/blogs')}
             className="flex items-center gap-2 text-blue-200 hover:text-white transition-colors mb-6 group bg-white/10 px-4 py-2 rounded-full w-fit backdrop-blur-sm"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span className="font-medium text-sm">Back to Management</span>
+            <span className="font-medium text-sm">Back to {blog.type === 'guide' ? 'Guides' : 'Blogs'} Management</span>
           </button>
 
           <div className="animate-fade-in-up">
@@ -759,7 +759,7 @@ const AdminBlogDetail = () => {
               </h3>
               <div className="space-y-6">
                 {relatedBlogs.map((related, i) => (
-                  <div key={related._id} className="group cursor-pointer flex gap-4 items-start" onClick={() => navigate(`/admin/blog/${related.slug || related._id}`)}>
+                  <div key={related._id} className="group cursor-pointer flex gap-4 items-start" onClick={() => navigate(`/admin/${related.type === 'guide' ? 'guide' : 'blog'}/${related.slug || related._id}`)}>
                     <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700 relative">
                       {related.thumbnail ? (
                         <img src={related.thumbnail} className="w-full h-full object-cover" alt="" />

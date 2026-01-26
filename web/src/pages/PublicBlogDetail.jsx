@@ -349,11 +349,11 @@ const PublicBlogDetail = () => {
 
         <div className="max-w-7xl mx-auto px-4 pt-12 pb-24 relative z-10">
           <button
-            onClick={() => navigate('/blogs')}
+            onClick={() => navigate(blog.type === 'guide' ? '/guides' : '/blogs')}
             className="flex items-center gap-2 text-blue-200 hover:text-white transition-colors mb-8 group"
           >
             <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
-            <span className="font-medium">Back to Insights</span>
+            <span className="font-medium">Back to {blog.type === 'guide' ? 'Guides' : 'Blogs'}</span>
           </button>
 
           <div className="animate-fade-in-up">
@@ -645,7 +645,7 @@ const PublicBlogDetail = () => {
               </h3>
               <div className="space-y-6">
                 {relatedBlogs.map((related, i) => (
-                  <div key={related._id} className="group cursor-pointer" onClick={() => navigate(`/blog/${related.slug || related._id}`)}>
+                  <div key={related._id} className="group cursor-pointer" onClick={() => navigate(`/${related.type === 'guide' ? 'guide' : 'blog'}/${related.slug || related._id}`)}>
                     <div className="aspect-video rounded-xl overflow-hidden mb-3 relative bg-gray-100/50 dark:bg-gray-800/50">
                       {related.thumbnail ? (
                         <img src={related.thumbnail} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={related.title} />

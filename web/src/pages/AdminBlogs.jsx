@@ -405,7 +405,8 @@ const AdminBlogs = ({ type }) => {
 
   const handleViewDetails = (blog) => {
     const slug = blog.slug || blog._id;
-    navigate(`/admin/blog/${slug}`);
+    const typePath = blog.type === 'guide' ? 'guide' : 'blog';
+    navigate(`/admin/${typePath}/${slug}`);
   };
 
   const togglePublish = async (blog) => {
