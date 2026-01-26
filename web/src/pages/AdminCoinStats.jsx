@@ -443,8 +443,12 @@ export default function AdminCoinStats() {
                                         ) : userHistory.length === 0 ? (
                                             <tr><td colSpan="4" className="text-center py-20 text-gray-400">No transactions for this user.</td></tr>
                                         ) : (
-                                            userHistory.map(tx => (
-                                                <tr key={tx._id} className="hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                                            userHistory.map((tx, index) => (
+                                                <tr
+                                                    key={tx._id}
+                                                    className="hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
+                                                    style={{ animation: `fadeInRow 0.3s ease-out ${index * 0.03}s backwards` }}
+                                                >
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
                                                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
@@ -556,8 +560,12 @@ export default function AdminCoinStats() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    transactions.map((tx) => (
-                                        <tr key={tx._id} className="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
+                                    transactions.map((tx, index) => (
+                                        <tr
+                                            key={tx._id}
+                                            className="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors"
+                                            style={{ animation: `fadeInRow 0.3s ease-out ${index * 0.03}s backwards` }}
+                                        >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-gray-700 flex items-center justify-center text-slate-400 dark:text-gray-400 font-bold text-xs">
@@ -686,6 +694,10 @@ export default function AdminCoinStats() {
             <style>{`
                 @keyframes fadeInUp {
                     from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes fadeInRow {
+                    from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
                 @keyframes scaleIn {
