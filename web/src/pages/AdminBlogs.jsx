@@ -390,7 +390,7 @@ const AdminBlogs = ({ type }) => {
       });
 
       if (response.ok) {
-        toast.success('Blog deleted successfully');
+        toast.success(`${contentLabel} deleted successfully`);
         fetchBlogs();
         setShowDeleteModal(false);
         setBlogToDelete(null);
@@ -406,7 +406,7 @@ const AdminBlogs = ({ type }) => {
   const handleViewDetails = (blog) => {
     const slug = blog.slug || blog._id;
     const typePath = blog.type === 'guide' ? 'guide' : 'blog';
-    navigate(`/admin/${typePath}/${slug}`);
+    window.open(`/admin/${typePath}/${slug}`, '_blank');
   };
 
   const togglePublish = async (blog) => {
@@ -813,13 +813,13 @@ const AdminBlogs = ({ type }) => {
                             </td>
                             <td className="px-6 py-4 text-right">
                               <div className="flex items-center justify-end gap-2">
-                                <button onClick={() => handleViewDetails(blog)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800" title="View Public Page">
+                                <button onClick={() => handleViewDetails(blog)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800" title={`View ${contentLabel}`}>
                                   <ExternalLink className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => handleEdit(blog)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors border border-transparent hover:border-green-100 dark:hover:border-green-800" title="Edit Blog">
+                                <button onClick={() => handleEdit(blog)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors border border-transparent hover:border-green-100 dark:hover:border-green-800" title={`Edit ${contentLabel}`}>
                                   <Edit className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => handleDelete(blog._id)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-800" title="Delete Blog">
+                                <button onClick={() => handleDelete(blog._id)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-800" title={`Delete ${contentLabel}`}>
                                   <Trash className="w-4 h-4" />
                                 </button>
                               </div>
