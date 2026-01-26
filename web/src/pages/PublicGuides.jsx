@@ -496,7 +496,7 @@ const PublicGuides = () => {
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {featuredGuides.map((guide, idx) => (
-                                <Link to={`/blog/${guide.slug || guide._id}`} key={guide._id} className="group relative h-96 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer">
+                                <Link to={`/guide/${guide.slug || guide._id}`} key={guide._id} className="group relative h-96 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer">
                                     <img
                                         src={guide.thumbnail || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1073&q=80'} // Fallback 
                                         alt={guide.title}
@@ -547,7 +547,7 @@ const PublicGuides = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {guides.map((guide) => (
-                                <Link to={`/blog/${guide.slug || guide._id}`} key={guide._id} className="bg-white dark:bg-gray-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-800 transition-all duration-300 group flex flex-col h-full hover:-translate-y-1">
+                                <Link to={`/guide/${guide.slug || guide._id}`} key={guide._id} className="bg-white dark:bg-gray-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-800 transition-all duration-300 group flex flex-col h-full hover:-translate-y-1">
                                     {/* Card Image */}
                                     <div className="h-56 overflow-hidden relative">
                                         <img
