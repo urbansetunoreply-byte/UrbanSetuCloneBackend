@@ -1,11 +1,9 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { authenticatedFetch } from '../utils/auth';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
 import { Link } from 'react-router-dom';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaAndroid, FaDownload, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-import { downloadAndroidApp, getDownloadButtonText } from '../utils/androidDownload';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 import SEO from '../components/SEO';
@@ -19,9 +17,6 @@ export default function PublicAbout() {
   const [aboutData, setAboutData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedFaq, setExpandedFaq] = useState(null);
-  const termsLink = '/terms';
-  const privacyLink = '/privacy';
-  const communityGuidelinesLink = '/community-guidelines';
 
   const handlePhoneClick = (phoneNumber) => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -61,7 +56,20 @@ export default function PublicAbout() {
   }, []);
 
   if (loading || !aboutData) {
-    return <AboutSkeleton />;
+    return (
+      <>
+        <SEO
+          title={seoTitle}
+          description={seoDescription}
+          keywords="about urbansetu, real estate platform india, bhavith tungena, property mission"
+        />
+        <div className="sr-only" aria-hidden="true">
+          <h1>About UrbanSetu – India's Verified Real Estate Platform</h1>
+          <p>UrbanSetu is a smart real estate ecosystem founded by Bhavith Tungena. Our mission is to provide trust and transparency in property transactions through AI-powered verification and virtual tours.</p>
+        </div>
+        <AboutSkeleton />
+      </>
+    );
   }
 
   return (
@@ -150,8 +158,8 @@ export default function PublicAbout() {
             <FaCog className="text-blue-500 dark:text-blue-300" /> How UrbanSetu Works
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {(aboutData.howItWorks ? Object.entries(aboutData.howItWorks) : []).map(([key, section], idx) => (
-              <div key={key} className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg p-6 border border-blue-200 dark:border-blue-800 transition-colors">
+            {(aboutData.howItWorks ? Object.entries(aboutData.howItWorks) : []).map(([_, section]) => (
+              <div key={_} className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg p-6 border border-blue-200 dark:border-blue-800 transition-colors">
                 <h3 className="text-xl font-bold text-blue-800 dark:text-blue-300 mb-4 flex items-center gap-2">
                   <FaRocket className="text-blue-600 dark:text-blue-400" /> {section.title}
                 </h3>
