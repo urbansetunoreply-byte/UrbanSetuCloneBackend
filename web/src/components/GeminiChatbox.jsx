@@ -6333,7 +6333,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     handleInputChange(e);
                                                     // Auto-resize
                                                     e.target.style.height = 'auto';
-                                                    e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
+                                                    e.target.style.height = Math.min(e.target.scrollHeight, 250) + 'px';
                                                 }}
                                                 onKeyDown={(e) => {
                                                     // Handle Enter to send, Ctrl+Enter or Shift+Enter for new line
@@ -6356,7 +6356,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 if (inputRef.current) {
                                                                     inputRef.current.selectionStart = inputRef.current.selectionEnd = start + 1;
                                                                     inputRef.current.style.height = 'auto';
-                                                                    inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
+                                                                    inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 250) + 'px';
                                                                 }
                                                             }, 0);
                                                         } else {
@@ -6389,7 +6389,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             setTimeout(() => {
                                                                 if (inputRef.current) {
                                                                     inputRef.current.style.height = 'auto';
-                                                                    inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
+                                                                    inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 250) + 'px';
                                                                 }
                                                             }, 0);
                                                         }
@@ -6401,12 +6401,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 aria-label="Type your message"
                                                 aria-describedby="input-help"
                                                 role="textbox"
-                                                rows={1}
-                                                className={`w-full pl-10 ${inputMessage.length > 1800 ? 'pr-24' : 'pr-4'} py-2 border rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
+                                                rows={2}
+                                                className={`w-full pl-10 ${inputMessage.length > 1800 ? 'pr-24' : 'pr-4'} py-3 border rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
                                                     ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                                                     : 'bg-white border-gray-300 text-gray-900'
                                                     }`}
-                                                style={{ minHeight: '40px', maxHeight: '150px' }}
+                                                style={{ minHeight: '60px', maxHeight: '250px' }}
                                                 disabled={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                             />
                                             {inputMessage.length > 1800 && (
