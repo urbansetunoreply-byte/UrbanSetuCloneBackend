@@ -219,12 +219,9 @@ const PublicFAQs = () => {
           ...prev,
           [faqId]: data.data.reaction
         }));
-
-        setIsLoggedIn(true); // User is authenticated if reaction worked
       } else {
         if (response.status === 401) {
           toast.info('Please log in to rate this FAQ');
-          setIsLoggedIn(false);
         } else {
           const errorData = await response.json();
           toast.error(errorData.message || 'Error rating FAQ');
