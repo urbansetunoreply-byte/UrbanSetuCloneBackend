@@ -97,6 +97,36 @@ const PublicGuides = () => {
         }
     }, [currentUser]);
 
+    // Debounced search effect
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (searchTerm.trim().length > 0) {
+                fetchSuggestions();
+            } else {
+                setSuggestions([]);
+            }
+
+            if (pagination.current === 1) {
+                fetchGuides(false); // Don't show loading for search
+            } else {
+                setPagination(prev => ({ ...prev, current: 1 }));
+            }
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm]);
+
+    // Click outside to close suggestions
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.search-container')) {
+                setShowSuggestions(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     // Immediate filter effects
     useEffect(() => {
         if (pagination.current === 1) {
@@ -104,12 +134,32 @@ const PublicGuides = () => {
         } else {
             setPagination(prev => ({ ...prev, current: 1 }));
         }
-    }, [selectedCategory, searchTerm, selectedTags]);
+    }, [selectedCategory, selectedTags]);
 
     // Pagination effect
     useEffect(() => {
         fetchGuides();
     }, [pagination.current]);
+
+    const fetchSuggestions = async () => {
+        try {
+            const params = new URLSearchParams({
+                published: 'true',
+                type: 'guide',
+                search: searchTerm,
+                limit: 5
+            });
+
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?${params}`, { autoRedirect: false });
+
+            if (response.ok) {
+                const data = await response.json();
+                setSuggestions(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching suggestions:', error);
+        }
+    };
 
     const toggleCategory = (categoryName) => {
         if (categoryName === 'All') {
@@ -369,6 +419,12 @@ const PublicGuides = () => {
         }
     };
 
+    const handleSearch = (e) => {
+        e.preventDefault();
+        setPagination(prev => ({ ...prev, current: 1 }));
+        fetchGuides();
+    };
+
     const truncateText = (text, maxLength) => {
         if (!text) return "";
         if (text.length <= maxLength) return text;
@@ -424,16 +480,61 @@ const PublicGuides = () => {
 
                     {/* Search Bar */}
                     <div className="max-w-2xl mx-auto relative animate-fade-in-up delay-300">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <SearchIcon className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Search guides (e.g., 'RERA', 'First time buyer')..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="block w-full pl-12 pr-4 py-4 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white placeholder-purple-200 focus:outline-none focus:ring-4 focus:ring-purple-500/50 shadow-2xl transition-all"
-                        />
+                        <form onSubmit={handleSearch}>
+                            <div className="relative search-container">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <SearchIcon className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Search guides (e.g., 'RERA', 'First time buyer')..."
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setShowSuggestions(true);
+                                    }}
+                                    onFocus={() => setShowSuggestions(true)}
+                                    className="block w-full pl-12 pr-4 py-4 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white placeholder-purple-200 focus:outline-none focus:ring-4 focus:ring-purple-500/50 shadow-2xl transition-all"
+                                />
+
+                                {/* Suggestions Dropdown */}
+                                {showSuggestions && searchTerm.trim().length > 0 && (
+                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 animate-fade-in-up">
+                                        {suggestions.length > 0 ? (
+                                            <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                                                {suggestions.map((suggestion) => (
+                                                    <li key={suggestion._id}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSearchTerm(suggestion.title);
+                                                                setShowSuggestions(false);
+                                                                setPagination(prev => ({ ...prev, current: 1 }));
+                                                            }}
+                                                            className="w-full px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-center justify-between group"
+                                                        >
+                                                            <div>
+                                                                <h4 className="font-bold text-gray-800 dark:text-gray-200 line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors text-sm">
+                                                                    {suggestion.title}
+                                                                </h4>
+                                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">
+                                                                    {suggestion.category}
+                                                                </span>
+                                                            </div>
+                                                            <ArrowRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0" />
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <div className="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                                No guides found matching "{searchTerm}"
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
