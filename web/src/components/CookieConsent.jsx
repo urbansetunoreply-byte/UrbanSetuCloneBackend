@@ -201,7 +201,7 @@ const CookieConsent = () => {
       setIsVisible(false);
       setShowSettings(false);
       setIsClosing(false);
-    }, 600); // Increased to match CSS duration for a smoother exit
+    }, 800); // Wait for the 800ms animation to finish
   };
 
   const handlePreferenceChange = (category) => {
@@ -395,8 +395,11 @@ const CookieConsent = () => {
 
 // Helper Components
 const BannerWrapper = ({ children, isClosing }) => (
-  <div className={`fixed bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 z-[90] bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50 shadow-2xl rounded-2xl p-6 transform transition-all duration-600 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isClosing ? 'opacity-0 translate-y-20 scale-95' : 'opacity-100 translate-y-0 scale-100'
-    }`}>
+  <div
+    className={`fixed bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 z-[90] bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50 shadow-2xl rounded-2xl p-6 transform transition-all ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isClosing ? 'opacity-0 translate-y-32 scale-90' : 'opacity-100 translate-y-0 scale-100'
+      }`}
+    style={{ transitionDuration: '800ms' }}
+  >
     {children}
   </div>
 );
