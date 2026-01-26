@@ -4,6 +4,11 @@ import Blog from '../models/blog.model.js';
 import path from 'path';
 import fs from 'fs';
 
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const router = express.Router();
 
 const getBaseUrl = (req) => {
@@ -17,9 +22,24 @@ const getBaseUrl = (req) => {
 
 // Route for the XSL stylesheet
 router.get('/sitemap.xsl', (req, res) => {
-    const xslPath = path.resolve('api/public/sitemap.xsl');
-    res.header('Content-Type', 'application/xml');
-    res.sendFile(xslPath);
+    try {
+        const xslPath = path.join(__dirname, '../public/sitemap.xsl');
+        if (fs.existsSync(xslPath)) {
+            res.header('Content-Type', 'text/xsl');
+            return res.sendFile(xslPath);
+        }
+
+        // Fallback for Render or different structures
+        const altPath = path.resolve('public/sitemap.xsl');
+        if (fs.existsSync(altPath)) {
+            res.header('Content-Type', 'text/xsl');
+            return res.sendFile(altPath);
+        }
+
+        res.status(404).send('Stylesheet not found');
+    } catch (error) {
+        res.status(500).send('Error serving stylesheet');
+    }
 });
 
 // Main Sitemap Index
