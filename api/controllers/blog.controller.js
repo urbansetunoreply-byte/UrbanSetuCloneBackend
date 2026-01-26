@@ -962,8 +962,13 @@ export const getBlogAnalytics = async (req, res, next) => {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        // Build base type filter
-        const typeFilter = type && type !== 'all' ? { type } : {};
+        // Build base type filter to match getBlogs logic (legacy blogs are 'blog' by default)
+        let typeFilter = {};
+        if (type === 'blog') {
+            typeFilter = { type: { $in: ['blog', null] } };
+        } else if (type && type !== 'all') {
+            typeFilter = { type };
+        }
 
         // Find relevant blog IDs for the type if filtering
         let blogIds = null;
@@ -1003,7 +1008,7 @@ export const getBlogAnalytics = async (req, res, next) => {
         ]);
 
         // Get total stats
-        const summaryMatch = type && type !== 'all' ? { type } : {};
+        const summaryMatch = typeFilter;
         const totalStats = await Blog.aggregate([
             { $match: summaryMatch },
             {
