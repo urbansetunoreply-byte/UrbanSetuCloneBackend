@@ -23,12 +23,13 @@ import { authenticatedFetch } from '../utils/auth';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const AdminBlogDetail = () => {
-  // Set page title
-  usePageTitle(blog ? `${blog.title} - Admin Panel` : "Loading - Admin Panel");
-
   const { slug } = useParams();
   const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
+
+  // Set page title
+  usePageTitle(blog ? `${blog.title} - Admin Panel` : "Loading - Admin Panel");
+
   const [relatedBlogs, setRelatedBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
