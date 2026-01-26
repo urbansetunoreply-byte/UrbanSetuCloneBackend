@@ -56,6 +56,7 @@ export default function RoutePlanner() {
   const [alternatives, setAlternatives] = useState([]);
   const [selectedAlternative, setSelectedAlternative] = useState(0);
   const [isRouteSaved, setIsRouteSaved] = useState(false);
+  const [isSavingRoute, setIsSavingRoute] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(null);
   const [hasRestoredFromUrl, setHasRestoredFromUrl] = useState(false);
   const [brandExpanded, setBrandExpanded] = useState(true);
@@ -630,6 +631,7 @@ export default function RoutePlanner() {
       timestamp: new Date()
     };
 
+    setIsSavingRoute(true);
     try {
       const response = await authenticatedFetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/save`, {
         method: 'POST',
@@ -652,6 +654,8 @@ export default function RoutePlanner() {
     } catch (error) {
       console.error('Error saving route:', error);
       toast.error('Failed to save route. Please try again.');
+    } finally {
+      setIsSavingRoute(false);
     }
   };
 
@@ -1379,8 +1383,25 @@ export default function RoutePlanner() {
 
                     {/* Quick Actions Bar */}
                     <div className="grid grid-cols-2 gap-2 mt-4 print:hidden">
-                      <button onClick={saveRoute} disabled={isRouteSaved} className={`flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition-colors ${isRouteSaved ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'}`}>
-                        <FaBookmark /> {isRouteSaved ? 'Saved' : 'Save'}
+                      <button
+                        onClick={saveRoute}
+                        disabled={isRouteSaved || isSavingRoute}
+                        className={`flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition-colors ${isRouteSaved ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'}`}
+                      >
+                        {isSavingRoute ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                            Saving...
+                          </>
+                        ) : isRouteSaved ? (
+                          <>
+                            <FaBookmark /> Saved
+                          </>
+                        ) : (
+                          <>
+                            <FaBookmark /> Save
+                          </>
+                        )}
                       </button>
                       <button onClick={shareRoute} className="flex-1 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
                         <FaShare /> Share
