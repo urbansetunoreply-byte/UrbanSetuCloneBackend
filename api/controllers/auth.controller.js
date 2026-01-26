@@ -483,11 +483,11 @@ export const Google = async (req, res, next) => {
             if (validUser.status === 'suspended') {
                 return next(errorHandler(403, "Your account is suspended. Please contact support."));
             }
-            // Generate token pair with sessionId
-            const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id, sessionId: session.sessionId });
-
             // Create enhanced session for Google login as well
             const session = await createEnhancedSession(validUser._id, req);
+
+            // Generate token pair with sessionId
+            const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id, sessionId: session.sessionId });
 
             // Enforce role-based session limits
             await enforceSessionLimits(validUser._id, validUser.role, req.app.get('io'));
@@ -712,11 +712,11 @@ export const Google = async (req, res, next) => {
                 }
             }
 
-            // Generate token pair with sessionId
-            const { accessToken, refreshToken } = generateTokenPair({ id: newUser._id, sessionId: session.sessionId });
-
             // Create enhanced session for Google signup/login
             const session = await createEnhancedSession(newUser._id, req);
+
+            // Generate token pair with sessionId
+            const { accessToken, refreshToken } = generateTokenPair({ id: newUser._id, sessionId: session.sessionId });
 
             // Enforce role-based session limits
             await enforceSessionLimits(newUser._id, newUser.role, req.app.get('io'));
