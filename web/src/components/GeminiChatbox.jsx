@@ -6278,7 +6278,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         </div>
                                     ) : (
                                         <>
-                                            <div ref={inputOptionsRef} className="absolute left-2 inset-y-0 flex items-center z-10">
+                                            <div ref={inputOptionsRef} className="absolute left-2 top-0 h-[52px] flex items-center z-10">
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowInputOptions(!showInputOptions)}
@@ -6402,7 +6402,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 aria-describedby="input-help"
                                                 role="textbox"
                                                 rows={1}
-                                                className={`w-full pl-10 ${inputMessage.length > 1800 ? 'pr-24' : 'pr-4'} py-3.5 border rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
+                                                className={`w-full pl-10 ${inputMessage.length > 1800 ? 'pr-24' : 'pr-4'} py-4 border rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
                                                     ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                                                     : 'bg-white border-gray-300 text-gray-900'
                                                     }`}
