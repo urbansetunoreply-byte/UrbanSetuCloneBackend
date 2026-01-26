@@ -14,6 +14,51 @@ class GlobalErrorBoundary extends React.Component {
 
     componentDidCatch(error, errorInfo) {
         console.error("Uncaught error:", error, errorInfo);
+
+        // Report to backend monitor via VisitorTracker mechanism
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+            const userInfoStr = localStorage.getItem('persist:root');
+            let userInfo = undefined;
+
+            if (userInfoStr) {
+                try {
+                    const parsed = JSON.parse(userInfoStr);
+                    const user = JSON.parse(parsed.user);
+                    if (user && user.currentUser) {
+                        userInfo = {
+                            userId: user.currentUser._id,
+                            username: user.currentUser.username,
+                            email: user.currentUser.email,
+                            role: user.currentUser.role
+                        };
+                    }
+                } catch (e) { }
+            }
+
+            const body = {
+                type: 'heartbeat', // Use heartbeat to avoid triggering a new pageview in logs
+                userInfo,
+                page: window.location.pathname,
+                source: window.location.hostname,
+                metrics: {
+                    errors: [{
+                        message: `React Error: ${error.message || 'Unknown'}`,
+                        stack: error.stack?.slice(0, 1000),
+                        source: 'GlobalErrorBoundary',
+                        timestamp: new Date()
+                    }]
+                }
+            };
+
+            fetch(`${API_BASE_URL}/api/visitors/track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            }).catch(() => { });
+        } catch (e) {
+            console.error("Failed to report error:", e);
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {

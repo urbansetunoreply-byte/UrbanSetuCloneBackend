@@ -192,10 +192,15 @@ export const trackVisitor = async (req, res, next) => {
           if (req.body.metrics) {
             const metrics = req.body.metrics;
             // Find the most relevant page to attach metrics to
-            // Try to find exact match in recent history, otherwise use last page
-            let targetPage = existingVisitor.pageViews.slice().reverse().find(pv => pv.path === page);
+            // Try to find exact match in recent history (looping backwards manually to avoid slice().reverse())
+            let targetPage = null;
+            for (let i = existingVisitor.pageViews.length - 1; i >= 0; i--) {
+              if (existingVisitor.pageViews[i].path === page) {
+                targetPage = existingVisitor.pageViews[i];
+                break;
+              }
+            }
             if (!targetPage) targetPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
-
             if (targetPage) {
               // Update scroll depth only if it's deeper
               if (metrics.scrollPercentage && metrics.scrollPercentage > (targetPage.scrollPercentage || 0)) {
@@ -218,15 +223,17 @@ export const trackVisitor = async (req, res, next) => {
                 if (!targetPage.errorLogs) targetPage.errorLogs = [];
                 metrics.errors.forEach(e => targetPage.errorLogs.push(e));
 
-                // --- TRIGGER ADMIN NOTIFICATIONS ---
+                // Notify Admins
                 await notifyAdminsOfErrors(metrics.errors, existingVisitor, page, userInfo, req);
               }
             } else if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
-              // Fallback: Notify even if no page view was found (shouldn't happen but safe)
+              // Fallback: Notify even if no page view was found
               await notifyAdminsOfErrors(metrics.errors, existingVisitor, page, userInfo, req);
             }
           }
 
+          // Explicitly mark as modified since we updated deep within nested arrays/objects
+          existingVisitor.markModified('pageViews');
           await existingVisitor.save();
 
           res.status(200).json({
@@ -550,7 +557,11 @@ export const getClientErrors = async (req, res, next) => {
 
     // Build match stage for date filter
     const matchStage = {
-      'pageViews.errorLogs': { $exists: true, $not: { $size: 0 } }
+      'pageViews': {
+        $elemMatch: {
+          'errorLogs.0': { $exists: true }
+        }
+      }
     };
 
     if (browser && browser !== 'all') matchStage.browser = { $regex: browser, $options: 'i' };
