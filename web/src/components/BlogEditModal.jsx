@@ -3,6 +3,7 @@ import { FaTimes, FaImage, FaVideo, FaTags, FaPencilAlt, FaPlus, FaCloudUploadAl
 import { toast } from 'react-toastify';
 import ImagePreview from './ImagePreview';
 import VideoPreview from './VideoPreview';
+import MarkdownEditor from './MarkdownEditor';
 import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
@@ -256,15 +257,14 @@ const BlogEditModal = ({
             </div>
 
             {/* Content Section */}
-            <div>
-              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 mb-3 ml-1 uppercase tracking-wider">📖 Full Content <span className="text-red-500">*</span></label>
-              <textarea
+            <div className="space-y-3">
+              <label className="block text-sm font-black text-gray-700 dark:text-gray-300 ml-1 uppercase tracking-wider">
+                📖 Rich Content <span className="text-red-500">*</span>
+              </label>
+              <MarkdownEditor
                 value={formData.content}
-                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                rows={10}
-                className="w-full px-5 py-4 border border-gray-200 dark:border-gray-600 rounded-2xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/30 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-300 font-medium placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="Tell your story. Support Markdown if possible..."
-                required
+                onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+                placeholder="Write your story using Markdown. Use the toolbar for quick formatting!"
               />
             </div>
 
@@ -620,24 +620,44 @@ const BlogEditModal = ({
               </div>
             </div>
 
-            {/* Status Section */}
-            <div className="p-6 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-3xl border border-blue-100 dark:border-blue-800 shadow-sm">
+            {/* Status & Scheduling Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-3xl border border-blue-100 dark:border-blue-800 shadow-sm transition-all duration-300">
+              {/* Manual Publish */}
               <label className="flex items-center group cursor-pointer select-none">
                 <div className="relative">
                   <input
                     type="checkbox"
                     checked={formData.published}
-                    onChange={(e) => setFormData(prev => ({ ...prev, published: e.target.checked }))}
+                    onChange={(e) => {
+                      const isPublished = e.target.checked;
+                      setFormData(prev => ({
+                        ...prev,
+                        published: isPublished,
+                        scheduledAt: isPublished ? null : prev.scheduledAt
+                      }));
+                    }}
                     className="sr-only peer"
                   />
                   <div className="w-14 h-8 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:bg-blue-600 transition-all duration-300"></div>
                   <div className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-sm"></div>
                 </div>
                 <div className="ml-4">
-                  <span className="block text-base font-black text-gray-800 dark:text-white tracking-tight">🚀 Publish {contentLabel} Post</span>
+                  <span className="block text-base font-black text-gray-800 dark:text-white tracking-tight">🚀 Publish Now</span>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Visible to all users immediately</span>
                 </div>
               </label>
+
+              {/* Scheduling */}
+              <div className={`transition-all duration-500 ${formData.published ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+                <label className="block text-xs font-black text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-widest ml-1">📅 Or Schedule Publication</label>
+                <input
+                  type="datetime-local"
+                  value={formData.scheduledAt ? new Date(new Date(formData.scheduledAt).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, scheduledAt: e.target.value }))}
+                  disabled={formData.published}
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all text-sm font-bold"
+                />
+              </div>
             </div>
           </form>
         </div>

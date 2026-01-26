@@ -65,6 +65,10 @@ const blogSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    scheduledAt: {
+        type: Date,
+        default: null
+    },
     views: {
         type: Number,
         default: 0

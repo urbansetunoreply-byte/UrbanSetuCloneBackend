@@ -90,6 +90,58 @@ const handleViewCount = async (blogId, req) => {
     }
 };
 
+// Helper function to publish scheduled blogs
+const publishScheduledBlogs = async () => {
+    try {
+        const now = new Date();
+        const scheduledBlogs = await Blog.find({
+            published: false,
+            scheduledAt: { $lte: now, $ne: null }
+        });
+
+        if (scheduledBlogs.length > 0) {
+            console.log(`Auto-publishing ${scheduledBlogs.length} scheduled blogs...`);
+            for (const blog of scheduledBlogs) {
+                blog.published = true;
+                blog.publishedAt = blog.scheduledAt; // Keep the original intended date
+                blog.scheduledAt = null; // Clear scheduling
+                await blog.save();
+
+                // Send notifications
+                sendBlogNotifications(blog);
+            }
+        }
+    } catch (error) {
+        console.error('Error publishing scheduled blogs:', error);
+    }
+};
+
+// Helper function to send blog notifications
+const sendBlogNotifications = async (blog) => {
+    try {
+        const isGuide = blog.type === 'guide';
+        const preferenceQuery = isGuide ? { 'preferences.guide': true } : { 'preferences.blog': true };
+
+        const subscribers = await Subscription.find({
+            status: 'approved',
+            ...preferenceQuery
+        }).select('email');
+
+        console.log(`Starting ${blog.type} notification for "${blog.title}" to ${subscribers.length} subscribers...`);
+
+        for (const sub of subscribers) {
+            try {
+                await sendNewBlogNotification(sub.email, 'Subscriber', blog);
+            } catch (err) {
+                console.error(`Failed to send blog notification to ${sub.email}`, err);
+            }
+        }
+        console.log('Blog notifications completed.');
+    } catch (error) {
+        console.error('Error fetching subscribers for blog notification:', error);
+    }
+};
+
 // Helper function to cleanup old view records (optional - can be called periodically)
 const cleanupOldViews = async () => {
     try {
@@ -108,6 +160,9 @@ const cleanupOldViews = async () => {
 // Get blogs with filtering
 export const getBlogs = async (req, res, next) => {
     try {
+        // Auto-publish any due scheduled blogs
+        await publishScheduledBlogs();
+
         const {
             propertyId,
             category,
@@ -340,7 +395,8 @@ export const createBlog = async (req, res, next) => {
             category,
             type,
             featured,
-            published
+            published,
+            scheduledAt
         } = req.body;
         const author = req.user.id;
 
@@ -378,7 +434,8 @@ export const createBlog = async (req, res, next) => {
             type: type || 'blog',
             featured: featured || false,
             published: published || false,
-            publishedAt: published ? new Date() : null
+            publishedAt: published ? new Date() : (scheduledAt ? null : null),
+            scheduledAt: (!published && scheduledAt) ? new Date(scheduledAt) : null
         };
 
         const blog = await Blog.create(blogData);
@@ -392,31 +449,7 @@ export const createBlog = async (req, res, next) => {
         // AUTOMATED EMAIL NOTIFICATION: Send to all verified users if published immediately
         if (blog.published) {
             // Run asynchronously to not block the response
-            (async () => {
-                try {
-                    const isGuide = blog.type === 'guide';
-                    const preferenceQuery = isGuide ? { 'preferences.guide': true } : { 'preferences.blog': true };
-
-                    const subscribers = await Subscription.find({
-                        status: 'approved',
-                        ...preferenceQuery
-                    }).select('email');
-
-                    console.log(`Starting ${blog.type} notification for "${blog.title}" to ${subscribers.length} subscribers...`);
-
-                    // Send in chunks or sequentially to respect rate limits
-                    for (const sub of subscribers) {
-                        try {
-                            await sendNewBlogNotification(sub.email, 'Subscriber', blog);
-                        } catch (err) {
-                            console.error(`Failed to send blog notification to ${sub.email}`, err);
-                        }
-                    }
-                    console.log('Blog notifications completed.');
-                } catch (error) {
-                    console.error('Error fetching subscribers for blog notification:', error);
-                }
-            })();
+            sendBlogNotifications(blog);
         }
 
         res.status(201).json({
@@ -445,7 +478,8 @@ export const updateBlog = async (req, res, next) => {
             category,
             type,
             featured,
-            published
+            published,
+            scheduledAt
         } = req.body;
 
         const blog = await Blog.findById(id);
@@ -485,8 +519,18 @@ export const updateBlog = async (req, res, next) => {
         if (featured !== undefined) blog.featured = featured;
         if (published !== undefined) {
             blog.published = published;
-            if (published && !blog.publishedAt) {
-                blog.publishedAt = new Date();
+            if (published) {
+                if (!blog.publishedAt) {
+                    blog.publishedAt = new Date();
+                }
+                blog.scheduledAt = null; // Clear scheduling if manually published
+            }
+        }
+        if (scheduledAt !== undefined) {
+            blog.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
+            if (blog.scheduledAt && blog.published) {
+                blog.published = false; // Unpublish if scheduled for future
+                blog.publishedAt = null;
             }
         }
 
@@ -501,30 +545,7 @@ export const updateBlog = async (req, res, next) => {
         // AUTOMATED EMAIL NOTIFICATION: Send to all verified users if newly published
         if (!wasPublished && blog.published) {
             // Run asynchronously to not block the response
-            (async () => {
-                try {
-                    const isGuide = blog.type === 'guide';
-                    const preferenceQuery = isGuide ? { 'preferences.guide': true } : { 'preferences.blog': true };
-
-                    const subscribers = await Subscription.find({
-                        status: 'approved',
-                        ...preferenceQuery
-                    }).select('email');
-
-                    console.log(`Starting ${blog.type} notification for "${blog.title}" to ${subscribers.length} subscribers...`);
-
-                    for (const sub of subscribers) {
-                        try {
-                            await sendNewBlogNotification(sub.email, 'Subscriber', blog);
-                        } catch (err) {
-                            console.error(`Failed to send blog notification to ${sub.email}`, err);
-                        }
-                    }
-                    console.log('Blog notifications completed.');
-                } catch (error) {
-                    console.error('Error fetching subscribers for blog notification:', error);
-                }
-            })();
+            sendBlogNotifications(blog);
         }
 
         res.status(200).json({
@@ -928,6 +949,91 @@ export const getBlogTags = async (req, res, next) => {
         res.status(200).json({
             success: true,
             data: tags
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Get blog analytics
+export const getBlogAnalytics = async (req, res, next) => {
+    try {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        // Group views by date
+        const viewsData = await BlogView.aggregate([
+            {
+                $match: {
+                    viewedAt: { $gte: thirtyDaysAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$viewedAt" } },
+                    views: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // Group likes by date
+        const likesData = await BlogLike.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: thirtyDaysAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    likes: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // Get total stats
+        const totalStats = await Blog.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalViews: { $sum: "$views" },
+                    totalLikes: { $sum: "$likes" },
+                    totalBlogs: { $sum: 1 },
+                    publishedBlogs: { $sum: { $cond: ["$published", 1, 0] } }
+                }
+            }
+        ]);
+
+        // Merge view and like data for frontend
+        const last30Days = [];
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+
+            const viewEntry = viewsData.find(v => v._id === dateStr);
+            const likeEntry = likesData.find(l => l._id === dateStr);
+
+            last30Days.push({
+                date: dateStr,
+                views: viewEntry ? viewEntry.views : 0,
+                likes: likeEntry ? likeEntry.likes : 0
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                daily: last30Days,
+                summary: totalStats[0] || {
+                    totalViews: 0,
+                    totalLikes: 0,
+                    totalBlogs: 0,
+                    publishedBlogs: 0
+                }
+            }
         });
     } catch (error) {
         next(error);

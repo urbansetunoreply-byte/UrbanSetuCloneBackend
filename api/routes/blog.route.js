@@ -11,7 +11,8 @@ import {
     deleteComment,
     updateComment,
     getBlogCategories,
-    getBlogTags
+    getBlogTags,
+    getBlogAnalytics
 } from '../controllers/blog.controller.js';
 import { verifyToken, optionalAuth } from '../utils/verify.js';
 
@@ -31,6 +32,7 @@ router.delete('/:id/comment/:commentId', verifyToken, deleteComment); // DELETE 
 router.put('/:id/comment/:commentId', verifyToken, updateComment); // PUT /api/blogs/:id/comment/:commentId
 
 // Admin routes (protected)
+router.get('/stats/analytics', verifyToken, getBlogAnalytics); // GET /api/blogs/stats/analytics
 router.post('/', verifyToken, createBlog); // POST /api/blogs
 router.put('/:id', verifyToken, updateBlog); // PUT /api/blogs/:id
 router.delete('/:id', verifyToken, deleteBlog); // DELETE /api/blogs/:id

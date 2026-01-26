@@ -9,6 +9,7 @@ import {
   CheckCircle, RefreshCw, XCircle, Ban, UserX
 } from 'lucide-react';
 import BlogEditModal from '../components/BlogEditModal';
+import BlogAnalytics from '../components/BlogAnalytics';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { authenticatedFetch } from '../utils/auth';
@@ -55,7 +56,8 @@ const AdminBlogs = ({ type }) => {
     propertyId: '',
     tags: [],
     category: 'Real Estate Tips',
-    published: false
+    published: false,
+    scheduledAt: null
   });
 
   const [propertySearch, setPropertySearch] = useState('');
@@ -315,7 +317,8 @@ const AdminBlogs = ({ type }) => {
       category: (filterPostType === 'guide' ? 'Home Buying' : 'Real Estate Tips'),
       type: filterPostType !== 'all' ? filterPostType : 'blog',
       featured: false,
-      published: false
+      published: false,
+      scheduledAt: null
     });
     setShowModal(true);
   };
@@ -334,7 +337,8 @@ const AdminBlogs = ({ type }) => {
       category: blog.category,
       type: blog.type || 'blog',
       featured: blog.featured || false,
-      published: blog.published
+      published: blog.published,
+      scheduledAt: blog.scheduledAt
     });
     setShowModal(true);
   };
@@ -535,11 +539,22 @@ const AdminBlogs = ({ type }) => {
           >
             Subscribers
           </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'analytics'
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+          >
+            Analytics
+          </button>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-grow max-w-7xl mx-auto px-4 w-full relative z-10 pb-20">
+
+        {activeTab === 'analytics' && <BlogAnalytics />}
 
         {activeTab === 'blogs' ? (
           <>
@@ -783,11 +798,13 @@ const AdminBlogs = ({ type }) => {
                                 onClick={() => togglePublish(blog)}
                                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold cursor-pointer transition-all hover:scale-105 border ${blog.published
                                   ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
-                                  : 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
+                                  : blog.scheduledAt
+                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                                    : 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
                                   }`}
                               >
-                                {blog.published ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                                {blog.published ? 'Published' : 'Draft'}
+                                {blog.published ? <Eye className="w-3 h-3" /> : (blog.scheduledAt ? <RefreshCw className="w-3 h-3 animate-spin-slow" /> : <EyeOff className="w-3 h-3" />)}
+                                {blog.published ? 'Published' : (blog.scheduledAt ? 'Scheduled' : 'Draft')}
                               </button>
                             </td>
                             <td className="px-6 py-4 text-center">
