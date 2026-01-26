@@ -9,7 +9,7 @@ import { Navigation } from 'swiper/modules';
 import {
   Calendar, User, Eye, Heart, Tag, ArrowLeft, Share2, MessageSquare,
   Home, Maximize2, X, AlertTriangle, Edit, Trash, Play, Image as ImageIcon,
-  CheckCircle, Clock, Send
+  CheckCircle, Clock, Send, Star
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import BlogEditModal from '../components/BlogEditModal';
@@ -71,6 +71,9 @@ const AdminBlogDetail = () => {
   const [propertySearch, setPropertySearch] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
   const textareaRef = useRef(null);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editContent, setEditContent] = useState('');
+  const [isEditingLoading, setIsEditingLoading] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
@@ -218,6 +221,41 @@ const AdminBlogDetail = () => {
       console.error('Error adding comment:', error);
     } finally {
       setCommentLoading(false);
+    }
+  };
+
+  const startEditing = (comment) => {
+    setEditingCommentId(comment._id);
+    setEditContent(comment.content);
+  };
+
+  const cancelEditing = () => {
+    setEditingCommentId(null);
+    setEditContent('');
+  };
+
+  const handleUpdateComment = async (commentId) => {
+    if (!editContent.trim()) return;
+    setIsEditingLoading(true);
+    try {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: editContent })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setComments(prev => prev.map(c => c._id === commentId ? data.data : c));
+        setEditingCommentId(null);
+        toast.success("Comment updated");
+      } else {
+        toast.error("Failed to update comment");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error updating comment");
+    } finally {
+      setIsEditingLoading(false);
     }
   };
 
@@ -442,6 +480,12 @@ const AdminBlogDetail = () => {
                 }`}>
                 {blog.published ? <span className='flex items-center gap-1'><CheckCircle className='w-3 h-3' /> Published</span> : <span className='flex items-center gap-1'><Clock className='w-3 h-3' /> Draft Mode</span>}
               </span>
+
+              {blog.featured && (
+                <span className="px-3 py-1 bg-yellow-500/30 backdrop-blur-md border border-yellow-400/30 rounded-full text-xs font-bold uppercase tracking-wider text-yellow-200 flex items-center gap-1 shadow-lg shadow-yellow-500/10">
+                  <Star className="w-3 h-3 fill-yellow-400" /> Featured
+                </span>
+              )}
 
               <span className="px-3 py-1 bg-blue-500/30 backdrop-blur-md border border-blue-400/30 rounded-full text-xs font-semibold uppercase tracking-wider text-blue-100">
                 {blog.category}
@@ -687,16 +731,63 @@ const AdminBlogDetail = () => {
                                 </span>
                                 {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
                                 <span className="text-xs text-gray-400">• {new Date(comment.createdAt).toLocaleDateString()}</span>
+                                {comment.isEdited && (
+                                  <span className="text-[10px] text-gray-400 italic bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                                    <Check className="w-2.5 h-2.5" /> Edited
+                                  </span>
+                                )}
                               </div>
-                              <button
-                                onClick={() => handleDeleteComment(comment._id)}
-                                className="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 transition-opacity p-1"
-                                title="Delete Comment"
-                              >
-                                <Trash className="w-4 h-4" />
-                              </button>
+                              <div className="flex items-center gap-2">
+                                {editingCommentId !== comment._id && (
+                                  <button
+                                    onClick={() => startEditing(comment)}
+                                    className="text-gray-400 hover:text-blue-500 transition-colors p-1"
+                                    title="Edit Comment"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleDeleteComment(comment._id)}
+                                  className="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 transition-opacity p-1"
+                                  title="Delete Comment"
+                                >
+                                  <Trash className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
-                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">{comment.content}</p>
+                            {editingCommentId === comment._id ? (
+                              <div className="mt-2">
+                                <textarea
+                                  value={editContent}
+                                  onChange={(e) => setEditContent(e.target.value)}
+                                  className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none text-gray-900 dark:text-white"
+                                  rows={2}
+                                />
+                                <div className="flex gap-2 mt-2 justify-end">
+                                  <button
+                                    onClick={cancelEditing}
+                                    className="p-1 px-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-800"
+                                    disabled={isEditingLoading}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateComment(comment._id)}
+                                    className="p-1 px-2 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors border border-transparent hover:border-green-100 dark:hover:border-green-800 min-w-[32px] flex items-center justify-center"
+                                    disabled={isEditingLoading || !editContent.trim()}
+                                  >
+                                    {isEditingLoading ? (
+                                      <div className="w-3.5 h-3.5 border-2 border-green-500/30 border-t-green-500 rounded-full animate-spin"></div>
+                                    ) : (
+                                      <Check className="w-4 h-4" />
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm whitespace-pre-wrap">{comment.content}</p>
+                            )}
                           </div>
                         </div>
                       )

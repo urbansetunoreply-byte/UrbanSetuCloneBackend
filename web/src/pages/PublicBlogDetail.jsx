@@ -9,7 +9,7 @@ import { Navigation } from 'swiper/modules';
 import { toast } from 'react-toastify';
 import {
   Calendar, User, Eye, Heart, Tag, ArrowLeft, Share2, MessageSquare,
-  Home, Maximize2, X, ThumbsUp, Send, Clock, Play, Image as ImageIcon, Trash, Edit, Check
+  Home, Maximize2, X, ThumbsUp, Send, Clock, Play, Image as ImageIcon, Trash, Edit, Check, Star
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import ImagePreview from '../components/ImagePreview';
@@ -44,6 +44,7 @@ const PublicBlogDetail = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editContent, setEditContent] = useState('');
+  const [isEditingLoading, setIsEditingLoading] = useState(false);
 
   // SEO Dynamic Tags
   const seoTitle = blog ? `${blog.title} | UrbanSetu Insights` : "Blog Detail";
@@ -281,6 +282,7 @@ const PublicBlogDetail = () => {
 
   const handleUpdateComment = async (commentId) => {
     if (!editContent.trim()) return;
+    setIsEditingLoading(true);
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {
         method: 'PUT',
@@ -298,6 +300,8 @@ const PublicBlogDetail = () => {
     } catch (error) {
       console.error(error);
       toast.error("Error updating comment");
+    } finally {
+      setIsEditingLoading(false);
     }
   };
 
@@ -363,6 +367,11 @@ const PublicBlogDetail = () => {
               <span className="px-3 py-1 bg-blue-500/30 backdrop-blur-md border border-blue-400/30 rounded-full text-xs font-semibold uppercase tracking-wider text-blue-100">
                 {blog.category}
               </span>
+              {blog.featured && (
+                <span className="px-3 py-1 bg-yellow-500/30 backdrop-blur-md border border-yellow-400/30 rounded-full text-xs font-bold uppercase tracking-wider text-yellow-200 flex items-center gap-1 shadow-lg shadow-yellow-500/10">
+                  <Star className="w-3 h-3 fill-yellow-400" /> Featured
+                </span>
+              )}
               {blog.tags && blog.tags.map((tag, i) => (
                 <span key={i} className="flex items-center gap-1 text-xs text-blue-200 bg-white/5 px-2 py-1 rounded-md border border-white/10">
                   <Tag className="w-3 h-3" /> {tag}
@@ -585,6 +594,11 @@ const PublicBlogDetail = () => {
                               </span>
                               {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
                               <span className="text-xs text-gray-400 dark:text-gray-500">• {new Date(comment.createdAt).toLocaleDateString()}</span>
+                              {comment.isEdited && (
+                                <span className="text-[10px] text-gray-400 italic bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                                  <Check className="w-2.5 h-2.5" /> Edited
+                                </span>
+                              )}
                             </div>
 
                             {isOwner && editingCommentId !== comment._id && (
@@ -608,8 +622,20 @@ const PublicBlogDetail = () => {
                                 rows={2}
                               />
                               <div className="flex gap-2 mt-2 justify-end">
-                                <button onClick={cancelEditing} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"><X className="w-4 h-4" /></button>
-                                <button onClick={() => handleUpdateComment(comment._id)} className="p-1 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded"><Check className="w-4 h-4" /></button>
+                                <button onClick={cancelEditing} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" disabled={isEditingLoading}>
+                                  <X className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateComment(comment._id)}
+                                  className="p-1 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded min-w-[28px] flex items-center justify-center"
+                                  disabled={isEditingLoading}
+                                >
+                                  {isEditingLoading ? (
+                                    <div className="w-3.5 h-3.5 border-2 border-green-500/30 border-t-green-500 rounded-full animate-spin"></div>
+                                  ) : (
+                                    <Check className="w-4 h-4" />
+                                  )}
+                                </button>
                               </div>
                             </div>
                           ) : (

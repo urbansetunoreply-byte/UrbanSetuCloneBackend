@@ -90,6 +90,10 @@ const blogSchema = new mongoose.Schema({
         isApproved: {
             type: Boolean,
             default: false
+        },
+        isEdited: {
+            type: Boolean,
+            default: false
         }
     }]
 }, {

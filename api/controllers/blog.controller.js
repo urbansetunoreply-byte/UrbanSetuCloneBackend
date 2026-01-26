@@ -851,6 +851,7 @@ export const updateComment = async (req, res, next) => {
         }
 
         comment.content = content;
+        comment.isEdited = true;
         await blog.save();
 
         // Populate and return updated comment

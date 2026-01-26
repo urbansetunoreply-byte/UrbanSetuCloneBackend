@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import {
   Search as SearchIcon, Filter, Calendar, User, Eye, Heart, Tag,
   ArrowRight, ChevronLeft, ChevronRight, Mail, Info, Clock,
-  TrendingUp, Lightbulb, Home, CheckCircle, X, BookOpen, RotateCcw
+  TrendingUp, Lightbulb, Home, CheckCircle, X, BookOpen, RotateCcw, Star
 } from 'lucide-react';
 
 import SEO from '../components/SEO';
@@ -18,6 +18,7 @@ const PublicBlogs = () => {
   const seoDescription = "Stay updated with the latest real estate trends, market analysis, and property buying tips on UrbanSetu's expert blog portal.";
 
   const [blogs, setBlogs] = useState([]);
+  const [featuredBlogs, setFeaturedBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -73,6 +74,7 @@ const PublicBlogs = () => {
 
   // Separate useEffect for initial load and categories/tags
   useEffect(() => {
+    fetchFeaturedBlogs();
     fetchBlogs();
     fetchCategories();
     fetchTags();
@@ -362,6 +364,24 @@ const PublicBlogs = () => {
     }
   };
 
+  const fetchFeaturedBlogs = async () => {
+    try {
+      const params = new URLSearchParams({
+        published: 'true',
+        type: 'blog',
+        featured: 'true',
+        limit: 3
+      });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?${params}`, { autoRedirect: false });
+      if (response.ok) {
+        const data = await response.json();
+        setFeaturedBlogs(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching featured blogs:', error);
+    }
+  };
+
   const fetchSuggestions = async () => {
     try {
       const params = new URLSearchParams({
@@ -609,6 +629,43 @@ const PublicBlogs = () => {
             </div>
           </div>
         </div>
+
+        {/* Featured Blogs Section */}
+        {featuredBlogs.length > 0 && !searchTerm && selectedCategories.length === 0 && selectedTags.length === 0 && pagination.current === 1 && (
+          <div className="mb-16 animate-fade-in-up">
+            <h2 className="text-2xl font-black text-gray-800 dark:text-white mb-6 flex items-center gap-2">
+              <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" /> Featured Insights
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {featuredBlogs.map((blog, idx) => (
+                <Link to={`/blog/${blog.slug || blog._id}`} key={blog._id} className="group relative h-96 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer border border-gray-100 dark:border-gray-800">
+                  <img
+                    src={blog.thumbnail || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1073&q=80'}
+                    alt={blog.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 p-8 w-full">
+                    <div className="flex items-center gap-3 text-xs font-bold text-blue-300 uppercase tracking-wider mb-3">
+                      <span className="bg-blue-600/90 backdrop-blur-md px-2 py-1 rounded-md">{blog.category}</span>
+                      <span>•</span>
+                      <span>{Math.ceil((blog.content ? blog.content.split(/\s+/).length : 0) / 200)} min read</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-300 transition-colors leading-tight line-clamp-2">
+                      {blog.title}
+                    </h3>
+                    <p className="text-gray-300 text-sm line-clamp-2 mb-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                      {blog.excerpt || (blog.content ? blog.content.substring(0, 100) : '')}
+                    </p>
+                    <div className="flex items-center gap-2 text-white font-bold text-sm">
+                      Read Article <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Blogs Grid */}
         {blogs.length === 0 ? (
