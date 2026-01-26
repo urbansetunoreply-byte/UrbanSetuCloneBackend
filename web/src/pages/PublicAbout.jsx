@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { authenticatedFetch } from '../utils/auth';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
 import { Link } from 'react-router-dom';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaAndroid, FaDownload, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
