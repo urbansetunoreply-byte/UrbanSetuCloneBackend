@@ -398,7 +398,7 @@ const PublicFAQs = () => {
                     ? 'shadow-lg border-blue-200 dark:border-blue-900 ring-1 ring-blue-100 dark:ring-blue-900/40'
                     : 'shadow-sm border-gray-100 dark:border-gray-800 hover:shadow-md hover:border-gray-200 dark:hover:border-gray-700'
                     }`}
-                  style={{ animationDelay: `${index * 50}ms` }}
+                  style={{ animation: `fadeIn 0.3s ease-out ${index * 0.05}s backwards` }}
                 >
                   <button
                     onClick={() => handleFAQClick(faq._id)}
@@ -540,6 +540,12 @@ const PublicFAQs = () => {
         </div>
 
       </div>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
