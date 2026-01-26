@@ -1,5 +1,5 @@
 import express from 'express'
-import { test, updateUser, deleteUser, getUserListings, getUserByEmail, changePassword, getApprovedAdmins, transferDefaultAdminRights, deleteUserAfterTransfer, verifyPassword, getAllUsersForAutocomplete, getUserByEmailForAssignment, checkEmailAvailability, checkMobileAvailability, exportData, searchUsers, downloadExportData } from '../controllers/user.controller.js'
+import { test, updateUser, deleteUser, getUserListings, getUserSummary, getUserByEmail, changePassword, getApprovedAdmins, transferDefaultAdminRights, deleteUserAfterTransfer, verifyPassword, getAllUsersForAutocomplete, getUserByEmailForAssignment, checkEmailAvailability, checkMobileAvailability, exportData, searchUsers, downloadExportData } from '../controllers/user.controller.js'
 
 import { verifyToken } from '../utils/verify.js'
 import { dataExportRateLimit } from '../middleware/rateLimiter.js'
@@ -14,6 +14,7 @@ router.get("/test", test)
 router.post("/update/:id", verifyToken, updateUser)
 router.delete("/delete/:id", verifyToken, deleteUser)
 router.get("/listing/:id", verifyToken, getUserListings)
+router.get("/summary/:id", verifyToken, getUserSummary)
 router.get("/email/:email", getUserByEmail)
 router.get("/id/:id", async (req, res, next) => {
   try {

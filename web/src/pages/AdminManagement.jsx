@@ -56,7 +56,24 @@ export default function AdminManagement() {
     purge: false
   });
   const [accountLoading, setAccountLoading] = useState(false);
-  const [accountStats, setAccountStats] = useState({ listings: 0, appointments: 0 });
+  const [accountStats, setAccountStats] = useState({
+    listings: 0,
+    appointments: 0,
+    wishlist: 0,
+    watchlist: 0,
+    reviews: 0,
+    receivedReviews: 0,
+    referrals: 0,
+    payments: 0,
+    contracts: 0,
+    loans: 0,
+    conversations: 0,
+    calls: 0,
+    forumPosts: 0,
+    routes: 0,
+    calculations: 0,
+    coinBalance: 0
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [adminApprovalFilter, setAdminApprovalFilter] = useState("all");
@@ -492,41 +509,43 @@ export default function AdminManagement() {
     setShowAccountModal(true);
     setAccountLoading(true);
     setSelectedAccount(null);
-    setAccountStats({ listings: 0, appointments: 0 });
+    setAccountStats({
+      listings: 0,
+      appointments: 0,
+      wishlist: 0,
+      watchlist: 0,
+      reviews: 0,
+      receivedReviews: 0,
+      referrals: 0,
+      payments: 0,
+      contracts: 0,
+      loans: 0,
+      conversations: 0,
+      calls: 0,
+      forumPosts: 0,
+      routes: 0,
+      calculations: 0,
+      coinBalance: 0
+    });
     try {
       // Fetch full user/admin details
       const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${account._id}`);
       const data = await res.json();
       if (res.ok) {
         setSelectedAccount({ ...data, type });
-        // Fetch stats
+        // Fetch comprehensive summary stats
         try {
-          const [listingsRes, appointmentsRes] = await Promise.all([
-            authenticatedFetch(`${API_BASE_URL}/api/listing/user/${account._id}`),
-            authenticatedFetch(`${API_BASE_URL}/api/bookings/user/${account._id}`)
-          ]);
+          const summaryRes = await authenticatedFetch(`${API_BASE_URL}/api/user/summary/${account._id}`);
+          const summaryData = await summaryRes.json();
 
-          let listingsCount = 0;
-          let appointmentsCount = 0;
-
-          if (listingsRes.ok) {
-            const listingsData = await listingsRes.json();
-            listingsCount = Array.isArray(listingsData) ? listingsData.length : 0;
+          if (summaryRes.ok && summaryData.success) {
+            setAccountStats(summaryData.counts);
+          } else {
+            // Fallback for counts if summary fails but we still have basic details
+            setAccountStats(prev => ({ ...prev }));
           }
-
-          if (appointmentsRes.ok) {
-            const appointmentsData = await appointmentsRes.json();
-            appointmentsCount = appointmentsData.count || 0;
-          }
-
-          setAccountStats({
-            listings: listingsCount,
-            appointments: appointmentsCount
-          });
         } catch (statsError) {
-          console.error('Error fetching account stats:', statsError);
-          // Keep the account details but with zero stats
-          setAccountStats({ listings: 0, appointments: 0 });
+          console.error('Error fetching account summary:', statsError);
         }
       } else {
         console.error('Failed to fetch account details:', data.message);
@@ -1731,33 +1750,63 @@ export default function AdminManagement() {
                         minute: '2-digit'
                       }) : 'Never'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-                      <FaList className="text-green-400" />
-                      <span><strong>Listings:</strong> {accountStats.listings}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-                      <FaCalendar className="text-pink-400" />
-                      <span><strong>Appointments:</strong> {accountStats.appointments}</span>
-                    </div>
-                    {/* Extended Stats */}
-                    {selectedAccount.lastLogin && (
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-                          <FaUserLock className="text-orange-400" />
-                          <span><strong>Last Login:</strong> {new Date(selectedAccount.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</span>
-                        </div>
-                        {selectedAccount.lastLoginLocation && (
-                          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm ml-6">
-                            <span className="text-xs text-gray-500 dark:text-gray-400">📍 {selectedAccount.lastLoginLocation}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
                     <div className="grid grid-cols-2 gap-3 mt-4 bg-gray-50/50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                      <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Wishlist:</span> {selectedAccount.wishlistCount || 0}</div>
-                      <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Watchlist:</span> {selectedAccount.watchlistCount || 0}</div>
-                      <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Reviews:</span> {selectedAccount.reviewsCount || 0}</div>
-                      <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Payments:</span> {selectedAccount.paymentsCount || 0}</div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Listings:</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-bold">{accountStats.listings}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Appointments:</span>
+                        <span className="text-pink-600 dark:text-pink-400 font-bold">{accountStats.appointments}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Wishlist:</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-bold">{accountStats.wishlist}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Watchlist:</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-bold">{accountStats.watchlist}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Reviews Written:</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-bold">{accountStats.reviews}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Reviews Received:</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-bold">{accountStats.receivedReviews}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">SetuCoins:</span>
+                        <span className="text-yellow-600 dark:text-yellow-400 font-bold">{accountStats.coinBalance}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Referrals:</span>
+                        <span className="text-green-600 dark:text-green-400 font-bold">{accountStats.referrals}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Conversations:</span>
+                        <span className="text-indigo-600 dark:text-indigo-400 font-bold">{accountStats.conversations}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Call History:</span>
+                        <span className="text-purple-600 dark:text-purple-400 font-bold">{accountStats.calls}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">forum Posts:</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-bold">{accountStats.forumPosts}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Saved Routes:</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-bold">{accountStats.routes}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Investments:</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-bold">{accountStats.calculations}</span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm flex flex-col">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">Payments:</span>
+                        <span className="text-gray-700 dark:text-gray-200 font-bold">{accountStats.payments}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-2 mt-2">

@@ -465,6 +465,87 @@ export const getUserListings = async (req, res, next) => {
     }
 }
 
+export const getUserSummary = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+
+        // Check if user is admin or rootadmin or requesting their own summary
+        const requestUser = await User.findById(req.user.id);
+        const isAdmin = (requestUser && requestUser.role === 'admin' && requestUser.adminApprovalStatus === 'approved') || (requestUser && requestUser.role === 'rootadmin');
+
+        if (!isAdmin && req.user.id !== userId) {
+            return next(errorHandler(401, 'Unauthorized'));
+        }
+
+        // Execute counts in parallel for performance
+        const [
+            listingsCount,
+            appointmentsCount,
+            wishlistCount,
+            watchlistCount,
+            reviewsCount,
+            receivedReviewsCount,
+            referralsCount,
+            paymentsCount,
+            contractsCount,
+            loansCount,
+            conversationsCount,
+            callsCount,
+            forumCount,
+            routesCount,
+            calculationsCount
+        ] = await Promise.all([
+            Listing.countDocuments({ userRef: userId }),
+            Booking.countDocuments({ $or: [{ buyerId: userId }, { sellerId: userId }] }),
+            Wishlist.countDocuments({ userId }),
+            PropertyWatchlist.countDocuments({ userId }),
+            Review.countDocuments({ userId }), // Reviews written by user
+            Listing.find({ userRef: userId }).then(async (userListings) => {
+                const listingIds = userListings.map(l => l._id);
+                return Review.countDocuments({ listingId: { $in: listingIds } });
+            }).catch(() => 0), // Reviews received on user's listings
+            User.countDocuments({ "gamification.referredBy": userId }),
+            Payment.countDocuments({ userId }).catch(() => 0),
+            RentLockContract.countDocuments({ $or: [{ tenantId: userId }, { landlordId: userId }] }).catch(() => 0),
+            RentalLoan.countDocuments({ userId }).catch(() => 0),
+            ChatHistory.countDocuments({ userId }).catch(() => 0),
+            CallHistory.countDocuments({ $or: [{ callerId: userId }, { receiverId: userId }] }).catch(() => 0),
+            ForumPost.countDocuments({ author: userId }).catch(() => 0),
+            Route.countDocuments({ userId }).catch(() => 0),
+            CalculationHistory.countDocuments({ userId }).catch(() => 0)
+        ]);
+
+        // Get coin balance
+        const user = await User.findById(userId).select('gamification');
+        const coinBalance = user?.gamification?.setuCoinsBalance || 0;
+
+        res.status(200).json({
+            success: true,
+            counts: {
+                listings: listingsCount,
+                appointments: appointmentsCount,
+                wishlist: wishlistCount,
+                watchlist: watchlistCount,
+                reviews: reviewsCount,
+                receivedReviews: receivedReviewsCount,
+                referrals: referralsCount,
+                payments: paymentsCount,
+                contracts: contractsCount,
+                loans: loansCount,
+                conversations: conversationsCount,
+                calls: callsCount,
+                forumPosts: forumCount,
+                routes: routesCount,
+                calculations: calculationsCount,
+                coinBalance
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching user summary:", error);
+        next(error);
+    }
+}
+
 export const getUserByEmail = async (req, res, next) => {
     try {
         const user = await User.findOne({ email: req.params.email })

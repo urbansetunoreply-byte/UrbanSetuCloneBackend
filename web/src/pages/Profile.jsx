@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { isMobileDevice } from '../utils/mobileUtils';
-import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog, FaFileContract, FaGavel, FaMoneyCheckAlt, FaUserTie, FaHeadset, FaMapSigns } from "react-icons/fa";
+import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaUserFriends, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog, FaFileContract, FaGavel, FaMoneyCheckAlt, FaUserTie, FaHeadset, FaMapSigns } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
 import EncryptedText from "../components/ui/EncryptedText";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
@@ -337,7 +337,19 @@ export default function Profile() {
     listings: 0,
     appointments: 0,
     wishlist: 0,
-    watchlist: 0
+    watchlist: 0,
+    reviews: 0,
+    receivedReviews: 0,
+    referrals: 0,
+    payments: 0,
+    contracts: 0,
+    loans: 0,
+    conversations: 0,
+    calls: 0,
+    forumPosts: 0,
+    routes: 0,
+    calculations: 0,
+    coinBalance: 0
   });
   const [emailError, setEmailError] = useState("");
   const [mobileError, setMobileError] = useState("");
@@ -570,61 +582,18 @@ export default function Profile() {
 
   const fetchUserStats = async () => {
     try {
-      // Fetch watchlist count for all users
-      const watchlistCount = await fetchWatchlistCount();
+      if (!currentUser) return;
 
-      if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
-        // Fetch admin-specific stats
-        // For admins: fetch Reviews count (same as /admin/reviews page which uses /api/review/admin/stats)
-        const [reviewsRes, appointmentsRes, referralsRes] = await Promise.all([
-          authenticatedFetch(`${API_BASE_URL}/api/review/admin/stats`),
-          authenticatedFetch(`${API_BASE_URL}/api/bookings/`),
-          authenticatedFetch(`${API_BASE_URL}/api/coins/referral-stats`)
-        ]);
+      const summaryRes = await authenticatedFetch(`${API_BASE_URL}/api/user/summary/${currentUser._id}`);
+      const summaryData = await summaryRes.json();
 
-        const reviewsData = await reviewsRes.json();
-        const appointmentsData = await appointmentsRes.json();
-        const referralData = await referralsRes.json();
-
-        // For admins, get totalReviews from /api/review/admin/stats endpoint (same as /admin/reviews page)
-        const reviewsCount = reviewsData?.totalReviews || 0;
-
-        setUserStats(prev => ({
-          listings: reviewsCount, // Store reviews count in listings field for admins
-          appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
-          wishlist: prev.wishlist, // Keep the wishlist count from context
-          watchlist: watchlistCount,
-          referrals: referralData.success ? referralData.referralCount : 0
-        }));
+      if (summaryRes.ok && summaryData.success) {
+        setUserStats(summaryData.counts);
       } else {
-        // Fetch regular user stats
-        const [listingsRes, appointmentsRes, referralsRes] = await Promise.all([
-          authenticatedFetch(`${API_BASE_URL}/api/listing/user`),
-          authenticatedFetch(`${API_BASE_URL}/api/bookings/user/${currentUser._id}`),
-          authenticatedFetch(`${API_BASE_URL}/api/coins/referral-stats`)
-        ]);
-
-        const listingsData = await listingsRes.json();
-        const appointmentsData = await appointmentsRes.json();
-        const referralData = await referralsRes.json();
-
-        setUserStats(prev => ({
-          listings: Array.isArray(listingsData) ? listingsData.length : 0,
-          appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
-          wishlist: prev.wishlist, // Keep the wishlist count from context
-          watchlist: watchlistCount,
-          referrals: referralData.success ? referralData.referralCount : 0
-        }));
+        console.error('Failed to fetch user summary:', summaryData.message);
       }
     } catch (error) {
       console.error('[fetchUserStats] Error fetching user stats:', error);
-      // Set default values if API calls fail
-      setUserStats(prev => ({
-        listings: 0,
-        appointments: 0,
-        wishlist: prev.wishlist, // Keep the wishlist count from context
-        watchlist: 0
-      }));
     }
   };
 
@@ -2214,59 +2183,79 @@ export default function Profile() {
         </div>
 
         {/* Stats Section - show below profile card if not editing, below edit form if editing */}
-        <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-4 mb-6`}>
-          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-450' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-blue-100 dark:bg-blue-900 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+        <div className={`grid grid-cols-2 md:grid-cols-3 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-6'} gap-3 sm:gap-4 mb-6`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 sm:p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-450' : 'opacity-0 scale-95'}`}>
+            <div className={`bg-blue-100 dark:bg-blue-900 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
               {isAdmin ? (
                 <FaStar className="w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 max-w-none transition-colors duration-300" />
               ) : (
                 <FaHome className="w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 transition-colors duration-300" />
               )}
             </div>
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
               {statsAnimated ? <AnimatedCounter end={userStats.listings} delay={500} /> : userStats.listings}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-500 transition-colors duration-300">
+            <p className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-500 transition-colors duration-300">
               {isAdmin ? 'Reviews' : 'My Listings'}
             </p>
           </div>
-          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-600' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-green-100 dark:bg-green-900 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 sm:p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-600' : 'opacity-0 scale-95'}`}>
+            <div className={`bg-green-100 dark:bg-green-900 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
               <FaCalendarAlt className="w-5 h-5 text-green-600 dark:text-green-400 group-hover:text-green-700 transition-colors duration-300" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
               {statsAnimated ? <AnimatedCounter end={userStats.appointments} delay={650} /> : userStats.appointments}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-green-500 transition-colors duration-300">Appointments</p>
+            <p className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-green-500 transition-colors duration-300">Appointments</p>
           </div>
-          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 transition-all duration-300 ${isAdmin ? 'bg-indigo-100 group-hover:bg-indigo-200 dark:bg-indigo-900 dark:group-hover:bg-indigo-800' : 'bg-red-100 group-hover:bg-red-200 dark:bg-red-900 dark:group-hover:bg-red-800'} ${animationClasses.heartbeat} group-hover:scale-110`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 sm:p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 transition-all duration-300 ${isAdmin ? 'bg-indigo-100 group-hover:bg-indigo-200 dark:bg-indigo-900 dark:group-hover:bg-indigo-800' : 'bg-red-100 group-hover:bg-red-200 dark:bg-red-900 dark:group-hover:bg-red-800'} ${animationClasses.heartbeat} group-hover:scale-110`}>
               {isAdmin ? (
                 <FaHome className="w-5 h-5 text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 transition-colors duration-300" />
               ) : (
                 <FaHeart className="w-5 h-5 text-red-600 dark:text-red-400 group-hover:text-red-700 transition-colors duration-300" />
               )}
             </div>
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white transition-colors duration-300">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white transition-colors duration-300">
               {isAdmin
                 ? (statsAnimated ? <AnimatedCounter end={userStats.listings} delay={800} /> : userStats.listings)
                 : (statsAnimated ? <AnimatedCounter end={userStats.wishlist} delay={800} /> : userStats.wishlist)
               }
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
-              {isAdmin ? 'All Properties' : 'Wishlist Items'}
+            <p className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
+              {isAdmin ? 'All Properties' : 'Wishlist'}
             </p>
           </div>
           {!isAdmin && (
-            <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
-              <div className={`bg-indigo-100 dark:bg-indigo-900 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
-                <FaStar className="w-5 h-5 text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 transition-colors duration-300" />
+            <>
+              <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 sm:p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-800' : 'opacity-0 scale-95'}`}>
+                <div className={`bg-orange-100 dark:bg-orange-900 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-orange-200 dark:group-hover:bg-orange-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+                  <FaEye className="w-5 h-5 text-orange-600 dark:text-orange-400 group-hover:text-orange-700 transition-colors duration-300" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
+                  {statsAnimated ? <AnimatedCounter end={userStats.watchlist} delay={900} /> : userStats.watchlist}
+                </h3>
+                <p className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-orange-500 transition-colors duration-300">Watchlist</p>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
-                {statsAnimated ? <AnimatedCounter end={userStats.referrals || 0} delay={1050} /> : (userStats.referrals || 0)}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 transition-colors duration-300">Total Referrals</p>
-            </div>
+              <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 sm:p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-850' : 'opacity-0 scale-95'}`}>
+                <div className={`bg-yellow-100 dark:bg-yellow-900 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-yellow-200 dark:group-hover:bg-yellow-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+                  <FaStar className="w-5 h-5 text-yellow-600 dark:text-yellow-400 group-hover:text-yellow-700 transition-colors duration-300" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors duration-300">
+                  {statsAnimated ? <AnimatedCounter end={userStats.reviews} delay={1000} /> : userStats.reviews}
+                </h3>
+                <p className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-yellow-500 transition-colors duration-300">Reviews</p>
+              </div>
+              <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 sm:p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
+                <div className={`bg-indigo-100 dark:bg-indigo-900 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+                  <FaUserFriends className="w-5 h-5 text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 transition-colors duration-300" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
+                  {statsAnimated ? <AnimatedCounter end={userStats.referrals || 0} delay={1100} /> : (userStats.referrals || 0)}
+                </h3>
+                <p className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 transition-colors duration-300">Referrals</p>
+              </div>
+            </>
           )}
         </div>
 
