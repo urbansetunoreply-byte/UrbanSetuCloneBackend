@@ -9,33 +9,109 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Primary Meta Tags -->
-  <title>UrbanSetu · Smart Real Estate Platform</title>
-  <meta name="title" content="UrbanSetu · Smart Real Estate Platform">
+  <title>UrbanSetu · Smart Real Estate Platform | Buy, Sell, Rent Properties</title>
+  <meta name="title" content="UrbanSetu · Smart Real Estate Platform | Buy, Sell, Rent Properties">
   <meta name="description"
-    content="UrbanSetu is the smartest way to buy, sell, and rent properties. Features include AI recommendations, real-time chats, and 3D virtual tours.">
+    content="UrbanSetu is the premier Real Estate platform to buy, sell, and rent properties. Explore AI-powered recommendations, verified listings, real-time chats, and 3D virtual tours across India.">
+  <meta name="keywords"
+    content="Real Estate, Buy Property, Sell Property, Rent Home, UrbanSetu, Smart Housing, Property Management, AI Real Estate, Virtual Tours, Verified Listings India">
+  <meta name="author" content="UrbanSetu Team">
+  <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#2563eb" />
 
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://urbansetu.vercel.app/">
-  <meta property="og:title" content="UrbanSetu · Smart Real Estate Platform">
-  <meta property="og:description"
-    content="UrbanSetu is the smartest way to buy, sell, and rent properties. Features include AI recommendations, real-time chats, and 3D virtual tours.">
-  <meta property="og:image" content="https://urbansetu.vercel.app/og-image.png">
+  <!-- Dual-Frontend SEO Injector -->
+  <script>
+    (function () {
+      var origin = window.location.origin;
+      var canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      canonical.href = origin + window.location.pathname;
+      document.head.appendChild(canonical);
 
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://urbansetu.vercel.app/">
-  <meta property="twitter:title" content="UrbanSetu · Smart Real Estate Platform">
-  <meta property="twitter:description"
-    content="UrbanSetu is the smartest way to buy, sell, and rent properties. Features include AI recommendations, real-time chats, and 3D virtual tours.">
-  <meta property="twitter:image" content="https://urbansetu.vercel.app/og-image.png">
+      // Open Graph / Social Tags
+      function setMeta(property, content) {
+        var meta = document.querySelector('meta[property="' + property + '"]') || document.createElement('meta');
+        meta.setAttribute('property', property);
+        meta.content = content;
+        if (!meta.parentNode) document.head.appendChild(meta);
+      }
+
+      setMeta('og:url', origin + window.location.pathname);
+      setMeta('og:image', origin + '/og-image.png');
+      setMeta('og:site_name', 'UrbanSetu');
+      setMeta('og:locale', 'en_IN');
+
+      // Twitter
+      var twUrl = document.querySelector('meta[name="twitter:url"]') || document.createElement('meta');
+      twUrl.name = "twitter:url";
+      twUrl.content = origin + window.location.pathname;
+      document.head.appendChild(twUrl);
+
+      var twImg = document.querySelector('meta[name="twitter:image"]') || document.createElement('meta');
+      twImg.name = "twitter:image";
+      twImg.content = origin + '/og-image.png';
+      document.head.appendChild(twImg);
+
+      // JSON-LD Injection
+      var ldWebsite = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "UrbanSetu",
+        "url": origin,
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": origin + "/search?searchTerm={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      };
+      var ldOrg = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "UrbanSetu",
+        "url": origin,
+        "logo": origin + "/favicon.png",
+        "sameAs": [
+          "https://twitter.com/urbanseturealty",
+          "https://facebook.com/urbanseturealty"
+        ]
+      };
+
+      var script1 = document.createElement('script');
+      script1.type = "application/ld+json";
+      script1.text = JSON.stringify(ldWebsite);
+      document.head.appendChild(script1);
+
+      var script2 = document.createElement('script');
+      script2.type = "application/ld+json";
+      script2.text = JSON.stringify(ldOrg);
+      document.head.appendChild(script2);
+    })();
+  </script>
 
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
 </head>
 
 <body>
+  <!-- Fallback content for crawlers and non-JS browsers -->
+  <noscript>
+    <div style="padding: 20px; text-align: center;">
+      <h1>UrbanSetu - Real Estate Excellence</h1>
+      <p>UrbanSetu is a smart real estate platform designed to simplify property transactions. We offer a comprehensive
+        suite of tools for buyers, sellers, and renters.</p>
+      <nav>
+        <ul>
+          <li><a href="/search">Browse Properties</a></li>
+          <li><a href="/blogs">Real Estate Insights</a></li>
+          <li><a href="/about">About UrbanSetu</a></li>
+          <li><a href="/contact">Help & Support</a></li>
+          <li><a href="/guides">Home Buying Guides</a></li>
+        </ul>
+      </nav>
+      <p>Please enable JavaScript to access the full interactive features of the UrbanSetu platform.</p>
+    </div>
+  </noscript>
+
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
