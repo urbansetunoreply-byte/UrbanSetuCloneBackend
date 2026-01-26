@@ -143,8 +143,8 @@ const CookieConsent = () => {
     setPreferences(allAccepted);
     localStorage.setItem('cookieConsent', JSON.stringify(allAccepted));
 
-    // Track visitor
-    await trackVisitor(allAccepted);
+    // Track visitor (non-blocking for better UX)
+    trackVisitor(allAccepted);
 
     closeBanner();
 
@@ -167,8 +167,8 @@ const CookieConsent = () => {
     setPreferences(onlyNecessary);
     localStorage.setItem('cookieConsent', JSON.stringify(onlyNecessary));
 
-    // Track visitor
-    await trackVisitor(onlyNecessary);
+    // Track visitor (non-blocking)
+    trackVisitor(onlyNecessary);
 
     closeBanner();
 
@@ -181,8 +181,8 @@ const CookieConsent = () => {
   const handleSavePreferences = async () => {
     localStorage.setItem('cookieConsent', JSON.stringify(preferences));
 
-    // Track visitor
-    await trackVisitor(preferences);
+    // Track visitor (non-blocking)
+    trackVisitor(preferences);
 
     closeBanner();
 
