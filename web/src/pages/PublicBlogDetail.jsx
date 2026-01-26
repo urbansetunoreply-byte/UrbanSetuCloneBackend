@@ -78,14 +78,13 @@ const PublicBlogDetail = () => {
 
   useEffect(() => {
     fetchBlog();
-    checkAuthStatus();
   }, [slug]);
 
   useEffect(() => {
-    if (blog && isLoggedIn) {
+    if (blog) {
       checkLikeStatus();
     }
-  }, [blog, isLoggedIn]);
+  }, [blog]);
 
   const fetchBlog = async () => {
     try {
@@ -131,22 +130,7 @@ const PublicBlogDetail = () => {
     }
   };
 
-  const checkAuthStatus = async () => {
-    try {
-      if (blog) {
-        const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/like-status`, { autoRedirect: false });
-        if (response.ok) {
-          const data = await response.json();
-          setLiked(data.data.isLiked);
-          setIsLoggedIn(true);
-        } else if (response.status === 401) {
-          setIsLoggedIn(false);
-        }
-      }
-    } catch (error) {
-      setIsLoggedIn(false);
-    }
-  };
+
 
   const checkLikeStatus = async () => {
     try {
