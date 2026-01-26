@@ -1513,7 +1513,7 @@ export default function Profile() {
                           <FaStar className="w-4 h-4 mr-3 text-indigo-500 flex-shrink-0" />
                           <div className="min-w-0 flex-1">
                             <p className="text-xs text-indigo-500 font-bold mb-1 uppercase tracking-wider">Referral Program</p>
-                            <p className="text-gray-700 dark:text-gray-300 text-sm">Earn 100 coins per successful referral. New users get 50 coins!</p>
+                            <p className="text-gray-700 dark:text-gray-300 text-sm">Earn <span className="font-bold">100 coins</span> for every friend who joins. They get <span className="font-bold">50 coins</span> too!</p>
                           </div>
                         </div>
                         <button
