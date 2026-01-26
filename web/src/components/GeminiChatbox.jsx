@@ -6244,7 +6244,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit} className="flex space-x-2 items-center">
+                            <form onSubmit={handleSubmit} className="flex space-x-2 items-end">
                                 <div className="flex-1 relative">
                                     {/* Voice Meter / Input Box Toggle */}
                                     {(isListening || isProcessingVoice) ? (
@@ -6278,7 +6278,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         </div>
                                     ) : (
                                         <>
-                                            <div ref={inputOptionsRef} className="absolute left-2 top-0 h-[52px] flex items-center z-10">
+                                            <div ref={inputOptionsRef} className="absolute left-2 bottom-0 h-[52px] flex items-center z-10">
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowInputOptions(!showInputOptions)}
@@ -6402,7 +6402,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 aria-describedby="input-help"
                                                 role="textbox"
                                                 rows={1}
-                                                className={`w-full pl-10 ${inputMessage.length > 1800 ? 'pr-24' : 'pr-4'} py-4 border rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
+                                                className={`w-full pl-10 ${inputMessage.length > 1800 ? 'pr-24' : 'pr-4'} py-[17px] border rounded-xl resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
                                                     ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                                                     : 'bg-white border-gray-300 text-gray-900'
                                                     }`}
@@ -6493,7 +6493,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             setIsLoading(false);
                                             toast.info('Generating stopped.');
                                         }}
-                                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95"
+                                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95 mb-[6px]"
                                         title="Stop generating"
                                         aria-label="Stop generating"
                                     >
@@ -6506,7 +6506,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         type="submit"
                                         onMouseDown={(e) => e.preventDefault()}
                                         disabled={!inputMessage.trim() || inputMessage.length > 2000 || isListening || isProcessingVoice || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
-                                        className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95`}
+                                        className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95 mb-[6px]`}
                                         aria-label="Send message"
                                         title="Send message"
                                     >
