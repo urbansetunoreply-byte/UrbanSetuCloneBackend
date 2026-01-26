@@ -236,6 +236,14 @@ const AdminBlogDetail = () => {
 
   const handleUpdateComment = async (commentId) => {
     if (!editContent.trim()) return;
+
+    // Find the original comment to compare
+    const originalComment = comments.find(c => c._id === commentId);
+    if (originalComment && originalComment.content === editContent.trim()) {
+      setEditingCommentId(null);
+      return;
+    }
+
     setIsEditingLoading(true);
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/blogs/${blog._id}/comment/${commentId}`, {

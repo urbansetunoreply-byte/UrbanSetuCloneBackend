@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 import PublicFAQsSkeleton from '../components/skeletons/PublicFAQsSkeleton';
 import {
   Search, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown,
@@ -21,7 +22,7 @@ const PublicFAQs = () => {
   const [categories, setCategories] = useState([]);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { currentUser } = useSelector((state) => state.user);
   const [userReactions, setUserReactions] = useState({});
   const [reactionLoading, setReactionLoading] = useState({});
   const [suggestions, setSuggestions] = useState([]);
@@ -33,15 +34,14 @@ const PublicFAQs = () => {
   useEffect(() => {
     fetchFAQs();
     fetchCategories();
-    checkAuthStatus();
   }, []);
 
   // Check user reactions when logged in and FAQs are loaded
   useEffect(() => {
-    if (isLoggedIn && faqs.length > 0) {
+    if (currentUser && faqs.length > 0) {
       checkUserReactions();
     }
-  }, [isLoggedIn, faqs]);
+  }, [currentUser, faqs]);
 
   // Debounced search effect
   useEffect(() => {
@@ -165,20 +165,7 @@ const PublicFAQs = () => {
     setExpandedFAQ(expandedFAQ === faqId ? null : faqId);
   };
 
-  const checkAuthStatus = async () => {
-    try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify`, { autoRedirect: false });
 
-      if (response.ok) {
-        setIsLoggedIn(true);
-      } else {
-        setIsLoggedIn(false);
-      }
-    } catch (error) {
-      console.error('Auth check error:', error);
-      setIsLoggedIn(false);
-    }
-  };
 
   const checkUserReactions = async () => {
     try {
