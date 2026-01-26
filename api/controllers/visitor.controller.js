@@ -239,19 +239,40 @@ export const trackVisitor = async (req, res, next) => {
               }
             }
 
-            // Explicitly mark as modified since we updated deep within nested arrays/objects
-            existingVisitor.markModified('pageViews');
-            await existingVisitor.save();
+            // Perform the update using updateOne to avoid Mongoose versioning conflicts (save() uses __v)
+            const updateResult = await VisitorLog.updateOne(
+              { _id: existingVisitor._id },
+              {
+                $set: {
+                  device: existingVisitor.device,
+                  browser: existingVisitor.browser,
+                  browserVersion: existingVisitor.browserVersion,
+                  os: existingVisitor.os,
+                  deviceType: existingVisitor.deviceType,
+                  lastActive: existingVisitor.lastActive,
+                  timestamp: existingVisitor.timestamp,
+                  cookiePreferences: existingVisitor.cookiePreferences,
+                  page: existingVisitor.page,
+                  pageViews: existingVisitor.pageViews // We still update the whole array for complex logic, but updateOne won't check __v
+                }
+              }
+            );
+
+            if (updateResult.matchedCount === 0) {
+              // Document was likely deleted, retry
+              retries--;
+              continue;
+            }
 
             return res.status(200).json({
               success: true,
               message: 'Visitor updated'
             });
           } catch (saveError) {
-            if (saveError.name === 'VersionError' && retries > 1) {
+            // VersionError should be much less likely with updateOne, but handle general conflicts
+            if ((saveError.name === 'VersionError' || saveError.code === 11000) && retries > 1) {
               retries--;
-              // Wait a tiny bit before retry to let the other request finish
-              await new Promise(resolve => setTimeout(resolve, 50 * (3 - retries)));
+              await new Promise(resolve => setTimeout(resolve, 100 * (4 - retries)));
               continue;
             }
             throw saveError;
