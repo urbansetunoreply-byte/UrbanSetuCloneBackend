@@ -80,8 +80,17 @@ const AdminBlogs = ({ type }) => {
   // Separate useEffect for initial load and static data
   useEffect(() => {
     fetchProperties();
-    fetchCategories();
   }, []);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [filterPostType]);
+
+  useEffect(() => {
+    if (type) {
+      setFilterPostType(type);
+    }
+  }, [type]);
 
   useEffect(() => {
     if (activeTab === 'subscribers') {
@@ -281,7 +290,8 @@ const AdminBlogs = ({ type }) => {
 
   const fetchCategories = async () => {
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/categories`);
+      const typeParam = filterPostType !== 'all' ? `?type=${filterPostType}` : '';
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/categories${typeParam}`);
       if (response.ok) {
         const data = await response.json();
         setCategories(data.data);

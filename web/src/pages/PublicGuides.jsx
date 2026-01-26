@@ -323,7 +323,7 @@ const PublicGuides = () => {
 
     const fetchTags = async () => {
         try {
-            const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/tags`, { autoRedirect: false });
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/tags?type=guide`, { autoRedirect: false });
             if (response.ok) {
                 const data = await response.json();
                 setTags(data.data);

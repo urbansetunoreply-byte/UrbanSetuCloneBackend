@@ -384,7 +384,7 @@ const PublicBlogs = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/categories`, { autoRedirect: false });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/categories?type=blog`, { autoRedirect: false });
       if (response.ok) {
         const data = await response.json();
         setCategories(data.data);
@@ -396,7 +396,7 @@ const PublicBlogs = () => {
 
   const fetchTags = async () => {
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/tags`, { autoRedirect: false });
+      const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/tags?type=blog`, { autoRedirect: false });
       if (response.ok) {
         const data = await response.json();
         setTags(data.data);

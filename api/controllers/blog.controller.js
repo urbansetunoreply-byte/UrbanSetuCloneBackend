@@ -138,7 +138,9 @@ export const getBlogs = async (req, res, next) => {
         // Filter by type (default to showing all if specific type not requested, or maybe default to 'blog' if strict?)
         // The requirement implies /blogs shows everything (or maybe just blogs), /guides shows guides.
         // Let's allow filtering. If type is provided, use it.
-        if (type) {
+        if (type === 'blog') {
+            query.type = { $in: ['blog', null] };
+        } else if (type) {
             query.type = type;
         }
 
@@ -851,10 +853,21 @@ export const updateComment = async (req, res, next) => {
 // Get blog categories
 export const getBlogCategories = async (req, res, next) => {
     try {
-        const categories = await Blog.distinct('category', { published: true });
+        const { type } = req.query;
 
-        // If no categories exist, provide default ones
-        const defaultCategories = [
+        // Define filters for DB lookup
+        const filter = {};
+        if (type) filter.type = type;
+
+        // If not an admin, only show categories from published posts to keep it clean
+        const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'rootadmin');
+        if (!isAdmin) {
+            filter.published = true;
+        }
+
+        const dbCategories = await Blog.distinct('category', filter);
+
+        const BLOG_CATEGORIES = [
             'Real Estate Tips',
             'Market Updates',
             'Investment Guide',
@@ -867,13 +880,30 @@ export const getBlogCategories = async (req, res, next) => {
             'Investment'
         ];
 
-        // Always return all default categories, plus any additional categories from existing blogs
-        const allCategories = [...new Set([...defaultCategories, ...categories])];
-        const finalCategories = allCategories;
+        const GUIDE_CATEGORIES = [
+            'Home Buying',
+            'Rent',
+            'Home Selling',
+            'Legal',
+            'Investment',
+            'City Guide'
+        ];
+
+        let defaultCategories = [];
+        if (type === 'blog') {
+            defaultCategories = BLOG_CATEGORIES;
+        } else if (type === 'guide') {
+            defaultCategories = GUIDE_CATEGORIES;
+        } else {
+            defaultCategories = [...new Set([...BLOG_CATEGORIES, ...GUIDE_CATEGORIES])];
+        }
+
+        // Always return all default categories for the requested type, plus any custom ones in DB
+        const allCategories = [...new Set([...defaultCategories, ...dbCategories])];
 
         res.status(200).json({
             success: true,
-            data: finalCategories
+            data: allCategories
         });
     } catch (error) {
         next(error);
@@ -883,7 +913,17 @@ export const getBlogCategories = async (req, res, next) => {
 // Get blog tags
 export const getBlogTags = async (req, res, next) => {
     try {
-        const tags = await Blog.distinct('tags', { published: true });
+        const { type } = req.query;
+        const filter = {};
+        if (type) filter.type = type;
+
+        // If not an admin, only show tags from published posts
+        const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'rootadmin');
+        if (!isAdmin) {
+            filter.published = true;
+        }
+
+        const tags = await Blog.distinct('tags', filter);
 
         res.status(200).json({
             success: true,
