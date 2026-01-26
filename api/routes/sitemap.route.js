@@ -1,6 +1,7 @@
 import express from 'express';
 import Listing from '../models/listing.model.js';
 import Blog from '../models/blog.model.js';
+import HelpArticle from '../models/helpArticle.model.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -54,7 +55,8 @@ router.get('/sitemap.xml', async (req, res) => {
     const sitemaps = [
         'sitemap-pages.xml',
         'sitemap-listings.xml',
-        'sitemap-blogs.xml'
+        'sitemap-blogs.xml',
+        'sitemap-help.xml'
     ];
 
     sitemaps.forEach(sm => {
@@ -142,6 +144,34 @@ router.get('/sitemap-blogs.xml', async (req, res, next) => {
     <lastmod>${blog.updatedAt.toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>`;
+        });
+
+        xml += '\n</urlset>';
+        res.header('Content-Type', 'application/xml');
+        res.status(200).send(xml);
+    } catch (e) { next(e); }
+});
+
+// Help Center Sitemap
+router.get('/sitemap-help.xml', async (req, res, next) => {
+    try {
+        const baseUrl = getBaseUrl(req);
+        // Find all help articles (assuming they have a field to check if published, or just fetch all if no such field exists)
+        const articles = await HelpArticle.find({}).select('slug _id updatedAt');
+
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+        xml += '<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>';
+        xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+        articles.forEach(article => {
+            const slug = article.slug || article._id;
+            xml += `
+  <url>
+    <loc>${baseUrl}/help-center/article/${slug}</loc>
+    <lastmod>${article.updatedAt.toISOString()}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>`;
         });
 
