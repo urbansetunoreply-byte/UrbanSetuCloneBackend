@@ -62,6 +62,7 @@ import helpCenterRouter from "./routes/helpCenter.route.js";
 import agentRouter from "./routes/agent.route.js";
 import subscriptionRouter from "./routes/subscription.route.js";
 import marketRouter from "./routes/market.route.js";
+import sitemapRouter from "./routes/sitemap.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -336,6 +337,7 @@ app.use("/api/year-in-review", yearInReviewRouter);
 app.use("/api/help-center", helpCenterRouter);
 app.use("/api/agent", agentRouter);
 app.use("/api/subscription", subscriptionRouter);
+app.use("/", sitemapRouter);
 let onlineUsers = new Set();
 let lastSeenTimes = new Map(); // Track last seen times for users
 app.set('onlineUsers', onlineUsers);

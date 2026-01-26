@@ -1,5 +1,12 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://urbansetu-pvt4.onrender.com/sitemap.xml"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
   ]
-} 
+}
