@@ -61,7 +61,10 @@ const AdminBlogDetail = () => {
     propertyId: '',
     tags: [],
     category: 'Real Estate Tips',
-    published: false
+    type: 'blog',
+    featured: false,
+    published: false,
+    scheduledAt: null
   });
   const [properties, setProperties] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -320,7 +323,10 @@ const AdminBlogDetail = () => {
       propertyId: blog.propertyId?._id || '',
       tags: blog.tags || [],
       category: blog.category,
-      published: blog.published
+      type: blog.type || 'blog',
+      featured: blog.featured || false,
+      published: blog.published,
+      scheduledAt: blog.scheduledAt
     });
     setShowEditModal(true);
   };
