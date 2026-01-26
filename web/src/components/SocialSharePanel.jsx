@@ -252,7 +252,7 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
           {url.includes('ref=') && (
             <div className="mt-4 text-center bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-900/30">
               <p className="text-[13px] text-blue-700 dark:text-blue-300 font-medium">
-                Earn <span className="font-bold">100 coins</span> for every friend who joins. They get <span className="font-bold">50 coins</span> too!
+                Invite friends to <span className="font-bold">UrbanSetu</span> and earn <span className="font-bold">100 SetuCoins</span> when they join! Plus, they get <span className="font-bold">50 coins</span> as a welcome gift.
               </p>
             </div>
           )}
