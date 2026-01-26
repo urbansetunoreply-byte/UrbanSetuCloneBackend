@@ -108,6 +108,14 @@ export const optionalAuth = async (req, res, next) => {
       return next();
     }
 
+    // MANDATORY Session check for optionalAuth
+    const session = Array.isArray(user.activeSessions) && user.activeSessions.find(s => s.sessionId === decoded.sessionId);
+    if (!session || (session.expiresAt && new Date() > new Date(session.expiresAt))) {
+      // Session revoked or expired, treat as guest
+      req.user = null;
+      return next();
+    }
+
     // SUSPENSION CHECK
     if (user.status === 'suspended') {
       res.clearCookie('access_token', {

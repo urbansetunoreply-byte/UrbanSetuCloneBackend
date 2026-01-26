@@ -120,8 +120,7 @@ const userSchema = new mongoose.Schema({
         default: Date.now
       },
       expiresAt: {
-        type: Date,
-        required: true
+        type: Date
       }
     }
   ],
