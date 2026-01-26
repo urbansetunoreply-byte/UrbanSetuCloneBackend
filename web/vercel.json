@@ -5,6 +5,14 @@
       "destination": "https://urbansetu-pvt4.onrender.com/sitemap.xml"
     },
     {
+      "source": "/sitemap-(.*).xml",
+      "destination": "https://urbansetu-pvt4.onrender.com/sitemap-$1.xml"
+    },
+    {
+      "source": "/sitemap.xsl",
+      "destination": "https://urbansetu-pvt4.onrender.com/sitemap.xsl"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }

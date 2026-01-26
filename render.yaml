@@ -25,6 +25,12 @@
       - type: redirect
         source: /sitemap.xml
         destination: https://urbansetu-pvt4.onrender.com/sitemap.xml?domain=global
+      - type: redirect
+        source: /sitemap-(.*).xml
+        destination: https://urbansetu-pvt4.onrender.com/sitemap-$1.xml?domain=global
+      - type: redirect
+        source: /sitemap.xsl
+        destination: https://urbansetu-pvt4.onrender.com/sitemap.xsl
       - type: rewrite
         source: /*
         destination: /index.html
