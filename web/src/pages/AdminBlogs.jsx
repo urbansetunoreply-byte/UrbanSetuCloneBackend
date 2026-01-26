@@ -16,7 +16,7 @@ import { authenticatedFetch } from '../utils/auth';
 
 const AdminBlogs = ({ type }) => {
   // Set page title
-  usePageTitle("Blogs - Admin Panel");
+  usePageTitle(`${type === 'guide' ? 'Guides' : 'Blogs'} - Admin Panel`);
   const { currentUser } = useSelector((state) => state.user);
 
   const navigate = useNavigate();

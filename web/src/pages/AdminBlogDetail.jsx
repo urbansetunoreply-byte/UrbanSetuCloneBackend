@@ -1,4 +1,6 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -22,7 +24,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 
 const AdminBlogDetail = () => {
   // Set page title
-  usePageTitle("Blog Detail - Admin Panel");
+  usePageTitle(blog ? `${blog.title} - Admin Panel` : "Loading - Admin Panel");
 
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -609,9 +611,9 @@ const AdminBlogDetail = () => {
                 ))}
               </div>
 
-              {/* HTML Content */}
-              <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-600 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-2xl prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-blue-900/20 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:not-italic">
-                <div dangerouslySetInnerHTML={{ __html: blog.content }} />
+              {/* Markdown Content */}
+              <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-black prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-600 dark:prose-p:text-gray-300 prose-li:text-gray-600 dark:prose-li:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-white prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-2xl prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-blue-900/20 prose-blockquote:py-2 prose-blockquote:px-5 prose-blockquote:not-italic cursor-default">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{blog.content}</ReactMarkdown>
               </div>
 
             </div>

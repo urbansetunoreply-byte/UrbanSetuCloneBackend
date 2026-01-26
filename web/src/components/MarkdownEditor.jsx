@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
     Bold, Italic, List, Link, Heading1, Heading2,
     Code, Quote, Image as ImageIcon, Eye, Edit3
@@ -28,12 +29,12 @@ const MarkdownEditor = ({ value, onChange, placeholder }) => {
     };
 
     const toolbarItems = [
-        { icon: Heading1, action: () => insertText('# ', ''), label: 'H1' },
-        { icon: Heading2, action: () => insertText('## ', ''), label: 'H2' },
+        { icon: Heading1, action: () => insertText('\n# ', ''), label: 'H1' },
+        { icon: Heading2, action: () => insertText('\n## ', ''), label: 'H2' },
         { icon: Bold, action: () => insertText('**', '**'), label: 'Bold' },
         { icon: Italic, action: () => insertText('_', '_'), label: 'Italic' },
-        { icon: List, action: () => insertText('- ', ''), label: 'List' },
-        { icon: Quote, action: () => insertText('> ', ''), label: 'Quote' },
+        { icon: List, action: () => insertText('\n- ', ''), label: 'List' },
+        { icon: Quote, action: () => insertText('\n> ', ''), label: 'Quote' },
         { icon: Code, action: () => insertText('`', '`'), label: 'Inline Code' },
         { icon: Link, action: () => insertText('[', '](https://)'), label: 'Link' },
         { icon: ImageIcon, action: () => insertText('![alt text](', ')'), label: 'Image' },
@@ -87,9 +88,9 @@ const MarkdownEditor = ({ value, onChange, placeholder }) => {
                         className="w-full min-h-[400px] p-6 bg-transparent text-gray-800 dark:text-white border-none focus:ring-0 font-mono text-sm resize-y placeholder-gray-400 dark:placeholder-gray-500"
                     />
                 ) : (
-                    <div className="p-8 prose dark:prose-invert max-w-none prose-blue dark:prose-indigo prose-img:rounded-3xl prose-headings:font-black prose-p:text-gray-600 dark:prose-p:text-gray-300 min-h-[400px]">
+                    <div className="p-8 prose prose-lg dark:prose-invert max-w-none prose-blue dark:prose-indigo prose-img:rounded-3xl prose-headings:font-black prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-600 dark:prose-p:text-gray-300 prose-li:text-gray-600 dark:prose-li:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-white min-h-[400px]">
                         {value ? (
-                            <ReactMarkdown>{value}</ReactMarkdown>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
                         ) : (
                             <div className="h-full flex items-center justify-center text-gray-400 italic">
                                 Nothing to preview yet...
