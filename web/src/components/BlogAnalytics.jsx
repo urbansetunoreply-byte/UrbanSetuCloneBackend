@@ -6,18 +6,22 @@ import {
 import { Eye, Heart, FileText, CheckCircle, TrendingUp } from 'lucide-react';
 import { authenticatedFetch } from '../utils/auth';
 
-const BlogAnalytics = () => {
+const BlogAnalytics = ({ type }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu-pvt4.onrender.com';
 
     useEffect(() => {
         fetchAnalytics();
-    }, []);
+    }, [type]);
 
     const fetchAnalytics = async () => {
         try {
-            const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/stats/analytics`);
+            setLoading(true);
+            const params = new URLSearchParams();
+            if (type && type !== 'all') params.append('type', type);
+
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs/stats/analytics?${params}`);
             if (response.ok) {
                 const result = await response.json();
                 setData(result.data);
@@ -43,10 +47,14 @@ const BlogAnalytics = () => {
 
     const { daily, summary } = data;
 
+    const isGuide = type === 'guide';
+    const contentLabel = isGuide ? 'Guide' : 'Blog';
+    const contentLabelPlural = isGuide ? 'Guides' : 'Blogs';
+
     const stats = [
         { label: 'Total Views', value: summary.totalViews, icon: Eye, color: 'blue' },
         { label: 'Total Likes', value: summary.totalLikes, icon: Heart, color: 'red' },
-        { label: 'Active Blogs', value: summary.publishedBlogs, icon: CheckCircle, color: 'green' },
+        { label: `Active ${contentLabelPlural}`, value: summary.publishedBlogs, icon: CheckCircle, color: 'green' },
         { label: 'Drafts', value: summary.totalBlogs - summary.publishedBlogs, icon: FileText, color: 'yellow' },
     ];
 

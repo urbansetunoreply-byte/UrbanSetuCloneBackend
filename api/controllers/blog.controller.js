@@ -958,16 +958,26 @@ export const getBlogTags = async (req, res, next) => {
 // Get blog analytics
 export const getBlogAnalytics = async (req, res, next) => {
     try {
+        const { type } = req.query; // 'blog', 'guide', or undefined/all
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+        // Build base type filter
+        const typeFilter = type && type !== 'all' ? { type } : {};
+
+        // Find relevant blog IDs for the type if filtering
+        let blogIds = null;
+        if (type && type !== 'all') {
+            const blogs = await Blog.find(typeFilter).select('_id');
+            blogIds = blogs.map(b => b._id);
+        }
+
         // Group views by date
+        const viewMatch = { viewedAt: { $gte: thirtyDaysAgo } };
+        if (blogIds) viewMatch.blogId = { $in: blogIds };
+
         const viewsData = await BlogView.aggregate([
-            {
-                $match: {
-                    viewedAt: { $gte: thirtyDaysAgo }
-                }
-            },
+            { $match: viewMatch },
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$viewedAt" } },
@@ -978,12 +988,11 @@ export const getBlogAnalytics = async (req, res, next) => {
         ]);
 
         // Group likes by date
+        const likeMatch = { createdAt: { $gte: thirtyDaysAgo } };
+        if (blogIds) likeMatch.blogId = { $in: blogIds };
+
         const likesData = await BlogLike.aggregate([
-            {
-                $match: {
-                    createdAt: { $gte: thirtyDaysAgo }
-                }
-            },
+            { $match: likeMatch },
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -994,7 +1003,9 @@ export const getBlogAnalytics = async (req, res, next) => {
         ]);
 
         // Get total stats
+        const summaryMatch = type && type !== 'all' ? { type } : {};
         const totalStats = await Blog.aggregate([
+            { $match: summaryMatch },
             {
                 $group: {
                     _id: null,

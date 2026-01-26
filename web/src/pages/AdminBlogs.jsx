@@ -554,9 +554,9 @@ const AdminBlogs = ({ type }) => {
       {/* Main Content */}
       <div className="flex-grow max-w-7xl mx-auto px-4 w-full relative z-10 pb-20">
 
-        {activeTab === 'analytics' && <BlogAnalytics />}
+        {activeTab === 'analytics' && <BlogAnalytics type={filterPostType} />}
 
-        {activeTab === 'blogs' ? (
+        {activeTab === 'blogs' && (
           <>
             {/* Filters Card */}
             <div className="bg-white dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 mb-8 animate-fade-in-up transition-all relative z-40">
@@ -926,7 +926,9 @@ const AdminBlogs = ({ type }) => {
               )}
             </div>
           </>
-        ) : (
+        )}
+
+        {activeTab === 'subscribers' && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-up">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50 flex justify-between items-center">
               <h2 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
