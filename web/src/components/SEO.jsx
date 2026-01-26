@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 
 const SEO = ({ title, description, keywords, image, url, type = 'website', schema }) => {
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://urbansetu.vercel.app';
-    const siteTitle = "UrbanSetu – Smart Real Estate";
+    const siteTitle = "UrbanSetu · Smart Real Estate";
     const fullTitle = title ? title : siteTitle;
     const defaultDescription = "UrbanSetu is India's No.1 verified real estate platform. Buy, sell, and rent properties with confidence using our Rent Lock and trust-verified listings.";
     const metaDescription = description || defaultDescription;

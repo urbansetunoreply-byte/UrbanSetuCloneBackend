@@ -64,7 +64,7 @@ export default function PublicAbout() {
           keywords="about urbansetu, real estate platform india, bhavith tungena, property mission"
         />
         <div className="sr-only" aria-hidden="true">
-          <h1>About UrbanSetu – India's Verified Real Estate Platform</h1>
+          <h1>About UrbanSetu · India's Verified Real Estate Platform</h1>
           <p>UrbanSetu is a smart real estate ecosystem founded by Bhavith Tungena. Our mission is to provide trust and transparency in property transactions through AI-powered verification and virtual tours.</p>
         </div>
         <AboutSkeleton />

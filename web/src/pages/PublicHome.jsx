@@ -134,14 +134,14 @@ export default function PublicHome() {
     return (
       <>
         <SEO
-          title="Find Your Dream Home - Smart Real Estate India"
+          title="Find Your Dream Home · Smart Real Estate India"
           description={description}
           keywords={keywords}
           schema={organizationSchema}
         />
         {/* SEO-only content for crawlers even in loading state */}
         <div className="sr-only" aria-hidden="true">
-          <h1>UrbanSetu – Smart Real Estate Platform in India</h1>
+          <h1>UrbanSetu · Smart Real Estate Platform in India</h1>
           <p>Explore verified properties for sale and rent across India with UrbanSetu. Our smart platform offers AI recommendations, virtual tours, and secure transactions in Hyderabad, Bangalore, Mumbai, and more.</p>
           <nav>
             <a href="/search">Search Properties</a>
@@ -227,7 +227,7 @@ export default function PublicHome() {
 
         {/* SEO-only content for crawlers */}
         <div className="sr-only" aria-hidden="true">
-          <h1>UrbanSetu – Smart Real Estate Platform in India</h1>
+          <h1>UrbanSetu · Smart Real Estate Platform in India</h1>
           <p>Buy, sell, and rent verified properties across India with UrbanSetu. Our smart ecosystem provides AI-powered property recommendations, real-time chat with owners, 3D virtual tours, and verified listings to ensure trust and transparency.</p>
           <p>Explore luxury apartments, budget homes, commercial spaces, and rental properties in top cities like Hyderabad, Bangalore, Mumbai, Delhi, and Chennai.</p>
           <h2>Advanced Real Estate Tools</h2>
@@ -625,7 +625,7 @@ export default function PublicHome() {
               </div>
             </div>
             <div className="mt-12 text-center text-xs text-gray-400 dark:text-gray-500 transition-colors">
-              © 2024 UrbanSetu Real Estate. All rights reserved. UrbanSetu helps users buy, sell, and rent properties in India with trust and transparency.
+              © 2026 UrbanSetu Real Estate. All rights reserved. UrbanSetu helps users buy, sell, and rent properties in India with trust and transparency.
             </div>
           </section>
         </div>
