@@ -32,6 +32,7 @@ export default function PublicHome() {
   const [offerListings, setOfferListings] = useState([]);
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);
+  const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [stats, setStats] = useState({ properties: 0, users: 0, transactions: 0, satisfaction: 0 });
   const swiperRef = useRef(null);
@@ -120,7 +121,10 @@ export default function PublicHome() {
 
   // Trigger slider visibility logic
   useEffect(() => {
-    // Slider visibility can be handled by CSS or standard render
+    const timer = setTimeout(() => {
+      setIsSliderVisible(true);
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSlideChange = (swiper) => {
@@ -167,7 +171,7 @@ export default function PublicHome() {
 
   // Get all images from offer listings for the slider
   const allSliderImages = Array.isArray(offerListings) ? offerListings.flatMap(listing =>
-    (listing.imageUrls || []).map((img) => ({
+    (listing.imageUrls || []).map((img, idx) => ({
       url: img,
       listingId: listing._id,
       title: listing.name || 'Featured Property',
@@ -322,7 +326,7 @@ export default function PublicHome() {
         </div>
 
         {/* Featured Slider */}
-        {allSliderImages.length > 0 && (
+        {allSliderImages.length > 0 && isSliderVisible && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
             <div className="flex flex-col items-center mb-8 gap-4 text-center">
               <div>
