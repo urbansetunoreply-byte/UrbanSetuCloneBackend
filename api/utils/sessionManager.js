@@ -381,7 +381,8 @@ export const createEnhancedSession = async (userId, req) => {
                 device,
                 location,
                 loginTime: new Date(),
-                lastActive: new Date()
+                lastActive: new Date(),
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // Strictly 7 days from login
             }
         },
         $set: {

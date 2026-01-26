@@ -319,6 +319,7 @@ export const chatWithGemini = async (req, res) => {
             - Privacy Policy: https://urbansetu.vercel.app/privacy
             - Cookie Policy: https://urbansetu.vercel.app/cookie-policy
             - Blogs: https://urbansetu.vercel.app/blogs
+            - Guides: https://urbansetu.vercel.app/guides
             - Agents: https://urbansetu.vercel.app/agents
             - Agent Profile: https://urbansetu.vercel.app/agent/AGENT_ID (Replace AGENT_ID with actual ID)
             - Help Center: https://urbansetu.vercel.app/help-center
@@ -328,6 +329,7 @@ export const chatWithGemini = async (req, res) => {
             - Forgot Password: https://urbansetu.vercel.app/forgot-password?email= (Append email if known)
             - Community Guidelines: https://urbansetu.vercel.app/community-guidelines
             - FAQs: https://urbansetu.vercel.app/faqs
+            - Market Trends: https://urbansetu.vercel.app/market-trends
             - Property Details: https://urbansetu.vercel.app/listing/PROPERTY_ID (Replace PROPERTY_ID with actual ID)
             - Create New Listing: https://urbansetu.vercel.app/user/create-listing
             - My Listings: https://urbansetu.vercel.app/user/my-listings

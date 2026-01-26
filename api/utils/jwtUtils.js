@@ -7,6 +7,7 @@ const REFRESH_TOKEN_EXPIRY = process.env.JWT_EXPIRE || '7d'; // Default 7 days
 
 // Generate access token (short-lived)
 export const generateAccessToken = (payload) => {
+    // Payload should include: { id: userId, sessionId: sessionId }
     return jwt.sign(payload, JWT_SECRET, {
         expiresIn: ACCESS_TOKEN_EXPIRY,
         issuer: 'urbansetu',
@@ -16,6 +17,7 @@ export const generateAccessToken = (payload) => {
 
 // Generate refresh token (long-lived)
 export const generateRefreshToken = (payload) => {
+    // Payload should include: { id: userId, sessionId: sessionId }
     return jwt.sign(payload, JWT_SECRET, {
         expiresIn: REFRESH_TOKEN_EXPIRY,
         issuer: 'urbansetu',

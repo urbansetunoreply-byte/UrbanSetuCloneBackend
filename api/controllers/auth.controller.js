@@ -371,8 +371,8 @@ export const SignIn = async (req, res, next) => {
         validUser.lastReEngagementEmailSent = null;
         await validUser.save();
 
-        // Generate token pair
-        const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id });
+        // Generate token pair with sessionId
+        const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id, sessionId: session.sessionId });
 
         // Set secure cookies
         setSecureCookies(res, accessToken, refreshToken);
@@ -483,8 +483,8 @@ export const Google = async (req, res, next) => {
             if (validUser.status === 'suspended') {
                 return next(errorHandler(403, "Your account is suspended. Please contact support."));
             }
-            // Generate token pair
-            const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id });
+            // Generate token pair with sessionId
+            const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id, sessionId: session.sessionId });
 
             // Create enhanced session for Google login as well
             const session = await createEnhancedSession(validUser._id, req);
@@ -712,8 +712,8 @@ export const Google = async (req, res, next) => {
                 }
             }
 
-            // Generate token pair
-            const { accessToken, refreshToken } = generateTokenPair({ id: newUser._id });
+            // Generate token pair with sessionId
+            const { accessToken, refreshToken } = generateTokenPair({ id: newUser._id, sessionId: session.sessionId });
 
             // Create enhanced session for Google signup/login
             const session = await createEnhancedSession(newUser._id, req);
@@ -903,8 +903,28 @@ export const verifyAuth = async (req, res, next) => {
                     return res.status(200).json({ authenticated: false, message: "Account suspended" });
                 }
 
-                // Generate new token pair
-                const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokenPair({ id: user._id });
+                // MANDATORY Session check for refresh token
+                if (!refreshDecoded.sessionId) {
+                    return res.status(200).json({ authenticated: false, message: "Legacy session. Please sign in again." });
+                }
+
+                const session = Array.isArray(user.activeSessions) && user.activeSessions.find(s => s.sessionId === refreshDecoded.sessionId);
+                if (!session) {
+                    return res.status(200).json({ authenticated: false, message: "Session revoked" });
+                }
+
+                // Check absolute session expiry (7 days policy)
+                if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
+                    // Remove session from DB
+                    await User.findByIdAndUpdate(user._id, { $pull: { activeSessions: { sessionId: session.sessionId } } });
+                    return res.status(200).json({ authenticated: false, message: "Session expired (7-day limit reached)" });
+                }
+
+                // Generate new token pair with SAME sessionId to keep it bound to the same device
+                const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokenPair({
+                    id: user._id,
+                    sessionId: refreshDecoded.sessionId
+                });
 
                 // Set new cookies
                 setSecureCookies(res, newAccessToken, newRefreshToken);
@@ -1487,8 +1507,8 @@ export const verifyLoginOTP = async (req, res, next) => {
         // Enforce role-based session limits
         await enforceSessionLimits(user._id, user.role);
 
-        // Generate token pair
-        const { accessToken, refreshToken } = generateTokenPair({ id: user._id });
+        // Generate token pair with sessionId
+        const { accessToken, refreshToken } = generateTokenPair({ id: user._id, sessionId: session.sessionId });
 
         // Clear OTP from store
         loginOtpStore.delete(emailLower);
@@ -1716,13 +1736,34 @@ export const RefreshToken = async (req, res, next) => {
             return next(errorHandler(403, "Account suspended"));
         }
 
-        const newAccessToken = generateAccessToken({ id: user._id });
+        // MANDATORY Session check for refresh token
+        if (!decoded.sessionId) {
+            return next(errorHandler(401, "Legacy session. Please sign in again."));
+        }
 
-        setSecureCookies(res, newAccessToken, refreshToken);
+        const session = Array.isArray(user.activeSessions) && user.activeSessions.find(s => s.sessionId === decoded.sessionId);
+        if (!session) {
+            return next(errorHandler(401, "Session revoked"));
+        }
+
+        // Check absolute session expiry (7 days policy)
+        if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
+            // Remove session from DB
+            await User.findByIdAndUpdate(user._id, { $pull: { activeSessions: { sessionId: session.sessionId } } });
+            return next(errorHandler(401, "Session expired (7-day limit reached). Please sign in again."));
+        }
+
+        // Rotate token pair (optional but recommended for security)
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokenPair({
+            id: user._id,
+            sessionId: decoded.sessionId
+        });
+
+        setSecureCookies(res, newAccessToken, newRefreshToken);
 
         res.status(200).json({
             token: newAccessToken,
-            refreshToken
+            refreshToken: newRefreshToken
         });
 
     } catch (error) {

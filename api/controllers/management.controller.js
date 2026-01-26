@@ -8,6 +8,7 @@ import { sendAccountDeletionEmail, sendAccountSuspensionEmail, sendUserPromotion
 import { autoPurgeSoftbannedAccounts, getPurgeStatistics } from '../services/autoPurgeService.js';
 import { sendAccountDeletionReminders, getReminderStatistics } from '../services/accountReminderService.js';
 import { checkEmailServiceStatus, getEmailServiceMonitoringStats } from '../services/emailMonitoringService.js';
+import { revokeAllUserSessionsFromDB } from '../utils/sessionManager.js';
 
 // Fetch all users (for admin/rootadmin)
 export const getManagementUsers = async (req, res, next) => {
@@ -282,6 +283,12 @@ export const suspendUserOrAdmin = async (req, res, next) => {
       }
       await user.save();
 
+      // Revoke all active sessions upon suspension
+      if (togglingToSuspended) {
+        await revokeAllUserSessionsFromDB(user._id, req.app.get('io'));
+        console.log(`🚫 Revoked all sessions for suspended user: ${user.email}`);
+      }
+
       // Send suspension/reactivation email
       try {
         const suspensionDetails = {
@@ -333,6 +340,12 @@ export const suspendUserOrAdmin = async (req, res, next) => {
         admin.suspensionReason = null;
       }
       await admin.save();
+
+      // Revoke all active sessions upon suspension
+      if (togglingAdminToSuspended) {
+        await revokeAllUserSessionsFromDB(admin._id, req.app.get('io'));
+        console.log(`🚫 Revoked all sessions for suspended admin: ${admin.email}`);
+      }
 
       // Send suspension/reactivation email
       try {

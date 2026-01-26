@@ -24,20 +24,32 @@ export const verifyToken = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    // Enforce active session check: if a session_id cookie/header is present, it must be active
-    try {
-      const presentedSessionId = req.headers['x-session-id'] || req.cookies.session_id;
-      if (presentedSessionId) {
-        const isActive = Array.isArray(user.activeSessions) && user.activeSessions.some(s => s.sessionId === presentedSessionId);
-        if (!isActive) {
-          // Clear auth cookies and reject
-          res.clearCookie('access_token', { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
-          res.clearCookie('refresh_token', { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
-          res.clearCookie('session_id', { httpOnly: false, sameSite: 'none', secure: true, path: '/' });
-          return res.status(401).json({ message: 'Session expired' });
-        }
-      }
-    } catch (_) { }
+
+    // MANDATORY Session check: The sessionId in the JWT must exist in user.activeSessions
+    if (!decoded.sessionId) {
+      // Legacy token or missing session ID
+      return res.status(401).json({ message: 'Session ID missing in token. Please sign in again.' });
+    }
+
+    const session = Array.isArray(user.activeSessions) && user.activeSessions.find(s => s.sessionId === decoded.sessionId);
+    if (!session) {
+      // Clear auth cookies and reject
+      res.clearCookie('access_token', { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
+      res.clearCookie('refresh_token', { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
+      res.clearCookie('session_id', { httpOnly: false, sameSite: 'none', secure: true, path: '/' });
+      return res.status(401).json({ message: 'Session invalid or revoked' });
+    }
+
+    // Check absolute session expiry (7 days policy)
+    if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
+      // Clear session from DB
+      await User.findByIdAndUpdate(user._id, { $pull: { activeSessions: { sessionId: decoded.sessionId } } });
+
+      res.clearCookie('access_token', { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
+      res.clearCookie('refresh_token', { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
+      res.clearCookie('session_id', { httpOnly: false, sameSite: 'none', secure: true, path: '/' });
+      return res.status(401).json({ message: 'Session expired (7-day limit reached). Please sign in again.' });
+    }
     // SUSPENSION CHECK
     if (user.status === 'suspended') {
       res.clearCookie('access_token', {
