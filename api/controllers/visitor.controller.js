@@ -144,7 +144,7 @@ export const trackVisitor = async (req, res, next) => {
         await notifyAdminsOfErrors(initialMetrics.errors, visitorLog, page, userInfo, req);
       }
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         message: 'Visitor tracked successfully',
         visitor: {
@@ -156,93 +156,106 @@ export const trackVisitor = async (req, res, next) => {
     } catch (error) {
       // If duplicate (visitor already tracked today), update preferences and device info
       if (error.code === 11000) {
-        // Find the existing visitor first to check for duplicate page views
-        const existingVisitor = await VisitorLog.findOne({ fingerprint, visitDate });
+        let retries = 3;
+        while (retries > 0) {
+          try {
+            // Find the existing visitor first to check for duplicate page views
+            const existingVisitor = await VisitorLog.findOne({ fingerprint, visitDate });
 
-        if (existingVisitor) {
-          // Always update lastActive and device info
-          existingVisitor.device = device;
-          existingVisitor.browser = browserInfo.name;
-          existingVisitor.browserVersion = browserInfo.version;
-          existingVisitor.os = os;
-          existingVisitor.deviceType = deviceType;
-          existingVisitor.lastActive = new Date();
-          existingVisitor.timestamp = new Date(); // Update last seen
-
-          if (cookiePreferences) {
-            existingVisitor.cookiePreferences = cookiePreferences;
-          }
-
-          // Handle Page View Logic first if it's a pageview request
-          if (type === 'pageview' && page && type !== 'heartbeat') {
-            const lastPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
-            if (!lastPage || lastPage.path !== page) {
-              existingVisitor.pageViews.push({
-                path: page,
-                title: '',
-                timestamp: new Date(),
-                scrollPercentage: 0,
-                loadTime: req.body.metrics?.loadTime || 0
-              });
-              existingVisitor.page = page;
+            if (!existingVisitor) {
+              // This is rare: it was there, then gone in a split second
+              return res.status(200).json({ success: true });
             }
-          }
 
-          // Handle Metrics Update (Scroll/Load Time/Interactions/Errors)
-          if (req.body.metrics) {
-            const metrics = req.body.metrics;
-            // Find the most relevant page to attach metrics to
-            // Try to find exact match in recent history (looping backwards manually to avoid slice().reverse())
-            let targetPage = null;
-            for (let i = existingVisitor.pageViews.length - 1; i >= 0; i--) {
-              if (existingVisitor.pageViews[i].path === page) {
-                targetPage = existingVisitor.pageViews[i];
-                break;
+            // Always update lastActive and device info
+            existingVisitor.device = device;
+            existingVisitor.browser = browserInfo.name;
+            existingVisitor.browserVersion = browserInfo.version;
+            existingVisitor.os = os;
+            existingVisitor.deviceType = deviceType;
+            existingVisitor.lastActive = new Date();
+            existingVisitor.timestamp = new Date(); // Update last seen
+
+            if (cookiePreferences) {
+              existingVisitor.cookiePreferences = cookiePreferences;
+            }
+
+            // Handle Page View Logic first if it's a pageview request
+            if (type === 'pageview' && page && type !== 'heartbeat') {
+              const lastPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
+              if (!lastPage || lastPage.path !== page) {
+                existingVisitor.pageViews.push({
+                  path: page,
+                  title: '',
+                  timestamp: new Date(),
+                  scrollPercentage: 0,
+                  loadTime: req.body.metrics?.loadTime || 0
+                });
+                existingVisitor.page = page;
               }
             }
-            if (!targetPage) targetPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
-            if (targetPage) {
-              // Update scroll depth only if it's deeper
-              if (metrics.scrollPercentage && metrics.scrollPercentage > (targetPage.scrollPercentage || 0)) {
-                targetPage.scrollPercentage = metrics.scrollPercentage;
+
+            // Handle Metrics Update (Scroll/Load Time/Interactions/Errors)
+            if (req.body.metrics) {
+              const metrics = req.body.metrics;
+              // Find the most relevant page to attach metrics to
+              // Try to find exact match in recent history (looping backwards manually to avoid slice().reverse())
+              let targetPage = null;
+              for (let i = existingVisitor.pageViews.length - 1; i >= 0; i--) {
+                if (existingVisitor.pageViews[i].path === page) {
+                  targetPage = existingVisitor.pageViews[i];
+                  break;
+                }
               }
+              if (!targetPage) targetPage = existingVisitor.pageViews[existingVisitor.pageViews.length - 1];
+              if (targetPage) {
+                // Update scroll depth only if it's deeper
+                if (metrics.scrollPercentage && metrics.scrollPercentage > (targetPage.scrollPercentage || 0)) {
+                  targetPage.scrollPercentage = metrics.scrollPercentage;
+                }
 
-              // Set load time if not already set or if provided
-              if (metrics.loadTime && metrics.loadTime > 0) {
-                targetPage.loadTime = metrics.loadTime;
-              }
+                // Set load time if not already set or if provided
+                if (metrics.loadTime && metrics.loadTime > 0) {
+                  targetPage.loadTime = metrics.loadTime;
+                }
 
-              // Append interactions
-              if (metrics.interactions && Array.isArray(metrics.interactions)) {
-                if (!targetPage.interactions) targetPage.interactions = [];
-                metrics.interactions.forEach(i => targetPage.interactions.push(i));
-              }
+                // Append interactions
+                if (metrics.interactions && Array.isArray(metrics.interactions)) {
+                  if (!targetPage.interactions) targetPage.interactions = [];
+                  metrics.interactions.forEach(i => targetPage.interactions.push(i));
+                }
 
-              // Append and Notify Errors
-              if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
-                if (!targetPage.errorLogs) targetPage.errorLogs = [];
-                metrics.errors.forEach(e => targetPage.errorLogs.push(e));
+                // Append and Notify Errors
+                if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
+                  if (!targetPage.errorLogs) targetPage.errorLogs = [];
+                  metrics.errors.forEach(e => targetPage.errorLogs.push(e));
 
-                // Notify Admins
+                  // Notify Admins
+                  await notifyAdminsOfErrors(metrics.errors, existingVisitor, page, userInfo, req);
+                }
+              } else if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
+                // Fallback: Notify even if no page view was found
                 await notifyAdminsOfErrors(metrics.errors, existingVisitor, page, userInfo, req);
               }
-            } else if (metrics.errors && Array.isArray(metrics.errors) && metrics.errors.length > 0) {
-              // Fallback: Notify even if no page view was found
-              await notifyAdminsOfErrors(metrics.errors, existingVisitor, page, userInfo, req);
             }
+
+            // Explicitly mark as modified since we updated deep within nested arrays/objects
+            existingVisitor.markModified('pageViews');
+            await existingVisitor.save();
+
+            return res.status(200).json({
+              success: true,
+              message: 'Visitor updated'
+            });
+          } catch (saveError) {
+            if (saveError.name === 'VersionError' && retries > 1) {
+              retries--;
+              // Wait a tiny bit before retry to let the other request finish
+              await new Promise(resolve => setTimeout(resolve, 50 * (3 - retries)));
+              continue;
+            }
+            throw saveError;
           }
-
-          // Explicitly mark as modified since we updated deep within nested arrays/objects
-          existingVisitor.markModified('pageViews');
-          await existingVisitor.save();
-
-          res.status(200).json({
-            success: true,
-            message: 'Visitor updated'
-          });
-        } else {
-          // Fallback if not found (weird race condition)
-          res.status(200).json({ success: true });
         }
       } else {
         throw error;
