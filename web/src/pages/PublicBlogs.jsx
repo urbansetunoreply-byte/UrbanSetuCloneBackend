@@ -335,6 +335,7 @@ const PublicBlogs = () => {
       if (showLoading) setLoading(true);
       const params = new URLSearchParams({
         published: 'true',
+        type: 'blog',
         page: pagination.current,
         limit: 9
       });
@@ -365,6 +366,7 @@ const PublicBlogs = () => {
     try {
       const params = new URLSearchParams({
         published: 'true',
+        type: 'blog',
         search: searchTerm,
         limit: 5
       });

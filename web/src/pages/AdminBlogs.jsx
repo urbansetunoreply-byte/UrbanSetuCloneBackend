@@ -207,6 +207,8 @@ const AdminBlogs = ({ type }) => {
         limit: 5
       });
 
+      if (filterPostType !== 'all') params.append('type', filterPostType);
+
       const response = await authenticatedFetch(`${API_BASE_URL}/api/blogs?${params}`);
 
       if (response.ok) {
@@ -300,7 +302,7 @@ const AdminBlogs = ({ type }) => {
       videoUrls: [],
       propertyId: '',
       tags: [],
-      category: 'Real Estate Tips',
+      category: (filterPostType === 'guide' ? 'Home Buying' : 'Real Estate Tips'),
       type: filterPostType !== 'all' ? filterPostType : 'blog',
       featured: false,
       published: false

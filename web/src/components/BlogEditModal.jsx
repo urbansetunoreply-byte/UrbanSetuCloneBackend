@@ -491,7 +491,7 @@ const BlogEditModal = ({
                       name="contentType"
                       value="blog"
                       checked={!formData.type || formData.type === 'blog'}
-                      onChange={() => setFormData(prev => ({ ...prev, type: 'blog' }))}
+                      onChange={() => setFormData(prev => ({ ...prev, type: 'blog', category: 'Real Estate Tips' }))}
                       className="hidden"
                     />
                     <div className="text-center font-bold">Blog Post</div>
@@ -503,7 +503,7 @@ const BlogEditModal = ({
                       name="contentType"
                       value="guide"
                       checked={formData.type === 'guide'}
-                      onChange={() => setFormData(prev => ({ ...prev, type: 'guide' }))}
+                      onChange={() => setFormData(prev => ({ ...prev, type: 'guide', category: 'Home Buying' }))}
                       className="hidden"
                     />
                     <div className="text-center font-bold">Guide</div>
