@@ -91,7 +91,7 @@ const handleViewCount = async (blogId, req) => {
 };
 
 // Helper function to publish scheduled blogs
-const publishScheduledBlogs = async () => {
+export const publishScheduledBlogs = async () => {
     try {
         const now = new Date();
         const scheduledBlogs = await Blog.find({

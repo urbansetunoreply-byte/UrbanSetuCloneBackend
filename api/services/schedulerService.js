@@ -13,6 +13,7 @@ import {
   checkAndSendIncompleteListingNudges
 } from './engagementService.js';
 import { cleanupAllStaleSessions } from '../utils/sessionManager.js';
+import { publishScheduledBlogs } from '../controllers/blog.controller.js';
 
 // Schedule appointment reminders to run every day at 9:00 AM
 const scheduleAppointmentReminders = () => {
@@ -239,6 +240,28 @@ const scheduleSessionCleanup = () => {
   console.log('📋 Schedule: Every day at 4:00 AM (Asia/Kolkata timezone)');
 };
 
+// Schedule blog publication to run every 15 minutes
+const scheduleBlogPublication = () => {
+  console.log('📰 Setting up blog publication scheduler...');
+
+  // Run every 15 minutes
+  cron.schedule('*/15 * * * *', async () => {
+    console.log('⏰ Running scheduled blog publication check...');
+    try {
+      await publishScheduledBlogs();
+      console.log('✅ Scheduled blog publication check completed');
+    } catch (error) {
+      console.error('❌ Error in scheduled blog publication check:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kolkata"
+  });
+
+  console.log('✅ Blog publication scheduler set up successfully');
+  console.log('📋 Schedule: Every 15 minutes');
+};
+
 // Start the scheduler
 export const startScheduler = (app) => {
   console.log('🚀 Starting scheduler service...');
@@ -252,6 +275,7 @@ export const startScheduler = (app) => {
   scheduleRentReminders();
   scheduleEngagementJobs();
   scheduleSessionCleanup();
+  scheduleBlogPublication();
   console.log('✅ Scheduler service started successfully');
 };
 

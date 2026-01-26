@@ -16060,7 +16060,8 @@ export const sendSubscriptionRevokedEmail = async (email, type = 'blog', reason)
 export const sendNewBlogNotification = async (email, username, blog) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   // Use slug if available, otherwise fallback to ID
-  const blogLink = `${clientBaseUrl}/blog/${blog.slug || blog._id}`;
+  const typePath = blog.type === 'guide' ? 'guide' : 'blog';
+  const blogLink = `${clientBaseUrl}/${typePath}/${blog.slug || blog._id}`;
 
   // Determine text based on type (default to 'Blog Post' if undefined)
   const isGuide = blog.type === 'guide';

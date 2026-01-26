@@ -654,6 +654,7 @@ const BlogEditModal = ({
                   type="datetime-local"
                   value={formData.scheduledAt ? new Date(new Date(formData.scheduledAt).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, scheduledAt: e.target.value }))}
+                  min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
                   disabled={formData.published}
                   className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all text-sm font-bold"
                 />
