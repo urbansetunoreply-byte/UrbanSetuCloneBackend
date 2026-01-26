@@ -3540,7 +3540,7 @@ export default function Listing() {
                           </div>
                           <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3 line-clamp-2">
                             <Link
-                              to={`/blog/${blog.slug || blog._id}`}
+                              to={`/${blog.type === 'guide' ? 'guide' : 'blog'}/${blog.slug || blog._id}`}
                               className="hover:text-green-600 transition-colors"
                             >
                               {blog.title}
@@ -3591,7 +3591,7 @@ export default function Listing() {
                           </div>
                           <div className="mt-4">
                             <Link
-                              to={isAdmin ? `/admin/blog/${blog.slug || blog._id}` : `/blog/${blog.slug || blog._id}`}
+                              to={isAdmin ? (blog.type === 'guide' ? `/admin/guide/${blog.slug || blog._id}` : `/admin/blog/${blog.slug || blog._id}`) : (blog.type === 'guide' ? `/guide/${blog.slug || blog._id}` : `/blog/${blog.slug || blog._id}`)}
                               className="inline-flex items-center text-green-600 hover:text-green-700 font-medium text-sm"
                             >
                               Read More

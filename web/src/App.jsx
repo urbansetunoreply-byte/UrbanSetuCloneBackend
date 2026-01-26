@@ -31,7 +31,9 @@ import Offers from "./pages/Offers";
 // Blog redirect component for logged-in users
 const BlogRedirect = () => {
   const { slug } = useParams();
-  return <Navigate to={`/user/blog/${slug}`} replace />;
+  const location = useLocation();
+  const isGuide = location.pathname.includes('/guide/');
+  return <Navigate to={`/user/${isGuide ? 'guide' : 'blog'}/${slug}`} replace />;
 };
 import Privacy from "./pages/Privacy";
 import UserTerms from "./pages/UserTerms";
@@ -257,7 +259,7 @@ function normalizeRoute(path, role) {
   }
 
   // List of base routes that have public-facing versions
-  const publicBases = ["about", "blogs", "guides", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community", "help-center", "agents", "market-trends"];
+  const publicBases = ["about", "blogs", "blog", "guides", "guide", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai", "community-guidelines", "community", "help-center", "agents", "market-trends"];
 
   // List of base routes that exist for both user and admin but are NOT public
   const parallelBases = [
