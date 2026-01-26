@@ -140,13 +140,18 @@ export default function PublicHome() {
           schema={organizationSchema}
         />
         {/* SEO-only content for crawlers even in loading state */}
-        <div className="sr-only" aria-hidden="true">
+        <div className="sr-only">
           <h1>UrbanSetu · Smart Real Estate Platform in India</h1>
-          <p>Explore verified properties for sale and rent across India with UrbanSetu. Our smart platform offers AI recommendations, virtual tours, and secure transactions in Hyderabad, Bangalore, Mumbai, and more.</p>
+          <p>Explore verified properties for sale and rent across India with UrbanSetu. Our smart platform offers AI recommendations, virtual tours, and secure transactions in Hyderabad, Bangalore, Mumbai, and more. UrbanSetu is India's most trusted real estate ecosystem designed for modern property seekers. Whether you're looking for a luxury villa in Hyderabad, a budget-friendly apartment in Bangalore, or a commercial space in Mumbai, our platform provides comprehensive data and verified listings to ensure a smooth journey.</p>
+          <p>Our mission is to eliminate friction in real estate transactions. With features like Rent Lock, AI-powered price insights, and direct communication with owners, UrbanSetu empowers users to make informed decisions. We understand that finding a home is more than just a transaction; it's a significant life event. That's why we've built a platform that priorities trust, transparency, and technology.</p>
+          <p>Join thousands of satisfied users who have found their perfect home through UrbanSetu. Our platform is accessible on all devices, ensuring you can browse properties, connect with agents, and track your applications from anywhere, at any time. Start your real estate journey today with the most advanced property portal in India.</p>
           <nav>
             <a href="/search">Search Properties</a>
-            <a href="/about">About Us</a>
-            <a href="/blogs">Real Estate Blog</a>
+            <a href="/about">About UrbanSetu</a>
+            <a href="/blogs">Real Estate Insights</a>
+            <a href="/agents">Verified Agents</a>
+            <a href="/guides">Property Buying Guides</a>
+            <a href="/help-center">Support Center</a>
           </nav>
         </div>
         <PublicHomeSkeleton />
@@ -226,18 +231,27 @@ export default function PublicHome() {
       <div className="relative z-10">
 
         {/* SEO-only content for crawlers */}
-        <div className="sr-only" aria-hidden="true">
+        <div className="sr-only">
           <h1>UrbanSetu · Smart Real Estate Platform in India</h1>
-          <p>Buy, sell, and rent verified properties across India with UrbanSetu. Our smart ecosystem provides AI-powered property recommendations, real-time chat with owners, 3D virtual tours, and verified listings to ensure trust and transparency.</p>
-          <p>Explore luxury apartments, budget homes, commercial spaces, and rental properties in top cities like Hyderabad, Bangalore, Mumbai, Delhi, and Chennai.</p>
+          <p>Buy, sell, and rent verified properties across India with UrbanSetu. Our smart ecosystem provides AI-powered property recommendations, real-time chat with owners, 3D virtual tours, and verified listings to ensure trust and transparency. We cover all major cities including Delhi, Chennai, Pune, and Kolkata, offering a wide range of options from residential flats to industrial plots.</p>
+          <p>UrbanSetu stands out by offering unique features such as AI-driven virtual staging, allowing you to visualize your future home before you even visit. Our secure payment gateway and documented transaction history provide peace of mind for both landlords and tenants. For sellers and agents, UrbanSetu offers advanced lead management and market analytic tools to maximize property visibility and sales efficiency.</p>
+          <p>Our commitment to user safety is paramount. Every listing undergoes a rigorous verification process, and our community-driven rating system ensures that only the best agents and properties are highlighted. Discover why UrbanSetu is the preferred choice for real estate in India. Whether you are a first-time homebuyer or a seasoned investor, our platform provides the tools and insights you need to succeed in the dynamic Indian property market.</p>
           <h2>Advanced Real Estate Tools</h2>
           <ul>
-            <li>AI-Powered Property Search</li>
-            <li>3D Virtual Home Tours</li>
-            <li>Direct Chat with Property Owners</li>
-            <li>Verified Listings for Buyers and Tenants</li>
-            <li>Real Estate Investment Analytics</li>
+            <li>AI-Powered Property Search & Recommendations</li>
+            <li>3D Virtual Home Tours & AR Visualizations</li>
+            <li>Direct Chat with Property Owners & Instant Notifications</li>
+            <li>Verified Listings for Buyers, Tenants, and Investors</li>
+            <li>Real Estate Investment Analytics & Market Trends</li>
+            <li>Rent Lock & Secure Rental Management Systems</li>
           </ul>
+          <nav>
+            <a href="/search?type=sale">Buy Property</a>
+            <a href="/search?type=rent">Rent a Home</a>
+            <a href="/blogs">Real Estate News</a>
+            <a href="/agents">Find an Agent</a>
+            <a href="/market-trends">Market Trends</a>
+          </nav>
         </div>
 
         {/* Hero Section */}
@@ -576,58 +590,7 @@ export default function PublicHome() {
             {/* <AdsterraBanner /> */}
           </div>
 
-          {/* SEO Internal Links Support Section */}
-          <section className="border-t border-gray-200 dark:border-gray-800 pt-16 pb-8 transition-colors">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 transition-colors">Properties</h3>
-                <ul className="space-y-2">
-                  <li><Link to="/search?type=sale" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Residential For Sale</Link></li>
-                  <li><Link to="/search?type=rent" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Homes for Rent</Link></li>
-                  <li><Link to="/search?offer=true" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Exclusive Offers</Link></li>
-                  <li><Link to="/search" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Verified Listings</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 transition-colors">City Guide</h3>
-                <ul className="space-y-2">
-                  <li><Link to="/search?location=Hyderabad" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Hyderabad Real Estate</Link></li>
-                  <li><Link to="/search?location=Bangalore" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Bangalore Properties</Link></li>
-                  <li><Link to="/search?location=Mumbai" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Mumbai Real Estate</Link></li>
-                  <li><Link to="/search?location=Chennai" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Chennai Flats</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 transition-colors">Resources</h3>
-                <ul className="space-y-2">
-                  <li><Link to="/guides" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Home Buying Guides</Link></li>
-                  <li><Link to="/blogs" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Market Insights</Link></li>
-                  <li><Link to="/market-trends" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Real Estate Trends</Link></li>
-                  <li><Link to="/help-center" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Help Center</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 transition-colors">Company</h3>
-                <ul className="space-y-2">
-                  <li><Link to="/about" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">About UrbanSetu</Link></li>
-                  <li><Link to="/contact" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Contact Us</Link></li>
-                  <li><Link to="/careers" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Join Our Team</Link></li>
-                  <li><Link to="/terms" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Terms of Service</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 transition-colors">Agents</h3>
-                <ul className="space-y-2">
-                  <li><Link to="/agents" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Find Verified Agents</Link></li>
-                  <li><Link to="/become-agent" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Register as Agent</Link></li>
-                  <li><Link to="/agent/dashboard" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors text-sm">Agent Dashboard</Link></li>
-                </ul>
-              </div>
-            </div>
-            <div className="mt-12 text-center text-xs text-gray-400 dark:text-gray-500 transition-colors">
-              © 2026 UrbanSetu Real Estate. All rights reserved. UrbanSetu helps users buy, sell, and rent properties in India with trust and transparency.
-            </div>
-          </section>
+
         </div>
       </div>
 
