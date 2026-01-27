@@ -1,4 +1,4 @@
-## 🏠 UrbanSetu
+## 🏡 UrbanSetu – AI-Powered Real Estate Platform
 
 🚀 Introducing UrbanSetu – A Next-Gen Real Estate Ecosystem with AI-enabled discovery, support, and analytics + MERN + AWS 🏠
 Excited to unveil my project — UrbanSetu is a full-stack real estate platform built with MERN architecture, featuring AI-powered discovery, secure authentication, admin workflows, and scalable cloud infrastructure.
