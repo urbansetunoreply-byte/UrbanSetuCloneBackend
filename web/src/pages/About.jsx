@@ -2,10 +2,9 @@
 import { authenticatedFetch } from '../utils/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
-import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaDownload, FaAndroid, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaStar, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage, getDownloadButtonText } from '../utils/androidDownload';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -34,30 +33,7 @@ export default function About() {
     }
   }
 
-  // Function to handle phone number clicks
-  const handlePhoneClick = (phoneNumber) => {
-    // Check if it's a mobile device
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    if (isMobile) {
-      // For mobile devices, open phone dialer
-      window.location.href = `tel:${phoneNumber}`;
-    } else {
-      // For desktop, copy to clipboard
-      navigator.clipboard.writeText(phoneNumber).then(() => {
-        alert(`Phone number ${phoneNumber} copied to clipboard!`);
-      }).catch(() => {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = phoneNumber;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        alert(`Phone number ${phoneNumber} copied to clipboard!`);
-      });
-    }
-  };
 
   useEffect(() => {
     const fetchAboutData = async () => {
@@ -360,15 +336,6 @@ export default function About() {
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-green-900/10 p-8 transition-colors">
-          <h2 className="text-3xl font-bold text-green-700 dark:text-green-400 flex items-center gap-3 mb-6 text-center justify-center">
-            <FaEnvelope className="text-green-500" /> Contact & Support
-          </h2>
-          <p className="text-lg text-slate-700 dark:text-gray-300 text-center whitespace-pre-line leading-relaxed">
-            {aboutData.contact || ''}
-          </p>
         </div>
       </div>
       <ContactSupportWrapper />

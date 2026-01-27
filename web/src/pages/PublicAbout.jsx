@@ -3,7 +3,7 @@ import { authenticatedFetch } from '../utils/auth';
 import { AnimatePresence, motion } from 'framer-motion';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
 import { Link } from 'react-router-dom';
-import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaAndroid, FaDownload, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaStar, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 import SEO from '../components/SEO';
@@ -17,25 +17,6 @@ export default function PublicAbout() {
   const [aboutData, setAboutData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedFaq, setExpandedFaq] = useState(null);
-
-  const handlePhoneClick = (phoneNumber) => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-      window.location.href = `tel:${phoneNumber}`;
-    } else {
-      navigator.clipboard.writeText(phoneNumber).then(() => {
-        alert(`Phone number ${phoneNumber} copied to clipboard!`);
-      }).catch(() => {
-        const textArea = document.createElement('textarea');
-        textArea.value = phoneNumber;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        alert(`Phone number ${phoneNumber} copied to clipboard!`);
-      });
-    }
-  };
 
   useEffect(() => {
     const fetchAboutData = async () => {
@@ -74,7 +55,7 @@ export default function PublicAbout() {
             <a href="/search?type=rent">Rent Properties</a>
             <a href="/blogs">Latest Real Estate News</a>
             <a href="/guides">First-Time Home Buyer Guides</a>
-            <a href="/contact">Get in Touch</a>
+
             <a href="/careers">Join the UrbanSetu Team</a>
           </nav>
         </div>

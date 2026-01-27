@@ -2,9 +2,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
-import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaEdit, FaPhone, FaMobileAlt, FaAndroid, FaDownload, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaStar, FaEdit, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { downloadAndroidApp, getDownloadButtonText } from '../utils/androidDownload';
 import { useSelector } from 'react-redux';
 import { authenticatedFetch } from '../utils/auth';
 
@@ -24,24 +23,6 @@ export default function AdminAbout() {
   const [editMode, setEditMode] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState(null);
   const { currentUser } = useSelector((state) => state.user) || {};
-  const handlePhoneClick = (phoneNumber) => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-      window.location.href = `tel:${phoneNumber}`;
-    } else {
-      navigator.clipboard.writeText(phoneNumber).then(() => {
-        alert(`Phone number ${phoneNumber} copied to clipboard!`);
-      }).catch(() => {
-        const textArea = document.createElement('textarea');
-        textArea.value = phoneNumber;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        alert(`Phone number ${phoneNumber} copied to clipboard!`);
-      });
-    }
-  };
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -500,15 +481,7 @@ export default function AdminAbout() {
               </div>
             </div>
 
-            {/* 11. Contact & Support */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-green-900/10 p-8 transition-colors">
-              <h2 className="text-3xl font-bold text-green-700 dark:text-green-400 flex items-center gap-3 mb-6 text-center justify-center">
-                <FaEnvelope className="text-green-500" /> Contact & Support
-              </h2>
-              <p className="text-lg text-slate-700 dark:text-gray-300 text-center whitespace-pre-line">
-                {aboutData.contact || ''}
-              </p>
-            </div>
+
 
             {/* 12. Additional Information (Custom Fields) */}
             {aboutData.customFields && aboutData.customFields.length > 0 && (
@@ -579,11 +552,7 @@ export default function AdminAbout() {
               <label className="block font-semibold mb-1 flex items-center gap-2 dark:text-gray-200"><FaUserFriends className="text-purple-500" /> Our Team</label>
               <textarea name="team" value={editData.team} onChange={handleChange} className="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white" rows={2} />
             </div>
-            {/* Contact & Support */}
-            <div className="mb-6">
-              <label className="block font-semibold mb-1 flex items-center gap-2 dark:text-gray-200"><FaEnvelope className="text-green-500" /> Contact & Support</label>
-              <textarea name="contact" value={editData.contact} onChange={handleChange} className="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white" rows={2} />
-            </div>
+
             {/* Additional Information (Custom Fields) */}
             <div className="mb-6">
               <label className="block font-semibold mb-1 flex items-center gap-2 dark:text-gray-200"><FaGlobe className="text-blue-400" /> Additional Information</label>
@@ -605,15 +574,6 @@ export default function AdminAbout() {
                 </div>
               ))}
               <button type="button" onClick={handleAddCustomField} className="text-blue-600 dark:text-blue-400 underline">+ Add Field</button>
-            </div>
-            {/* Social Links */}
-            <div className="mb-6">
-              <label className="block font-semibold mb-1 flex items-center gap-2 dark:text-gray-200"><FaGlobe className="text-blue-400" /> Social Links</label>
-              <input name="socialEmail" value={editData.socialEmail} onChange={handleChange} className="w-full border rounded p-2 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Email" />
-              <input name="socialInstagram" value={editData.socialInstagram} onChange={handleChange} className="w-full border rounded p-2 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Instagram" />
-              <input name="socialX" value={editData.socialX} onChange={handleChange} className="w-full border rounded p-2 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="X" />
-              <input name="socialFacebook" value={editData.socialFacebook} onChange={handleChange} className="w-full border rounded p-2 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Facebook" />
-              <input name="socialYouTube" value={editData.socialYouTube} onChange={handleChange} className="w-full border rounded p-2 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="YouTube" />
             </div>
             <div className="flex gap-4 mt-4">
               <button onClick={handleSave} disabled={saving} className="bg-blue-700 text-white px-6 py-2 rounded font-bold hover:bg-blue-800 disabled:opacity-50">
