@@ -163,18 +163,18 @@ UrbanSetu/
 
 ## 🔐 Security Features
 
-• HttpOnly Cookies 
-• CSRF Protection 
-• Rate Limiting 
-• Session Auditing and Logging
-• Encryption
-• DevOps & Cloud
-• JWT-based authentication
-• Password hashing with bcryptjs
-• Admin approval system with exclusive default admin privileges
-• Default admin bypass for initial setup
-• Protected routes for admin functionality
-• Input validation and sanitization
+- HttpOnly Cookies 
+- CSRF Protection 
+- Rate Limiting 
+- Session Auditing and Logging
+- Encryption
+- DevOps & Cloud
+- JWT-based authentication
+- Password hashing with bcryptjs
+- Admin approval system with exclusive default admin privileges
+- Default admin bypass for initial setup
+- Protected routes for admin functionality
+- Input validation and sanitization
 
 ## ⚡ High-Availability Dual Frontend Strategy: Running actively on Vercel and Render.
 ### 🔗 Live Links
@@ -225,8 +225,8 @@ If you'd like to improve UrbanSetu, follow these guidelines:
 5.Open a Pull Request (PR)
 
 ## 📩 For contribution discussions, contact:
-auth.urbansetu@gmail.com
-urbansetu.noreply@gmail.com
+- auth.urbansetu@gmail.com
+- urbansetu.noreply@gmail.com
 
 ## 📄 License
 
