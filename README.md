@@ -119,8 +119,8 @@ npm run dev
 
 📁 ## Project Structure
 
-```
-mern-estate/
+```bash
+UrbanSetu/
 ├── api/                    # Backend
 │   ├── controllers/       # Route controllers
 │   ├── models/           # MongoDB models
@@ -137,7 +137,7 @@ mern-estate/
 │   └── package.json
 └── uploads/              # File uploads
 ```
-```
+
 🔐 ## Security Features
 
 - JWT-based authentication
