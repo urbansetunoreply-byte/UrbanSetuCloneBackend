@@ -1,13 +1,13 @@
 ## 🏠 UrbanSetu
 
 🚀 Introducing UrbanSetu – A Next-Gen Real Estate Ecosystem with AI-enabled discovery, support, and analytics + MERN + AWS 🏠
-Excited to unveil my project — UrbanSetu, a production-grade digital habitat that transforms property management through gamification, advanced fintech tools, and deep AI integration.
+Excited to unveil my project — UrbanSetu is a full-stack real estate platform built with MERN architecture, featuring AI-powered discovery, secure authentication, admin workflows, and scalable cloud infrastructure.
 This platform showcases enterprise-level full-stack architecture, combining secure cloud infrastructure with intelligent automation to bridge the gap between people and property.
 
 ## 🔹 Key Features
 
 ### 🏠 Smart Discovery
-AI Search (Llama 3.3), Route Planner, ESG(Environemnt Secure Governance) Analytics, Properties Managemet, Bookings and more...
+AI Search (Llama 3.3), Route Planner, ESG(Environment Secure Governance) Analytics, Properties Management, Bookings and more...
 
 ### 💰 Fintech Suite
 Rent Wallet, ROI Calculators, Digital Rental Loans & Monthly Payment Gateways
@@ -38,7 +38,7 @@ Scalable AWS(S3, Lambda) + Cloudinary with optimized geospatial queries.
 ###  👤 User Features
 - User registration and authentication
 - Property browsing and search
-- Property listings with detailed informations
+- Property listings with detailed information
 - Wishlist functionality
 - Appointment booking with real estate agents
 - Profile management
@@ -46,30 +46,27 @@ Scalable AWS(S3, Lambda) + Cloudinary with optimized geospatial queries.
 
 ### 🛠️ Admin Features
 - **Admin Approval System**: New admin signups require approval from the default admin only
-- **Default Admin**: Pre-configured admin account with exclusive approval privileges
+- **Default Admin(Root Admin)**: Pre-configured admin account with exclusive approval privileges
 - Property management (create, edit, delete)
 - Appointment management with status updates
 - User management
 - Admin dashboard with analytics
 - Admin request management page (default admin only)
 
-### 🔒 Default Admin Account
+### 🔒 Default Admin Account(Also rephrased as Root Admin)
 
 The system includes a default admin account with exclusive privileges:
-
-- **Email**: rootadmin@gmail.com
-- **Password**: ********
 - **Status**: Pre-approved (no approval required)
-- **Privileges**: Only this admin can approve new admin requests
+- **Privileges**: Only Default Admin can approve new admin requests
 
 ### Admin Privileges:
-- **Default Admin (rootadmin@gmail.com)**:
+- **Default Admin (Root Admin)**:
   - Can approve/reject new admin requests
   - Has access to all admin functionality
   - Can manage properties, appointments, etc.
   - Exclusive access to admin approval system
 
-- **Approved Admins**:
+- **Approved Admins (Admin)**:
   - Can access all admin functionality except approval system
   - Cannot approve/reject new admin requests
   - Can manage properties, appointments, etc.
@@ -93,12 +90,12 @@ The system includes a default admin account with exclusive privileges:
 - **Animated Glassmorphism** for Seamless User Interface
 
 ### DataBase
-- **MongoDB Atlas (Geo Queries)** for Database and Queriying
+- **MongoDB Atlas (Geo Queries)** for Database and Querying
 
 ### Cloud Storage
 - **AWS S3** for Cloud Storage of files above 100MB
 - **Cloudinary** for Cloud Storage of files below 100MB
-- **Dynamic Shifting** of upload files between AWS and CLoudinary based on size 
+- **Dynamic Shifting** of upload files between AWS and Cloudinary based on size 
 
 ### Cloud Deployment
 - **Vercel** for Frontend
@@ -179,7 +176,7 @@ UrbanSetu/
 ## ⚡ High-Availability Dual Frontend Strategy: Running actively on Vercel and Render.
 ### 🔗 Live Links
 ### 🌐 Primary Website: [Visit UrbanSetu](https://urbansetuglobal.onrender.com/) (Primary site on hold please use backup site)
-### 🔄 Backup Access:  [VIsit UrbanSetu](https://urbansetu.vercel.app/) (If the primary site takes time to load, please use the Backup link) 
+### 🔄 Backup Access:  [Visit UrbanSetu](https://urbansetu.vercel.app/) (If the primary site takes time to load, please use the Backup link) 
 
 ## 🧪 Try UrbanSetu (Demo)
 
@@ -230,5 +227,8 @@ If you'd like to improve UrbanSetu, follow these guidelines:
 
 ## 📄 License
 
-Copyright © 2026 UrbanSetu. All rights reserved.
+Copyright © 2026 UrbanSetu.
+This project is shared publicly for learning, portfolio, and collaboration purposes.  
+Commercial reuse or redistribution without permission is not allowed.
+
 Made with ❤️ for real estate
