@@ -53,7 +53,7 @@ Scalable AWS(S3, Lambda) + Cloudinary with optimized geospatial queries.
 - Admin dashboard with analytics
 - Admin request management page (default admin only)
 
-##  🔒 Default Admin Account
+### 🔒 Default Admin Account
 
 The system includes a default admin account with exclusive privileges:
 
