@@ -180,10 +180,23 @@ mern-estate/
 
 ## Contributing
 
-1. Experience the reality of realestate and encouage us 
+Contributions are welcome and appreciated! 🚀  
+If you'd like to improve UrbanSetu, follow these guidelines:
+
+### How to Contribute
+1. Fork the repository  
+2. Create a new branch:
+   ```bash
+   git checkout -b feature/your-feature-name
+   git commit -m "Add: meaningful description"
+   git push origin feature/your-feature-name
+3. Open a Pull Request (PR)
+
+📩 For contribution discussions, contact:
+auth.urbansetu@gmail.com
+urbansetu.noreply@gmail.com
 
 ## License
 
-Copyright © 2026 UrbanSetu.
-All rights reserved. No part of this software may be modified, or distributed without express permission.
+Copyright © 2026 UrbanSetu. All rights reserved.
 Made with ❤️ for real estate
