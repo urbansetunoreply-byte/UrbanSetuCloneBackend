@@ -1,10 +1,10 @@
-# UrbanSetu
+# 🏠 UrbanSetu
 
 A full-stack real estate management application built with MERN stack (MongoDB, Express.js, React.js, Node.js) featuring both user and admin interfaces with admin approval system.
 
-## Features
+## 🚀 Features
 
-### User Features
+###  👤 User Features
 - User registration and authentication
 - Property browsing and search
 - Property listings with detailed informations
@@ -13,7 +13,7 @@ A full-stack real estate management application built with MERN stack (MongoDB, 
 - Profile management
 - Password change functionality
 
-### Admin Features
+### 🛠️ Admin Features
 - **Admin Approval System**: New admin signups require approval from the default admin only
 - **Default Admin**: Pre-configured admin account with exclusive approval privileges
 - Property management (create, edit, delete)
@@ -22,7 +22,7 @@ A full-stack real estate management application built with MERN stack (MongoDB, 
 - Admin dashboard with analytics
 - Admin request management page (default admin only)
 
-## Default Admin Account
+##  🔒 Default Admin Account
 
 The system includes a default admin account with exclusive privileges:
 
@@ -30,34 +30,6 @@ The system includes a default admin account with exclusive privileges:
 - **Password**: ********
 - **Status**: Pre-approved (no approval required)
 - **Privileges**: Only this admin can approve new admin requests
-
-### Setting up the Default Admin
-
-After setting up your database, run the following command to create the default admin account:
-
-```bash
-npm run seed-admin
-```
-
-This will create the default admin account with pre-approved status and exclusive approval privileges.
-
-## Admin Approval System
-
-The application includes a secure admin approval system with exclusive default admin privileges:
-
-### How it works:
-1. **Default Admin**: The default admin (rootadmin@gmail.com) can sign in immediately and has exclusive approval privileges
-2. **New Admin Registration**: When someone else signs up as an admin, their account is created with `adminApprovalStatus: "pending"`
-3. **Approval Required**: Pending admins cannot sign in until approved by the default admin
-4. **Exclusive Approval**: Only the default admin can view and approve/reject new admin requests
-5. **Access Granted**: Only approved admins can access admin features (except approval functionality)
-
-### Admin Request Flow:
-1. User signs up as admin → Account created with pending status
-2. User tries to sign in → Blocked with approval message
-3. Default admin reviews request at `/admin/requests` (only visible to default admin)
-4. Default admin approves/rejects the request
-5. User can now sign in (if approved) or remains blocked (if rejected)
 
 ### Admin Privileges:
 - **Default Admin (rootadmin@gmail.com)**:
@@ -71,7 +43,31 @@ The application includes a secure admin approval system with exclusive default a
   - Cannot approve/reject new admin requests
   - Can manage properties, appointments, etc.
 
-## Technology Stack
+## 🧪 Try UrbanSetu (Demo)
+
+You can experience the platform using demo credentials:
+
+**Demo User Login**
+- 👤 Email: `mockuser@nullsto.edu.pl`  
+- 🔒 Password: `Mockuser@12`
+
+Or you can sign up and start your own property journey 🚀
+
+---
+
+## ⚠️ Important: Third-Party Cookies Notice
+
+UrbanSetu uses **separate domains for frontend and backend** (e.g., Vercel + Render).  
+Because of this, authentication relies on cross-site cookies.
+
+👉 Please ensure **third-party cookies are enabled** in your browser.  
+Otherwise, login sessions may expire immediately.
+
+This is a browser security behavior — not a bug in the app.
+
+---
+
+## 🧰 Technology Stack
 
 ### Backend
 - **Node.js** with Express.js
@@ -87,7 +83,7 @@ The application includes a secure admin approval system with exclusive default a
 - **Tailwind CSS** for styling
 - **React Icons** for icons
 
-## Installation & Setup
+## ⚙️ Installation & Setup
 
 ### Prerequisites
 - Node.js (v14 or higher)
@@ -96,7 +92,7 @@ The application includes a secure admin approval system with exclusive default a
 
 ### Backend Setup
 ```bash
-cd mern-estate/api
+cd urbansetu/api
 npm install
 ```
 
@@ -109,46 +105,19 @@ PORT=3000
 
 ### Frontend Setup
 ```bash
-cd mern-estate/client
+cd urbansetu/web
 npm install
 ```
 
-### Running the Application
+### Run Application
 ```bash
 # Start backend (from api directory)
 npm start
 
-# Start frontend (from client directory)
+# Start frontend (from web directory)
 npm run dev
 
-# Seed default admin account (run once after setup)
-npm run seed-admin
-```
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/signin` - User login
-- `POST /api/auth/signout` - User logout
-
-### Admin Management (Default Admin Only)
-- `GET /api/admin/pending-requests` - Get pending admin requests
-- `PUT /api/admin/approve/:userId` - Approve admin request
-- `PUT /api/admin/reject/:userId` - Reject admin request
-
-### Properties
-- `GET /api/listing` - Get all properties
-- `POST /api/listing` - Create new property
-- `PUT /api/listing/:id` - Update property
-- `DELETE /api/listing/:id` - Delete property
-
-### Appointments
-- `GET /api/bookings` - Get appointments
-- `POST /api/bookings` - Create appointment
-- `PUT /api/bookings/:id` - Update appointment status
-
-## Project Structure
+📁 ## Project Structure
 
 ```
 mern-estate/
@@ -159,7 +128,7 @@ mern-estate/
 │   ├── utils/            # Utility functions
 │   ├── seedDefaultAdmin.js # Default admin seeding script
 │   └── index.js          # Server entry point
-├── client/               # Frontend
+├── web/                  # Frontend
 │   ├── src/
 │   │   ├── components/   # React components
 │   │   ├── pages/        # Page components
@@ -168,8 +137,8 @@ mern-estate/
 │   └── package.json
 └── uploads/              # File uploads
 ```
-
-## Security Features
+```
+🔐 ## Security Features
 
 - JWT-based authentication
 - Password hashing with bcryptjs
@@ -178,7 +147,7 @@ mern-estate/
 - Protected routes for admin functionality
 - Input validation and sanitization
 
-## Contributing
+🤝## Contributing
 
 Contributions are welcome and appreciated! 🚀  
 If you'd like to improve UrbanSetu, follow these guidelines:
@@ -188,15 +157,21 @@ If you'd like to improve UrbanSetu, follow these guidelines:
 2. Create a new branch:
    ```bash
    git checkout -b feature/your-feature-name
+3. Commit changes:
+  ```bash
    git commit -m "Add: meaningful description"
+```
+4. Push and open a Pull Request
+  ```bash
    git push origin feature/your-feature-name
-3. Open a Pull Request (PR)
+```
+5.Open a Pull Request (PR)
 
 📩 For contribution discussions, contact:
 auth.urbansetu@gmail.com
 urbansetu.noreply@gmail.com
 
-## License
+📄## License
 
 Copyright © 2026 UrbanSetu. All rights reserved.
 Made with ❤️ for real estate
