@@ -28,7 +28,7 @@ User blogs, Community forums, 24/7 AI chatbot & WhatsApp-style real-time messagi
 Omni-channel notifications, watchlist alerts & automated email reports (Brevo SMTP)
 
 ### 🔒 Enterprise-Grade Authentication
-Role-based access(Root/Admin/User), JWT security & OTP/reCAPTCHA verification, CSRF Protection
+Role-based access(RootAdmin/Admins/Users), JWT security & OTP/reCAPTCHA verification, CSRF Protection
 
 ### ☁️ Cloud-Native Architecture
 Scalable AWS(S3, Lambda) + Cloudinary with optimized geospatial queries.
