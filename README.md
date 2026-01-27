@@ -175,8 +175,8 @@ UrbanSetu/
 
 ## ⚡ High-Availability Dual Frontend Strategy: Running actively on Vercel and Render.
 ### 🔗 Live Links
-### 🌐 Primary Website: [Visit UrbanSetu](https://urbansetuglobal.onrender.com/) (Primary site on hold please use backup site)
-### 🔄 Backup Access:  [Visit UrbanSetu](https://urbansetu.vercel.app/) (If the primary site takes time to load, please use the Backup link) 
+### 🌐 Primary Website: [Visit UrbanSetu](https://urbansetu.vercel.app/) (Primary site on hold please use backup site)
+### 🔄 Backup Access:  [Visit UrbanSetu](https://urbansetuglobal.onrender.com/) (If the primary site takes time to load, please use the Backup link) 
 
 ## 🧪 Try UrbanSetu (Demo)
 
