@@ -184,5 +184,6 @@ mern-estate/
 
 ## License
 
-Copyright © 2025 UrbanSetu.
+Copyright © 2026 UrbanSetu.
 All rights reserved. No part of this software may be modified, or distributed without express permission.
+Made with ❤️ for real estate
