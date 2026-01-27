@@ -159,6 +159,7 @@ UrbanSetu/
 │   └── package.json
 └── uploads/              # File uploads
 ```
+(Structure is Variable)
 
 ## 🔐 Security Features
 
