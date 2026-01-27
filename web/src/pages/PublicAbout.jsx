@@ -55,7 +55,8 @@ export default function PublicAbout() {
             <a href="/search?type=rent">Rent Properties</a>
             <a href="/blogs">Latest Real Estate News</a>
             <a href="/guides">First-Time Home Buyer Guides</a>
-
+            <a href="/about">About Us</a>
+            <a href="/contact">Get in Touch</a>
             <a href="/careers">Join the UrbanSetu Team</a>
           </nav>
         </div>
