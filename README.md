@@ -74,10 +74,10 @@ The system includes a default admin account with exclusive privileges:
   - Cannot approve/reject new admin requests
   - Can manage properties, appointments, etc.
 
-## 🧰 Technology Stack
+## 🧰 Tech Stack
 
 ### Backend
-- **Node.js** with Express.js
+- **Node.js** + **Express.js**(API Layer)
 - **MongoDB** with Mongoose ODM
 - **JWT** for authentication
 - **bcryptjs** for password hashing
@@ -98,7 +98,7 @@ The system includes a default admin account with exclusive privileges:
 ### Cloud Storage
 - **AWS S3** for Cloud Storage of files above 100MB
 - **Cloudinary** for Cloud Storage of files below 100MB
-- **Dynamic Shifting** of upload files between AWS and CLoudinary
+- **Dynamic Shifting** of upload files between AWS and CLoudinary based on size 
 
 ### Cloud Deployment
 - **Vercel** for Frontend
