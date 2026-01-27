@@ -145,7 +145,7 @@ export default function PublicHome() {
         />
         {/* SEO-only content for crawlers even in loading state */}
         <div className="sr-only">
-          <h1>UrbanSetu · Smart Real Estate Platform in India</h1>
+          <h2>UrbanSetu · Smart Real Estate Platform in India</h2>
           <p>Explore verified properties for sale and rent across India with UrbanSetu. Our smart platform offers AI recommendations, virtual tours, and secure transactions in Hyderabad, Bangalore, Mumbai, and more. UrbanSetu is India's most trusted real estate ecosystem designed for modern property seekers. Whether you're looking for a luxury villa in Hyderabad, a budget-friendly apartment in Bangalore, or a commercial space in Mumbai, our platform provides comprehensive data and verified listings to ensure a smooth journey.</p>
           <p>Our mission is to eliminate friction in real estate transactions. With features like Rent Lock, AI-powered price insights, and direct communication with owners, UrbanSetu empowers users to make informed decisions. We understand that finding a home is more than just a transaction; it's a significant life event. That's why we've built a platform that priorities trust, transparency, and technology.</p>
           <p>Join thousands of satisfied users who have found their perfect home through UrbanSetu. Our platform is accessible on all devices, ensuring you can browse properties, connect with agents, and track your applications from anywhere, at any time. Start your real estate journey today with the most advanced property portal in India.</p>
@@ -236,7 +236,7 @@ export default function PublicHome() {
 
         {/* SEO-only content for crawlers */}
         <div className="sr-only">
-          <h1>UrbanSetu · Smart Real Estate Platform in India</h1>
+          <h2>UrbanSetu · Smart Real Estate Platform in India</h2>
           <p>Buy, sell, and rent verified properties across India with UrbanSetu. Our smart ecosystem provides AI-powered property recommendations, real-time chat with owners, 3D virtual tours, and verified listings to ensure trust and transparency. We cover all major cities including Delhi, Chennai, Pune, and Kolkata, offering a wide range of options from residential flats to industrial plots.</p>
           <p>UrbanSetu stands out by offering unique features such as AI-driven virtual staging, allowing you to visualize your future home before you even visit. Our secure payment gateway and documented transaction history provide peace of mind for both landlords and tenants. For sellers and agents, UrbanSetu offers advanced lead management and market analytic tools to maximize property visibility and sales efficiency.</p>
           <p>Our commitment to user safety is paramount. Every listing undergoes a rigorous verification process, and our community-driven rating system ensures that only the best agents and properties are highlighted. Discover why UrbanSetu is the preferred choice for real estate in India. Whether you are a first-time homebuyer or a seasoned investor, our platform provides the tools and insights you need to succeed in the dynamic Indian property market.</p>

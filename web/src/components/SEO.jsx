@@ -3,13 +3,13 @@ import { Helmet } from 'react-helmet-async';
 
 const SEO = ({ title, description, keywords, image, url, type = 'website', schema }) => {
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://urbansetu.vercel.app';
-    const siteTitle = "UrbanSetu · Smart Real Estate";
+    const siteTitle = "UrbanSetu · India's #1 Smart Real Estate Platform | Buy, Sell & Rent";
     const fullTitle = title ? title : siteTitle;
     const defaultDescription = "UrbanSetu is India's No.1 verified real estate platform. Buy, sell, and rent properties with confidence using our Rent Lock and trust-verified listings.";
     const metaDescription = description || defaultDescription;
     const metaImage = image || `${currentOrigin}/og-image.png`;
     const metaUrl = url || (typeof window !== 'undefined' ? window.location.origin + window.location.pathname : currentOrigin);
-    const metaKeywords = keywords || "real estate, buy property, rent property, Hyderabad real estate, verified property search, rent lock platform";
+    const metaKeywords = keywords || "UrbanSetu, real estate platform India, buy verified property, rent verified home, smart real estate searching, rent lock India, Hyderabad property portal, Mumbai real estate, Bangalore apartments";
 
     return (
         <Helmet>

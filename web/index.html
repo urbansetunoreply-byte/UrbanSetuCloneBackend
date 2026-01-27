@@ -92,55 +92,74 @@
     })();
   </script>
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="/manifest.json" />
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Fallback content for crawlers and non-JS browsers -->
+  <!-- SEO Content for Crawlers & Search Engines (Visually Hidden) -->
+  <div class="sr-only" aria-hidden="true">
+    <h1>UrbanSetu · India's #1 Smart Real Estate Platform</h1>
+    <p>UrbanSetu is a revolutionary real estate ecosystem designed to bring trust, transparency, and technology to the
+      Indian property market. Whether you are looking to buy a permanent home, sell a residential plot, or rent a
+      modern apartment, UrbanSetu provides the tools and verified data you need to succeed. Our platform serves major
+      cities across India, including Hyderabad, Bangalore, Mumbai, Chennai, Delhi, Pune, and Kolkata.</p>
+
+    <h2>Verified Property Listings for Sale and Rent</h2>
+    <p>Explore thousands of verified property listings updated daily. Our smart search filters allow you to find the
+      perfect match based on location, budget, property type, and amenities. We specialize in luxury apartments,
+      budget housing, gated communities, and commercial spaces. Every listing on UrbanSetu is rigorously verified to
+      ensure there are no fake posts or duplicate entries, saving you time and effort.</p>
+
+    <h2>Advanced Technology: AI & Virtual Tours</h2>
+    <p>Experience the future of real estate with our AI-powered recommendations and 3D virtual tours. Walk through
+      your potential next home from the comfort of your couch. Our AI assistant, Gemini, is available to answer all
+      your real estate queries, provide market trends, and help you calculate smart price insights for any property in
+      India.</p>
+
+    <h2>Secure Transactions and Rent Lock</h2>
+    <p>We prioritize your safety. UrbanSetu offers advanced features like Rent Lock and secure rental management
+      systems to protect both landlords and tenants. Our platform maintains a documented history of all transactions
+      and communications, ensuring a safe environment for all users.</p>
+
+    <nav aria-label="Quick links">
+      <h3>Explore UrbanSetu</h3>
+      <ul>
+        <li><a href="/search?type=sale">Buy Properties in India</a></li>
+        <li><a href="/search?type=rent">Rent Houses & Apartments</a></li>
+        <li><a href="/blogs">Real Estate Market News & Insights</a></li>
+        <li><a href="/about">About UrbanSetu Smart Ecosystem</a></li>
+        <li><a href="/contact">Customer Support & Help Center</a></li>
+        <li><a href="/guides">First-Time Home Buyer Guides</a></li>
+        <li><a href="/market-trends">Real Estate Investment Trends</a></li>
+        <li><a href="/agents">Find Verified Real Estate Agents</a></li>
+      </ul>
+    </nav>
+
+    <footer style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 20px; font-size: 0.8em; color: #666;">
+      <p>© 2026 UrbanSetu Real Estate. All rights reserved. UrbanSetu helps users buy, sell, and rent properties in
+        India with trust and transparency. Built for the modern Indian property seeker.</p>
+    </footer>
+  </div>
+
+  <!-- Fallback content for non-JS browsers -->
   <noscript>
-    <div style="padding: 40px; max-width: 800px; margin: 0 auto; text-align: left; font-family: sans-serif;">
-      <h1>UrbanSetu · India's #1 Smart Real Estate Platform</h1>
-      <p>UrbanSetu is a revolutionary real estate ecosystem designed to bring trust, transparency, and technology to the
-        Indian property market. Whether you are looking to buy a permanent home, sell a residential plot, or rent a
-        modern apartment, UrbanSetu provides the tools and verified data you need to succeed. Our platform serves major
-        cities across India, including Hyderabad, Bangalore, Mumbai, Chennai, Delhi, Pune, and Kolkata.</p>
-
-      <h2>Verified Property Listings for Sale and Rent</h2>
-      <p>Explore thousands of verified property listings updated daily. Our smart search filters allow you to find the
-        perfect match based on location, budget, property type, and amenities. We specialize in luxury apartments,
-        budget housing, gated communities, and commercial spaces. Every listing on UrbanSetu is rigorously verified to
-        ensure there are no fake posts or duplicate entries, saving you time and effort.</p>
-
-      <h2>Advanced Technology: AI & Virtual Tours</h2>
-      <p>Experience the future of real estate with our AI-powered recommendations and 3D virtual tours. Walk through
-        your potential next home from the comfort of your couch. Our AI assistant, Gemini, is available to answer all
-        your real estate queries, provide market trends, and help you calculate smart price insights for any property in
-        India.</p>
-
-      <h2>Secure Transactions and Rent Lock</h2>
-      <p>We prioritize your safety. UrbanSetu offers advanced features like Rent Lock and secure rental management
-        systems to protect both landlords and tenants. Our platform maintains a documented history of all transactions
-        and communications, ensuring a safe environment for all users.</p>
-
-      <nav aria-label="Quick links">
-        <h3>Explore UrbanSetu</h3>
-        <ul style="padding-left: 20px;">
-          <li><a href="/search?type=sale">Buy Properties in India</a></li>
-          <li><a href="/search?type=rent">Rent Houses & Apartments</a></li>
-          <li><a href="/blogs">Real Estate Market News & Insights</a></li>
-          <li><a href="/about">About UrbanSetu Smart Ecosystem</a></li>
-          <li><a href="/contact">Customer Support & Help Center</a></li>
-          <li><a href="/guides">First-Time Home Buyer Guides</a></li>
-          <li><a href="/market-trends">Real Estate Investment Trends</a></li>
-          <li><a href="/agents">Find Verified Real Estate Agents</a></li>
-        </ul>
-      </nav>
-
-      <footer style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 20px; font-size: 0.8em; color: #666;">
-        <p>© 2026 UrbanSetu Real Estate. All rights reserved. UrbanSetu helps users buy, sell, and rent properties in
-          India with trust and transparency. Built for the modern Indian property seeker.</p>
-      </footer>
+    <div style="padding: 40px; max-width: 800px; margin: 0 auto; text-align: center; font-family: sans-serif;">
+      <h1 style="color: #2563eb;">JavaScript Required</h1>
+      <p>UrbanSetu requires JavaScript to provide you with a smart and secure real estate experience. Please enable
+        JavaScript in your browser settings to continue.</p>
+      <a href="/about" style="color: #2563eb; text-decoration: underline;">Learn more about UrbanSetu</a>
     </div>
   </noscript>
   <div id="root"></div>

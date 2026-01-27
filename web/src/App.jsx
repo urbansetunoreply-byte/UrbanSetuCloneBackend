@@ -216,6 +216,16 @@ const LoadingSpinner = () => (
           </div>
         </div>
       </div>
+
+      {/* Hidden SEO Links to avoid "Dead End" errors during hydration */}
+      <nav className="sr-only" aria-hidden="true">
+        <a href="/">Home</a>
+        <a href="/search">Search Properties</a>
+        <a href="/about">About Us</a>
+        <a href="/blogs">Blogs</a>
+        <a href="/guides">Real Estate Guides</a>
+        <a href="/contact">Contact Support</a>
+      </nav>
     </div>
 
     <style>{`
