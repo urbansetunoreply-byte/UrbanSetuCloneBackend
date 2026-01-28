@@ -276,23 +276,29 @@ export default function AdminCoinStats() {
                         </div>
                     )}
 
-                    {!searching && searchResults.length > 0 && (
+                    {!searching && searchQuery.trim().length >= 2 && (
                         <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden max-h-64 overflow-y-auto">
-                            {searchResults.map(user => (
-                                <button
-                                    key={user._id}
-                                    onClick={() => selectUser(user)}
-                                    className="w-full px-4 py-3 text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/40 flex items-center gap-3 transition-colors border-b last:border-none border-gray-50 dark:border-gray-700"
-                                >
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs font-bold">
-                                        {user.username?.[0]?.toUpperCase() || 'U'}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{user.username}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
-                                    </div>
-                                </button>
-                            ))}
+                            {searchResults.length > 0 ? (
+                                searchResults.map(user => (
+                                    <button
+                                        key={user._id}
+                                        onClick={() => selectUser(user)}
+                                        className="w-full px-4 py-3 text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/40 flex items-center gap-3 transition-colors border-b last:border-none border-gray-50 dark:border-gray-700"
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs font-bold">
+                                            {user.username?.[0]?.toUpperCase() || 'U'}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{user.username}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                                        </div>
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm font-medium">
+                                    No users found matching this email or name
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
