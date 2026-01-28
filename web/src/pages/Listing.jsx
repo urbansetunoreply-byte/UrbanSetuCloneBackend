@@ -1873,14 +1873,7 @@ export default function Listing() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="flex flex-col gap-2"
                               >
-                                {mainTag && (
-                                  <div className="flex items-center gap-2 bg-blue-600/80 backdrop-blur-md text-white px-3 py-1.5 rounded-lg shadow-2xl border border-white/20 w-fit">
-                                    <FaRobot className="text-xs animate-bounce" />
-                                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest whitespace-nowrap">
-                                      {mainTag}
-                                    </span>
-                                  </div>
-                                )}
+
 
                                 <div className="flex gap-2">
                                   {quality.brightness && quality.brightness === 'Good' && (
