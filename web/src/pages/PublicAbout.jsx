@@ -57,7 +57,6 @@ export default function PublicAbout() {
             <a href="/guides">First-Time Home Buyer Guides</a>
             <a href="/about">About Us</a>
             <a href="/contact">Get in Touch</a>
-            <a href="/careers">Join the UrbanSetu Team</a>
           </nav>
         </div>
         <AboutSkeleton />

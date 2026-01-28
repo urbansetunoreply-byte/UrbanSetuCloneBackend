@@ -40,22 +40,39 @@ export default function PublicHome() {
 
   const [loading, setLoading] = useState(true);
 
-  const organizationSchema = {
+  const homeSchema = {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "UrbanSetu",
-    "url": window.location.origin + "/",
-    "logo": window.location.origin + "/logo.png",
-    "sameAs": [
-      "https://facebook.com/urbansetu",
-      "https://instagram.com/urbansetu",
-      "https://youtube.com/@urbansetu"
-    ],
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+91-XXXXXXXXXX",
-      "contactType": "customer service"
-    }
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "name": "UrbanSetu",
+        "url": window.location.origin + "/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": window.location.origin + "/search?searchTerm={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Organization",
+        "name": "UrbanSetu",
+        "url": window.location.origin + "/",
+        "logo": window.location.origin + "/logo.png",
+        "sameAs": [
+          "https://facebook.com/urbansetu",
+          "https://instagram.com/urbansetu",
+          "https://youtube.com/@urbansetu"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+91-XXXXXXXXXX",
+          "contactType": "customer service"
+        }
+      }
+    ]
   };
 
   useEffect(() => {
@@ -141,7 +158,7 @@ export default function PublicHome() {
           title="Find Your Dream Home · Smart Real Estate India"
           description={description}
           keywords={keywords}
-          schema={organizationSchema}
+          schema={homeSchema}
         />
         {/* SEO-only content for crawlers even in loading state */}
         <div className="sr-only">
@@ -189,7 +206,7 @@ export default function PublicHome() {
         title="Find Your Dream Home - Smart Real Estate Platform in India"
         description={description}
         keywords={keywords}
-        schema={organizationSchema}
+        schema={homeSchema}
       />
       <SeasonalEffects />
       <DailyQuote />
