@@ -807,7 +807,7 @@ export default function Listing() {
 
   // Function to fetch similar properties
   const fetchSimilarProperties = async () => {
-    if (!listing) return;
+    if (!listing || !currentUser) return;
 
     setLoadingSimilar(true);
     try {
@@ -3323,7 +3323,7 @@ export default function Listing() {
           )}
 
           {/* Similar Properties Section */}
-          {similarProperties.length > 0 && (
+          {currentUser && similarProperties.length > 0 && (
             <div className="mt-8 p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mb-6">
               <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaHome className="text-blue-600" />
@@ -4680,7 +4680,7 @@ export default function Listing() {
                   )}
 
                   {/* Enhanced Similar Properties Section */}
-                  {similarProperties.length > 0 && (
+                  {currentUser && similarProperties.length > 0 && (
                     <div className="mt-12 pt-8 border-t border-gray-100">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg">
