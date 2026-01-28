@@ -1,14 +1,18 @@
 import React from "react";
-
-
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import SEO from '../components/SEO';
 export default function Terms() {
   // Set page title
   usePageTitle("Terms & Conditions - Legal Information");
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 transition-colors duration-300">
+      <SEO
+        title="Terms & Conditions - Legal Hub | UrbanSetu"
+        description="Read UrbanSetu's Terms & Conditions to understand your rights and responsibilities when using our smart real estate platform in India."
+        keywords="UrbanSetu terms of service, real estate platform legal, property transaction rules"
+      />
       <h1 className="text-4xl font-bold mb-6 text-blue-700 dark:text-blue-400 transition-colors">Terms & Conditions</h1>
       <div className="space-y-6 text-gray-800 dark:text-gray-300 text-base transition-colors">
         <p className="text-lg">Welcome to UrbanSetu, our comprehensive real estate platform. By using our services, you agree to the following terms and conditions. Please read them carefully. By registering, you must select a role (user or admin) and provide explicit consent to our Terms & Privacy Policy.</p>

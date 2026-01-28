@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import { FaFileExport, FaDownload } from 'react-icons/fa';
 import MarketTrendsSkeleton from '../components/skeletons/MarketTrendsSkeleton';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import SEO from '../components/SEO';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -177,6 +178,11 @@ const MarketTrends = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300">
+            <SEO
+                title="Market Trends - Real Estate Insights | UrbanSetu"
+                description="Stay updated with the latest Indian real estate market trends, property price indices, and investment insights across major cities."
+                keywords="real estate trends India, property price index, real estate investment insights, market analysis real estate"
+            />
 
             {/* Hero Section */}
             <section className="relative bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-20 overflow-hidden">

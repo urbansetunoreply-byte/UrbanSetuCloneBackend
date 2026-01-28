@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import SEO from '../components/SEO';
 
 export default function CommunityGuidelines() {
     usePageTitle("Community Guidelines - UrbanSetu");
@@ -205,6 +206,11 @@ export default function CommunityGuidelines() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+            <SEO
+                title="Community Guidelines - Our Standard of Conduct | UrbanSetu"
+                description="Read UrbanSetu's community guidelines to understand our standards for respectful communication, honest listings, and platform safety."
+                keywords="UrbanSetu community guidelines, real estate conduct, platform safety rules"
+            />
             {/* Background Gradient */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
                 <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 dark:bg-blue-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 dark:opacity-10"></div>

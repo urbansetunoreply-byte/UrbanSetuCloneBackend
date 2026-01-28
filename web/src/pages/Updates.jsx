@@ -21,6 +21,7 @@ import { toast } from 'react-toastify';
 import UpdatesSkeleton from '../components/skeletons/UpdatesSkeleton';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import SEO from '../components/SEO';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -105,6 +106,11 @@ const Updates = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-12 transition-colors duration-300">
+            <SEO
+                title="Platform Updates - What's New | UrbanSetu"
+                description="Stay informed about the latest features, improvements, and bug fixes on UrbanSetu. We're constantly evolving to provide the best real estate experience in India."
+                keywords="UrbanSetu updates, real estate platform news, new feature announcements, product changelog"
+            />
             {/* Header Section */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
                 <div className="text-center max-w-3xl mx-auto">

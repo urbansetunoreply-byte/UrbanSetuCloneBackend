@@ -6,6 +6,7 @@ import { helpCategories } from '../../utils/helpCategories';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import HelpCenterChat from '../../components/HelpCenterChat';
 import { authenticatedFetch } from '../../utils/auth';
+import SEO from '../../components/SEO';
 
 const HelpCenter = () => {
     usePageTitle('Help Center - UrbanSetu');
@@ -66,6 +67,11 @@ const HelpCenter = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+            <SEO
+                title="Help Center - Get Support & Documentation | UrbanSetu"
+                description="Find answers to your questions about property listings, transactions, AI features, and more on UrbanSetu's Help Center. We're here to help you."
+                keywords="UrbanSetu support, real estate help center, property buying guide, transaction support"
+            />
             {/* Hero Section */}
             <div className="bg-blue-600 dark:bg-blue-800 py-16 px-4 sm:px-6 lg:px-8 text-center transition-colors relative">
                 {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (

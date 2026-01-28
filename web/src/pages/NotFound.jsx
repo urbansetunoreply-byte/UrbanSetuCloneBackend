@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Search, Home, ArrowLeft } from "lucide-react";
 import duckImg from "../assets/duck-go-final.gif";
+import SEO from "../components/SEO";
 import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function NotFound() {
@@ -22,6 +23,7 @@ export default function NotFound() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 relative overflow-hidden p-6">
+      <SEO title="404 Page Not Found - UrbanSetu" noindex={true} nofollow={true} />
       {/* Dynamic Background */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
         <div className="absolute top-[10%] left-[20%] w-72 h-72 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-[100px] animate-blob"></div>

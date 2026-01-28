@@ -5,6 +5,7 @@ import { FaUsers, FaUser, FaMapMarkerAlt, FaBullhorn, FaShieldAlt, FaStore, FaCo
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
 import CommunitySkeleton from '../components/skeletons/CommunitySkeleton';
+import SEO from '../components/SEO';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { socket } from '../utils/socket';
@@ -1011,6 +1012,11 @@ export default function Community() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12 font-sans text-slate-800 dark:text-gray-200 transition-colors duration-300">
+            <SEO
+                title="Community Hub - Neighborhood Discussion | UrbanSetu"
+                description="Join your local real estate community hub. Discuss property prices, shared issues, town planning, and luxury lifestyle with neighbors across India."
+                keywords="real estate community hub, neighborhood forum, property discussion group, UrbanSetu community"
+            />
             <style>{styles}</style>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}

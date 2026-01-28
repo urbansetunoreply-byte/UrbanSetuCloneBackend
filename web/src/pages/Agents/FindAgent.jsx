@@ -7,6 +7,7 @@ import AgentCard from '../../components/AgentCard';
 import AgentInfoModal from '../../components/AgentInfoModal';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { authenticatedFetch } from '../../utils/auth';
+import SEO from '../../components/SEO';
 
 const FindAgent = () => {
     usePageTitle('Find Agents - UrbanSetu');
@@ -51,6 +52,11 @@ const FindAgent = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16 pb-12 transition-colors duration-300">
+            <SEO
+                title="Find Agents - Verified Real Estate Professionals | UrbanSetu"
+                description="Connect with verified real estate agents on UrbanSetu. Our professional agents help you buy, sell, or rent properties with expert guidance and local market knowledge."
+                keywords="real estate agents India, find property agent, verified real estate brokers, UrbanSetu agents"
+            />
             <AgentInfoModal isOpen={showInfoModal} onClose={() => setShowInfoModal(false)} />
 
             {/* Hero Section */}

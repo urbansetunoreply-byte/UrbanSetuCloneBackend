@@ -5,6 +5,7 @@ import { signInFailure, signInStart, signInSuccess } from "../redux/user/userSli
 import Oauth from "../components/Oauth.jsx";
 import RecaptchaWidget from "../components/RecaptchaWidget";
 import { toast } from 'react-toastify';
+import SEO from '../components/SEO';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 import { reconnectSocket } from "../utils/socket";
@@ -710,11 +711,19 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     }
 
     return (
-        <AuthFormLayout
-            leftSlot={(
-                <>
-                    <style>
-                        {`
+        <>
+            <SEO
+                title="Sign In - Welcome Back | UrbanSetu"
+                description="Sign in to your UrbanSetu account to manage your property listings, track appointments, and access personalized real estate recommendations."
+                keywords="urban setu login, sign in real estate, property management login, real estate dashboard"
+                noindex={true}
+                nofollow={true}
+            />
+            <AuthFormLayout
+                leftSlot={(
+                    <>
+                        <style>
+                            {`
                             @keyframes blob {
                                 0% { transform: translate(0px, 0px) scale(1); }
                                 33% { transform: translate(30px, -50px) scale(1.1); }
@@ -740,423 +749,424 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             .animation-delay-2000 { animation-delay: 2s; }
                             .animation-delay-4000 { animation-delay: 4s; }
                         `}
-                    </style>
-                    <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-black opacity-20"></div>
-                        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
-                            <div className="text-center max-w-md">
-                                <h1 className="text-4xl font-bold mb-6 animate-fade-in">
-                                    Welcome Back
-                                </h1>
-                                <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
-                                    "Home is not a place, it's a feeling. Find your perfect sanctuary with us."
-                                </p>
-                                <div className="space-y-4 text-lg animate-fade-in-delay-2">
-                                    <div className="flex items-center justify-center space-x-3">
-                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                                        <span>Discover Your Dream Home</span>
-                                    </div>
-                                    <div className="flex items-center justify-center space-x-3">
-                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                                        <span>Connect with Trusted Agents</span>
-                                    </div>
-                                    <div className="flex items-center justify-center space-x-3">
-                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                                        <span>Secure & Reliable Platform</span>
+                        </style>
+                        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-black opacity-20"></div>
+                            <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
+                                <div className="text-center max-w-md">
+                                    <h1 className="text-4xl font-bold mb-6 animate-fade-in">
+                                        Welcome Back
+                                    </h1>
+                                    <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
+                                        "Home is not a place, it's a feeling. Find your perfect sanctuary with us."
+                                    </p>
+                                    <div className="space-y-4 text-lg animate-fade-in-delay-2">
+                                        <div className="flex items-center justify-center space-x-3">
+                                            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                            <span>Discover Your Dream Home</span>
+                                        </div>
+                                        <div className="flex items-center justify-center space-x-3">
+                                            <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                                            <span>Connect with Trusted Agents</span>
+                                        </div>
+                                        <div className="flex items-center justify-center space-x-3">
+                                            <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                                            <span>Secure & Reliable Platform</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Floating Elements */}
+                            <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
+                            <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+                            <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+
+                            {/* House Silhouette */}
+                            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
+                                <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1" />
+                                    <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2" />
+                                    <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3" />
+                                </svg>
+                            </div>
+                        </div>
+                    </>
+                )}
+            >
+                {/* Right Side - Sign In Form */}
+                <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
+                    <div className="w-full max-w-[440px] animate-fade-in">
+                        <div className="text-center mb-10">
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-6 shadow-sm">
+                                <LogIn className="w-8 h-8" />
+                            </div>
+                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
+                                Sign In
+                            </h2>
+                            <p className="text-gray-500 dark:text-gray-400 text-lg">Welcome back! Please enter your details.</p>
                         </div>
 
-                        {/* Floating Elements */}
-                        <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
-                        <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
-                        <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
-
-                        {/* House Silhouette */}
-                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
-                            <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1" />
-                                <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2" />
-                                <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3" />
-                            </svg>
+                        {/* Sign In Method Toggle Tabs */}
+                        <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl mb-8 relative border border-gray-200 dark:border-gray-700">
+                            <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-700 rounded-lg shadow-sm transition-all duration-300 ease-out transform ${loginMethod === "otp" ? "translate-x-full left-1" : "left-1"}`}></div>
+                            <button
+                                type="button"
+                                disabled={authInProgress !== null || otpSent}
+                                onClick={() => onTabClick("password")}
+                                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "password" ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"} disabled:opacity-50`}
+                            >
+                                Password
+                            </button>
+                            <button
+                                type="button"
+                                disabled={authInProgress !== null}
+                                onClick={() => onTabClick("otp")}
+                                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "otp" ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"} disabled:opacity-50`}
+                            >
+                                OTP
+                            </button>
                         </div>
-                    </div>
-                </>
-            )}
-        >
-            {/* Right Side - Sign In Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
-                <div className="w-full max-w-[440px] animate-fade-in">
-                    <div className="text-center mb-10">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-6 shadow-sm">
-                            <LogIn className="w-8 h-8" />
-                        </div>
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
-                            Sign In
-                        </h2>
-                        <p className="text-gray-500 dark:text-gray-400 text-lg">Welcome back! Please enter your details.</p>
-                    </div>
 
-                    {/* Sign In Method Toggle Tabs */}
-                    <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl mb-8 relative border border-gray-200 dark:border-gray-700">
-                        <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-700 rounded-lg shadow-sm transition-all duration-300 ease-out transform ${loginMethod === "otp" ? "translate-x-full left-1" : "left-1"}`}></div>
-                        <button
-                            type="button"
-                            disabled={authInProgress !== null || otpSent}
-                            onClick={() => onTabClick("password")}
-                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "password" ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"} disabled:opacity-50`}
-                        >
-                            Password
-                        </button>
-                        <button
-                            type="button"
-                            disabled={authInProgress !== null}
-                            onClick={() => onTabClick("otp")}
-                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "otp" ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"} disabled:opacity-50`}
-                        >
-                            OTP
-                        </button>
-                    </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 md:p-8 relative overflow-hidden">
+                            {/* Decorative background element for card */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 md:p-8 relative overflow-hidden">
-                        {/* Decorative background element for card */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
-
-                        {loginMethod === "password" ? (
-                            // Password Sign In Form
-                            <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-5 relative z-10">
-                                <div className="animate-fade-in delay-100">
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
-                                        Email Address
-                                    </label>
-                                    <FormField
-                                        label={undefined}
-                                        id="email"
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        ref={emailInputRef}
-                                        readOnly={emailStep || authInProgress === 'google'}
-                                        disabled={authInProgress === 'google' || (authInProgress === 'password' && emailStep) || loading}
-                                        placeholder="name@example.com"
-                                        startIcon={<Mail className="w-5 h-5 text-gray-400" />}
-                                        endAdornment={emailStep ? (
-                                            <button
-                                                type="button"
-                                                onClick={handleEmailEdit}
-                                                disabled={loading || authInProgress !== null}
-                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 bg-gray-100 hover:text-blue-700 p-1 rounded hover:bg-blue-50 transition-colors z-20 ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                aria-label="Edit email"
-                                            >
-                                                <FaEdit className="text-sm" />
-                                            </button>
-                                        ) : null}
-                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${emailStep ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 pr-20' : ''}`}
-                                        required
-                                    />
-
-                                    {/* Forgot Password Link under email (only before password step) */}
-                                    {!emailStep && (
-                                        <div className="text-right mt-2">
-                                            <Link
-                                                to={`/forgot-password?email=${encodeURIComponent(formData.email || '')}`}
-                                                className={`text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors ${(authInProgress === 'google' || loading) ? 'opacity-50 pointer-events-none' : ''}`}
-                                            >
-                                                Forgot Password?
-                                            </Link>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {emailStep && (
-                                    <div className="animate-fade-in">
-                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
-                                            Password
-                                        </label>
-                                        <FormField
-                                            label={undefined}
-                                            id="password"
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            ref={passwordInputRef}
-                                            disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
-                                            placeholder="Enter your password"
-                                            startIcon={<Lock className="w-5 h-5 text-gray-400" />}
-                                            endAdornment={
-                                                <button
-                                                    type="button"
-                                                    disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus:outline-none"
-                                                    tabIndex={-1}
-                                                    onClick={() => setShowPassword((prev) => !prev)}
-                                                >
-                                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                                </button>
-                                            }
-                                            inputClassName="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-800 dark:text-white"
-                                            required
-                                        />
-
-                                        <div className="text-right mt-2">
-                                            <Link
-                                                to={`/forgot-password?email=${encodeURIComponent(formData.email)}`}
-                                                className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-                                            >
-                                                Forgot Password?
-                                            </Link>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* reCAPTCHA Widget */}
-                                {showRecaptcha && checkRecaptchaRequirement() && (
-                                    <div className="flex justify-center animate-fade-in">
-                                        <RecaptchaWidget
-                                            key={recaptchaKey}
-                                            ref={recaptchaRef}
-                                            onVerify={handleRecaptchaVerify}
-                                            onExpire={handleRecaptchaExpire}
-                                            onError={handleRecaptchaError}
-                                            disabled={loading || authInProgress === 'google'}
-                                            className="transform scale-95 origin-center"
-                                        />
-                                    </div>
-                                )}
-
-                                {/* reCAPTCHA Error */}
-                                {recaptchaError && (
-                                    <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-red-600 text-sm flex items-center gap-2 animate-fade-in">
-                                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        {recaptchaError}
-                                    </div>
-                                )}
-
-                                <div className="pt-2">
-                                    <PrimaryButton
-                                        variant="blue"
-                                        loading={loading}
-                                        loadingText={emailStep ? "Signing In..." : "Continuing..."}
-                                        disabled={loading || (showRecaptcha && !recaptchaToken) || authInProgress !== null}
-                                        className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-                                    >
-                                        {emailStep ? "Sign In" : "Continue"}
-                                    </PrimaryButton>
-                                </div>
-                            </form>
-                        ) : (
-                            // OTP Sign In Form
-                            <form onSubmit={otpSent ? handleOtpLogin : handleSendOTP} className="space-y-5 relative z-10">
-                                <div className="animate-fade-in delay-100">
-                                    {!otpSent && (
+                            {loginMethod === "password" ? (
+                                // Password Sign In Form
+                                <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-5 relative z-10">
+                                    <div className="animate-fade-in delay-100">
                                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
                                             Email Address
                                         </label>
-                                    )}
-                                    <FormField
-                                        label={undefined}
-                                        id="email"
-                                        type="email"
-                                        value={otpData.email}
-                                        onChange={handleOtpChange}
-                                        ref={otpEmailInputRef}
-                                        readOnly={otpSent || otpLoading || authInProgress === 'google'}
-                                        disabled={otpSent || otpLoading || authInProgress === 'google'}
-                                        placeholder="name@example.com"
-                                        startIcon={<Mail className="w-5 h-5 text-gray-400" />}
-                                        endAdornment={otpSent ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setOtpSent(false);
-                                                    setOtpData({ email: otpData.email, otp: "" });
-                                                    setOtpSuccessMessage("");
-                                                }}
-                                                disabled={loading || authInProgress !== null}
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 bg-gray-100 hover:text-blue-700 p-1 rounded hover:bg-blue-50 transition-colors z-20"
-                                                aria-label="Edit email"
-                                            >
-                                                <FaEdit className="text-sm" />
-                                            </button>
-                                        ) : null}
-                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${otpSent ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 pr-20' : ''}`}
-                                        required
-                                    />
-                                </div>
-
-                                {/* OTP reCAPTCHA Widget */}
-                                {showOtpRecaptcha && !otpSent && (
-                                    <div className="flex justify-center mb-4 animate-fade-in">
-                                        <RecaptchaWidget
-                                            key={otpRecaptchaKey}
-                                            ref={otpRecaptchaRef}
-                                            onVerify={handleOtpRecaptchaVerify}
-                                            onExpire={handleOtpRecaptchaExpire}
-                                            onError={handleOtpRecaptchaError}
-                                            disabled={otpLoading}
-                                            className="transform scale-95 origin-center"
-                                        />
-                                    </div>
-                                )}
-
-                                {otpRecaptchaError && !otpSent && (
-                                    <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-red-600 text-sm flex items-center gap-2 animate-fade-in">
-                                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        {otpRecaptchaError}
-                                    </div>
-                                )}
-
-                                {otpSent && (
-                                    <div className="animate-fade-in">
-                                        {otpSuccessMessage && (
-                                            <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4 text-green-700 dark:text-green-400 text-sm flex items-center gap-2">
-                                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                                {otpSuccessMessage}
-                                            </div>
-                                        )}
-                                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
-                                            OTP Code
-                                        </label>
-                                        <input
-                                            type="text"
-                                            placeholder="••••••"
-                                            id="otp"
-                                            value={otpData.otp}
-                                            ref={otpInputRef}
-                                            disabled={otpVerifyingLoading}
-                                            onChange={(e) => {
-                                                const value = e.target.value.replace(/[^0-9]/g, '');
-                                                handleOtpChange({ target: { id: 'otp', value } });
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && otpSent && !otpVerifyingLoading && otpData.otp.length === 6) {
-                                                    handleOtpLogin(e);
-                                                }
-                                            }}
-                                            className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 text-center text-2xl tracking-[0.5em] font-medium text-gray-800 dark:text-gray-100 placeholder:text-gray-300 dark:placeholder:text-gray-600 bg-white dark:bg-gray-800 ${otpVerifyingLoading ? 'bg-gray-100 dark:bg-gray-700 opacity-70' : ''}`}
-                                            maxLength="6"
+                                        <FormField
+                                            label={undefined}
+                                            id="email"
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            ref={emailInputRef}
+                                            readOnly={emailStep || authInProgress === 'google'}
+                                            disabled={authInProgress === 'google' || (authInProgress === 'password' && emailStep) || loading}
+                                            placeholder="name@example.com"
+                                            startIcon={<Mail className="w-5 h-5 text-gray-400" />}
+                                            endAdornment={emailStep ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleEmailEdit}
+                                                    disabled={loading || authInProgress !== null}
+                                                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 bg-gray-100 hover:text-blue-700 p-1 rounded hover:bg-blue-50 transition-colors z-20 ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    aria-label="Edit email"
+                                                >
+                                                    <FaEdit className="text-sm" />
+                                                </button>
+                                            ) : null}
+                                            inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${emailStep ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 pr-20' : ''}`}
                                             required
                                         />
-                                        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                            Enter the 6-digit code sent to your email
-                                        </p>
-                                    </div>
-                                )}
 
-                                {otpSent && (
-                                    <div className="text-center animate-fade-in">
-                                        {resendTimer > 0 ? (
-                                            <span className="text-sm text-gray-400 font-medium">
-                                                Resend in <span className="text-gray-600">{Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}</span>
-                                            </span>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={handleSendOTP}
-                                                disabled={otpLoading || !canResend || otpVerifyingLoading}
-                                                className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors disabled:opacity-50"
-                                            >
-                                                {otpLoading ? "Sending..." : "Resend OTP"}
-                                            </button>
-                                        )}
-
-                                        {showOtpRecaptcha && (
-                                            <div className="flex justify-center mt-3 animate-fade-in">
-                                                <RecaptchaWidget
-                                                    key={otpRecaptchaKey}
-                                                    ref={otpRecaptchaRef}
-                                                    onVerify={handleOtpRecaptchaVerify}
-                                                    onExpire={handleOtpRecaptchaExpire}
-                                                    onError={handleOtpRecaptchaError}
-                                                    disabled={otpLoading}
-                                                    className="transform scale-95 origin-center"
-                                                />
-                                            </div>
-                                        )}
-                                        {otpRecaptchaError && (
-                                            <div className="bg-red-50 border border-red-100 rounded-lg p-2 mt-2 text-red-600 text-xs">
-                                                {otpRecaptchaError}
+                                        {/* Forgot Password Link under email (only before password step) */}
+                                        {!emailStep && (
+                                            <div className="text-right mt-2">
+                                                <Link
+                                                    to={`/forgot-password?email=${encodeURIComponent(formData.email || '')}`}
+                                                    className={`text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors ${(authInProgress === 'google' || loading) ? 'opacity-50 pointer-events-none' : ''}`}
+                                                >
+                                                    Forgot Password?
+                                                </Link>
                                             </div>
                                         )}
                                     </div>
-                                )}
 
-                                <div className="pt-2">
-                                    <PrimaryButton
-                                        variant="blue"
-                                        loading={loading || (!otpSent && otpLoading) || otpVerifyingLoading}
-                                        loadingText={otpVerifyingLoading ? "Verifying..." : (otpSent ? "Signing In..." : "Sending OTP...")}
-                                        disabled={loading || authInProgress === 'google' || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading}
-                                        className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-                                    >
-                                        {otpSent ? "Sign In" : "Send OTP"}
-                                    </PrimaryButton>
+                                    {emailStep && (
+                                        <div className="animate-fade-in">
+                                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                                                Password
+                                            </label>
+                                            <FormField
+                                                label={undefined}
+                                                id="password"
+                                                type={showPassword ? 'text' : 'password'}
+                                                value={formData.password}
+                                                onChange={handleChange}
+                                                ref={passwordInputRef}
+                                                disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
+                                                placeholder="Enter your password"
+                                                startIcon={<Lock className="w-5 h-5 text-gray-400" />}
+                                                endAdornment={
+                                                    <button
+                                                        type="button"
+                                                        disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
+                                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus:outline-none"
+                                                        tabIndex={-1}
+                                                        onClick={() => setShowPassword((prev) => !prev)}
+                                                    >
+                                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                                    </button>
+                                                }
+                                                inputClassName="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-800 dark:text-white"
+                                                required
+                                            />
+
+                                            <div className="text-right mt-2">
+                                                <Link
+                                                    to={`/forgot-password?email=${encodeURIComponent(formData.email)}`}
+                                                    className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+                                                >
+                                                    Forgot Password?
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* reCAPTCHA Widget */}
+                                    {showRecaptcha && checkRecaptchaRequirement() && (
+                                        <div className="flex justify-center animate-fade-in">
+                                            <RecaptchaWidget
+                                                key={recaptchaKey}
+                                                ref={recaptchaRef}
+                                                onVerify={handleRecaptchaVerify}
+                                                onExpire={handleRecaptchaExpire}
+                                                onError={handleRecaptchaError}
+                                                disabled={loading || authInProgress === 'google'}
+                                                className="transform scale-95 origin-center"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* reCAPTCHA Error */}
+                                    {recaptchaError && (
+                                        <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-red-600 text-sm flex items-center gap-2 animate-fade-in">
+                                            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            {recaptchaError}
+                                        </div>
+                                    )}
+
+                                    <div className="pt-2">
+                                        <PrimaryButton
+                                            variant="blue"
+                                            loading={loading}
+                                            loadingText={emailStep ? "Signing In..." : "Continuing..."}
+                                            disabled={loading || (showRecaptcha && !recaptchaToken) || authInProgress !== null}
+                                            className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                        >
+                                            {emailStep ? "Sign In" : "Continue"}
+                                        </PrimaryButton>
+                                    </div>
+                                </form>
+                            ) : (
+                                // OTP Sign In Form
+                                <form onSubmit={otpSent ? handleOtpLogin : handleSendOTP} className="space-y-5 relative z-10">
+                                    <div className="animate-fade-in delay-100">
+                                        {!otpSent && (
+                                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                                                Email Address
+                                            </label>
+                                        )}
+                                        <FormField
+                                            label={undefined}
+                                            id="email"
+                                            type="email"
+                                            value={otpData.email}
+                                            onChange={handleOtpChange}
+                                            ref={otpEmailInputRef}
+                                            readOnly={otpSent || otpLoading || authInProgress === 'google'}
+                                            disabled={otpSent || otpLoading || authInProgress === 'google'}
+                                            placeholder="name@example.com"
+                                            startIcon={<Mail className="w-5 h-5 text-gray-400" />}
+                                            endAdornment={otpSent ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setOtpSent(false);
+                                                        setOtpData({ email: otpData.email, otp: "" });
+                                                        setOtpSuccessMessage("");
+                                                    }}
+                                                    disabled={loading || authInProgress !== null}
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 bg-gray-100 hover:text-blue-700 p-1 rounded hover:bg-blue-50 transition-colors z-20"
+                                                    aria-label="Edit email"
+                                                >
+                                                    <FaEdit className="text-sm" />
+                                                </button>
+                                            ) : null}
+                                            inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${otpSent ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 pr-20' : ''}`}
+                                            required
+                                        />
+                                    </div>
+
+                                    {/* OTP reCAPTCHA Widget */}
+                                    {showOtpRecaptcha && !otpSent && (
+                                        <div className="flex justify-center mb-4 animate-fade-in">
+                                            <RecaptchaWidget
+                                                key={otpRecaptchaKey}
+                                                ref={otpRecaptchaRef}
+                                                onVerify={handleOtpRecaptchaVerify}
+                                                onExpire={handleOtpRecaptchaExpire}
+                                                onError={handleOtpRecaptchaError}
+                                                disabled={otpLoading}
+                                                className="transform scale-95 origin-center"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {otpRecaptchaError && !otpSent && (
+                                        <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-red-600 text-sm flex items-center gap-2 animate-fade-in">
+                                            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            {otpRecaptchaError}
+                                        </div>
+                                    )}
+
+                                    {otpSent && (
+                                        <div className="animate-fade-in">
+                                            {otpSuccessMessage && (
+                                                <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4 text-green-700 dark:text-green-400 text-sm flex items-center gap-2">
+                                                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                                    {otpSuccessMessage}
+                                                </div>
+                                            )}
+                                            <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
+                                                OTP Code
+                                            </label>
+                                            <input
+                                                type="text"
+                                                placeholder="••••••"
+                                                id="otp"
+                                                value={otpData.otp}
+                                                ref={otpInputRef}
+                                                disabled={otpVerifyingLoading}
+                                                onChange={(e) => {
+                                                    const value = e.target.value.replace(/[^0-9]/g, '');
+                                                    handleOtpChange({ target: { id: 'otp', value } });
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && otpSent && !otpVerifyingLoading && otpData.otp.length === 6) {
+                                                        handleOtpLogin(e);
+                                                    }
+                                                }}
+                                                className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 text-center text-2xl tracking-[0.5em] font-medium text-gray-800 dark:text-gray-100 placeholder:text-gray-300 dark:placeholder:text-gray-600 bg-white dark:bg-gray-800 ${otpVerifyingLoading ? 'bg-gray-100 dark:bg-gray-700 opacity-70' : ''}`}
+                                                maxLength="6"
+                                                required
+                                            />
+                                            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                                Enter the 6-digit code sent to your email
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {otpSent && (
+                                        <div className="text-center animate-fade-in">
+                                            {resendTimer > 0 ? (
+                                                <span className="text-sm text-gray-400 font-medium">
+                                                    Resend in <span className="text-gray-600">{Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}</span>
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleSendOTP}
+                                                    disabled={otpLoading || !canResend || otpVerifyingLoading}
+                                                    className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors disabled:opacity-50"
+                                                >
+                                                    {otpLoading ? "Sending..." : "Resend OTP"}
+                                                </button>
+                                            )}
+
+                                            {showOtpRecaptcha && (
+                                                <div className="flex justify-center mt-3 animate-fade-in">
+                                                    <RecaptchaWidget
+                                                        key={otpRecaptchaKey}
+                                                        ref={otpRecaptchaRef}
+                                                        onVerify={handleOtpRecaptchaVerify}
+                                                        onExpire={handleOtpRecaptchaExpire}
+                                                        onError={handleOtpRecaptchaError}
+                                                        disabled={otpLoading}
+                                                        className="transform scale-95 origin-center"
+                                                    />
+                                                </div>
+                                            )}
+                                            {otpRecaptchaError && (
+                                                <div className="bg-red-50 border border-red-100 rounded-lg p-2 mt-2 text-red-600 text-xs">
+                                                    {otpRecaptchaError}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="pt-2">
+                                        <PrimaryButton
+                                            variant="blue"
+                                            loading={loading || (!otpSent && otpLoading) || otpVerifyingLoading}
+                                            loadingText={otpVerifyingLoading ? "Verifying..." : (otpSent ? "Signing In..." : "Sending OTP...")}
+                                            disabled={loading || authInProgress === 'google' || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading}
+                                            className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                        >
+                                            {otpSent ? "Sign In" : "Send OTP"}
+                                        </PrimaryButton>
+                                    </div>
+                                </form>
+                            )}
+
+                            <div className="relative my-8">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
                                 </div>
-                            </form>
-                        )}
-
-                        <div className="relative my-8">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                                <div className="relative flex justify-center text-sm">
+                                    <span className="px-3 bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-medium">OR CONTINUE WITH</span>
+                                </div>
                             </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-3 bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-medium">OR CONTINUE WITH</span>
+
+                            <Oauth
+                                pageType="signIn"
+                                disabled={authInProgress !== null || otpSent}
+                                onAuthStart={setAuthInProgress}
+                                onAuthSuccess={(data) => {
+                                    setPendingLoginData(data);
+                                    setShowLoader(true);
+                                }}
+                            />
+
+                            {(error || urlError) && (
+                                <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
+                                    <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <p className="text-red-700 text-sm font-medium">{urlError || error}</p>
+                                </div>
+                            )}
+
+                            <div className="mt-8 text-center">
+                                <p className="text-gray-500 dark:text-gray-400 font-medium">
+                                    Don't have an account?{" "}
+                                    <Link
+                                        to={`/sign-up${location.search}`}
+                                        className={`text-blue-600 hover:text-blue-700 font-bold hover:underline transition-colors ${(authInProgress !== null || loading || otpVerifyingLoading || otpSent) ? 'opacity-50 pointer-events-none' : ''}`}
+                                    >
+                                        Sign Up
+                                    </Link>
+                                </p>
+                                <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                                    Trouble signing in?{" "}
+                                    <Link
+                                        to="/help-center"
+                                        className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
+                                    >
+                                        Visit our Help Center
+                                    </Link>
+                                </p>
                             </div>
                         </div>
 
-                        <Oauth
-                            pageType="signIn"
-                            disabled={authInProgress !== null || otpSent}
-                            onAuthStart={setAuthInProgress}
-                            onAuthSuccess={(data) => {
-                                setPendingLoginData(data);
-                                setShowLoader(true);
-                            }}
-                        />
 
-                        {(error || urlError) && (
-                            <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
-                                <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                <p className="text-red-700 text-sm font-medium">{urlError || error}</p>
-                            </div>
-                        )}
 
                         <div className="mt-8 text-center">
-                            <p className="text-gray-500 dark:text-gray-400 font-medium">
-                                Don't have an account?{" "}
-                                <Link
-                                    to={`/sign-up${location.search}`}
-                                    className={`text-blue-600 hover:text-blue-700 font-bold hover:underline transition-colors ${(authInProgress !== null || loading || otpVerifyingLoading || otpSent) ? 'opacity-50 pointer-events-none' : ''}`}
-                                >
-                                    Sign Up
-                                </Link>
-                            </p>
-                            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                                Trouble signing in?{" "}
-                                <Link
-                                    to="/help-center"
-                                    className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
-                                >
-                                    Visit our Help Center
-                                </Link>
+                            <p className="text-xs text-gray-400 dark:text-gray-500">
+                                By signing in, you agree to our <a href="/terms" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Privacy Policy</a>.
                             </p>
                         </div>
+
+                        <SecureBadge />
+                        <ThirdPartyCookieBanner />
                     </div>
-
-
-
-                    <div className="mt-8 text-center">
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
-                            By signing in, you agree to our <a href="/terms" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Privacy Policy</a>.
-                        </p>
-                    </div>
-
-                    <SecureBadge />
-                    <ThirdPartyCookieBanner />
                 </div>
-            </div>
-        </AuthFormLayout>
+            </AuthFormLayout>
+        </>
     );
 }
 

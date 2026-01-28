@@ -4,6 +4,7 @@ import { FaWindows, FaApple, FaAndroid, FaLinux, FaDownload, FaHistory, FaMobile
 import { toast } from 'react-toastify';
 import AdminDeploymentManagementSkeleton from '../components/skeletons/AdminDeploymentManagementSkeleton';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -89,6 +90,11 @@ export default function Downloads() {
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-900 pt-16 pb-12 transition-colors duration-300">
+            <SEO
+                title="Download UrbanSetu App - Real Estate at Your Fingertips | UrbanSetu"
+                description="Download the UrbanSetu app for Windows, macOS, Android, and iOS. Get the latest features for property search, investments, and community hub on the go."
+                keywords="UrbanSetu app download, real estate app India, property mobile app, real estate desktop software"
+            />
             {/* Hero Section */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">

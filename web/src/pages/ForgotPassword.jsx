@@ -15,6 +15,7 @@ import AuthFormLayout from "../components/ui/AuthFormLayout";
 import FormField from "../components/ui/FormField";
 import StepIndicator from "../components/ui/StepIndicator";
 import SecureBadge from "../components/ui/SecureBadge";
+import SEO from "../components/SEO";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ForgotPassword({ bootstrapped, sessionChecked }) {
@@ -492,6 +493,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       <AuthFormLayout
         leftSlot={(
           <>
+            <SEO title="Reset Password - UrbanSetu" noindex={true} nofollow={true} />
             <style>
               {`
                 @keyframes blob {

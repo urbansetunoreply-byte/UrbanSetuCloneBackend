@@ -11,6 +11,7 @@ import {
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { authenticatedFetch } from '../utils/auth';
+import SEO from '../components/SEO';
 
 const PublicGuides = () => {
     // Set page title
@@ -444,6 +445,11 @@ const PublicGuides = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col font-sans text-slate-800 dark:text-gray-100 transition-colors duration-300">
+            <SEO
+                title="Real Estate Guides - Learning Hub | UrbanSetu"
+                description="Master the Indian property market with UrbanSetu's comprehensive real estate guides. Learn about home buying, renting, legal procedures, and investment strategies."
+                keywords="real estate guides India, home buying tips, renting guide, property investment search, RERA guide, house selling tips"
+            />
 
             {/* 1. Hero Section */}
             <div className="bg-gradient-to-b from-purple-700 to-indigo-800 text-white pt-12 pb-24 px-4 relative overflow-hidden">

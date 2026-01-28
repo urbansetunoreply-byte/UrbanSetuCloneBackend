@@ -1,12 +1,18 @@
 import React from "react";
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import SEO from '../components/SEO';
 export default function Privacy() {
   // Set page title
   usePageTitle("Privacy Policy - Data Protection");
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 transition-colors duration-300">
+      <SEO
+        title="Privacy Policy - Your Data Security | UrbanSetu"
+        description="Learn how UrbanSetu collects, uses, and protects your personal data. We are committed to transparency and security in your real estate journey."
+        keywords="UrbanSetu privacy policy, real estate data protection, property search privacy"
+      />
       <h1 className="text-4xl font-bold mb-6 text-blue-700 dark:text-blue-400 transition-colors">Privacy Policy</h1>
       <div className="space-y-6 text-gray-800 dark:text-gray-300 text-base transition-colors">
         <p className="text-lg">Your privacy is important to us. This policy explains how we collect, use, and protect your information as a user or admin of our UrbanSetu real estate platform.</p>

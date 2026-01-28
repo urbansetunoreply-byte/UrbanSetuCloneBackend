@@ -20,6 +20,7 @@ import VisitorTracker from "./components/VisitorTracker";
 import Footer from "./components/Footer";
 import GlobalCallModals from "./components/GlobalCallModals";
 import SignoutModal from "./components/SignoutModal";
+import SitemapNav from "./components/SitemapNav";
 import UserChangePassword from './pages/UserChangePassword';
 import AdminChangePassword from './pages/AdminChangePassword';
 import AccountRevocation from './pages/AccountRevocation';
@@ -842,6 +843,7 @@ function AppRoutes({ bootstrapped }) {
       <CookieConsent />
       <VisitorTracker />
       <GoogleOneTap />
+      <SitemapNav />
       {!hideHeaderRoutes.includes(location.pathname) && !location.pathname.includes('/year/') && isHeaderVisible && (
         currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
           ? <AdminHeader />
