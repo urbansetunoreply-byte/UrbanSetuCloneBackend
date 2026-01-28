@@ -471,6 +471,11 @@ export default function CreateListing() {
     const auditedMainImagesKeys = Object.keys(auditResults).filter(key => key.startsWith('main_'));
     const auditedTourImagesKeys = Object.keys(auditResults).filter(key => key.startsWith('tour_'));
 
+    if (uploadedImagesCount === 0) {
+      toast.error("At least one property image is required.");
+      return setError("Please upload at least one image of the property.");
+    }
+
     if (auditedMainImagesKeys.length < uploadedImagesCount || auditedTourImagesKeys.length < uploadedToursCount) {
       toast.error("All uploaded images must be AI Audited before submitting.");
       return setError("Mandatory Step: Please click the brain icon for each image to audit them first.");
@@ -958,11 +963,18 @@ export default function CreateListing() {
             </p>
 
             {/* AI Status Indicator */}
-            <div className="flex items-center gap-2 mb-4 p-2 px-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/30">
-              <FaBrain className={`text-blue-600 dark:text-blue-400 ${Object.values(isAuditing).some(v => v) ? 'animate-pulse' : ''}`} />
-              <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
-                {Object.values(isAuditing).some(v => v) ? 'AI Auditor: Working...' : 'AI Auditor: Ready'}
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
+              <div className="flex items-center gap-2">
+                <FaBrain className={`text-blue-600 dark:text-blue-400 ${Object.values(isAuditing).some(v => v) ? 'animate-pulse' : ''}`} />
+                <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+                  {Object.values(isAuditing).some(v => v) ? 'AI Auditor: Working...' : 'AI Auditor: Ready'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-gray-800 rounded-full border border-blue-100 dark:border-blue-700 shadow-sm">
+                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                  Powered by Sentinel v2.0 AI Image analyzer
+                </span>
+              </div>
             </div>
             <div className="space-y-3">
               {formData.imageUrls.map((url, index) => (
@@ -988,10 +1000,16 @@ export default function CreateListing() {
                     </label>
                     <button
                       type="button"
-                      onClick={() => auditByUrl(url, index, 'main')}
+                      onClick={() => {
+                        if (!url) {
+                          toast.info("Please add an Image URL first to audit.");
+                          return;
+                        }
+                        auditByUrl(url, index, 'main');
+                      }}
                       className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
                       title="AI Audit this URL"
-                      disabled={!url || isAuditing[`main_${index}`]}
+                      disabled={isAuditing[`main_${index}`]}
                     >
                       <FaBrain className={isAuditing[`main_${index}`] ? 'animate-spin' : ''} />
                     </button>

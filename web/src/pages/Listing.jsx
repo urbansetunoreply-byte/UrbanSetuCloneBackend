@@ -3138,7 +3138,7 @@ export default function Listing() {
                 to={isAdmin ? "/admin/agents" : "/user/agents"}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 whitespace-nowrap flex items-center gap-2"
               >
-                Find an Agent <FaArrowLeft className="rotate-180" />
+                {isAdmin ? "Manage Agents" : "Find an Agent"} <FaArrowLeft className="rotate-180" />
               </Link>
             ) : (
               <Link
