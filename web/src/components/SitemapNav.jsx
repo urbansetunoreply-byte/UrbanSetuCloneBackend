@@ -18,6 +18,7 @@ const SitemapNav = () => {
         { name: 'Market Trends', path: '/market-trends' },
         { name: 'Neighborhood Community', path: '/community' },
         { name: 'Platform Updates', path: '/updates' },
+        { name: 'Exclusive Offers', path: '/offers' },
         { name: 'Help Center', path: '/help-center' },
         { name: 'App Downloads', path: '/download' },
         { name: 'Contact Support', path: '/contact' },
@@ -26,7 +27,8 @@ const SitemapNav = () => {
         { name: 'Cookie Policy', path: '/cookie-policy' },
         { name: 'Community Guidelines', path: '/community-guidelines' },
         { name: 'Sign In', path: '/sign-in' },
-        { name: 'Sign Up', path: '/sign-up' }
+        { name: 'Sign Up', path: '/sign-up' },
+        { name: 'Forgot Password', path: '/forgot-password' }
     ];
 
     return (
