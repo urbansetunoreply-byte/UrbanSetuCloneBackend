@@ -18,7 +18,6 @@ const SitemapNav = () => {
         { name: 'Market Trends', path: '/market-trends' },
         { name: 'Neighborhood Community', path: '/community' },
         { name: 'Platform Updates', path: '/updates' },
-        { name: 'Exclusive Offers', path: '/offers' },
         { name: 'Help Center', path: '/help-center' },
         { name: 'App Downloads', path: '/download' },
         { name: 'Contact Support', path: '/contact' },
