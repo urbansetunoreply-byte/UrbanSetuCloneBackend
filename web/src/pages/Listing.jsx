@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar, FaRobot, FaBan, FaExclamationTriangle, FaUserTie } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaStar, FaLock, FaHeart, FaExpand, FaCheckCircle, FaFlag, FaRuler, FaBuilding, FaTree, FaWifi, FaSwimmingPool, FaCar, FaShieldAlt, FaClock, FaPhone, FaEnvelope, FaCalendarAlt, FaEye, FaThumbsUp, FaThumbsDown, FaRegThumbsUp, FaRegThumbsDown, FaComments, FaCalculator, FaChartLine, FaHome, FaUtensils, FaHospital, FaSchool, FaShoppingCart, FaPlane, FaUser, FaTimes, FaSearch, FaTable, FaRocket, FaQuestionCircle, FaChevronDown, FaChevronUp, FaBookOpen, FaTag, FaCompass, FaInfoCircle, FaCalendar, FaRobot, FaBan, FaExclamationTriangle, FaUserTie, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import ReviewForm from "../components/ReviewForm.jsx";
@@ -1761,9 +1761,12 @@ export default function Listing() {
           </h3>
 
           {/* Swiper Section */}
-          <div className="relative mb-6">
+          <div className="relative mb-6 group">
             <Swiper
-              navigation
+              navigation={{
+                nextEl: '.swiper-button-next-custom',
+                prevEl: '.swiper-button-prev-custom',
+              }}
               modules={[Navigation]}
               className="rounded-lg overflow-hidden relative"
               onSlideChange={(swiper) => {
@@ -1771,6 +1774,13 @@ export default function Listing() {
                 setSelectedImageIndex(swiper.activeIndex);
               }}
             >
+              {/* Custom Navigation */}
+              <div className="swiper-button-prev-custom absolute top-1/2 left-4 z-20 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-md cursor-pointer transition-all hover:scale-110 shadow-lg border border-white/10 hidden group-hover:flex">
+                <FaChevronLeft size={22} />
+              </div>
+              <div className="swiper-button-next-custom absolute top-1/2 right-4 z-20 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-md cursor-pointer transition-all hover:scale-110 shadow-lg border border-white/10 hidden group-hover:flex">
+                <FaChevronRight size={22} />
+              </div>
               {(() => {
                 const images = listing.imageUrls || [];
                 const tourImages = listing.virtualTourImages || [];
