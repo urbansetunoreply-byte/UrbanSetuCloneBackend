@@ -2262,7 +2262,7 @@ export default function Listing() {
                           const quality = audit.quality || {};
 
                           return (
-                            <div className="absolute top-4 left-4 z-40 pointer-events-none">
+                            <div className="absolute top-4 left-4 z-10 pointer-events-none">
                               <motion.div
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
