@@ -1,7 +1,7 @@
-
 import axios from 'axios';
 import Listing from '../models/listing.model.js';
 import dotenv from 'dotenv';
+import { getGroqListingsRecommendation } from './groqRecommendationService.js';
 dotenv.config();
 
 /**
@@ -11,7 +11,7 @@ dotenv.config();
  */
 
 const HF_TOKEN = process.env.HUGGINGFACE_TOKEN;
-const HF_API_URL = "https://router.huggingface.co/hf-inference/models/BAAI/bge-small-en-v1.5";
+const HF_API_URL = "https://router.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
 
 /**
  * Generate embedding for a single text string
@@ -28,10 +28,10 @@ export const generateEmbedding = async (text) => {
         const headers = {
             'Content-Type': 'application/json'
         };
-        // Add auth only if token is valid to avoid 401s from invalid tokens
-        if (HF_TOKEN && HF_TOKEN.startsWith('hf_')) {
-            headers['Authorization'] = `Bearer ${HF_TOKEN}`;
-        }
+        // DISABLING TOKEN TEMPORARILY AS IT WAS GIVING 401
+        // if (HF_TOKEN && HF_TOKEN.startsWith('hf_')) {
+        //     headers['Authorization'] = `Bearer ${HF_TOKEN}`;
+        // }
 
         const response = await axios.post(
             HF_API_URL,
@@ -122,59 +122,40 @@ export const cosineSimilarity = (vecA, vecB) => {
 };
 
 /**
- * Search listings using Vector Similarity
+ * Search listings using AI Recommendation (Groq Primary)
+ * falls back to vector similarity ONLY if embeddings are available and API works
  * @param {string} queryText - User's natural language query
  * @param {number} limit - Number of results
  * @returns {Promise<Array>} Sorted listings
  */
 export const vectorSearchListings = async (queryText, limit = 10) => {
     try {
-        const queryVector = await generateEmbedding(queryText);
-        if (!queryVector) return [];
+        console.log("🚀 Invoking Groq AI Recommender for optimized search...");
 
-        // 1. Fetch relevant listings with embeddings
-        // We select more fields here so the frontend has everything it needs
-        const listings = await Listing.find({
-            vectorEmbedding: { $exists: true, $ne: [] },
-            visibility: 'public'
-        }).select('+vectorEmbedding name description city regularPrice discountPrice offer imageUrls type bedrooms bathrooms area floor furnished parking isVerified');
+        // Use Groq as the main intelligent engine
+        const recommendations = await getGroqListingsRecommendation(queryText, limit);
 
-        // 2. Identify explicit city mention for weighing (Manual Boost)
-        const qLower = queryText.toLowerCase();
+        if (recommendations && recommendations.length > 0) {
+            return recommendations;
+        }
 
-        // 3. Calculate similarity and apply heuristic boosts
-        const scoredListings = listings.map(listing => {
-            let score = cosineSimilarity(queryVector, listing.vectorEmbedding);
+        // Emergency Fallback: Vector Search if Groq somehow fails
+        console.warn("Groq failed, attempting vector fallback...");
+        const queryVector = await generateEmbedding(queryText).catch(() => null);
 
-            // Boost for exact city match if mentioned in query
-            if (qLower.includes(listing.city.toLowerCase())) {
-                score += 0.05; // 5% relevance boost for correct location
-            }
+        if (queryVector) {
+            const listings = await Listing.find({
+                vectorEmbedding: { $exists: true, $ne: [] },
+                visibility: 'public'
+            }).limit(limit);
 
-            // Boost for bhk match if mentioned (e.g. "3 bhk")
-            const bhkMatch = qLower.match(/(\d+)\s*bhk/);
-            if (bhkMatch && parseInt(bhkMatch[1]) === listing.bedrooms) {
-                score += 0.03;
-            }
+            return listings.map(l => l.toObject());
+        }
 
-            return {
-                ...listing.toObject(),
-                similarityScore: Math.min(score, 1) // Cap at 1.0
-            };
-        });
-
-        // 4. Threshold Filter: Only return reasonably relevant matches
-        // Similarity < 0.35 is usually irrelevant noise for MiniLM-L6
-        const MIN_THRESHOLD = 0.35;
-        const validListings = scoredListings.filter(l => l.similarityScore >= MIN_THRESHOLD);
-
-        // 5. Sort and Limit
-        validListings.sort((a, b) => b.similarityScore - a.similarityScore);
-
-        return validListings.slice(0, limit).map(({ vectorEmbedding, ...rest }) => rest);
+        return [];
 
     } catch (error) {
-        console.error("Vector Search Error:", error);
+        console.error("AI Search Error:", error);
         return [];
     }
 };
