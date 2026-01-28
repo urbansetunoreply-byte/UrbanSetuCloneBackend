@@ -186,12 +186,34 @@ export default function AdminEditListing() {
 
     // Sync to 360 view if enabled
     if (syncImagesTo360 && formData.isVerified) {
-      const newVirtualTourImages = [...newImageUrls];
-      setFormData(prev => ({
-        ...prev,
-        imageUrls: newImageUrls,
-        virtualTourImages: newVirtualTourImages
-      }));
+      const oldUrl = formData.imageUrls[index];
+      setFormData(prev => {
+        let current360 = [...(prev.virtualTourImages || [])];
+
+        // Find and replace or append
+        let found = false;
+        if (oldUrl) {
+          current360 = current360.map(img => {
+            if (img === oldUrl) {
+              found = true;
+              return url;
+            }
+            return img;
+          });
+        }
+
+        if (!found && url) {
+          if (!current360.includes(url)) {
+            current360.push(url);
+          }
+        }
+
+        return {
+          ...prev,
+          imageUrls: newImageUrls,
+          virtualTourImages: current360
+        };
+      });
     }
   };
 
@@ -230,7 +252,10 @@ export default function AdminEditListing() {
       };
       // Sync to 360 view if enabled
       if (syncImagesTo360 && prev.isVerified) {
-        updatedData.virtualTourImages = [...newImageUrls];
+        const removedUrl = prev.imageUrls[index];
+        if (removedUrl) {
+          updatedData.virtualTourImages = (prev.virtualTourImages || []).filter(url => url !== removedUrl);
+        }
       }
       return updatedData;
     });
@@ -313,7 +338,12 @@ export default function AdminEditListing() {
           const updatedData = { ...prev, imageUrls: newImageUrls };
           // Sync to 360 view if enabled
           if (syncImagesTo360 && prev.isVerified) {
-            updatedData.virtualTourImages = [...newImageUrls];
+            const current360 = [...(prev.virtualTourImages || [])];
+            // Append if unique
+            if (data.imageUrl && !current360.includes(data.imageUrl)) {
+              current360.push(data.imageUrl);
+            }
+            updatedData.virtualTourImages = current360;
           }
           return updatedData;
         });
@@ -1007,10 +1037,14 @@ export default function AdminEditListing() {
                     onChange={(e) => {
                       setSyncImagesTo360(e.target.checked);
                       if (e.target.checked && formData.isVerified) {
-                        setFormData(prev => ({
-                          ...prev,
-                          virtualTourImages: [...prev.imageUrls]
-                        }));
+                        setFormData(prev => {
+                          const current360 = [...(prev.virtualTourImages || [])];
+                          const newImages = prev.imageUrls.filter(url => url && !current360.includes(url));
+                          return {
+                            ...prev,
+                            virtualTourImages: [...current360, ...newImages]
+                          };
+                        });
                         toast.success("Images synced to 360° View section!");
                       }
                     }}
