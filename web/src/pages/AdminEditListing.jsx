@@ -9,6 +9,8 @@ import VideoPreview from '../components/VideoPreview';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { authenticatedFetch } from '../utils/auth';
+import { useImageAuditor } from '../hooks/useImageAuditor';
+import { FaBrain, FaExclamationTriangle, FaCheckCircle, FaLightbulb } from 'react-icons/fa';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminEditListing() {
@@ -92,6 +94,9 @@ export default function AdminEditListing() {
   const location = useLocation();
   const [locationState, setLocationState] = useState({ state: "", district: "", city: "", cities: [] });
   const [previewVideo, setPreviewVideo] = useState(null);
+
+  // AI Image Auditor Hook
+  const { performAudit, auditResults } = useImageAuditor();
 
   // Get the previous path for redirection
   const getPreviousPath = () => {
@@ -227,6 +232,9 @@ export default function AdminEditListing() {
       const data = await res.json();
 
       if (res.ok) {
+        // Perform AI Audit
+        performAudit(file, index);
+
         // Update the image URL with the uploaded image URL
         const newImageUrls = [...formData.imageUrls];
         newImageUrls[index] = data.imageUrl;
@@ -924,26 +932,82 @@ export default function AdminEditListing() {
             {formData.imageUrls.some(url => url) && (
               <div className="mt-4">
                 <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Image Preview:</h5>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {formData.imageUrls.map((url, index) => (
                     url && (
-                      <div key={url} className="relative">
-                        <img
-                          src={url}
-                          alt="listing"
-                          className="w-full h-24 object-cover rounded-lg"
-                          onError={(e) => {
-                            e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
-                            e.target.className = "w-full h-24 object-cover rounded-lg opacity-50";
-                          }}
-                        />
-                        <button
-                          onClick={() => onHandleRemoveImage(index)}
-                          type="button"
-                          className="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 rounded-full hover:bg-red-600 transition"
-                        >
-                          ×
-                        </button>
+                      <div key={index} className="flex flex-col bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700">
+                        <div className="relative group">
+                          <img
+                            src={url}
+                            alt={`Listing ${index + 1}`}
+                            className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                            onError={(e) => {
+                              e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
+                              e.target.className = "w-full h-48 object-cover rounded-lg opacity-50";
+                            }}
+                          />
+                          <button
+                            onClick={() => onHandleRemoveImage(index)}
+                            type="button"
+                            className="absolute top-2 right-2 bg-red-500/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full hover:bg-red-600 transition z-10"
+                          >
+                            ×
+                          </button>
+
+                          {/* AI status badge */}
+                          {auditResults[index] && (
+                            <div className="absolute bottom-2 left-2 bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                              <FaBrain className="animate-pulse" size={10} />
+                              AI AUDITED
+                            </div>
+                          )}
+                        </div>
+
+                        {/* AI Audit Detailed Results */}
+                        {auditResults[index] && (
+                          <div className="p-3 space-y-2 text-xs">
+                            <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-700 pb-2">
+                              <span className="text-gray-500 font-medium">Auto-Detection:</span>
+                              <div className="flex gap-1 flex-wrap justify-end">
+                                {auditResults[index].suggestions.length > 0 ? (
+                                  auditResults[index].suggestions.map(tag => (
+                                    <span key={tag} className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                                      {tag}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-gray-400 italic">Unidentified</span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/40">
+                                {auditResults[index].quality.brightness === 'Good' ? (
+                                  <FaCheckCircle className="text-green-500" />
+                                ) : (
+                                  <FaExclamationTriangle className="text-amber-500" />
+                                )}
+                                <span className="text-gray-600 dark:text-gray-400">Light: {auditResults[index].quality.brightness}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/40">
+                                {auditResults[index].quality.contrast === 'Good' ? (
+                                  <FaCheckCircle className="text-green-500" />
+                                ) : (
+                                  <FaExclamationTriangle className="text-amber-500" />
+                                )}
+                                <span className="text-gray-600 dark:text-gray-400">Contrast: {auditResults[index].quality.contrast}</span>
+                              </div>
+                            </div>
+
+                            {auditResults[index].suggestions.length > 0 && (
+                              <div className="flex items-start gap-1.5 mt-1 bg-amber-50 dark:bg-amber-900/20 p-1.5 rounded-lg text-amber-800 dark:text-amber-300">
+                                <FaLightbulb className="flex-shrink-0 mt-0.5" />
+                                <p className="leading-tight">AI thinks this is a <strong>{auditResults[index].suggestions[0]}</strong>. Consider mentioning this in description!</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
                   ))}
