@@ -464,7 +464,11 @@ const listingSchema = new mongoose.Schema({
         select: false,   // Don't return by default to save bandwidth
         index: true
     }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: { flattenMaps: true },
+    toObject: { flattenMaps: true }
+});
 
 const Listing = mongoose.model('Listing', listingSchema);
 

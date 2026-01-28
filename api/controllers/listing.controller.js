@@ -146,7 +146,7 @@ export const getUserListings = async (req, res, next) => {
 
     // Enhance listings with lock status
     const listingsWithLockInfo = listings.map(listing => {
-      const listingObj = listing.toObject();
+      const listingObj = listing.toObject({ flattenMaps: true });
       const activeContract = activeContracts.find(c => c.listingId.toString() === listing._id.toString() && c.status === 'active');
 
       if (activeContract) {
@@ -800,7 +800,7 @@ export const getListing = async (req, res, next) => {
         return next(errorHandler(404, "Listing not found"));
       }
     } else {
-      listingObj = listing.toObject();
+      listingObj = listing.toObject({ flattenMaps: true });
     }
 
     // Debug ESG data being returned
