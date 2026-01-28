@@ -99,7 +99,7 @@ export default function CreateListing() {
   const [previewVideo, setPreviewVideo] = useState(null);
 
   // AI Image Auditor Hook
-  const { performAudit, auditResults } = useImageAuditor();
+  const { performAudit, auditByUrl, auditResults, isAuditing } = useImageAuditor();
 
   // Get the previous path for redirection
   const getPreviousPath = () => {

@@ -109,7 +109,7 @@ export default function AdminCreateListing() {
   const [previewVideo, setPreviewVideo] = useState(null);
 
   // AI Image Auditor Hook
-  const { performAudit, auditResults, isAuditing } = useImageAuditor();
+  const { performAudit, auditByUrl, auditResults, isAuditing } = useImageAuditor();
 
   // Get the previous path for redirection
   const getPreviousPath = () => {
