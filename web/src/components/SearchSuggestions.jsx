@@ -101,7 +101,7 @@ const SearchSuggestions = ({
     }).format(price);
   };
 
-  if (!isVisible || (!loading && suggestions.length === 0)) {
+  if (!isVisible || (!loading && suggestions.length === 0 && searchTerm.trim().length < 2)) {
     return null;
   }
 
@@ -117,7 +117,7 @@ const SearchSuggestions = ({
             Searching...
           </div>
         </div>
-      ) : (
+      ) : suggestions.length > 0 ? (
         <div className="py-2">
           {suggestions.map((suggestion, index) => (
             <div
@@ -168,11 +168,15 @@ const SearchSuggestions = ({
             </div>
           ))}
 
-          {suggestions.length > 0 && (
-            <div className="px-4 py-2 text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
-              Press Enter to select, ↑↓ to navigate, Esc to close
-            </div>
-          )}
+          <div className="px-4 py-2 text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
+            Press Enter to select, ↑↓ to navigate, Esc to close
+          </div>
+        </div>
+      ) : (
+        <div className="p-6 text-center">
+          <FaSearch className="mx-auto w-8 h-8 text-gray-300 dark:text-gray-600 mb-3" />
+          <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">No properties found</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Try adjusting your search or area</p>
         </div>
       )}
     </div>
