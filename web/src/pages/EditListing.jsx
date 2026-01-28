@@ -96,6 +96,7 @@ export default function EditListing() {
   const [locationState, setLocationState] = useState({ state: "", district: "", city: "", cities: [] });
   const [previewVideo, setPreviewVideo] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
+  const [syncImagesTo360, setSyncImagesTo360] = useState(false);
 
   // AI Image Auditor Hook
   const { performAudit, auditByUrl, auditResults, isAuditing, setAuditResults } = useImageAuditor();
@@ -198,6 +199,16 @@ export default function EditListing() {
     if (url && validateImageUrl(url)) {
       auditByUrl(url, index, 'main');
     }
+
+    // Sync to 360 view if enabled
+    if (syncImagesTo360 && formData.isVerified) {
+      const newVirtualTourImages = [...newImageUrls];
+      setFormData(prev => ({
+        ...prev,
+        imageUrls: newImageUrls,
+        virtualTourImages: newVirtualTourImages
+      }));
+    }
   };
 
   const handleCaptionChange = (index, value) => {
@@ -227,10 +238,17 @@ export default function EditListing() {
       // Index equal to removed index is skipped (deleted)
     });
 
-    setFormData({
-      ...formData,
-      imageUrls: newImageUrls,
-      imageCaptions: shiftedCaptions
+    setFormData(prev => {
+      const updatedData = {
+        ...prev,
+        imageUrls: newImageUrls,
+        imageCaptions: shiftedCaptions
+      };
+      // Sync to 360 view if enabled
+      if (syncImagesTo360 && prev.isVerified) {
+        updatedData.virtualTourImages = [...newImageUrls];
+      }
+      return updatedData;
     });
 
     // Clear error for this image
@@ -390,7 +408,15 @@ export default function EditListing() {
         // Update the image URL with the uploaded image URL
         const newImageUrls = [...formData.imageUrls];
         newImageUrls[index] = data.imageUrl;
-        setFormData(prev => ({ ...prev, imageUrls: newImageUrls }));
+
+        setFormData(prev => {
+          const updatedData = { ...prev, imageUrls: newImageUrls };
+          // Sync to 360 view if enabled
+          if (syncImagesTo360 && prev.isVerified) {
+            updatedData.virtualTourImages = [...newImageUrls];
+          }
+          return updatedData;
+        });
 
         // Clear any existing errors for this image
         setImageErrors(prev => {
@@ -1021,10 +1047,35 @@ export default function EditListing() {
                   {Object.values(isAuditing).some(v => v) ? 'AI Auditor: Working...' : 'AI Auditor: Ready'}
                 </span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-gray-800 rounded-full border border-blue-100 dark:border-blue-700 shadow-sm">
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                  Powered by Sentinel v2.0 AI Image analyzer
-                </span>
+              <div className="flex items-center gap-4">
+                {/* Sync to 360 Checkbox */}
+                <label className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${!formData.isVerified ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-800 cursor-pointer shadow-sm hover:border-indigo-300'} transition-all`}>
+                  <input
+                    type="checkbox"
+                    checked={syncImagesTo360}
+                    disabled={!formData.isVerified}
+                    onChange={(e) => {
+                      setSyncImagesTo360(e.target.checked);
+                      if (e.target.checked && formData.isVerified) {
+                        setFormData(prev => ({
+                          ...prev,
+                          virtualTourImages: [...prev.imageUrls]
+                        }));
+                        toast.success("Images synced to 360° View section!");
+                      }
+                    }}
+                    className="accent-indigo-600 w-4 h-4 cursor-pointer"
+                  />
+                  <span className={`text-xs font-bold uppercase tracking-wider ${!formData.isVerified ? 'text-gray-500 dark:text-gray-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                    Sync to 360° {!formData.isVerified && "(Verified Only)"}
+                  </span>
+                </label>
+
+                <div className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-gray-800 rounded-full border border-blue-100 dark:border-blue-700 shadow-sm">
+                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                    Powered by Sentinel v2.0 AI Image analyzer
+                  </span>
+                </div>
               </div>
             </div>
             <div className="space-y-3">

@@ -81,7 +81,9 @@ export default function AdminCreateListing() {
     securityDepositMonths: 2,
     maintenanceCharges: 0,
     advanceRentMonths: 0,
-    customLockDuration: 12 // in months, if custom plan
+    advanceRentMonths: 0,
+    customLockDuration: 12, // in months, if custom plan
+    imageCaptions: {} // Map of index -> caption string
   });
 
   const [error, setError] = useState("");
@@ -107,6 +109,7 @@ export default function AdminCreateListing() {
   // LocationSelector state
   const [locationState, setLocationState] = useState({ state: "", district: "", city: "", cities: [] });
   const [previewVideo, setPreviewVideo] = useState(null);
+  const [syncImagesTo360, setSyncImagesTo360] = useState(false);
 
   // AI Image Auditor Hook
   const { performAudit, auditByUrl, auditResults, isAuditing, setAuditResults } = useImageAuditor();
@@ -219,6 +222,26 @@ export default function AdminCreateListing() {
     if (url && validateImageUrl(url)) {
       auditByUrl(url, index, 'main');
     }
+
+    // Sync to 360 view if enabled
+    if (syncImagesTo360 && formData.isVerified) {
+      const newVirtualTourImages = [...newImageUrls];
+      setFormData(prev => ({
+        ...prev,
+        imageUrls: newImageUrls,
+        virtualTourImages: newVirtualTourImages
+      }));
+    }
+  };
+
+  const handleCaptionChange = (index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      imageCaptions: {
+        ...prev.imageCaptions,
+        [index]: value
+      }
+    }));
   };
 
   const handleFileUpload = async (index, file) => {
@@ -257,7 +280,15 @@ export default function AdminCreateListing() {
         // Update the image URL with the uploaded image URL
         const newImageUrls = [...formData.imageUrls];
         newImageUrls[index] = data.imageUrl;
-        setFormData(prev => ({ ...prev, imageUrls: newImageUrls }));
+
+        setFormData(prev => {
+          const updatedData = { ...prev, imageUrls: newImageUrls };
+          // Sync to 360 view if enabled
+          if (syncImagesTo360 && prev.isVerified) {
+            updatedData.virtualTourImages = [...newImageUrls];
+          }
+          return updatedData;
+        });
 
         // Clear any existing errors for this image
         setImageErrors(prev => {
@@ -330,9 +361,33 @@ export default function AdminCreateListing() {
   };
 
   const onHandleRemoveImage = (index) => {
-    setFormData({
-      ...formData,
-      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
+    const newImageUrls = formData.imageUrls.filter((_, i) => i !== index);
+
+    // Shift image captions
+    const newCaptions = { ...formData.imageCaptions };
+    // We need to rebuild the captions map for the new indices
+    const shiftedCaptions = {};
+    Object.keys(newCaptions).forEach(key => {
+      const keyIdx = parseInt(key);
+      if (keyIdx < index) {
+        shiftedCaptions[keyIdx] = newCaptions[key];
+      } else if (keyIdx > index) {
+        shiftedCaptions[keyIdx - 1] = newCaptions[key];
+      }
+      // Index equal to removed index is skipped (deleted)
+    });
+
+    setFormData(prev => {
+      const updatedData = {
+        ...prev,
+        imageUrls: newImageUrls,
+        imageCaptions: shiftedCaptions
+      };
+      // Sync to 360 view if enabled
+      if (syncImagesTo360 && prev.isVerified) {
+        updatedData.virtualTourImages = [...newImageUrls];
+      }
+      return updatedData;
     });
 
     // Clear error for this image
@@ -1074,10 +1129,35 @@ export default function AdminCreateListing() {
                   {Object.values(isAuditing).some(v => v) ? 'AI Auditor: Working...' : 'AI Auditor: Ready'}
                 </span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-gray-800 rounded-full border border-blue-100 dark:border-blue-700 shadow-sm">
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                  Powered by Sentinel v2.0 AI Image analyzer
-                </span>
+              <div className="flex items-center gap-4">
+                {/* Sync to 360 Checkbox */}
+                <label className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${!formData.isVerified ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-800 cursor-pointer shadow-sm hover:border-indigo-300'} transition-all`}>
+                  <input
+                    type="checkbox"
+                    checked={syncImagesTo360}
+                    disabled={!formData.isVerified}
+                    onChange={(e) => {
+                      setSyncImagesTo360(e.target.checked);
+                      if (e.target.checked && formData.isVerified) {
+                        setFormData(prev => ({
+                          ...prev,
+                          virtualTourImages: [...prev.imageUrls]
+                        }));
+                        toast.success("Images synced to 360° View section!");
+                      }
+                    }}
+                    className="accent-indigo-600 w-4 h-4 cursor-pointer"
+                  />
+                  <span className={`text-xs font-bold uppercase tracking-wider ${!formData.isVerified ? 'text-gray-500 dark:text-gray-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                    Sync to 360° {!formData.isVerified && "(Verified Only)"}
+                  </span>
+                </label>
+
+                <div className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-gray-800 rounded-full border border-blue-100 dark:border-blue-700 shadow-sm">
+                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                    Powered by Sentinel v2.0 AI Image analyzer
+                  </span>
+                </div>
               </div>
             </div>
             <div className="space-y-3">
@@ -1091,6 +1171,13 @@ export default function AdminCreateListing() {
                       onChange={(e) => handleImageChange(index, e.target.value)}
                       className={`flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors duration-300 ${imageErrors[index] ? 'border-red-500' : ''
                         }`}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Image Name/Title (e.g. Master Bedroom)"
+                      value={formData.imageCaptions?.[index] || ""}
+                      onChange={(e) => handleCaptionChange(index, e.target.value)}
+                      className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors duration-300"
                     />
                     <label className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition cursor-pointer">
                       {uploadingImages[index] ? 'Uploading...' : 'Upload File'}
