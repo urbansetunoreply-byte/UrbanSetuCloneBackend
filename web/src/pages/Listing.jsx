@@ -1825,6 +1825,55 @@ export default function Listing() {
                           </span>
                         </div>
                       )}
+
+                      {/* AI Audit Tag Overlay - Modern Glassmorphism Design */}
+                      {item.type === 'image' && listing.aiAuditResults && (listing.aiAuditResults[`main_${index}`] || (listing.aiAuditResults.get && listing.aiAuditResults.get(`main_${index}`))) && (
+                        <div className="absolute bottom-4 left-4 z-30 pointer-events-none">
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col gap-2"
+                          >
+                            {(() => {
+                              const audit = listing.aiAuditResults[`main_${index}`] || (listing.aiAuditResults.get && listing.aiAuditResults.get(`main_${index}`));
+                              if (!audit) return null;
+
+                              const mainTag = audit.suggestions && audit.suggestions.length > 0 ? audit.suggestions[0] : null;
+                              const quality = audit.quality || {};
+
+                              return (
+                                <>
+                                  {mainTag && (
+                                    <div className="flex items-center gap-2 bg-blue-600/80 backdrop-blur-md text-white px-3 py-1.5 rounded-lg shadow-2xl border border-white/20 w-fit">
+                                      <FaRobot className="text-xs animate-bounce" />
+                                      <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+                                        {mainTag}
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  <div className="flex gap-2">
+                                    {quality.brightness && quality.brightness === 'Good' && (
+                                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md backdrop-blur-md border border-green-400/30 bg-green-500/60 text-white text-[9px] sm:text-[10px] font-semibold shadow-lg">
+                                        <FaCheckCircle className="text-[8px] sm:text-[10px]" />
+                                        Good Light
+                                      </div>
+                                    )}
+                                    {quality.contrast && quality.contrast === 'Good' && (
+                                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md backdrop-blur-md border border-indigo-400/30 bg-indigo-500/60 text-white text-[9px] sm:text-[10px] font-semibold shadow-lg">
+                                        <FaCheckCircle className="text-[8px] sm:text-[10px]" />
+                                        Clear Detail
+                                      </div>
+                                    )}
+                                  </div>
+                                </>
+                              );
+                            })()}
+                          </motion.div>
+                        </div>
+                      )}
+
+                      {/* Expand Button Overlay */}
                       {/* Expand Button Overlay */}
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
                         <div className="bg-white bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">

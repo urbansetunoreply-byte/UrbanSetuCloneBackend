@@ -97,7 +97,7 @@ export default function EditListing() {
   const [isLocked, setIsLocked] = useState(false);
 
   // AI Image Auditor Hook
-  const { performAudit, auditByUrl, auditResults, isAuditing } = useImageAuditor();
+  const { performAudit, auditByUrl, auditResults, isAuditing, setAuditResults } = useImageAuditor();
 
   // Get the previous path for redirection
   const getPreviousPath = () => {
@@ -143,6 +143,10 @@ export default function EditListing() {
         city: data.city || "",
         cities: [],
       });
+      // Load existing AI Audit results if they exist
+      if (data.aiAuditResults) {
+        setAuditResults(data.aiAuditResults);
+      }
     };
     fetchListing();
     // eslint-disable-next-line
@@ -455,6 +459,18 @@ export default function EditListing() {
     if ((currentUser.role !== 'admin' && currentUser.role !== 'rootadmin') && !consent) {
       return setError('You must confirm that the data provided is genuine.');
     }
+
+    // AI AUDIT VALIDATION: Ensure all uploaded images are audited
+    const uploadedImagesCount = formData.imageUrls.filter(url => url !== "").length;
+    const uploadedToursCount = (formData.virtualTourImages || []).filter(url => url !== "").length;
+
+    const auditedMainImagesKeys = Object.keys(auditResults).filter(key => key.startsWith('main_'));
+    const auditedTourImagesKeys = Object.keys(auditResults).filter(key => key.startsWith('tour_'));
+
+    if (auditedMainImagesKeys.length < uploadedImagesCount || auditedTourImagesKeys.length < uploadedToursCount) {
+      toast.error("All uploaded images must be AI Audited before updating.");
+      return setError("Mandatory Step: Please click the brain icon for each image to audit them first.");
+    }
     setLoading(true);
     setError("");
     try {
@@ -464,10 +480,17 @@ export default function EditListing() {
       let requestBody = formData;
       if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
         // Admin editing - don't change ownership, just update the data
-        requestBody = { ...formData };
+        requestBody = {
+          ...formData,
+          aiAuditResults: auditResults // Save AI Audit results
+        };
       } else {
         // Regular user editing their own listing - maintain ownership
-        requestBody = { ...formData, userRef: currentUser._id };
+        requestBody = {
+          ...formData,
+          userRef: currentUser._id,
+          aiAuditResults: auditResults // Save AI Audit results
+        };
       }
 
       // For rentals, sync regular price with monthly rent

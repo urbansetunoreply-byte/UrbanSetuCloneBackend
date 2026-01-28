@@ -126,6 +126,11 @@ const listingSchema = new mongoose.Schema({
         style: String,
         timestamp: { type: Date, default: Date.now }
     }],
+    aiAuditResults: {
+        type: Map,
+        of: mongoose.Schema.Types.Mixed,
+        default: {}
+    },
     locationLink: {
         type: String,
         required: false

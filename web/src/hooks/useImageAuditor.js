@@ -115,6 +115,7 @@ export const useImageAuditor = () => {
         performAudit,
         auditByUrl,
         auditResults,
+        setAuditResults,
         isAuditing,
         clearAudit
     };

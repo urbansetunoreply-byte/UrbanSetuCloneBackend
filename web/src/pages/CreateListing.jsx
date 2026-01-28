@@ -99,7 +99,7 @@ export default function CreateListing() {
   const [previewVideo, setPreviewVideo] = useState(null);
 
   // AI Image Auditor Hook
-  const { performAudit, auditByUrl, auditResults, isAuditing } = useImageAuditor();
+  const { performAudit, auditByUrl, auditResults, isAuditing, setAuditResults } = useImageAuditor();
 
   // Get the previous path for redirection
   const getPreviousPath = () => {
@@ -463,6 +463,19 @@ export default function CreateListing() {
       return setError('You must confirm that the data provided is genuine.');
     }
 
+    // AI AUDIT VALIDATION: Ensure all uploaded images are audited
+    const uploadedImagesCount = formData.imageUrls.filter(url => url !== "").length;
+    const uploadedToursCount = (formData.virtualTourImages || []).filter(url => url !== "").length;
+
+    // Check main images
+    const auditedMainImagesKeys = Object.keys(auditResults).filter(key => key.startsWith('main_'));
+    const auditedTourImagesKeys = Object.keys(auditResults).filter(key => key.startsWith('tour_'));
+
+    if (auditedMainImagesKeys.length < uploadedImagesCount || auditedTourImagesKeys.length < uploadedToursCount) {
+      toast.error("All uploaded images must be AI Audited before submitting.");
+      return setError("Mandatory Step: Please click the brain icon for each image to audit them first.");
+    }
+
     setLoading(true);
     setError("");
 
@@ -471,7 +484,11 @@ export default function CreateListing() {
       console.log("ESG data being sent:", formData.esg);
 
       // Prepare submission data
-      const submissionData = { ...formData, userRef: currentUser._id };
+      const submissionData = {
+        ...formData,
+        userRef: currentUser._id,
+        aiAuditResults: auditResults // Saving AI Audit results to database
+      };
 
       // For rentals, sync regular price with monthly rent
       if (submissionData.type === 'rent') {

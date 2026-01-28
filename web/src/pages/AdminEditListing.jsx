@@ -96,7 +96,7 @@ export default function AdminEditListing() {
   const [previewVideo, setPreviewVideo] = useState(null);
 
   // AI Image Auditor Hook
-  const { performAudit, auditByUrl, auditResults, isAuditing } = useImageAuditor();
+  const { performAudit, auditByUrl, auditResults, isAuditing, setAuditResults } = useImageAuditor();
 
   // Get the previous path for redirection
   const getPreviousPath = () => {
@@ -127,6 +127,10 @@ export default function AdminEditListing() {
         city: data.city || "",
         cities: [],
       });
+      // Load existing AI Audit results
+      if (data.aiAuditResults) {
+        setAuditResults(data.aiAuditResults);
+      }
     };
     fetchListing();
     // eslint-disable-next-line
@@ -435,12 +439,28 @@ export default function AdminEditListing() {
     if (Object.keys(imageErrors).length > 0) {
       return setError("Please fix the image URL errors before submitting");
     }
+
+    // AI AUDIT VALIDATION: Ensure all uploaded images are audited
+    const uploadedImagesCount = formData.imageUrls.filter(url => url !== "").length;
+    const uploadedToursCount = (formData.virtualTourImages || []).filter(url => url !== "").length;
+
+    // Check main images
+    const auditedMainImagesKeys = Object.keys(auditResults).filter(key => key.startsWith('main_'));
+    const auditedTourImagesKeys = Object.keys(auditResults).filter(key => key.startsWith('tour_'));
+
+    if (auditedMainImagesKeys.length < uploadedImagesCount || auditedTourImagesKeys.length < uploadedToursCount) {
+      toast.error("All uploaded images must be AI Audited before updating.");
+      return setError("Mandatory Admin Step: Please click the brain icon for each image to audit them first.");
+    }
     setLoading(true);
     setError("");
     try {
       const apiUrl = `/api/listing/update/${params.listingId}`;
       // Prepare submission data - preserve logic for submission
-      let submissionData = { ...formData }; // Create a copy
+      let submissionData = {
+        ...formData,
+        aiAuditResults: auditResults // Save AI Audit results
+      }; // Create a copy
 
       // For rentals, sync regular price with monthly rent
       if (submissionData.type === 'rent') {
