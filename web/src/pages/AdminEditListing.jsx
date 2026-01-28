@@ -876,6 +876,14 @@ export default function AdminEditListing() {
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
               Upload images directly or add image URLs. Supported formats: JPG, PNG, GIF, WebP, SVG (max 10MB per image)
             </p>
+
+            {/* AI Status Indicator */}
+            <div className="flex items-center gap-2 mb-4 p-2 px-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/30">
+              <FaBrain className={`text-blue-600 dark:text-blue-400 ${isAuditing ? 'animate-pulse' : ''}`} />
+              <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+                {isAuditing ? 'AI Auditor: Working...' : 'AI Auditor: Ready'}
+              </span>
+            </div>
             <div className="space-y-3">
               {formData.imageUrls.map((url, index) => (
                 <div key={index} className="space-y-2">
