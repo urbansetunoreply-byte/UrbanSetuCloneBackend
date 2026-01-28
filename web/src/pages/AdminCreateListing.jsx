@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import LocationSelector from "../components/LocationSelector";
 import ESGManagement from "../components/ESGManagement";
 import { toast } from 'react-toastify';
-import { FaCompass, FaPlay } from "react-icons/fa";
+import { FaCompass, FaPlay, FaSpinner } from "react-icons/fa";
 import VideoPreview from '../components/VideoPreview';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -152,7 +152,7 @@ export default function AdminCreateListing() {
         user.email.toLowerCase().includes(formData.assignToEmail.toLowerCase())
       );
       setEmailSuggestions(filtered);
-      setShowSuggestions(filtered.length > 0);
+      setShowSuggestions(true); // Always show dropdown if typing
     } else {
       setEmailSuggestions([]);
       setShowSuggestions(false);
@@ -608,23 +608,34 @@ export default function AdminCreateListing() {
               />
 
               {/* Email suggestions dropdown */}
-              {showSuggestions && (
+              {showSuggestions && formData.assignToEmail.trim() && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                  {emailSuggestions.map((user) => (
-                    <div
-                      key={user._id}
-                      className="px-3 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                      onClick={(event) => {
-                        event?.preventDefault?.();
-                        event?.stopPropagation?.();
-                        handleEmailSuggestionClick(user.email);
-                      }}
-                      onMouseDown={(event) => event.preventDefault()}
-                    >
-                      <div className="font-medium text-gray-800 dark:text-gray-200">{user.email}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{user.username}</div>
+                  {loadingUsers ? (
+                    <div className="flex items-center justify-center p-4 text-blue-600">
+                      <FaSpinner className="animate-spin mr-2" />
+                      <span className="text-sm font-medium">Loading users...</span>
                     </div>
-                  ))}
+                  ) : emailSuggestions.length > 0 ? (
+                    emailSuggestions.map((user) => (
+                      <div
+                        key={user._id}
+                        className="px-3 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                        onClick={(event) => {
+                          event?.preventDefault?.();
+                          event?.stopPropagation?.();
+                          handleEmailSuggestionClick(user.email);
+                        }}
+                        onMouseDown={(event) => event.preventDefault()}
+                      >
+                        <div className="font-medium text-gray-800 dark:text-gray-200">{user.email}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{user.username}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                      No users found with this email
+                    </div>
+                  )}
                 </div>
               )}
 
