@@ -200,10 +200,13 @@ export default function EditListing() {
   };
 
   const onHandleRemoveImage = (index) => {
+    const newImageUrls = formData.imageUrls.filter((_, i) => i !== index);
     setFormData({
       ...formData,
-      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
+      imageUrls: newImageUrls,
     });
+
+    // Clear error for this image
     const newImageErrors = { ...imageErrors };
     delete newImageErrors[index];
     setImageErrors(newImageErrors);
@@ -212,6 +215,18 @@ export default function EditListing() {
     const newUploadingImages = { ...uploadingImages };
     delete newUploadingImages[index];
     setUploadingImages(newUploadingImages);
+
+    // RE-INDEX Audit Results to prevent shifting bugs
+    const newAuditResults = { ...auditResults };
+    delete newAuditResults[`main_${index}`];
+
+    for (let i = index + 1; i <= formData.imageUrls.length; i++) {
+      if (newAuditResults[`main_${i}`]) {
+        newAuditResults[`main_${i - 1}`] = newAuditResults[`main_${i}`];
+        delete newAuditResults[`main_${i}`];
+      }
+    }
+    setAuditResults(newAuditResults);
   };
 
   const onHandleRemoveVideo = (index) => {
@@ -273,16 +288,31 @@ export default function EditListing() {
   };
 
   const onHandleRemoveVirtualTour = (index) => {
+    const newVirtualTourImages = (formData.virtualTourImages || []).filter((_, i) => i !== index);
     setFormData({
       ...formData,
-      virtualTourImages: (formData.virtualTourImages || []).filter((_, i) => i !== index),
+      virtualTourImages: newVirtualTourImages,
     });
+
     const newErrors = { ...virtualTourErrors };
     delete newErrors[index];
     setVirtualTourErrors(newErrors);
     const newUploading = { ...uploadingVirtualTour };
     delete newUploading[index];
     setUploadingVirtualTour(newUploading);
+
+    // RE-INDEX Virtual Tour Audit Results
+    const newAuditResults = { ...auditResults };
+    delete newAuditResults[`tour_${index}`];
+
+    const currentTours = formData.virtualTourImages || [];
+    for (let i = index + 1; i <= currentTours.length; i++) {
+      if (newAuditResults[`tour_${i}`]) {
+        newAuditResults[`tour_${i - 1}`] = newAuditResults[`tour_${i}`];
+        delete newAuditResults[`tour_${i}`];
+      }
+    }
+    setAuditResults(newAuditResults);
   };
 
   const handleVirtualTourUrlChange = (index, url) => {

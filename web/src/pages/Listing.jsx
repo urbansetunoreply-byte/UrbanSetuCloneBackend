@@ -1773,9 +1773,11 @@ export default function Listing() {
             >
               {(() => {
                 const images = listing.imageUrls || [];
+                const tourImages = listing.virtualTourImages || [];
                 const videos = listing.videoUrls || [];
                 const mediaItems = [
-                  ...images.map((u) => ({ type: 'image', url: u })),
+                  ...images.map((u, i) => ({ type: 'image', url: u, index: i, tour: false })),
+                  ...tourImages.map((u, i) => ({ type: 'image', url: u, index: i, tour: true })),
                   ...videos.map((u, vi) => ({ type: 'video', url: u, vIndex: vi })),
                 ];
                 return mediaItems.length > 0 ? mediaItems.map((item, index) => (
@@ -2245,6 +2247,52 @@ export default function Listing() {
                           key={listing.virtualTourImages[activeVirtualTourIndex]} // Force re-mount on change
                         />
                       </div>
+
+                      {/* AI Audit tags for 360 viewer */}
+                      {currentUser && (
+                        (() => {
+                          const auditKey = `tour_${activeVirtualTourIndex}`;
+                          const audit = listing.aiAuditResults && (listing.aiAuditResults[auditKey] || (listing.aiAuditResults.get && listing.aiAuditResults.get(auditKey)));
+                          if (!audit) return null;
+
+                          const mainTag = audit.suggestions && audit.suggestions.length > 0 ? audit.suggestions[0] : null;
+                          const quality = audit.quality || {};
+
+                          return (
+                            <div className="absolute top-4 left-4 z-40 pointer-events-none">
+                              <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="flex flex-col gap-2"
+                              >
+                                {mainTag && (
+                                  <div className="flex items-center gap-2 bg-indigo-600/90 backdrop-blur-md text-white px-3 py-1.5 rounded-lg shadow-2xl border border-white/20 w-fit">
+                                    <FaRobot className="text-xs animate-bounce text-blue-300" />
+                                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+                                      AI Deteced: {mainTag}
+                                    </span>
+                                  </div>
+                                )}
+
+                                <div className="flex gap-2">
+                                  {quality.brightness && quality.brightness === 'Good' && (
+                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md backdrop-blur-md border border-green-400/30 bg-green-500/60 text-white text-[9px] sm:text-[10px] font-semibold shadow-lg">
+                                      <FaCheckCircle className="text-[8px] sm:text-[10px]" />
+                                      Pano Light: Good
+                                    </div>
+                                  )}
+                                  {quality.contrast && quality.contrast === 'Good' && (
+                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md backdrop-blur-md border border-indigo-400/30 bg-indigo-500/60 text-white text-[9px] sm:text-[10px] font-semibold shadow-lg">
+                                      <FaCheckCircle className="text-[8px] sm:text-[10px]" />
+                                      Pano Clarity: High
+                                    </div>
+                                  )}
+                                </div>
+                              </motion.div>
+                            </div>
+                          );
+                        })()
+                      )}
 
                       {/* Login Overlay for non-logged in users */}
                       {!currentUser && (
