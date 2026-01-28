@@ -1051,9 +1051,9 @@ export default function AdminCreateListing() {
 
             {/* AI Status Indicator */}
             <div className="flex items-center gap-2 mb-4 p-2 px-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/30">
-              <FaBrain className={`text-blue-600 dark:text-blue-400 ${isAuditing ? 'animate-pulse' : ''}`} />
+              <FaBrain className={`text-blue-600 dark:text-blue-400 ${Object.values(isAuditing).some(v => v) ? 'animate-pulse' : ''}`} />
               <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
-                {isAuditing ? 'AI Auditor: Working...' : 'AI Auditor: Ready'}
+                {Object.values(isAuditing).some(v => v) ? 'AI Auditor: Working...' : 'AI Auditor: Ready'}
               </span>
             </div>
             <div className="space-y-3">
@@ -1083,9 +1083,9 @@ export default function AdminCreateListing() {
                       onClick={() => auditByUrl(url, index, 'main')}
                       className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
                       title="AI Audit this URL"
-                      disabled={!url || isAuditing}
+                      disabled={!url || isAuditing[`main_${index}`]}
                     >
-                      <FaBrain className={isAuditing ? 'animate-spin' : ''} />
+                      <FaBrain className={isAuditing[`main_${index}`] ? 'animate-spin' : ''} />
                     </button>
                     <button
                       type="button"
@@ -1319,9 +1319,9 @@ export default function AdminCreateListing() {
                       onClick={() => auditByUrl(url, index, 'tour')}
                       className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
                       title="AI Audit this 360 URL"
-                      disabled={!url || isAuditing}
+                      disabled={!url || isAuditing[`tour_${index}`]}
                     >
-                      <FaBrain className={isAuditing ? 'animate-spin' : ''} />
+                      <FaBrain className={isAuditing[`tour_${index}`] ? 'animate-spin' : ''} />
                     </button>
                     <button
                       type="button"

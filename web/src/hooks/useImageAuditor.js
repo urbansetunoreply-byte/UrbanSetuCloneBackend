@@ -5,12 +5,12 @@ import { auditImage, loadModel } from '../utils/imageAuditor';
  * Hook to audit images in listing forms
  */
 export const useImageAuditor = () => {
-    const [isAuditing, setIsAuditing] = useState(false);
+    const [isAuditing, setIsAuditing] = useState({}); // Tracking auditing status per index/type
     const [auditResults, setAuditResults] = useState({});
 
     const performAudit = useCallback(async (file, index, type = 'main') => {
-        setIsAuditing(true);
         const key = `${type}_${index}`;
+        setIsAuditing(prev => ({ ...prev, [key]: true }));
 
         try {
             await loadModel();
@@ -34,14 +34,14 @@ export const useImageAuditor = () => {
         } catch (error) {
             console.error('Audit Hook Error:', error);
         } finally {
-            setIsAuditing(false);
+            setIsAuditing(prev => ({ ...prev, [key]: false }));
         }
     }, []);
 
     const auditByUrl = useCallback(async (url, index, type = 'main') => {
         if (!url) return;
-        setIsAuditing(true);
         const key = `${type}_${index}`;
+        setIsAuditing(prev => ({ ...prev, [key]: true }));
 
         try {
             await loadModel();
@@ -62,7 +62,7 @@ export const useImageAuditor = () => {
         } catch (error) {
             console.error('URL Audit Error:', error);
         } finally {
-            setIsAuditing(false);
+            setIsAuditing(prev => ({ ...prev, [key]: false }));
         }
     }, []);
 
@@ -79,7 +79,7 @@ export const useImageAuditor = () => {
         performAudit,
         auditByUrl,
         auditResults,
-        isAuditing,
+        isAuditing, // Now an object: { "main_0": true, "tour_1": false }
         clearAudit
     };
 };
