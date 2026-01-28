@@ -1914,16 +1914,6 @@ export default function Listing() {
                             setShowVideoPreview(true);
                           }
                         }}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (item.type === 'image') {
-                            handleImageClick(index);
-                          } else {
-                            setSelectedVideoIndex(item.vIndex || 0);
-                            setShowVideoPreview(true);
-                          }
-                        }}
                         aria-label={`Expand image ${index + 1}`}
                       />
                     </div>

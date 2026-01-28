@@ -201,11 +201,11 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
             <div className={`absolute top-4 right-4 flex flex-col gap-2 transition-all duration-500 transform ${showControls ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'}`}>
                 <button
                     onClick={handleClose}
-                    className="bg-black/40 hover:bg-red-500/80 backdrop-blur-md p-2.5 rounded-full text-white transition-all shadow-lg hover:rotate-90 active:scale-95"
-                    aria-label="Close"
+                    className="bg-black/40 hover:bg-indigo-600/80 backdrop-blur-md p-2.5 rounded-full text-white transition-all shadow-lg hover:rotate-180 active:scale-95"
+                    aria-label="Reset View"
                     title={isFullscreen ? "Exit Fullscreen" : "Reset View"}
                 >
-                    <FaTimes size={14} />
+                    <FaRedo size={14} />
                 </button>
             </div>
 
