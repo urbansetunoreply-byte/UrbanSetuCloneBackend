@@ -811,13 +811,32 @@ export default function Listing() {
 
     setLoadingSimilar(true);
     try {
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}&visibility=public`);
+      // UPGRADE: Use AI Vector Search for TRUE semantic similarity!
+      const query = `A ${listing.bedrooms} BHK ${listing.type} property in ${listing.city} with ${listing.furnished ? 'furnished' : 'unfurnished'} interior`;
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/ai-search?query=${encodeURIComponent(query)}&limit=5`);
+
       if (res.ok) {
-        const data = await res.json();
-        setSimilarProperties(data.filter(prop => prop._id !== listing._id).slice(0, 3));
+        const responseData = await res.json();
+        if (responseData.success && responseData.data.length > 0) {
+          // Filter out current listing and limit to 3
+          setSimilarProperties(responseData.data.filter(prop => prop._id !== listing._id).slice(0, 3));
+        } else {
+          throw new Error("No AI results found");
+        }
+      } else {
+        throw new Error("AI search failed");
       }
     } catch (error) {
-      console.error('Error fetching similar properties:', error);
+      console.warn('AI search fallback to classic matching:', error.message);
+      try {
+        const resClassic = await authenticatedFetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}&visibility=public`);
+        if (resClassic.ok) {
+          const data = await resClassic.json();
+          setSimilarProperties(data.filter(prop => prop._id !== listing._id).slice(0, 3));
+        }
+      } catch (fbError) {
+        console.error('Classic fallback failed:', fbError);
+      }
     } finally {
       setLoadingSimilar(false);
     }

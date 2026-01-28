@@ -77,17 +77,21 @@ export const generateEmbedding = async (text) => {
 export const createListingDescription = (listing) => {
     // Combine all relevant fields into a semantic paragraph
     // This gives the AI context about "vibe", "location", and "features"
+    const esgInfo = listing.esg?.esgScore ? `ESG Rating: ${listing.esg.esgRating || 'B'} with a sustainability score of ${listing.esg.esgScore}/100.` : "";
+    const localityInfo = listing.localityScore?.overall ? `Locality safety score: ${listing.localityScore.safety}/10, with overall accessibility: ${listing.localityScore.overall}/10.` : "";
+    const furnishInfo = listing.furnished ? 'fully furnished with modern appliances' : 'unfurnished, offering a blank canvas';
 
     return `
-        Property Name: ${listing.name}.
+        Property: ${listing.name}.
+        Location: ${listing.city}, ${listing.district}, ${listing.state}. Area: ${listing.address || listing.landmark || 'central location'}.
+        Financials: ${listing.type === 'rent' ? 'Monthly rental' : 'For sale'} at ${listing.offer ? listing.discountPrice : listing.regularPrice} INR.
+        Space: ${listing.bedrooms} BHK (${listing.bedrooms} Bed, ${listing.bathrooms} Bath). Floor: ${listing.floor || 'Ground'} level.
         Description: ${listing.description}.
-        Type: ${listing.type} property in ${listing.city}, ${listing.state}.
-        Location: ${listing.address}.
-        Features: ${listing.bedrooms} Bedrooms, ${listing.bathrooms} Bathrooms, ${listing.area || 'unknown'} sq ft.
-        Price: ${listing.offer ? listing.discountPrice : listing.regularPrice} INR.
-        Amenities: ${listing.furnished ? 'Furnished' : 'Unfurnished'}, ${listing.parking ? 'Parking available' : 'No parking'}.
-        Vibe: ${listing.description.includes('modern') ? 'Modern' : 'Traditional'} style living.
-    `.trim();
+        Amenities: ${furnishInfo}, ${listing.parking ? 'dedicated parking spaces available' : 'no parking'}.
+        ${esgInfo}
+        ${localityInfo}
+        Style: High-end quality with ${listing.description.toLowerCase().includes('luxury') ? 'luxury' : 'standard'} finishes.
+    `.trim().replace(/\s\s+/g, ' ');
 };
 
 /**
@@ -123,35 +127,51 @@ export const cosineSimilarity = (vecA, vecB) => {
  * @param {number} limit - Number of results
  * @returns {Promise<Array>} Sorted listings
  */
-export const vectorSearchListings = async (queryText, limit = 5) => {
+export const vectorSearchListings = async (queryText, limit = 10) => {
     try {
-        // 1. Generate vector for the user's query
         const queryVector = await generateEmbedding(queryText);
         if (!queryVector) return [];
 
-        // 2. Fetch all listings with embeddings (Pro-tip: In production, use Pinecone/MongoDB Atlas Vector Search)
-        // Since we are using standard MongoDB for now, we have to fetch and calculate in-memory.
-        // This is fine for < 5000 listings.
-
+        // 1. Fetch relevant listings with embeddings
+        // We select more fields here so the frontend has everything it needs
         const listings = await Listing.find({
             vectorEmbedding: { $exists: true, $ne: [] },
-            visibility: 'public' // Only show public listings
-        }).select('+vectorEmbedding name description city regularPrice imageUrls type bedrooms bathrooms area');
+            visibility: 'public'
+        }).select('+vectorEmbedding name description city regularPrice discountPrice offer imageUrls type bedrooms bathrooms area floor furnished parking isVerified');
 
-        // 3. Calculate similarity scores
+        // 2. Identify explicit city mention for weighing (Manual Boost)
+        const qLower = queryText.toLowerCase();
+
+        // 3. Calculate similarity and apply heuristic boosts
         const scoredListings = listings.map(listing => {
-            const score = cosineSimilarity(queryVector, listing.vectorEmbedding);
+            let score = cosineSimilarity(queryVector, listing.vectorEmbedding);
+
+            // Boost for exact city match if mentioned in query
+            if (qLower.includes(listing.city.toLowerCase())) {
+                score += 0.05; // 5% relevance boost for correct location
+            }
+
+            // Boost for bhk match if mentioned (e.g. "3 bhk")
+            const bhkMatch = qLower.match(/(\d+)\s*bhk/);
+            if (bhkMatch && parseInt(bhkMatch[1]) === listing.bedrooms) {
+                score += 0.03;
+            }
+
             return {
                 ...listing.toObject(),
-                similarityScore: score
+                similarityScore: Math.min(score, 1) // Cap at 1.0
             };
         });
 
-        // 4. Sort by highest similarity
-        scoredListings.sort((a, b) => b.similarityScore - a.similarityScore);
+        // 4. Threshold Filter: Only return reasonably relevant matches
+        // Similarity < 0.35 is usually irrelevant noise for MiniLM-L6
+        const MIN_THRESHOLD = 0.35;
+        const validListings = scoredListings.filter(l => l.similarityScore >= MIN_THRESHOLD);
 
-        // 5. Return top N results (removing the heavy vector data)
-        return scoredListings.slice(0, limit).map(({ vectorEmbedding, ...rest }) => rest);
+        // 5. Sort and Limit
+        validListings.sort((a, b) => b.similarityScore - a.similarityScore);
+
+        return validListings.slice(0, limit).map(({ vectorEmbedding, ...rest }) => rest);
 
     } catch (error) {
         console.error("Vector Search Error:", error);

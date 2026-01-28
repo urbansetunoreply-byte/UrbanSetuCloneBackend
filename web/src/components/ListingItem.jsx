@@ -133,7 +133,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
       <Link to={listingLink}>
         <div className="relative">
           {listing.imageUrls && listing.imageUrls.length > 0 ? (
-            <div className="aspect-[16/10] w-full overflow-hidden">
+            <div className="aspect-[16/10] w-full overflow-hidden relative">
               <img
                 src={listing.imageUrls[0]}
                 alt={listing.name || "Real Estate Property"}
@@ -143,6 +143,22 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
                   e.target.className = "h-full w-full object-cover opacity-50";
                 }}
               />
+              {/* AI Match Overlay */}
+              {listing.similarityScore && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 flex-grow bg-white/30 rounded-full overflow-hidden backdrop-blur-sm">
+                      <div
+                        className="h-full bg-gradient-to-r from-purple-400 to-pink-500 shadow-[0_0_10px_rgba(236,72,153,0.5)]"
+                        style={{ width: `${listing.similarityScore * 100}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-bold text-white font-mono text-shadow-sm">
+                      {(listing.similarityScore * 100).toFixed(0)}% Match
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="aspect-[16/10] w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">

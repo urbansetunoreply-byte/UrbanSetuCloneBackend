@@ -72,6 +72,10 @@ export default function Search() {
             city: urlParams.get("city") || "",
         });
 
+        // Initialize AI mode from URL
+        const isAiMode = urlParams.get("mode") === "ai";
+        setUseAI(isAiMode);
+
         const fetchListings = async () => {
             setLoading(true);
             setError(null);
@@ -798,61 +802,87 @@ export default function Search() {
                 </div>
 
                 <div className="max-w-7xl mx-auto text-center relative z-20 animate-slideInFromTop">
-                    <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
-                        Explore <span className="text-yellow-300">Properties</span>
+                    <h1 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter drop-shadow-2xl">
+                        Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400">Sanctuary</span>
                     </h1>
-                    <p className="text-blue-100 mb-8 text-lg max-w-2xl mx-auto font-light">
-                        Use our AI-powered smart search or detailed filters to find your home.
-                    </p>
 
-                    {/* Smart Search Section */}
-                    <div className="max-w-4xl mx-auto mb-8 relative z-30">
-                        <div className="text-left mb-2 pl-2 animate-fade-in">
-                            <span className="text-blue-100 font-semibold text-sm flex items-center gap-2">
-                                <span className="bg-white/20 p-1 rounded-full"><svg className="w-3 h-3 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></span>
-                                Smart Search (Natural Language)
-                            </span>
+                    {/* AI Toggle Stick */}
+                    <div className="flex justify-center mb-8">
+                        <div className="bg-white/10 backdrop-blur-md p-1 rounded-full border border-white/20 inline-flex relative">
+                            <button
+                                onClick={() => {
+                                    setUseAI(false);
+                                    const params = new URLSearchParams(location.search);
+                                    params.delete("mode");
+                                    navigate(`?${params.toString()}`);
+                                }}
+                                className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${!useAI ? 'bg-white text-blue-600 shadow-lg' : 'text-blue-100 hover:text-white'}`}
+                            >
+                                Classic
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setUseAI(true);
+                                    const params = new URLSearchParams(location.search);
+                                    params.set("mode", "ai");
+                                    navigate(`?${params.toString()}`);
+                                }}
+                                className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all ${useAI ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/30' : 'text-blue-100 hover:text-white'}`}
+                            >
+                                <Sparkles size={14} className={useAI ? "animate-pulse" : ""} /> Setu AI
+                            </button>
                         </div>
-                        <form onSubmit={applySmartQuery} className="relative group">
-                            <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-2xl hover:bg-white/20 transition-all duration-300 flex flex-col md:flex-row gap-2">
-                                <div className="relative flex-grow">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <svg className="h-6 w-6 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                        </svg>
-                                    </div>
-                                    <input
-                                        value={smartQuery}
-                                        onChange={(e) => setSmartQuery(e.target.value)}
-                                        placeholder="Try '3BHK in Mumbai under 50k rent'..."
-                                        className="block w-full pl-12 pr-4 py-4 border-none rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-0 focus:bg-white dark:focus:bg-gray-800 transition-colors text-lg"
-                                    />
-                                </div>
-                                <button type="submit" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transform hover:-translate-y-1 transition-all duration-300 min-w-[120px]">
-                                    AI Search
-                                </button>
-                            </div>
-                            <div className="mt-3 flex flex-wrap justify-center gap-2">
-                                <span className="text-xs text-blue-100 uppercase tracking-widest font-semibold py-1">Try:</span>
-                                {[
-                                    "2BHK in Bangalore",
-                                    "Furnished apartment near metro",
-                                    "Budget house for rent"
-                                ].map((suggestion, index) => (
-                                    <button
-                                        key={index}
-                                        type="button"
-                                        onClick={() => setSmartQuery(suggestion)}
-                                        className="text-xs bg-white/20 border border-white/30 text-white px-3 py-1 rounded-full hover:bg-white/30 transition-colors duration-200 backdrop-blur-sm"
-                                    >
-                                        {suggestion}
-                                    </button>
-                                ))}
-                            </div>
-                        </form>
                     </div>
+
+                    <form onSubmit={useAI ? handleSubmit : applySmartQuery} className="max-w-3xl mx-auto relative group">
+                        <div className={`relative flex items-center bg-white dark:bg-gray-800 rounded-full p-2 transition-all duration-500 ${useAI ? 'shadow-[0_0_50px_-10px_rgba(168,85,247,0.5)] border-2 border-purple-500/50' : 'shadow-2xl border-4 border-white/20'}`}>
+
+                            <div className="pl-6 text-gray-400">
+                                {useAI ? <Sparkles className="text-purple-500 animate-pulse" /> : <SearchIcon />}
+                            </div>
+
+                            <input
+                                type="text"
+                                placeholder={useAI ? "Describe your dream home... (e.g., 'Modern villa near a park with morning sunlight')" : "Enter an address, neighborhood, city, or ZIP code"}
+                                className="w-full bg-transparent border-none focus:ring-0 text-gray-700 dark:text-gray-200 placeholder-gray-400 text-sm sm:text-lg h-12 sm:h-14 font-medium"
+                                value={useAI ? formData.searchTerm : smartQuery}
+                                onChange={useAI ? handleChanges : (e) => setSmartQuery(e.target.value)}
+                                name={useAI ? "searchTerm" : "smartQuery"}
+                                autoComplete="off"
+                                onFocus={handleSearchInputFocus}
+                                onBlur={handleSearchInputBlur}
+                            />
+
+                            <button className={`h-12 w-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-transform transform active:scale-95 ${useAI ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:rotate-12' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                                {useAI ? <Sparkles size={20} /> : <SearchIcon size={20} />}
+                            </button>
+
+                            <SearchSuggestions
+                                searchTerm={useAI ? formData.searchTerm : smartQuery}
+                                onSuggestionClick={(s) => {
+                                    if (useAI) {
+                                        setFormData(p => ({ ...p, searchTerm: s.displayText }));
+                                    } else {
+                                        setSmartQuery(s.displayText);
+                                    }
+                                    handleSuggestionClick(s);
+                                }}
+                                onClose={() => setShowSuggestions(false)}
+                                isVisible={showSuggestions}
+                            />
+                        </div>
+                        {useAI && (
+                            <div className="absolute -bottom-8 left-0 right-0 text-center">
+                                <span className="text-[10px] font-bold text-purple-200 uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
+                                    Vector Semantic Search Active
+                                </span>
+                            </div>
+                        )}
+                    </form>
                 </div>
+
             </div>
+
 
             {/* Main Content Area */}
             <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-20 relative z-10 pb-20">
@@ -1147,107 +1177,109 @@ export default function Search() {
             </main>
 
             {/* Mobile Filters Drawer */}
-            {isFiltersOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm md:hidden" onClick={() => setIsFiltersOpen(false)}>
-                    <div className="absolute right-0 top-0 h-full w-4/5 max-w-sm bg-white dark:bg-gray-900 shadow-2xl p-6 flex flex-col gap-4 overflow-y-auto animate-slide-in-right transition-colors duration-300" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-4 border-b dark:border-gray-800 pb-4">
-                            <h2 className="text-xl font-bold text-gray-800 dark:text-white">Filter Properties</h2>
-                            <button onClick={() => setIsFiltersOpen(false)} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">Close</button>
-                        </div>
-
-                        {/* Mobile Search Term */}
-                        <div className="mb-2">
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Search Keyword</label>
-                            <div className="relative">
-                                <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    name="searchTerm"
-                                    value={formData.searchTerm}
-                                    onChange={handleChanges}
-                                    placeholder="Search..."
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                                />
+            {
+                isFiltersOpen && (
+                    <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm md:hidden" onClick={() => setIsFiltersOpen(false)}>
+                        <div className="absolute right-0 top-0 h-full w-4/5 max-w-sm bg-white dark:bg-gray-900 shadow-2xl p-6 flex flex-col gap-4 overflow-y-auto animate-slide-in-right transition-colors duration-300" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-between items-center mb-4 border-b dark:border-gray-800 pb-4">
+                                <h2 className="text-xl font-bold text-gray-800 dark:text-white">Filter Properties</h2>
+                                <button onClick={() => setIsFiltersOpen(false)} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">Close</button>
                             </div>
-                        </div>
 
-                        {/* Mobile Location Selector */}
-                        <div className="mb-2">
-                            <LocationSelector value={locationFilter} onChange={handleLocationChange} />
-                        </div>
+                            {/* Mobile Search Term */}
+                            <div className="mb-2">
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Search Keyword</label>
+                                <div className="relative">
+                                    <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        name="searchTerm"
+                                        value={formData.searchTerm}
+                                        onChange={handleChanges}
+                                        placeholder="Search..."
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
 
-                        {/* Mobile Type Filter */}
-                        <div className="mb-2">
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Property Type</label>
-                            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-                                {['all', 'rent', 'sale'].map((t) => (
-                                    <button
-                                        key={t}
-                                        type="button"
-                                        onClick={() => setFormData(prev => ({ ...prev, type: t }))}
-                                        className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
-                                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                                            }`}
-                                    >
-                                        {t}
-                                    </button>
+                            {/* Mobile Location Selector */}
+                            <div className="mb-2">
+                                <LocationSelector value={locationFilter} onChange={handleLocationChange} />
+                            </div>
+
+                            {/* Mobile Type Filter */}
+                            <div className="mb-2">
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Property Type</label>
+                                <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+                                    {['all', 'rent', 'sale'].map((t) => (
+                                        <button
+                                            key={t}
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, type: t }))}
+                                            className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
+                                                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                                }`}
+                                        >
+                                            {t}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Mobile Detailed Filters */}
+                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-2">
+                                <label className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-200">Price & Size</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <input type="number" name="minPrice" placeholder="Min ₹" value={formData.minPrice} onChange={handleChanges} className="p-2 border dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                    <input type="number" name="maxPrice" placeholder="Max ₹" value={formData.maxPrice} onChange={handleChanges} className="p-2 border dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                    <input type="number" name="bedrooms" placeholder="Beds" value={formData.bedrooms} onChange={handleChanges} className="p-2 border dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                    <input type="number" name="bathrooms" placeholder="Baths" value={formData.bathrooms} onChange={handleChanges} className="p-2 border dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                </div>
+                            </div>
+
+                            {/* Mobile Checkboxes */}
+                            <div className="flex flex-col gap-3 mb-4">
+                                {['parking', 'furnished', 'offer'].map(item => (
+                                    <label key={item} className="flex items-center gap-2">
+                                        <input type="checkbox" name={item} checked={formData[item]} onChange={handleChanges} className="w-5 h-5 accent-blue-600" />
+                                        <span className="capitalize text-gray-700 dark:text-gray-300 font-medium">{item}</span>
+                                    </label>
                                 ))}
                             </div>
+
+                            {/* Mobile Sort */}
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
+                            <select
+                                className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all mb-4"
+                                onChange={(e) => {
+                                    const [sort, order] = e.target.value.split("_");
+                                    setFormData((prev) => ({ ...prev, sort, order }));
+                                }}
+                                value={`${formData.sort}_${formData.order}`}
+                            >
+                                <option value="regularPrice_desc">Price: High to Low</option>
+                                <option value="regularPrice_asc">Price: Low to High</option>
+                                <option value="createdAt_desc">Newest First</option>
+                                <option value="createdAt_asc">Oldest First</option>
+                            </select>
+
+                            <button
+                                onClick={(e) => {
+                                    handleSubmit(e);
+                                    setIsFiltersOpen(false);
+                                }}
+                                className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold mt-2 shadow-md"
+                            >
+                                Apply Filters
+                            </button>
                         </div>
-
-                        {/* Mobile Detailed Filters */}
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-2">
-                            <label className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-200">Price & Size</label>
-                            <div className="grid grid-cols-2 gap-3">
-                                <input type="number" name="minPrice" placeholder="Min ₹" value={formData.minPrice} onChange={handleChanges} className="p-2 border dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
-                                <input type="number" name="maxPrice" placeholder="Max ₹" value={formData.maxPrice} onChange={handleChanges} className="p-2 border dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
-                                <input type="number" name="bedrooms" placeholder="Beds" value={formData.bedrooms} onChange={handleChanges} className="p-2 border dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
-                                <input type="number" name="bathrooms" placeholder="Baths" value={formData.bathrooms} onChange={handleChanges} className="p-2 border dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
-                            </div>
-                        </div>
-
-                        {/* Mobile Checkboxes */}
-                        <div className="flex flex-col gap-3 mb-4">
-                            {['parking', 'furnished', 'offer'].map(item => (
-                                <label key={item} className="flex items-center gap-2">
-                                    <input type="checkbox" name={item} checked={formData[item]} onChange={handleChanges} className="w-5 h-5 accent-blue-600" />
-                                    <span className="capitalize text-gray-700 dark:text-gray-300 font-medium">{item}</span>
-                                </label>
-                            ))}
-                        </div>
-
-                        {/* Mobile Sort */}
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
-                        <select
-                            className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all mb-4"
-                            onChange={(e) => {
-                                const [sort, order] = e.target.value.split("_");
-                                setFormData((prev) => ({ ...prev, sort, order }));
-                            }}
-                            value={`${formData.sort}_${formData.order}`}
-                        >
-                            <option value="regularPrice_desc">Price: High to Low</option>
-                            <option value="regularPrice_asc">Price: Low to High</option>
-                            <option value="createdAt_desc">Newest First</option>
-                            <option value="createdAt_asc">Oldest First</option>
-                        </select>
-
-                        <button
-                            onClick={(e) => {
-                                handleSubmit(e);
-                                setIsFiltersOpen(false);
-                            }}
-                            className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold mt-2 shadow-md"
-                        >
-                            Apply Filters
-                        </button>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <GeminiAIWrapper />
             <ContactSupportWrapper />
-        </div>
+        </div >
     );
 }

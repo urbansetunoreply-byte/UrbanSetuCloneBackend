@@ -10,7 +10,7 @@ import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, s
 import DeletedListing from "../models/deletedListing.model.js"
 import crypto from 'crypto'
 import PropertyVerification from "../models/propertyVerification.model.js";
-import { vectorSearchListings } from "../services/vectorSearchService.js";
+import { vectorSearchListings, generateEmbedding, createListingDescription } from "../services/vectorSearchService.js";
 
 
 export const createListing = async (req, res, next) => {
@@ -40,13 +40,24 @@ export const createListing = async (req, res, next) => {
       userRef = targetUser._id;
     }
 
+    // Generate AI Vector Embedding for search
+    let vectorEmbedding = [];
+    try {
+      const descriptionText = createListingDescription({ ...listingData, userRef });
+      vectorEmbedding = await generateEmbedding(descriptionText) || [];
+      console.log(`🧠 AI Vector generated for ${listingData.name} (${vectorEmbedding.length} dims)`);
+    } catch (embErr) {
+      console.error("Embedding generation failed during creation:", embErr.message);
+    }
+
     // Create the listing with the determined user reference
     // New properties are private and unverified by default
     const listing = await Listing.create({
       ...listingData,
       userRef: userRef,
       isVerified: false,
-      visibility: 'private'
+      visibility: 'private',
+      vectorEmbedding: vectorEmbedding
     });
 
     // Debug saved ESG data
@@ -633,18 +644,33 @@ export const updateListing = async (req, res, next) => {
       }
     }
 
-    const updateListing = await Listing.findByIdAndUpdate(req.params.id, updateData, { new: true })
+    // Check for changes affecting AI Search embedding
+    const searchRelevantFields = ['name', 'description', 'city', 'state', 'regularPrice', 'discountPrice', 'type', 'bedrooms', 'bathrooms', 'furnished'];
+    const hasSearchChanges = searchRelevantFields.some(f => req.body[f] !== undefined && req.body[f] !== listing[f]);
+
+    if (hasSearchChanges) {
+      try {
+        const updatedCopy = { ...listing.toObject(), ...updateData };
+        const descriptionText = createListingDescription(updatedCopy);
+        updateData.vectorEmbedding = await generateEmbedding(descriptionText);
+        console.log(`🆕 AI Vector REGENERATED for ${listing.name}`);
+      } catch (embErr) {
+        console.error("Embedding regeneration failed during update:", embErr.message);
+      }
+    }
+
+    const updatedListing = await Listing.findByIdAndUpdate(req.params.id, updateData, { new: true })
 
     // Debug updated ESG data
-    console.log('💾 UpdateListing - ESG data saved:', JSON.stringify(updateListing.esg, null, 2));
+    console.log('💾 UpdateListing - ESG data saved:', JSON.stringify(updatedListing.esg, null, 2));
 
     // Notify watchers if price dropped
     try {
-      const newRegular = updateListing.regularPrice;
-      const newDiscount = updateListing.discountPrice;
-      const newEffective = (updateListing.offer && newDiscount) ? newDiscount : newRegular;
+      const newRegular = updatedListing.regularPrice;
+      const newDiscount = updatedListing.discountPrice;
+      const newEffective = (updatedListing.offer && newDiscount) ? newDiscount : newRegular;
       if (oldEffective && newEffective && newEffective < oldEffective) {
-        await notifyWatchersOnChange(req.app, { listing: updateListing, changeType: 'price_drop', oldPrice: oldEffective, newPrice: newEffective });
+        await notifyWatchersOnChange(req.app, { listing: updatedListing, changeType: 'price_drop', oldPrice: oldEffective, newPrice: newEffective });
       }
     } catch (e) {
       console.error('Failed to notify watchers on price change:', e);

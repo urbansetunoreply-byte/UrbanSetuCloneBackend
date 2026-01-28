@@ -56,6 +56,7 @@ export default function AdminExplore() {
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [locationFilter, setLocationFilter] = useState({ state: "", district: "", city: "" });
+  const [isAiMode, setIsAiMode] = useState(false); // Track if we are showing AI results
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -143,6 +144,8 @@ export default function AdminExplore() {
     setLocationFilter({ state: "", district: "", city: "" });
     navigate(`?`);
     setIsFiltersOpen(false);
+    setIsAiMode(false);
+    setSmartQuery("");
   };
 
   const handleLocationChange = (loc) => {
@@ -208,35 +211,33 @@ export default function AdminExplore() {
     }
   };
 
-  const applySmartQuery = (e) => {
-    e.preventDefault();
-    const natural = (smartQuery || '').trim();
+  const applySmartQuery = async (e, directQuery = null) => {
+    if (e) e.preventDefault();
+    const natural = (directQuery || smartQuery || '').trim();
     if (!natural) return;
 
-    // Simplistic NLP extraction (usually handled by backend, but here is frontend logic)
-    const extracted = { ...formData };
+    setLoading(true);
+    setIsAiMode(true);
+    if (directQuery) setSmartQuery(directQuery);
 
-    // BHK extraction
-    const bhkMatch = natural.match(/(\d+)\s*(bhk|bed|bedroom)/i);
-    if (bhkMatch) extracted.bedrooms = bhkMatch[1];
+    try {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/ai-search?query=${encodeURIComponent(natural)}&limit=20`);
+      const responseData = await res.json();
 
-    // Price extraction (Cr, L, K)
-    const priceMatch = natural.match(/(?:under|below|max|upto)\s*(\d+)\s*(cr|l|lac|lakh|k)?/i);
-    if (priceMatch) {
-      let val = parseInt(priceMatch[1]);
-      const unit = (priceMatch[2] || '').toLowerCase();
-      if (unit === 'cr') val *= 10000000;
-      else if (unit === 'l' || unit === 'lac' || unit === 'lakh') val *= 100000;
-      else if (unit === 'k') val *= 1000;
-      extracted.maxPrice = val.toString();
+      if (responseData.success) {
+        setListings(responseData.data);
+        setShowMoreListing(false); // Vector search results are usually fixed size
+        toast.success(`Setu AI found ${responseData.data.length} semantic matches`);
+      } else {
+        toast.error("AI Search failed to process query.");
+        setListings([]);
+      }
+    } catch (err) {
+      console.error("AI Search Error:", err);
+      toast.error("Setu AI is currently unreachable.");
+    } finally {
+      setLoading(false);
     }
-
-    // Type extraction
-    if (/rent|rental|lease/i.test(natural)) extracted.type = 'rent';
-    else if (/buy|sale|purchase/i.test(natural)) extracted.type = 'sale';
-
-    const urlParams = new URLSearchParams(extracted);
-    navigate(`?${urlParams.toString()}`);
   };
 
   const showMoreListingClick = async () => {
@@ -266,6 +267,16 @@ export default function AdminExplore() {
             Advanced Administrative Portal for Real-Time Asset Management & Exploration.
           </p>
 
+          {/* AI Banner */}
+          {isAiMode && (
+            <div className="mb-6 flex justify-center animate-fade-in-down">
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 px-6 py-2 rounded-full font-black uppercase text-[10px] tracking-widest flex items-center gap-2 shadow-xl">
+                <Grid className="animate-spin-slow" /> VECTOR SEARCH ACTIVE
+                <button onClick={clearAllFilters} className="ml-4 hover:text-white transition-colors"><FaTimes /></button>
+              </div>
+            </div>
+          )}
+
           {/* AI Search Bar */}
           <div className="max-w-4xl mx-auto relative z-30 group">
             <form onSubmit={applySmartQuery} className="relative">
@@ -286,6 +297,24 @@ export default function AdminExplore() {
                 </button>
               </div>
             </form>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-3 animate-fade-in">
+              <span className="text-[10px] font-black text-blue-200 uppercase tracking-[0.2em] py-2">Quick Scans:</span>
+              {[
+                { label: "High ROI Assets", query: "properties with high ROI and market growth potential" },
+                { label: "Luxury Inventory", query: "premium penthouses and villas with luxury amenities" },
+                { label: "Eco-Rating AAA", query: "AAA ESG rated properties with solar energy" },
+                { label: "Distressed Properties", query: "fixer upper properties with budget pricing" }
+              ].map((s, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => applySmartQuery(null, s.query)}
+                  className="text-[10px] bg-white/10 hover:bg-white/20 border border-white/10 text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all backdrop-blur-md active:scale-95"
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
