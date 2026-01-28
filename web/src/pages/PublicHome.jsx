@@ -60,7 +60,7 @@ export default function PublicHome() {
         "@type": "Organization",
         "name": "UrbanSetu",
         "url": window.location.origin + "/",
-        "logo": window.location.origin + "/logo.png",
+        "logo": window.location.origin + "/favicon.ico",
         "sameAs": [
           "https://facebook.com/urbansetu",
           "https://instagram.com/urbansetu",
