@@ -8,8 +8,9 @@ export const useImageAuditor = () => {
     const [isAuditing, setIsAuditing] = useState(false);
     const [auditResults, setAuditResults] = useState({});
 
-    const performAudit = useCallback(async (file, index) => {
+    const performAudit = useCallback(async (file, index, type = 'main') => {
         setIsAuditing(true);
+        const key = `${type}_${index}`;
 
         try {
             await loadModel();
@@ -23,7 +24,7 @@ export const useImageAuditor = () => {
                         const result = await auditImage(img);
                         setAuditResults(prev => ({
                             ...prev,
-                            [index]: result
+                            [key]: result
                         }));
                         resolve();
                     };
@@ -37,20 +38,22 @@ export const useImageAuditor = () => {
         }
     }, []);
 
-    const auditByUrl = useCallback(async (url, index) => {
+    const auditByUrl = useCallback(async (url, index, type = 'main') => {
         if (!url) return;
         setIsAuditing(true);
+        const key = `${type}_${index}`;
+
         try {
             await loadModel();
             const img = new Image();
-            img.crossOrigin = "anonymous"; // Try to handle CORS
+            img.crossOrigin = "anonymous";
             img.src = url;
             await new Promise((resolve, reject) => {
                 img.onload = async () => {
                     const result = await auditImage(img);
                     setAuditResults(prev => ({
                         ...prev,
-                        [index]: result
+                        [key]: result
                     }));
                     resolve();
                 };
@@ -63,10 +66,11 @@ export const useImageAuditor = () => {
         }
     }, []);
 
-    const clearAudit = (index) => {
+    const clearAudit = (index, type = 'main') => {
+        const key = `${type}_${index}`;
         setAuditResults(prev => {
             const next = { ...prev };
-            delete next[index];
+            delete next[key];
             return next;
         });
     };

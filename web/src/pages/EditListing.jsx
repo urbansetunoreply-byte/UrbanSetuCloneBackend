@@ -191,7 +191,7 @@ export default function EditListing() {
 
     // Trigger AI Audit for URL
     if (url && validateImageUrl(url)) {
-      auditByUrl(url, index);
+      auditByUrl(url, index, 'main');
     }
   };
 
@@ -246,6 +246,9 @@ export default function EditListing() {
       });
       const data = await res.json();
       if (res.ok) {
+        // Perform AI Audit
+        performAudit(file, index, 'tour');
+
         const newVirtualTourImages = [...(formData.virtualTourImages || [])];
         newVirtualTourImages[index] = data.imageUrl;
         setFormData(prev => ({ ...prev, virtualTourImages: newVirtualTourImages }));
@@ -282,6 +285,11 @@ export default function EditListing() {
     const newImages = [...(formData.virtualTourImages || [])];
     newImages[index] = url;
     setFormData({ ...formData, virtualTourImages: newImages });
+
+    // Trigger AI Audit for 360 URL
+    if (url && validateImageUrl(url)) {
+      auditByUrl(url, index, 'tour');
+    }
   };
 
 
@@ -316,7 +324,7 @@ export default function EditListing() {
 
       if (res.ok) {
         // Perform AI Audit
-        performAudit(file, index);
+        performAudit(file, index, 'main');
 
         // Update the image URL with the uploaded image URL
         const newImageUrls = [...formData.imageUrls];
@@ -963,7 +971,7 @@ export default function EditListing() {
                     </label>
                     <button
                       type="button"
-                      onClick={() => auditByUrl(url, index)}
+                      onClick={() => auditByUrl(url, index, 'main')}
                       className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
                       title="AI Audit this URL"
                       disabled={!url || isAuditing}
@@ -1020,7 +1028,7 @@ export default function EditListing() {
                           </button>
 
                           {/* AI status badge */}
-                          {auditResults[index] && (
+                          {auditResults[`main_${index}`] && (
                             <div className="absolute bottom-2 left-2 bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
                               <FaBrain className="animate-pulse" size={10} />
                               AI AUDITED
@@ -1029,13 +1037,13 @@ export default function EditListing() {
                         </div>
 
                         {/* AI Audit Detailed Results */}
-                        {auditResults[index] && (
+                        {auditResults[`main_${index}`] && (
                           <div className="p-3 space-y-2 text-xs">
                             <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-700 pb-2">
                               <span className="text-gray-500 font-medium">Auto-Detection:</span>
                               <div className="flex gap-1 flex-wrap justify-end">
-                                {auditResults[index].suggestions.length > 0 ? (
-                                  auditResults[index].suggestions.map(tag => (
+                                {auditResults[`main_${index}`].suggestions.length > 0 ? (
+                                  auditResults[`main_${index}`].suggestions.map(tag => (
                                     <span key={tag} className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
                                       {tag}
                                     </span>
@@ -1048,27 +1056,27 @@ export default function EditListing() {
 
                             <div className="grid grid-cols-2 gap-2">
                               <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/40">
-                                {auditResults[index].quality.brightness === 'Good' ? (
+                                {auditResults[`main_${index}`].quality.brightness === 'Good' ? (
                                   <FaCheckCircle className="text-green-500" />
                                 ) : (
                                   <FaExclamationTriangle className="text-amber-500" />
                                 )}
-                                <span className="text-gray-600 dark:text-gray-400">Light: {auditResults[index].quality.brightness}</span>
+                                <span className="text-gray-600 dark:text-gray-400">Light: {auditResults[`main_${index}`].quality.brightness}</span>
                               </div>
                               <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/40">
-                                {auditResults[index].quality.contrast === 'Good' ? (
+                                {auditResults[`main_${index}`].quality.contrast === 'Good' ? (
                                   <FaCheckCircle className="text-green-500" />
                                 ) : (
                                   <FaExclamationTriangle className="text-amber-500" />
                                 )}
-                                <span className="text-gray-600 dark:text-gray-400">Contrast: {auditResults[index].quality.contrast}</span>
+                                <span className="text-gray-600 dark:text-gray-400">Contrast: {auditResults[`main_${index}`].quality.contrast}</span>
                               </div>
                             </div>
 
-                            {auditResults[index].suggestions.length > 0 && (
+                            {auditResults[`main_${index}`].suggestions.length > 0 && (
                               <div className="flex items-start gap-1.5 mt-1 bg-amber-50 dark:bg-amber-900/20 p-1.5 rounded-lg text-amber-800 dark:text-amber-300">
                                 <FaLightbulb className="flex-shrink-0 mt-0.5" />
-                                <p className="leading-tight">AI thinks this is a <strong>{auditResults[index].suggestions[0]}</strong>. Consider mentioning this in description!</p>
+                                <p className="leading-tight">AI thinks this is a <strong>{auditResults[`main_${index}`].suggestions[0]}</strong>. Consider mentioning this in description!</p>
                               </div>
                             )}
                           </div>
@@ -1224,6 +1232,15 @@ export default function EditListing() {
                       </label>
                       <button
                         type="button"
+                        onClick={() => auditByUrl(url, index, 'tour')}
+                        className="p-3 border-2 border-dashed border-blue-400 dark:border-blue-900/50 rounded-lg cursor-pointer hover:border-blue-500 transition-all flex items-center justify-center"
+                        title="AI Audit this 360 URL"
+                        disabled={!url || isAuditing}
+                      >
+                        <FaBrain className={isAuditing ? 'animate-spin text-blue-500' : 'text-blue-500'} />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => onHandleRemoveVirtualTour(index)}
                         className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition"
                         title="Remove 360 image"
@@ -1235,9 +1252,49 @@ export default function EditListing() {
                       <p className="text-red-500 text-sm">{virtualTourErrors[index]}</p>
                     )}
                     {url && (
-                      <div className="mt-2">
-                        <p className="text-xs text-green-600 dark:text-green-400 font-semibold mb-1">✓ 360° Image Ready</p>
-                        <img src={url} alt="360 Preview" className="h-20 w-auto rounded border border-gray-300 dark:border-gray-700 object-cover" />
+                      <div className="mt-2 flex flex-col md:flex-row gap-4 bg-white dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                        <div className="relative group flex-shrink-0">
+                          <img src={url} alt="360 Preview" className="h-24 w-32 rounded border border-gray-300 dark:border-gray-700 object-cover" />
+                          {auditResults[`tour_${index}`] && (
+                            <div className="absolute bottom-1 left-1 bg-blue-600/90 backdrop-blur-sm text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                              <FaBrain size={8} /> AI
+                            </div>
+                          )}
+                        </div>
+
+                        {auditResults[`tour_${index}`] && (
+                          <div className="flex-1 space-y-1.5 text-[11px]">
+                            <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-700 pb-1">
+                              <span className="text-gray-500 transition-colors">AI Detection:</span>
+                              <div className="flex gap-1 flex-wrap justify-end">
+                                {auditResults[`tour_${index}`].suggestions.length > 0 ? (
+                                  auditResults[`tour_${index}`].suggestions.map(tag => (
+                                    <span key={tag} className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase">
+                                      {tag}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-gray-400 italic">Unidentified</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400 transition-colors">
+                                {auditResults[`tour_${index}`].quality.brightness === 'Good' ? <FaCheckCircle className="text-green-500" /> : <FaExclamationTriangle className="text-amber-500" />}
+                                Light: {auditResults[`tour_${index}`].quality.brightness}
+                              </div>
+                              <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400 transition-colors">
+                                {auditResults[`tour_${index}`].quality.contrast === 'Good' ? <FaCheckCircle className="text-green-500" /> : <FaExclamationTriangle className="text-amber-500" />}
+                                Contrast: {auditResults[`tour_${index}`].quality.contrast}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {!auditResults[`tour_${index}`] && (
+                          <div className="flex items-center text-xs text-indigo-600 dark:text-indigo-400 font-semibold transition-colors">
+                            ✓ 360° Image Ready
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
