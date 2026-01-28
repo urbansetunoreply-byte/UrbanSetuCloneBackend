@@ -1080,15 +1080,6 @@ export default function AdminCreateListing() {
                     </label>
                     <button
                       type="button"
-                      onClick={() => auditByUrl(url, index)}
-                      className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
-                      title="AI Audit this URL"
-                      disabled={!url || isAuditing}
-                    >
-                      <FaBrain className={isAuditing ? 'animate-spin' : ''} />
-                    </button>
-                    <button
-                      type="button"
                       onClick={() => auditByUrl(url, index, 'main')}
                       className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
                       title="AI Audit this URL"
