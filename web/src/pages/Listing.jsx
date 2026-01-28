@@ -1813,7 +1813,8 @@ export default function Listing() {
                             {(() => {
                               const auditKey = item.tour ? `tour_${item.index}` : `main_${item.index}`;
                               const audit = listing.aiAuditResults && (listing.aiAuditResults[auditKey] || (listing.aiAuditResults.get && listing.aiAuditResults.get(auditKey)));
-                              return audit?.suggestions?.[0] || 'Property Photo';
+                              const caption = listing.imageCaptions && (listing.imageCaptions[item.index] || (listing.imageCaptions.get && listing.imageCaptions.get(String(item.index))));
+                              return caption || audit?.suggestions?.[0] || 'Property Photo';
                             })()}
                           </span>
                         </div>
@@ -1851,7 +1852,8 @@ export default function Listing() {
                           const audit = listing.aiAuditResults && (listing.aiAuditResults[auditKey] || (listing.aiAuditResults.get && listing.aiAuditResults.get(auditKey)));
                           if (!audit) return null;
 
-                          const mainTag = audit.suggestions && audit.suggestions.length > 0 ? audit.suggestions[0] : null;
+                          const caption = listing.imageCaptions && (listing.imageCaptions[item.index] || (listing.imageCaptions.get && listing.imageCaptions.get(String(item.index))));
+                          const mainTag = caption || (audit.suggestions && audit.suggestions.length > 0 ? audit.suggestions[0] : null);
                           const quality = audit.quality || {};
 
                           return (

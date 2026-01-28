@@ -131,6 +131,11 @@ const listingSchema = new mongoose.Schema({
         of: mongoose.Schema.Types.Mixed,
         default: {}
     },
+    imageCaptions: {
+        type: Map,
+        of: String,
+        default: {}
+    },
     locationLink: {
         type: String,
         required: false

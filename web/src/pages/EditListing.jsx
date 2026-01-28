@@ -77,7 +77,8 @@ export default function EditListing() {
     securityDepositMonths: 2,
     maintenanceCharges: 0,
     advanceRentMonths: 0,
-    customLockDuration: 12 // in months, if custom plan
+    customLockDuration: 12, // in months, if custom plan
+    imageCaptions: {} // Map of index -> caption string
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -199,11 +200,37 @@ export default function EditListing() {
     }
   };
 
+  const handleCaptionChange = (index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      imageCaptions: {
+        ...prev.imageCaptions,
+        [index]: value
+      }
+    }));
+  };
+
   const onHandleRemoveImage = (index) => {
     const newImageUrls = formData.imageUrls.filter((_, i) => i !== index);
+
+    // Shift image captions
+    const newCaptions = { ...formData.imageCaptions };
+    // We need to rebuild the captions map for the new indices
+    const shiftedCaptions = {};
+    Object.keys(newCaptions).forEach(key => {
+      const keyIdx = parseInt(key);
+      if (keyIdx < index) {
+        shiftedCaptions[keyIdx] = newCaptions[key];
+      } else if (keyIdx > index) {
+        shiftedCaptions[keyIdx - 1] = newCaptions[key];
+      }
+      // Index equal to removed index is skipped (deleted)
+    });
+
     setFormData({
       ...formData,
       imageUrls: newImageUrls,
+      imageCaptions: shiftedCaptions
     });
 
     // Clear error for this image
@@ -220,7 +247,7 @@ export default function EditListing() {
     const newAuditResults = { ...auditResults };
     delete newAuditResults[`main_${index}`];
 
-    for (let i = index + 1; i <= formData.imageUrls.length; i++) {
+    for (let i = index + 1; i < formData.imageUrls.length; i++) {
       if (newAuditResults[`main_${i}`]) {
         newAuditResults[`main_${i - 1}`] = newAuditResults[`main_${i}`];
         delete newAuditResults[`main_${i}`];
@@ -1011,6 +1038,13 @@ export default function EditListing() {
                       onChange={(e) => handleImageChange(index, e.target.value)}
                       className={`flex-1 p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${imageErrors[index] ? 'border-red-500' : ''
                         }`}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Image Name/Title (e.g. Master Bedroom)"
+                      value={formData.imageCaptions?.[index] || ""}
+                      onChange={(e) => handleCaptionChange(index, e.target.value)}
+                      className="flex-1 p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                     />
                     <label className={`p-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all flex items-center gap-2 ${uploadingImages[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       <input

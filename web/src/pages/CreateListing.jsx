@@ -79,7 +79,8 @@ export default function CreateListing() {
     securityDepositMonths: 2,
     maintenanceCharges: 0,
     advanceRentMonths: 0,
-    customLockDuration: 12 // in months, if custom plan
+    customLockDuration: 12, // in months, if custom plan
+    imageCaptions: {} // Map of index -> caption string
   });
 
   const [error, setError] = useState("");
@@ -286,11 +287,38 @@ export default function CreateListing() {
     }
   };
 
+  const handleCaptionChange = (index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      imageCaptions: {
+        ...prev.imageCaptions,
+        [index]: value
+      }
+    }));
+  };
+
   const onHandleRemoveImage = (index) => {
-    setFormData({
-      ...formData,
-      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
+    const newImageUrls = formData.imageUrls.filter((_, i) => i !== index);
+
+    // Shift image captions
+    const newCaptions = { ...formData.imageCaptions };
+    // We need to rebuild the captions map for the new indices
+    const shiftedCaptions = {};
+    Object.keys(newCaptions).forEach(key => {
+      const keyIdx = parseInt(key);
+      if (keyIdx < index) {
+        shiftedCaptions[keyIdx] = newCaptions[key];
+      } else if (keyIdx > index) {
+        shiftedCaptions[keyIdx - 1] = newCaptions[key];
+      }
+      // Index equal to removed index is skipped (deleted)
     });
+
+    setFormData(prev => ({
+      ...prev,
+      imageUrls: newImageUrls,
+      imageCaptions: shiftedCaptions
+    }));
 
     // Clear error for this image
     const newImageErrors = { ...imageErrors };
@@ -301,6 +329,18 @@ export default function CreateListing() {
     const newUploadingImages = { ...uploadingImages };
     delete newUploadingImages[index];
     setUploadingImages(newUploadingImages);
+
+    // RE-INDEX Audit Results to prevent shifting bugs
+    const newAuditResults = { ...auditResults };
+    delete newAuditResults[`main_${index}`];
+
+    for (let i = index + 1; i < formData.imageUrls.length; i++) {
+      if (newAuditResults[`main_${i}`]) {
+        newAuditResults[`main_${i - 1}`] = newAuditResults[`main_${i}`];
+        delete newAuditResults[`main_${i}`];
+      }
+    }
+    setAuditResults(newAuditResults);
   };
 
   const onHandleRemoveVideo = (index) => {
@@ -987,6 +1027,13 @@ export default function CreateListing() {
                       onChange={(e) => handleImageChange(index, e.target.value)}
                       className={`flex-1 p-3 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors ${imageErrors[index] ? 'border-red-500' : ''
                         }`}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Image Name/Title (e.g. Master Bedroom)"
+                      value={formData.imageCaptions?.[index] || ""}
+                      onChange={(e) => handleCaptionChange(index, e.target.value)}
+                      className="flex-1 p-3 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                     />
                     <label className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition cursor-pointer">
                       {uploadingImages[index] ? 'Uploading...' : 'Upload File'}
