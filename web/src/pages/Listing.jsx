@@ -1777,7 +1777,8 @@ export default function Listing() {
                 const videos = listing.videoUrls || [];
                 const mediaItems = [
                   ...images.map((u, i) => ({ type: 'image', url: u, index: i, tour: false })),
-                  ...tourImages.map((u, i) => ({ type: 'image', url: u, index: i, tour: true })),
+                  // Exclude 360 images from main slider as requested
+                  // ...tourImages.map((u, i) => ({ type: 'image', url: u, index: i, tour: true })),
                   ...videos.map((u, vi) => ({ type: 'video', url: u, vIndex: vi })),
                 ];
                 return mediaItems.length > 0 ? mediaItems.map((item, index) => (
