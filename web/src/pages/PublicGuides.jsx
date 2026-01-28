@@ -459,7 +459,7 @@ const PublicGuides = () => {
                     <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
                 </div>
 
-                <div className="max-w-7xl mx-auto relative z-10 text-center">
+                <div className="max-w-7xl mx-auto relative z-30 text-center">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-xs font-bold uppercase tracking-widest mb-6 animate-fade-in-up">
                         <GraduationCap className="w-4 h-4 text-yellow-300" />
                         <span>UrbanSetu Academy</span>
@@ -545,7 +545,7 @@ const PublicGuides = () => {
                 </div>
             </div>
 
-            <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-16 relative z-20 pb-20">
+            <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-16 relative z-10 pb-20">
 
                 {/* 2. Category Tabs */}
                 <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-4 mb-12 flex flex-wrap justify-center gap-2 overflow-x-auto custom-scrollbar animate-fade-in-up">
