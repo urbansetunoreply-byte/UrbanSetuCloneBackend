@@ -185,7 +185,7 @@ export default function AdminEditListing() {
     }
 
     // Sync to 360 view if enabled
-    if (syncImagesTo360 && formData.isVerified) {
+    if (syncImagesTo360) {
       const oldUrl = formData.imageUrls[index];
       setFormData(prev => {
         let current360 = [...(prev.virtualTourImages || [])];
@@ -251,7 +251,7 @@ export default function AdminEditListing() {
         imageCaptions: shiftedCaptions
       };
       // Sync to 360 view if enabled
-      if (syncImagesTo360 && prev.isVerified) {
+      if (syncImagesTo360) {
         const removedUrl = prev.imageUrls[index];
         if (removedUrl) {
           updatedData.virtualTourImages = (prev.virtualTourImages || []).filter(url => url !== removedUrl);
@@ -337,7 +337,7 @@ export default function AdminEditListing() {
         setFormData(prev => {
           const updatedData = { ...prev, imageUrls: newImageUrls };
           // Sync to 360 view if enabled
-          if (syncImagesTo360 && prev.isVerified) {
+          if (syncImagesTo360) {
             const current360 = [...(prev.virtualTourImages || [])];
             // Append if unique
             if (data.imageUrl && !current360.includes(data.imageUrl)) {
@@ -1029,14 +1029,13 @@ export default function AdminEditListing() {
               </div>
               <div className="flex items-center gap-4">
                 {/* Sync to 360 Checkbox */}
-                <label className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${!formData.isVerified ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-800 cursor-pointer shadow-sm hover:border-indigo-300'} transition-all`}>
+                <label className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-800 cursor-pointer shadow-sm hover:border-indigo-300 transition-all`}>
                   <input
                     type="checkbox"
                     checked={syncImagesTo360}
-                    disabled={!formData.isVerified}
                     onChange={(e) => {
                       setSyncImagesTo360(e.target.checked);
-                      if (e.target.checked && formData.isVerified) {
+                      if (e.target.checked) {
                         setFormData(prev => {
                           const current360 = [...(prev.virtualTourImages || [])];
                           const newImages = prev.imageUrls.filter(url => url && !current360.includes(url));
@@ -1050,8 +1049,8 @@ export default function AdminEditListing() {
                     }}
                     className="accent-indigo-600 w-4 h-4 cursor-pointer"
                   />
-                  <span className={`text-xs font-bold uppercase tracking-wider ${!formData.isVerified ? 'text-gray-500 dark:text-gray-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
-                    Sync to 360° {!formData.isVerified && "(Verified Only)"}
+                  <span className={`text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400`}>
+                    Sync to 360°
                   </span>
                 </label>
 

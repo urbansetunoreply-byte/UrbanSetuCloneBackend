@@ -1775,10 +1775,14 @@ export default function Listing() {
               }}
             >
               {/* Custom Navigation */}
-              <div className="swiper-button-prev-custom absolute top-1/2 left-4 z-20 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-md cursor-pointer transition-all hover:scale-110 shadow-lg border border-white/10 hidden group-hover:flex">
+              <div
+                className={`swiper-button-prev-custom absolute top-1/2 left-4 z-20 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-md cursor-pointer transition-all hover:scale-110 shadow-lg border border-white/10 ${selectedImageIndex === 0 ? 'hidden' : 'hidden group-hover:flex'}`}
+              >
                 <FaChevronLeft size={22} />
               </div>
-              <div className="swiper-button-next-custom absolute top-1/2 right-4 z-20 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-md cursor-pointer transition-all hover:scale-110 shadow-lg border border-white/10 hidden group-hover:flex">
+              <div
+                className={`swiper-button-next-custom absolute top-1/2 right-4 z-20 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-md cursor-pointer transition-all hover:scale-110 shadow-lg border border-white/10 ${selectedImageIndex === (listing.imageUrls?.length || 0) + (listing.videoUrls?.length || 0) - 1 ? 'hidden' : 'hidden group-hover:flex'}`}
+              >
                 <FaChevronRight size={22} />
               </div>
               {(() => {
