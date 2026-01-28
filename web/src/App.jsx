@@ -218,13 +218,26 @@ const LoadingSpinner = () => (
       </div>
 
       {/* Hidden SEO Links to avoid "Dead End" errors during hydration */}
-      <nav className="sr-only" aria-hidden="true">
+      <nav className="sr-only">
+        <a href="/sign-in">Sign In</a>
+        <a href="/sign-up">Sign Up</a>
+        <a href="/forgot-password">Forgot Password</a>
         <a href="/">Home</a>
         <a href="/search">Search Properties</a>
         <a href="/about">About Us</a>
         <a href="/blogs">Blogs</a>
         <a href="/guides">Real Estate Guides</a>
+        <a href="/market-trends">Market Trends</a>
         <a href="/contact">Contact Support</a>
+        <a href="/help-center">Help Center</a>
+        <a href="/community">Community</a>
+        <a href="/faqs">FAQs</a>
+        <a href="/updates">Updates</a>
+        <a href="/download">Downloads</a>
+        <a href="/terms">Terms and Conditions</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/cookie-policy">Cookie Policy</a>
+        <a href="/community-guidelines">Community Guidelines</a>
       </nav>
     </div>
 
