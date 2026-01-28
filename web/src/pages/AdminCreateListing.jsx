@@ -214,6 +214,11 @@ export default function AdminCreateListing() {
       delete newImageErrors[index];
     }
     setImageErrors(newImageErrors);
+
+    // Trigger AI Audit for URL
+    if (url && validateImageUrl(url)) {
+      auditByUrl(url, index);
+    }
   };
 
   const handleFileUpload = async (index, file) => {
@@ -1057,6 +1062,15 @@ export default function AdminCreateListing() {
                         disabled={uploadingImages[index]}
                       />
                     </label>
+                    <button
+                      type="button"
+                      onClick={() => auditByUrl(url, index)}
+                      className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+                      title="AI Audit this URL"
+                      disabled={!url || isAuditing}
+                    >
+                      <FaBrain className={isAuditing ? 'animate-spin' : ''} />
+                    </button>
                     <button
                       type="button"
                       onClick={() => onHandleRemoveImage(index)}

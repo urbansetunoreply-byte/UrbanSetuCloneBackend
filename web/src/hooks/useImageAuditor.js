@@ -12,12 +12,8 @@ export const useImageAuditor = () => {
         setIsAuditing(true);
 
         try {
-            // Pre-load model to warm up
             await loadModel();
-
-            // Create a temporary image element to process
             const reader = new FileReader();
-            reader.readAsDataURL(file);
 
             await new Promise((resolve) => {
                 reader.onload = async (e) => {
@@ -32,9 +28,36 @@ export const useImageAuditor = () => {
                         resolve();
                     };
                 };
+                reader.readAsDataURL(file);
             });
         } catch (error) {
             console.error('Audit Hook Error:', error);
+        } finally {
+            setIsAuditing(false);
+        }
+    }, []);
+
+    const auditByUrl = useCallback(async (url, index) => {
+        if (!url) return;
+        setIsAuditing(true);
+        try {
+            await loadModel();
+            const img = new Image();
+            img.crossOrigin = "anonymous"; // Try to handle CORS
+            img.src = url;
+            await new Promise((resolve, reject) => {
+                img.onload = async () => {
+                    const result = await auditImage(img);
+                    setAuditResults(prev => ({
+                        ...prev,
+                        [index]: result
+                    }));
+                    resolve();
+                };
+                img.onerror = () => reject(new Error('Failed to load image for auditing'));
+            });
+        } catch (error) {
+            console.error('URL Audit Error:', error);
         } finally {
             setIsAuditing(false);
         }
@@ -50,6 +73,7 @@ export const useImageAuditor = () => {
 
     return {
         performAudit,
+        auditByUrl,
         auditResults,
         isAuditing,
         clearAudit
