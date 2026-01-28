@@ -1078,11 +1078,11 @@ export default function EditListing() {
               </div>
               <div className="flex items-center gap-4">
                 {/* Sync to 360 Checkbox */}
-                <label className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${!formData.isVerified ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-800 cursor-pointer shadow-sm hover:border-indigo-300'} transition-all`}>
+                <label className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${(!formData.isVerified || formData.imageUrls.filter(url => url).length === 0) ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-800 cursor-pointer shadow-sm hover:border-indigo-300'} transition-all`}>
                   <input
                     type="checkbox"
                     checked={syncImagesTo360}
-                    disabled={!formData.isVerified}
+                    disabled={!formData.isVerified || formData.imageUrls.filter(url => url).length === 0}
                     onChange={(e) => {
                       setSyncImagesTo360(e.target.checked);
                       if (e.target.checked && formData.isVerified) {
@@ -1099,8 +1099,8 @@ export default function EditListing() {
                     }}
                     className="accent-indigo-600 w-4 h-4 cursor-pointer"
                   />
-                  <span className={`text-xs font-bold uppercase tracking-wider ${!formData.isVerified ? 'text-gray-500 dark:text-gray-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
-                    Sync to 360° {!formData.isVerified && "(Verified Only)"}
+                  <span className={`text-xs font-bold uppercase tracking-wider ${(!formData.isVerified || formData.imageUrls.filter(url => url).length === 0) ? 'text-gray-500 dark:text-gray-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                    Sync to 360° {!formData.isVerified ? "(Verified Only)" : (formData.imageUrls.filter(url => url).length === 0 && "(Add Images First)")}
                   </span>
                 </label>
 
