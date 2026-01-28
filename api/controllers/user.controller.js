@@ -332,7 +332,7 @@ export const getAllUsersForAutocomplete = async (req, res, next) => {
             _id: { $ne: req.user.id },
             status: { $ne: 'suspended' }, // Exclude suspended users
             role: 'user' // Only return regular users, exclude admins and rootadmins
-        }).select('email username _id mobileNumber').sort({ email: 1 });
+        }).select('email username _id mobileNumber role').sort({ email: 1 });
 
         res.status(200).json(users);
     } catch (error) {
