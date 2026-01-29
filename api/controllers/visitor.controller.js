@@ -461,6 +461,12 @@ export const getAllVisitors = async (req, res, next) => {
       device = 'all',
       location = 'all',
       search = '',
+      referrer = 'all',
+      source = 'all',
+      utm_source = 'all',
+      utm_campaign = 'all',
+      utm_medium = 'all',
+      utm_term = 'all',
       // New optional consent filters: 'any' | 'true' | 'false'
       analytics = 'any',
       marketing = 'any',
@@ -517,13 +523,36 @@ export const getAllVisitors = async (req, res, next) => {
       filter.location = { $regex: location, $options: 'i' };
     }
 
-    // Search filter (IP or fingerprint)
+    // New acquisition filters
+    if (referrer !== 'all') {
+      filter.referrer = { $regex: referrer, $options: 'i' };
+    }
+    if (source !== 'all') {
+      filter.source = { $regex: source, $options: 'i' };
+    }
+    if (utm_source !== 'all') {
+      filter["utm.source"] = { $regex: utm_source, $options: 'i' };
+    }
+    if (utm_campaign !== 'all') {
+      filter["utm.campaign"] = { $regex: utm_campaign, $options: 'i' };
+    }
+    if (utm_medium !== 'all') {
+      filter["utm.medium"] = { $regex: utm_medium, $options: 'i' };
+    }
+    if (utm_term !== 'all') {
+      filter["utm.term"] = { $regex: utm_term, $options: 'i' };
+    }
+
+    // Search filter
     if (search) {
       filter.$or = [
         { ip: { $regex: search, $options: 'i' } },
         { fingerprint: { $regex: search, $options: 'i' } },
         { location: { $regex: search, $options: 'i' } },
-        { device: { $regex: search, $options: 'i' } }
+        { device: { $regex: search, $options: 'i' } },
+        { referrer: { $regex: search, $options: 'i' } },
+        { source: { $regex: search, $options: 'i' } },
+        { "utm.source": { $regex: search, $options: 'i' } }
       ];
     }
 

@@ -45,6 +45,9 @@ const AdminSponsorIntelligence = () => {
     const [showVisitorDetailsModal, setShowVisitorDetailsModal] = useState(false);
     const [isRefreshingVisitor, setIsRefreshingVisitor] = useState(false);
 
+    // Drill-down Context (Referrer or Campaign)
+    const [drillDownType, setDrillDownType] = useState('referrer'); // 'referrer' | 'campaign'
+
     const fetchMarketingStats = async (isManual = false) => {
         if (isManual) setRefreshing(true);
         try {
@@ -68,15 +71,15 @@ const AdminSponsorIntelligence = () => {
         fetchMarketingStats();
     }, [days]);
 
-    const fetchReferrerVisitors = async (referrer, page = 1) => {
+    const fetchReferrerVisitors = async (value, page = 1, type = drillDownType) => {
         setReferrerVisitorsLoading(true);
         try {
-            // Use the standard visitors/all endpoint with search filter for the referrer
+            // Use the standard visitors/all endpoint with specific filters
             const params = new URLSearchParams({
                 page,
                 limit: 10,
-                search: referrer,
-                dateRange: days === 7 ? '7days' : (days === 90 ? 'all' : 'all') // simple map
+                [type === 'referrer' ? 'referrer' : 'utm_campaign']: value,
+                dateRange: days === 7 ? '7days' : (days === 30 ? '30days' : 'all')
             });
 
             const res = await authenticatedFetch(`${API_BASE_URL}/api/visitors/all?${params}`);
@@ -87,26 +90,36 @@ const AdminSponsorIntelligence = () => {
                 setTotalReferrerVisitors(data.total);
                 setReferrerTotalPages(data.pages || 1);
             } else {
-                toast.error(data.message || "Failed to fetch referrer details");
+                toast.error(data.message || "Failed to fetch details");
             }
         } catch (error) {
-            console.error("Referrer visitors error:", error);
-            toast.error("Error loading referrer details");
+            console.error("Drill-down error:", error);
+            toast.error("Error loading details");
         } finally {
             setReferrerVisitorsLoading(false);
         }
     };
 
     const handleViewReferrerDetails = (referrer) => {
+        setDrillDownType('referrer');
         setSelectedReferrer(referrer);
         setReferrerPage(1);
         setShowReferrerModal(true);
-        fetchReferrerVisitors(referrer, 1);
+        fetchReferrerVisitors(referrer, 1, 'referrer');
+    };
+
+    const handleViewCampaignDetails = (campaign) => {
+        if (campaign === 'None') return;
+        setDrillDownType('campaign');
+        setSelectedReferrer(campaign);
+        setReferrerPage(1);
+        setShowReferrerModal(true);
+        fetchReferrerVisitors(campaign, 1, 'campaign');
     };
 
     useEffect(() => {
         if (showReferrerModal && selectedReferrer) {
-            fetchReferrerVisitors(selectedReferrer, referrerPage);
+            fetchReferrerVisitors(selectedReferrer, referrerPage, drillDownType);
         }
     }, [referrerPage]);
 
@@ -340,9 +353,14 @@ const AdminSponsorIntelligence = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
                                     {(stats?.campaigns || []).map((c, i) => (
-                                        <tr key={i} className="group hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                                        <tr key={i} className={`group hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors ${c._id !== 'None' ? 'cursor-pointer' : ''}`}
+                                            onClick={() => c._id !== 'None' && handleViewCampaignDetails(c._id)}
+                                        >
                                             <td className="py-4 text-sm font-bold text-gray-700 dark:text-gray-300">
-                                                {c._id}
+                                                <div className="flex items-center gap-2">
+                                                    {c._id}
+                                                    {c._id !== 'None' && <FaExternalLinkAlt className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity text-indigo-500" />}
+                                                </div>
                                             </td>
                                             <td className="py-4 text-sm text-center">
                                                 <span className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg font-mono">
@@ -438,10 +456,12 @@ const AdminSponsorIntelligence = () => {
                         <div className="p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center">
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
-                                    <FaExternalLinkAlt className="text-2xl" />
+                                    {drillDownType === 'referrer' ? <FaExternalLinkAlt className="text-2xl" /> : <FaBullhorn className="text-2xl" />}
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white">Referral Details</h3>
+                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white">
+                                        {drillDownType === 'referrer' ? 'Referral Details' : 'Campaign Details'}
+                                    </h3>
                                     <p className="text-gray-500 dark:text-gray-400 font-medium break-all">{selectedReferrer}</p>
                                 </div>
                             </div>
@@ -477,7 +497,12 @@ const AdminSponsorIntelligence = () => {
                                         </div>
                                         <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                                             <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Source Type</p>
-                                            <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">{selectedReferrer.includes('google') ? 'Search' : (selectedReferrer.includes('facebook') || selectedReferrer.includes('t.co') ? 'Social' : 'Referral')}</p>
+                                            <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">
+                                                {drillDownType === 'campaign' ? 'Campaign' :
+                                                    (selectedReferrer?.includes('google') ? 'Search' :
+                                                        (selectedReferrer?.includes('facebook') || selectedReferrer?.includes('t.co') ? 'Social' : 'Referral'))
+                                                }
+                                            </p>
                                         </div>
                                         <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                                             <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Data Freshness</p>
