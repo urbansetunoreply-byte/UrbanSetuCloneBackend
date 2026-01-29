@@ -1,6 +1,16 @@
 import nodemailer from 'nodemailer';
 import { sendBrevoEmail, initializeBrevoService, initializeBrevoApiService, testBrevoConnection, getBrevoStatus } from './brevoService.js';
 import { getTimezoneFromIP } from './sessionManager.js';
+import User from '../models/user.model.js';
+import crypto from 'crypto';
+
+// Token generation for unsubscription
+export const generateUnsubscribeToken = (email) => {
+  return crypto
+    .createHash('sha256')
+    .update(email + (process.env.JWT_SECRET || 'urbansetu_secret_key'))
+    .digest('hex');
+};
 
 // Enhanced transporter configuration with multiple fallback options
 const createTransporter = () => {
@@ -154,7 +164,27 @@ const verifyTransporter = async () => {
 
 // Enhanced retry logic with exponential backoff and connection verification
 // Unified email sending function with Brevo primary and Gmail fallback
-export const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000) => {
+export const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000, category = 'essential') => {
+  // Check subscription if promotional
+  if (category === 'promotional') {
+    try {
+      const user = await User.findOne({ email: mailOptions.to }).select('isSubscribed');
+      if (user && !user.isSubscribed) {
+        console.log(`[EmailService] Skipping promotional email to ${mailOptions.to} (unsubscribed)`);
+        return {
+          success: true,
+          skipped: true,
+          reason: 'unsubscribed',
+          messageId: 'skipped-unsubscribed'
+        };
+      }
+    } catch (dbError) {
+      console.error('[EmailService] Database error checking subscription:', dbError.message);
+      // If DB fails, we proceed with sending (conservative) or skip? 
+      // Usually, better to send if unsure, but for promotional, we can skip to be safe.
+    }
+  }
+
   // Try Brevo first
   try {
     console.log('Attempting to send email via Brevo...');
@@ -323,6 +353,19 @@ export const getTransporterStatus = () => {
     hasEmailPass: !!process.env.EMAIL_PASS
   };
 };
+
+// Helper to get unsubscribe link for a user
+export const getUnsubscribeUrl = (email) => {
+  const baseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  return `${baseUrl}/unsubscribe?email=${encodeURIComponent(email)}&token=${generateUnsubscribeToken(email)}`;
+};
+
+// Get comprehensive unsubscribe data
+export const getUnsubscribeData = async (email) => {
+  const unsubscribeUrl = getUnsubscribeUrl(email);
+  return { unsubscribeUrl };
+};
+
 
 // Send OTP email for signup
 export const sendSignupOTPEmail = async (email, otp) => {
@@ -684,6 +727,8 @@ export const sendContractConfirmationOTPEmail = async (email, otp) => {
 // Send Update Announcement Email
 export const sendUpdateAnnouncementEmail = async (email, update) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const unsubscribeUrl = getUnsubscribeUrl(email);
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -741,6 +786,9 @@ export const sendUpdateAnnouncementEmail = async (email, update) => {
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
               © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
               You received this email because you are a registered user of UrbanSetu.
+              <br><br>
+              Don't want to receive these emails? 
+              <a href="${unsubscribeUrl}" style="color: #9ca3af; text-decoration: underline;">Unsubscribe here</a>
             </p>
           </div>
         </div>
@@ -749,7 +797,7 @@ export const sendUpdateAnnouncementEmail = async (email, update) => {
   };
 
   try {
-    const result = await sendEmailWithRetry(mailOptions);
+    const result = await sendEmailWithRetry(mailOptions, 3, 1000, 'promotional');
     return result.success ?
       createSuccessResponse(result.messageId, 'update_announcement') :
       createErrorResponse(new Error(result.error), 'update_announcement');
@@ -1159,7 +1207,8 @@ export const sendCoinAdjustmentEmail = async (email, details) => {
 
 // Send referral reminder email
 export const sendReferralReminderEmail = async (email, username, referralLink) => {
-  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const { unsubscribeUrl } = await getUnsubscribeData(email);
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -1212,13 +1261,19 @@ export const sendReferralReminderEmail = async (email, username, referralLink) =
             © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
             You received this email because you are a valued member of our community.
           </p>
+          <div style="margin-top: 15px; border-top: 1px solid #eeeeee; padding-top: 15px;">
+            <p style="color: #999999; font-size: 12px; margin: 0;">
+              Don't want to receive these emails? 
+              <a href="${unsubscribeUrl}" style="color: #4f46e5; text-decoration: underline;">Unsubscribe here</a>
+            </p>
+          </div>
         </div>
       </div>
     `
   };
 
   try {
-    const result = await sendEmailWithRetry(mailOptions);
+    const result = await sendEmailWithRetry(mailOptions, 3, 1000, 'promotional');
     return result.success ?
       createSuccessResponse(result.messageId, 'referral_reminder') :
       createErrorResponse(new Error(result.error), 'referral_reminder');
@@ -9946,6 +10001,8 @@ export const sendNewPropertiesMatchingSearchEmail = async (email, searchDetails)
 
     const subject = `🔍 New Properties Found - ${totalCount} matches for "${searchQuery}"`;
 
+    const unsubscribeUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/unsubscribe?email=${encodeURIComponent(email)}&token=${generateUnsubscribeToken(email)}`;
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -9967,6 +10024,7 @@ export const sendNewPropertiesMatchingSearchEmail = async (email, searchDetails)
           .btn-outline:hover { background-color: #10b981; color: white; }
           .footer { background-color: #f3f4f6; padding: 20px; text-align: center; color: #6b7280; }
           .search-criteria { background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 15px; margin: 15px 0; }
+          .unsubscribe-link { color: #6b7280; text-decoration: underline; font-size: 12px; }
         </style>
       </head>
       <body>
@@ -10031,6 +10089,9 @@ export const sendNewPropertiesMatchingSearchEmail = async (email, searchDetails)
             <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
               © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
+            <p style="margin-top: 15px;">
+              <a href="${unsubscribeUrl}" class="unsubscribe-link">Unsubscribe</a> from these search alerts.
+            </p>
           </div>
         </div>
       </body>
@@ -10041,7 +10102,7 @@ export const sendNewPropertiesMatchingSearchEmail = async (email, searchDetails)
       to: email,
       subject: subject,
       html: html
-    });
+    }, 3, 1000, 'promotional');
   } catch (error) {
     console.error('Error sending new properties matching search email:', error);
     return createErrorResponse(error, 'new_properties_matching_search_email');
@@ -10771,6 +10832,8 @@ export const sendPropertyViewsMilestoneEmail = async (email, milestoneDetails) =
 
     const subject = `🎉 Milestone Reached! "${propertyName}" has ${viewCount} views`;
 
+    const unsubscribeUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/unsubscribe?email=${encodeURIComponent(email)}&token=${generateUnsubscribeToken(email)}`;
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -10793,6 +10856,7 @@ export const sendPropertyViewsMilestoneEmail = async (email, milestoneDetails) =
           .footer { background-color: #f3f4f6; padding: 20px; text-align: center; color: #6b7280; }
           .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin: 20px 0; }
           .stat-item { background-color: #ffffff; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e5e7eb; }
+          .unsubscribe-link { color: #6b7280; text-decoration: underline; font-size: 12px; }
         </style>
       </head>
       <body>
@@ -10871,6 +10935,9 @@ export const sendPropertyViewsMilestoneEmail = async (email, milestoneDetails) =
             <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
               © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
+            <p style="margin-top: 15px;">
+              <a href="${unsubscribeUrl}" class="unsubscribe-link">Unsubscribe</a> from these milestone alerts.
+            </p>
           </div>
         </div>
       </body>
@@ -10881,7 +10948,7 @@ export const sendPropertyViewsMilestoneEmail = async (email, milestoneDetails) =
       to: email,
       subject: subject,
       html: html
-    });
+    }, 3, 1000, 'promotional');
   } catch (error) {
     console.error('Error sending property views milestone email:', error);
     return createErrorResponse(error, 'property_views_milestone_email');
@@ -13787,6 +13854,7 @@ export const sendProfileUpdateSuccessEmail = async (email, username, role, coins
 
 // Send re-engagement email to inactive users
 export const sendReEngagementEmail = async (email, username) => {
+  const { unsubscribeUrl } = await getUnsubscribeData(email);
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -13859,6 +13927,12 @@ export const sendReEngagementEmail = async (email, username) => {
             <p style="color: #9ca3af; margin: 5px 0 0 0; font-size: 12px;">
               You received this email because you haven't visited us in a while.
             </p>
+            <div style="margin-top: 15px; border-top: 1px solid #eeeeee; padding-top: 15px;">
+              <p style="color: #999999; font-size: 12px; margin: 0;">
+                Don't want to receive these emails? 
+                <a href="${unsubscribeUrl}" style="color: #2563eb; text-decoration: underline;">Unsubscribe here</a>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -13866,7 +13940,7 @@ export const sendReEngagementEmail = async (email, username) => {
   };
 
   try {
-    const result = await sendEmailWithRetry(mailOptions);
+    const result = await sendEmailWithRetry(mailOptions, 3, 1000, 'promotional');
     return result.success ?
       createSuccessResponse(result.messageId, 're_engagement_email') :
       createErrorResponse(new Error(result.error), 're_engagement_email');
@@ -13877,6 +13951,7 @@ export const sendReEngagementEmail = async (email, username) => {
 
 // Send trending/new property update email
 export const sendTrendingUpdateEmail = async (email, username, newProperties, trendingProperties) => {
+  const { unsubscribeUrl } = await getUnsubscribeData(email);
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
 
   const generatePropertyCard = (prop) => `
@@ -13967,6 +14042,9 @@ export const sendTrendingUpdateEmail = async (email, username, newProperties, tr
             <div style="margin-top: 20px; font-size: 12px; color: #9ca3af;">
               <p style="margin: 5px 0;">This email was sent to ${email} as part of your UrbanSetu subscription.</p>
               <p style="margin: 5px 0;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
+              <p style="margin: 10px 0 0 0;">
+                <a href="${unsubscribeUrl}" style="color: #2563eb; text-decoration: underline;">Unsubscribe from these updates</a>
+              </p>
             </div>
           </div>
         </div>
@@ -13975,7 +14053,7 @@ export const sendTrendingUpdateEmail = async (email, username, newProperties, tr
   };
 
   try {
-    const result = await sendEmailWithRetry(mailOptions);
+    const result = await sendEmailWithRetry(mailOptions, 3, 1000, 'promotional');
     return result.success ?
       createSuccessResponse(result.messageId, 'trending_update_email') :
       createErrorResponse(new Error(result.error), 'trending_update_email');
@@ -14767,6 +14845,7 @@ export const sendReferredWelcomeEmail = async (email, username, referrerName, am
 // Send Year in Review notification email
 export const sendYearInReviewEmail = async (email, username, year, role = 'user') => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const unsubscribeUrl = getUnsubscribeUrl(email);
   const flashbackUrl = `${clientBaseUrl}/user/year/${year}`;
 
   const isAdmin = role === 'admin' || role === 'rootadmin';
@@ -14787,7 +14866,7 @@ export const sendYearInReviewEmail = async (email, username, year, role = 'user'
     : "What a journey it's been! From finding hidden gems to building your property wishlist, we've captured your best moments on UrbanSetu this year.";
 
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: `${process.env.EMAIL_FROM_NAME || 'UrbanSetu'} <${process.env.EMAIL_USER}>`,
     to: email,
     subject: subject,
     html: `
@@ -14821,9 +14900,12 @@ export const sendYearInReviewEmail = async (email, username, year, role = 'user'
                 </p>
 
                 <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                  <p style="color: #475569; margin: 0; font-size: 12px; font-weight: 500;">
+                  <p style="color: #475569; margin: 0 0 20px 0; font-size: 12px; font-weight: 500;">
                     © ${new Date().getFullYear()} UrbanSetu. All rights reserved. <br>
-                      Making property journeys simpler and more beautiful.
+                    Making property journeys simpler and more beautiful.
+                  </p>
+                  <p style="margin: 0; font-size: 11px; color: #475569;">
+                    Too many recaps? <a href="${unsubscribeUrl}" style="color: #3b82f6; text-decoration: underline;">Unsubscribe from promotional emails</a>
                   </p>
                 </div>
               </div>
@@ -14832,7 +14914,7 @@ export const sendYearInReviewEmail = async (email, username, year, role = 'user'
   };
 
   try {
-    const result = await sendEmailWithRetry(mailOptions);
+    const result = await sendEmailWithRetry(mailOptions, 3, 1000, 'promotional');
     return result.success ?
       createSuccessResponse(result.messageId, 'year_in_review') :
       createErrorResponse(new Error(result.error), 'year_in_review');
@@ -15105,8 +15187,9 @@ export const sendAdminCallTerminationEmail = async (email, username, details) =>
 // Send Festival Greeting Email
 export const sendFestivalGreetingEmail = async (email, username, theme) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const unsubscribeUrl = getUnsubscribeUrl(email);
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: `${process.env.EMAIL_FROM_NAME || 'UrbanSetu'} <${process.env.EMAIL_USER}>`,
     to: email,
     subject: `${theme.icon} ${theme.greeting} - UrbanSetu`,
     html: `
@@ -15166,6 +15249,9 @@ export const sendFestivalGreetingEmail = async (email, username, theme) => {
               © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
               You received this email because you are a valued member of our community.
             </p>
+            <p style="margin: 15px 0 0 0; font-size: 11px; color: #9ca3af;">
+              Don't want these greetings? <a href="${unsubscribeUrl}" style="color: #6b7280; text-decoration: underline;">Unsubscribe here</a>
+            </p>
           </div>
         </div>
       </div>
@@ -15173,7 +15259,7 @@ export const sendFestivalGreetingEmail = async (email, username, theme) => {
   };
 
   try {
-    const result = await sendEmailWithRetry(mailOptions);
+    const result = await sendEmailWithRetry(mailOptions, 3, 1000, 'promotional');
     return result.success ?
       createSuccessResponse(result.messageId, 'festival_greeting') :
       createErrorResponse(new Error(result.error), 'festival_greeting');

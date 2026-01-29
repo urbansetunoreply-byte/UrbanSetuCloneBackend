@@ -55,6 +55,7 @@ export default function AdminManagement() {
     restore: false,
     purge: false
   });
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountStats, setAccountStats] = useState({
     listings: 0,
@@ -556,6 +557,37 @@ export default function AdminManagement() {
       setSelectedAccount(null);
     }
     setAccountLoading(false);
+  };
+
+  const handleToggleSubscription = async (id, currentStatus) => {
+    setSubscriptionLoading(true);
+    try {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/toggle-subscription/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isSubscribed: !currentStatus }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message);
+        // Update selected account if open
+        if (selectedAccount && selectedAccount._id === id) {
+          setSelectedAccount(prev => ({ ...prev, isSubscribed: !currentStatus }));
+        }
+        // Update users list
+        setUsers(prev => prev.map(u => u._id === id ? { ...u, isSubscribed: !currentStatus } : u));
+        // Update admins list
+        setAdmins(prev => prev.map(a => a._id === id ? { ...a, isSubscribed: !currentStatus } : a));
+      } else {
+        toast.error(data.message || "Failed to update subscription status");
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setSubscriptionLoading(false);
+    }
   };
 
   // Optimistic UI for promote
@@ -1813,6 +1845,28 @@ export default function AdminManagement() {
                     <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                       <span><strong>Status:</strong> {selectedAccount.status || 'active'}</span>
                     </div>
+                    {/* Subscription Status Toggle for Admin */}
+                    <div className="flex items-center justify-between gap-2 text-gray-700 dark:text-gray-300 text-sm bg-gray-100/50 dark:bg-gray-800/50 p-2 rounded-lg mt-2 font-medium">
+                      <div className="flex items-center gap-2">
+                        <FaEnvelope className={selectedAccount.isSubscribed !== false ? "text-green-500" : "text-gray-400"} />
+                        <span><strong>Promotional Emails:</strong> {selectedAccount.isSubscribed !== false ? 'Subscribed' : 'Unsubscribed'}</span>
+                      </div>
+                      <button
+                        onClick={() => handleToggleSubscription(selectedAccount._id, selectedAccount.isSubscribed !== false)}
+                        disabled={subscriptionLoading}
+                        className={`text-xs px-3 py-1 rounded-md font-bold transition-all ${selectedAccount.isSubscribed !== false ? "bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white" : "bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white"}`}
+                      >
+                        {subscriptionLoading ? '...' : (selectedAccount.isSubscribed !== false ? 'Unsubscribe' : 'Subscribe')}
+                      </button>
+                    </div>
+                    {selectedAccount.isSubscribed === false && selectedAccount.unsubscribeReason && (
+                      <div className="flex flex-col gap-1 text-gray-700 dark:text-gray-300 text-sm bg-red-50/50 dark:bg-red-900/10 p-2 rounded-lg mt-1 border border-red-100/50 dark:border-red-900/20">
+                        <span className="font-bold flex items-center gap-2">
+                          <FaExclamationCircle className="text-red-500 text-xs" /> Unsubscribe Reason:
+                        </span>
+                        <p className="italic text-gray-600 dark:text-gray-400 ml-5">"{selectedAccount.unsubscribeReason}"</p>
+                      </div>
+                    )}
                     {/* Lockout remaining time (password lockout) */}
                     {(() => {
                       if (!passwordLockouts || !Array.isArray(passwordLockouts)) return null;

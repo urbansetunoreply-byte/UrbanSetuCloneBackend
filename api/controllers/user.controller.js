@@ -1144,3 +1144,106 @@ export const downloadExportData = async (req, res, next) => {
         next(error);
     }
 };
+
+// Unsubscribe user via token
+export const unsubscribeUser = async (req, res, next) => {
+    try {
+        const { email, token } = req.body;
+
+        if (!email || !token) {
+            return next(errorHandler(400, "Email and token are required"));
+        }
+
+        // Import generateUnsubscribeToken to verify
+        const { generateUnsubscribeToken } = await import("../utils/emailService.js");
+        const expectedToken = generateUnsubscribeToken(email);
+
+        if (token !== expectedToken) {
+            return next(errorHandler(400, "Invalid unsubscribe token"));
+        }
+
+        const user = await User.findOneAndUpdate(
+            { email },
+            { isSubscribed: false },
+            { new: true }
+        );
+
+        if (!user) {
+            return next(errorHandler(404, "User not found"));
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Successfully unsubscribed from promotional emails"
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Submit unsubscribe reason
+export const submitUnsubscribeReason = async (req, res, next) => {
+    try {
+        const { email, token, reason } = req.body;
+
+        if (!email || !token || !reason) {
+            return next(errorHandler(400, "Email, token and reason are required"));
+        }
+
+        // Verify token again for security
+        const { generateUnsubscribeToken } = await import("../utils/emailService.js");
+        const expectedToken = generateUnsubscribeToken(email);
+
+        if (token !== expectedToken) {
+            return next(errorHandler(400, "Invalid token"));
+        }
+
+        const user = await User.findOneAndUpdate(
+            { email },
+            { unsubscribeReason: reason },
+            { new: true }
+        );
+
+        if (!user) {
+            return next(errorHandler(404, "User not found"));
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Thank you for your feedback!"
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Admin: Toggle user subscription status
+export const toggleUserSubscription = async (req, res, next) => {
+    try {
+        // Strict admin check
+        if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'Forbidden'));
+        }
+
+        const { id } = req.params;
+        const { isSubscribed } = req.body;
+
+        const user = await User.findByIdAndUpdate(
+            id,
+            { isSubscribed },
+            { new: true }
+        ).select('username email isSubscribed');
+
+        if (!user) {
+            return next(errorHandler(404, "User not found"));
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `User subscription ${isSubscribed ? 'enabled' : 'disabled'} successfully`,
+            user
+        });
+    } catch (error) {
+        next(error);
+    }
+};

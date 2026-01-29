@@ -282,6 +282,18 @@ const userSchema = new mongoose.Schema({
   lockReason: {
     type: String,
     default: null
+  },
+  isSubscribed: {
+    type: Boolean,
+    default: true
+  },
+  unsubscribeReason: {
+    type: String,
+    default: null
+  },
+  unsubscribeToken: {
+    type: String,
+    select: false
   }
 }, { timestamps: true });
 

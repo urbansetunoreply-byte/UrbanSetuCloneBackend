@@ -144,6 +144,7 @@ const AdminUpdates = lazy(() => import('./pages/AdminUpdates'));
 const Updates = lazy(() => import('./pages/Updates'));
 const LockAccount = lazy(() => import('./pages/security/LockAccount'));
 const UnlockAccount = lazy(() => import('./pages/security/UnlockAccount'));
+const Unsubscribe = lazy(() => import('./pages/Unsubscribe'));
 const CommunityGuidelines = lazy(() => import('./pages/CommunityGuidelines'));
 const Downloads = lazy(() => import('./pages/Downloads'));
 const GoogleOneTap = lazy(() => import('./components/GoogleOneTap'));
@@ -886,6 +887,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/restore-account/:token" element={<AccountRevocation />} />
             <Route path="/restore-property" element={<RestoreProperty />} />
             <Route path="/offers" element={<Offers />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/updates" element={<Updates />} />
             <Route path="/ai/share/:shareToken" element={<SharedChatView />} />
             <Route path="/view/:documentId" element={<ViewDocument />} />
