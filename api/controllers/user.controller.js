@@ -30,6 +30,7 @@ import ForumPost from "../models/forumPost.model.js";
 import Blog from "../models/blog.model.js";
 import Route from "../models/Route.js";
 import CalculationHistory from "../models/calculationHistory.model.js";
+import Subscription from "../models/subscription.model.js";
 
 // EXPORT_CACHE_EXPIRY remains relevant for setting the expiration Date object, 
 // though Mongo TTL handles the actual deletion.
@@ -1172,6 +1173,15 @@ export const unsubscribeUser = async (req, res, next) => {
             return next(errorHandler(404, "User not found"));
         }
 
+        // Sync with Subscription model if exists
+        await Subscription.findOneAndUpdate(
+            { email },
+            {
+                status: 'opted_out',
+                statusUpdatedAt: new Date()
+            }
+        );
+
         res.status(200).json({
             success: true,
             message: "Successfully unsubscribed from promotional emails"
@@ -1208,6 +1218,12 @@ export const submitUnsubscribeReason = async (req, res, next) => {
             return next(errorHandler(404, "User not found"));
         }
 
+        // Also update reason in Subscription model if exists
+        await Subscription.findOneAndUpdate(
+            { email },
+            { rejectionReason: reason }
+        );
+
         res.status(200).json({
             success: true,
             message: "Thank you for your feedback!"
@@ -1226,7 +1242,7 @@ export const toggleUserSubscription = async (req, res, next) => {
         }
 
         const { id } = req.params;
-        const { isSubscribed } = req.body;
+        const { isSubscribed, reason } = req.body;
 
         const user = await User.findByIdAndUpdate(
             id,
@@ -1236,6 +1252,33 @@ export const toggleUserSubscription = async (req, res, next) => {
 
         if (!user) {
             return next(errorHandler(404, "User not found"));
+        }
+
+        // Sync with Subscription model if exists
+        const subscription = await Subscription.findOne({ email: user.email });
+        if (subscription) {
+            subscription.status = isSubscribed ? 'approved' : 'revoked';
+            if (!isSubscribed) {
+                subscription.rejectionReason = reason || 'Revoked by Administrator';
+            }
+            subscription.statusUpdatedAt = new Date();
+            await subscription.save();
+        }
+
+        // Send email notification
+        try {
+            const { sendSubscriptionApprovedEmail, sendSubscriptionRevokedEmail } = await import("../utils/emailService.js");
+            if (isSubscribed) {
+                // Use guide type if they have guide preference, else blog
+                const type = subscription?.preferences?.guide ? 'guide' : 'blog';
+                await sendSubscriptionApprovedEmail(user.email, type);
+            } else {
+                const type = subscription?.preferences?.guide ? 'guide' : 'blog';
+                await sendSubscriptionRevokedEmail(user.email, type, reason || 'Manually updated by administrator');
+            }
+        } catch (emailError) {
+            console.error('Failed to send subscription status email:', emailError);
+            // Non-blocking
         }
 
         res.status(200).json({

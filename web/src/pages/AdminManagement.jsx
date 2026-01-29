@@ -56,6 +56,8 @@ export default function AdminManagement() {
     purge: false
   });
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [showUnsubscribeReasonModal, setShowUnsubscribeReasonModal] = useState(false);
+  const [unsubscribeReasonText, setUnsubscribeReasonText] = useState("");
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountStats, setAccountStats] = useState({
     listings: 0,
@@ -559,7 +561,14 @@ export default function AdminManagement() {
     setAccountLoading(false);
   };
 
-  const handleToggleSubscription = async (id, currentStatus) => {
+  const handleToggleSubscription = async (id, currentStatus, reason = null) => {
+    // If we are unsubscribing and no reason is provided yet, show the modal
+    if (currentStatus && !reason && !showUnsubscribeReasonModal) {
+      setUnsubscribeReasonText("");
+      setShowUnsubscribeReasonModal(true);
+      return;
+    }
+
     setSubscriptionLoading(true);
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/user/toggle-subscription/${id}`, {
@@ -567,19 +576,29 @@ export default function AdminManagement() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ isSubscribed: !currentStatus }),
+        body: JSON.stringify({
+          isSubscribed: !currentStatus,
+          reason: reason || (currentStatus ? "Unsubscribed by Administrator" : "Resubscribed by Administrator")
+        }),
       });
       const data = await res.json();
       if (res.ok) {
         toast.success(data.message);
         // Update selected account if open
         if (selectedAccount && selectedAccount._id === id) {
-          setSelectedAccount(prev => ({ ...prev, isSubscribed: !currentStatus }));
+          setSelectedAccount(prev => ({
+            ...prev,
+            isSubscribed: !currentStatus,
+            unsubscribeReason: !currentStatus ? (reason || "Unsubscribed by Administrator") : prev.unsubscribeReason
+          }));
         }
         // Update users list
         setUsers(prev => prev.map(u => u._id === id ? { ...u, isSubscribed: !currentStatus } : u));
         // Update admins list
         setAdmins(prev => prev.map(a => a._id === id ? { ...a, isSubscribed: !currentStatus } : a));
+
+        // Close modal if it was open
+        setShowUnsubscribeReasonModal(false);
       } else {
         toast.error(data.message || "Failed to update subscription status");
       }
@@ -2248,6 +2267,55 @@ export default function AdminManagement() {
           </div>
         )
       }
+
+      {/* Unsubscribe Reason Modal */}
+      {showUnsubscribeReasonModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md mx-4 animate-scale-in border border-white/20 dark:border-gray-700">
+            <div className="p-6">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <FaEnvelope className="text-red-500" /> Confirm Unsubscribe
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                You are about to unsubscribe <strong>{selectedAccount?.username}</strong> from promotional emails. Please provide a reason for this action.
+              </p>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason (Optional)</label>
+                <textarea
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white min-h-[100px]"
+                  placeholder="e.g., Requested via support, Policy violation, etc."
+                  value={unsubscribeReasonText}
+                  onChange={(e) => setUnsubscribeReasonText(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowUnsubscribeReasonModal(false)}
+                  className="px-6 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleToggleSubscription(selectedAccount._id, true, unsubscribeReasonText || "Unsubscribed by Administrator")}
+                  disabled={subscriptionLoading}
+                  className="px-6 py-2.5 rounded-xl bg-red-500 text-white font-semibold transition-all shadow-lg hover:shadow-xl hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {subscriptionLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    'Unsubscribe User'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Animations */}
       <style jsx>{`
