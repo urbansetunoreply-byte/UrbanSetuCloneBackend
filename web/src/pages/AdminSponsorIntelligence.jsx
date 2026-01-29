@@ -72,7 +72,8 @@ const AdminSponsorIntelligence = () => {
     }, [days]);
 
     const fetchReferrerVisitors = async (value, page = 1, type = drillDownType) => {
-        setReferrerVisitorsLoading(true);
+        // Only show full loading spinner for the first load
+        if (page === 1) setReferrerVisitorsLoading(true);
         try {
             // Use the standard visitors/all endpoint with specific filters
             const params = new URLSearchParams({
@@ -450,7 +451,7 @@ const AdminSponsorIntelligence = () => {
 
             {/* Referrer Details Modal (Drill-down) */}
             {showReferrerModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-gray-100 dark:border-gray-800 flex flex-col">
                         {/* Modal Header */}
                         <div className="p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center">
@@ -524,7 +525,9 @@ const AdminSponsorIntelligence = () => {
                                             </thead>
                                             <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
                                                 {referrerVisitors.map((v, i) => (
-                                                    <tr key={v._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors group">
+                                                    <tr key={v._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors group"
+                                                        style={{ animation: `fadeIn 0.2s ease-out ${i * 0.03}s backwards` }}
+                                                    >
                                                         <td className="px-6 py-4">
                                                             <div className="flex flex-col">
                                                                 <span className="font-bold text-gray-800 dark:text-gray-200 font-mono text-xs">{v.ip}</span>
@@ -571,24 +574,24 @@ const AdminSponsorIntelligence = () => {
 
                                     {/* Modal Pagination */}
                                     {referrerTotalPages > 1 && (
-                                        <div className="flex items-center justify-between pt-6">
-                                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                                                Page {referrerPage} of {referrerTotalPages}
-                                            </span>
+                                        <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                                Showing page <span className="font-bold text-gray-900 dark:text-white">{referrerPage}</span> of <span className="font-bold dark:text-gray-300">{referrerTotalPages}</span>
+                                            </p>
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => setReferrerPage(prev => Math.max(1, prev - 1))}
                                                     disabled={referrerPage === 1}
-                                                    className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-500 hover:text-indigo-600 transition-all shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    className="flex items-center gap-1 px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                                                 >
-                                                    <FaChevronLeft />
+                                                    <FaArrowLeft size={12} /> Previous
                                                 </button>
                                                 <button
                                                     onClick={() => setReferrerPage(prev => Math.min(referrerTotalPages, prev + 1))}
                                                     disabled={referrerPage === referrerTotalPages}
-                                                    className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-500 hover:text-indigo-600 transition-all shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    className="flex items-center gap-1 px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                                                 >
-                                                    <FaChevronRight />
+                                                    Next <FaArrowRight size={12} />
                                                 </button>
                                             </div>
                                         </div>
@@ -597,15 +600,7 @@ const AdminSponsorIntelligence = () => {
                             )}
                         </div>
 
-                        {/* Modal Footer */}
-                        <div className="p-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex justify-end">
-                            <button
-                                onClick={() => setShowReferrerModal(false)}
-                                className="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black rounded-2xl hover:scale-105 transition-all shadow-xl active:scale-95"
-                            >
-                                Close Information
-                            </button>
-                        </div>
+                        {/* Modal Footer Removed */}
                     </div>
                 </div>
             )}
