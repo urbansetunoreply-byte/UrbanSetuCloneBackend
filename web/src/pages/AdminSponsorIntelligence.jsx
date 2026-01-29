@@ -4,7 +4,8 @@ import {
     FaExternalLinkAlt, FaSync, FaArrowUp, FaArrowDown,
     FaBullhorn, FaMousePointer, FaClock, FaFilter,
     FaCalendarAlt, FaChevronRight, FaTrophy, FaRocket,
-    FaArrowLeft, FaArrowRight
+    FaArrowLeft, FaArrowRight, FaFingerprint, FaEye, FaTimes,
+    FaHistory, FaMapMarkerAlt, FaSearch, FaChevronLeft
 } from 'react-icons/fa';
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
@@ -15,6 +16,7 @@ import { authenticatedFetch } from '../utils/auth';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AdminDashboardSkeleton from '../components/skeletons/AdminDashboardSkeleton';
+import VisitorDetailsModal from '../components/VisitorDetailsModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const COLORS = ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#6366F1'];
@@ -28,6 +30,20 @@ const AdminSponsorIntelligence = () => {
     const [stats, setStats] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+
+    // Drill-down states
+    const [selectedReferrer, setSelectedReferrer] = useState(null);
+    const [referrerVisitors, setReferrerVisitors] = useState([]);
+    const [referrerVisitorsLoading, setReferrerVisitorsLoading] = useState(false);
+    const [referrerPage, setReferrerPage] = useState(1);
+    const [referrerTotalPages, setReferrerTotalPages] = useState(1);
+    const [totalReferrerVisitors, setTotalReferrerVisitors] = useState(0);
+    const [showReferrerModal, setShowReferrerModal] = useState(false);
+
+    // Individual Visitor Details Modal
+    const [selectedVisitor, setSelectedVisitor] = useState(null);
+    const [showVisitorDetailsModal, setShowVisitorDetailsModal] = useState(false);
+    const [isRefreshingVisitor, setIsRefreshingVisitor] = useState(false);
 
     const fetchMarketingStats = async (isManual = false) => {
         if (isManual) setRefreshing(true);
@@ -51,6 +67,71 @@ const AdminSponsorIntelligence = () => {
     useEffect(() => {
         fetchMarketingStats();
     }, [days]);
+
+    const fetchReferrerVisitors = async (referrer, page = 1) => {
+        setReferrerVisitorsLoading(true);
+        try {
+            // Use the standard visitors/all endpoint with search filter for the referrer
+            const params = new URLSearchParams({
+                page,
+                limit: 10,
+                search: referrer,
+                dateRange: days === 7 ? '7days' : (days === 90 ? 'all' : 'all') // simple map
+            });
+
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/visitors/all?${params}`);
+            const data = await res.json();
+
+            if (data.success) {
+                setReferrerVisitors(data.visitors || []);
+                setTotalReferrerVisitors(data.total);
+                setReferrerTotalPages(data.pages || 1);
+            } else {
+                toast.error(data.message || "Failed to fetch referrer details");
+            }
+        } catch (error) {
+            console.error("Referrer visitors error:", error);
+            toast.error("Error loading referrer details");
+        } finally {
+            setReferrerVisitorsLoading(false);
+        }
+    };
+
+    const handleViewReferrerDetails = (referrer) => {
+        setSelectedReferrer(referrer);
+        setReferrerPage(1);
+        setShowReferrerModal(true);
+        fetchReferrerVisitors(referrer, 1);
+    };
+
+    useEffect(() => {
+        if (showReferrerModal && selectedReferrer) {
+            fetchReferrerVisitors(selectedReferrer, referrerPage);
+        }
+    }, [referrerPage]);
+
+    const handleViewVisitorDetails = (visitor) => {
+        setSelectedVisitor(visitor);
+        setShowVisitorDetailsModal(true);
+    };
+
+    const handleRefreshVisitorDetails = async () => {
+        if (!selectedVisitor) return;
+        setIsRefreshingVisitor(true);
+        try {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/visitors/monitor/${selectedVisitor._id}`);
+            const data = await res.json();
+            if (data.success) {
+                setSelectedVisitor(data.visitor);
+                // Update in list too
+                setReferrerVisitors(prev => prev.map(v => v._id === data.visitor._id ? data.visitor : v));
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsRefreshingVisitor(false);
+        }
+    };
 
     // Format duration from ms to readable string
     const formatDuration = (ms) => {
@@ -300,12 +381,20 @@ const AdminSponsorIntelligence = () => {
                                         <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
                                             <FaGlobe className="text-indigo-600 dark:text-indigo-400" />
                                         </div>
-                                        <span className="font-bold text-gray-700 dark:text-gray-300 truncate">{r._id}</span>
+                                        <button
+                                            onClick={() => handleViewReferrerDetails(r._id)}
+                                            className="font-bold text-gray-700 dark:text-gray-300 truncate hover:text-indigo-600 dark:hover:text-indigo-400 text-left transition-colors"
+                                        >
+                                            {r._id}
+                                        </button>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-xs font-black text-indigo-500">{r.count} LEADS</span>
-                                        <FaChevronRight className="text-gray-300 text-sm" />
-                                    </div>
+                                    <button
+                                        onClick={() => handleViewReferrerDetails(r._id)}
+                                        className="flex items-center gap-4 group/btn"
+                                    >
+                                        <span className="text-xs font-black text-indigo-500 group-hover/btn:scale-110 transition-transform">{r.count} LEADS</span>
+                                        <FaChevronRight className="text-gray-300 text-sm group-hover/btn:translate-x-1 transition-transform" />
+                                    </button>
                                 </div>
                             ))}
                             {(!stats?.referrers || stats.referrers.length === 0) && (
@@ -340,6 +429,171 @@ const AdminSponsorIntelligence = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Referrer Details Modal (Drill-down) */}
+            {showReferrerModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-gray-100 dark:border-gray-800 flex flex-col">
+                        {/* Modal Header */}
+                        <div className="p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
+                                    <FaExternalLinkAlt className="text-2xl" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white">Referral Details</h3>
+                                    <p className="text-gray-500 dark:text-gray-400 font-medium break-all">{selectedReferrer}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowReferrerModal(false)}
+                                className="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-2xl transition-all"
+                            >
+                                <FaTimes />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
+                            {referrerVisitorsLoading ? (
+                                <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                                    <div className="w-12 h-12 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
+                                    <p className="text-gray-500 font-bold animate-pulse">Analyzing Referrer Data...</p>
+                                </div>
+                            ) : referrerVisitors.length === 0 ? (
+                                <div className="text-center py-20">
+                                    <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <FaSearch className="text-3xl text-gray-300" />
+                                    </div>
+                                    <p className="text-gray-500 font-bold">No detailed visitor logs found for this source</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    {/* Stats Summary In Modal */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                                        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Visits</p>
+                                            <p className="text-xl font-black text-gray-900 dark:text-white">{totalReferrerVisitors}</p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Source Type</p>
+                                            <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">{selectedReferrer.includes('google') ? 'Search' : (selectedReferrer.includes('facebook') || selectedReferrer.includes('t.co') ? 'Social' : 'Referral')}</p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Data Freshness</p>
+                                            <p className="text-xl font-black text-green-600 dark:text-green-400">Live</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Visitors Table */}
+                                    <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm">
+                                        <table className="w-full">
+                                            <thead>
+                                                <tr className="bg-gray-50 dark:bg-gray-900/50 text-left">
+                                                    <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Visitor / IP</th>
+                                                    <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Device & OS</th>
+                                                    <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Location</th>
+                                                    <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">Duration</th>
+                                                    <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                                                {referrerVisitors.map((v, i) => (
+                                                    <tr key={v._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors group">
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold text-gray-800 dark:text-gray-200 font-mono text-xs">{v.ip}</span>
+                                                                <span className="text-[10px] text-gray-400">{new Date(v.timestamp).toLocaleString()}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-500">
+                                                                    {v.deviceType === 'mobile' ? <FaGlobe title="Mobile" /> : <FaGlobe title="Desktop" />}
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{v.browser}</span>
+                                                                    <span className="text-[10px] text-gray-500">{v.os}</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400">
+                                                                <FaMapMarkerAlt className="text-red-500" />
+                                                                {v.location || 'Unknown'}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center">
+                                                            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-[10px] font-black font-mono">
+                                                                {v.sessionStart && v.lastActive ?
+                                                                    formatDuration(new Date(v.lastActive) - new Date(v.sessionStart)) :
+                                                                    '0s'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <button
+                                                                onClick={() => handleViewVisitorDetails(v)}
+                                                                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
+                                                            >
+                                                                <FaEye /> View
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Modal Pagination */}
+                                    {referrerTotalPages > 1 && (
+                                        <div className="flex items-center justify-between pt-6">
+                                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                                                Page {referrerPage} of {referrerTotalPages}
+                                            </span>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => setReferrerPage(prev => Math.max(1, prev - 1))}
+                                                    disabled={referrerPage === 1}
+                                                    className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-500 hover:text-indigo-600 transition-all shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                                                >
+                                                    <FaChevronLeft />
+                                                </button>
+                                                <button
+                                                    onClick={() => setReferrerPage(prev => Math.min(referrerTotalPages, prev + 1))}
+                                                    disabled={referrerPage === referrerTotalPages}
+                                                    className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-500 hover:text-indigo-600 transition-all shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                                                >
+                                                    <FaChevronRight />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex justify-end">
+                            <button
+                                onClick={() => setShowReferrerModal(false)}
+                                className="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black rounded-2xl hover:scale-105 transition-all shadow-xl active:scale-95"
+                            >
+                                Close Information
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Individual Visitor Details Modal */}
+            {showVisitorDetailsModal && selectedVisitor && (
+                <VisitorDetailsModal
+                    visitor={selectedVisitor}
+                    onClose={() => setShowVisitorDetailsModal(false)}
+                    onRefresh={handleRefreshVisitorDetails}
+                    isRefreshing={isRefreshingVisitor}
+                />
+            )}
 
             <style>{`
                 @keyframes fadeIn {
