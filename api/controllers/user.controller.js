@@ -1163,15 +1163,21 @@ export const unsubscribeUser = async (req, res, next) => {
             return next(errorHandler(400, "Invalid unsubscribe token"));
         }
 
-        const user = await User.findOneAndUpdate(
-            { email },
-            { isSubscribed: false },
-            { new: true }
-        );
+        const user = await User.findOne({ email });
 
         if (!user) {
             return next(errorHandler(404, "User not found"));
         }
+
+        if (user.isSubscribed === false) {
+            return res.status(200).json({
+                success: true,
+                message: "ALREADY_UNSUBSCRIBED"
+            });
+        }
+
+        user.isSubscribed = false;
+        await user.save();
 
         // Sync with Subscription model if exists
         await Subscription.findOneAndUpdate(

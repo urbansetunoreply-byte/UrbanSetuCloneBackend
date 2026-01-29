@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaEnvelopeOpenText, FaCheckCircle, FaExclamationCircle, FaArrowLeft, FaHome, FaPaperPlane } from 'react-icons/fa';
+import { FaEnvelopeOpenText, FaCheckCircle, FaExclamationCircle, FaArrowLeft, FaHome, FaPaperPlane, FaInfoCircle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -16,7 +16,7 @@ const reasons = [
 
 export default function Unsubscribe() {
     const location = useLocation();
-    const [view, setView] = useState('landing'); // landing, reason, thankyou, error
+    const [view, setView] = useState('landing'); // landing, reason, thankyou, error, already_unsubscribed
     const [email, setEmail] = useState('');
     const [token, setToken] = useState('');
     const [loading, setLoading] = useState(false);
@@ -52,8 +52,12 @@ export default function Unsubscribe() {
             const data = await res.json();
 
             if (res.ok) {
-                setView('reason');
-                toast.success('Successfully unsubscribed');
+                if (data.message === 'ALREADY_UNSUBSCRIBED') {
+                    setView('already_unsubscribed');
+                } else {
+                    setView('reason');
+                    toast.success('Successfully unsubscribed');
+                }
             } else {
                 setView('error');
                 setMessage(data.message || 'Failed to unsubscribe. The link might be expired or invalid.');
@@ -295,6 +299,32 @@ export default function Unsubscribe() {
                                         Sign In
                                     </Link>
                                 </div>
+                            </motion.div>
+                        )}
+
+                        {view === 'already_unsubscribed' && (
+                            <motion.div
+                                key="already_unsubscribed"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="text-center"
+                            >
+                                <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+                                    <FaInfoCircle className="text-5xl text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
+                                    Your contact details were previously removed from our database, effectively unsubscribing you from our communications.
+                                </h2>
+                                <p className="text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed font-medium">
+                                    No further action is required.
+                                </p>
+                                <Link
+                                    to="/"
+                                    className="flex items-center justify-center gap-3 w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                    <FaHome className="text-xl" />
+                                    Return to Homepage
+                                </Link>
                             </motion.div>
                         )}
                     </AnimatePresence>
