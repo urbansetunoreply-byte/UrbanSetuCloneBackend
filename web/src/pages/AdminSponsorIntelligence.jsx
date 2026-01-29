@@ -29,7 +29,7 @@ const AdminSponsorIntelligence = () => {
     const [days, setDays] = useState(30);
     const [stats, setStats] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
 
     // Drill-down states
     const [selectedReferrer, setSelectedReferrer] = useState(null);
