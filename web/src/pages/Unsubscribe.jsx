@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FaEnvelopeOpenText, FaCheckCircle, FaExclamationCircle, FaArrowLeft, FaHome, FaPaperPlane, FaInfoCircle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +16,7 @@ const reasons = [
 ];
 
 export default function Unsubscribe() {
+    const { currentUser } = useSelector(state => state.user);
     const location = useLocation();
     const [view, setView] = useState('landing'); // landing, reason, thankyou, error, already_unsubscribed
     const [email, setEmail] = useState('');
@@ -261,7 +263,7 @@ export default function Unsubscribe() {
                                     Your preferences have been updated. We'll miss having you in our promotional list, but we respect your inbox!
                                 </p>
                                 <Link
-                                    to="/"
+                                    to={currentUser ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin' : '/user') : '/'}
                                     className="flex items-center justify-center gap-3 w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
                                 >
                                     <FaHome className="text-xl" />
@@ -286,7 +288,7 @@ export default function Unsubscribe() {
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <Link
-                                        to="/"
+                                        to={currentUser ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin' : '/user') : '/'}
                                         className="flex items-center justify-center gap-2 py-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-all"
                                     >
                                         <FaHome />
@@ -319,7 +321,7 @@ export default function Unsubscribe() {
                                     No further action is required.
                                 </p>
                                 <Link
-                                    to="/"
+                                    to={currentUser ? (currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin' : '/user') : '/'}
                                     className="flex items-center justify-center gap-3 w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
                                 >
                                     <FaHome className="text-xl" />
@@ -335,8 +337,8 @@ export default function Unsubscribe() {
                             © {new Date().getFullYear()} UrbanSetu
                         </p>
                         <div className="flex gap-6">
-                            <Link to="/about" className="text-sm text-slate-400 hover:text-emerald-500 transition-colors">Privacy</Link>
-                            <Link to="/about" className="text-sm text-slate-400 hover:text-emerald-500 transition-colors">Terms</Link>
+                            <Link to="/privacy" className="text-sm text-slate-400 hover:text-emerald-500 transition-colors">Privacy</Link>
+                            <Link to="/terms" className="text-sm text-slate-400 hover:text-emerald-500 transition-colors">Terms</Link>
                             <Link to="/contact" className="text-sm text-slate-400 hover:text-emerald-500 transition-colors">Support</Link>
                         </div>
                     </div>
